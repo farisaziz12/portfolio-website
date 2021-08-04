@@ -34,12 +34,12 @@ export const skills = [
   {
     name: "TypeScript",
     icon: typescriptIcon,
-    link: "https://git-scm.com",
+    link: "https://www.typescriptlang.org",
   },
   {
     name: "Git/Git Flow",
     icon: gitIcon,
-    link: "https://www.typescriptlang.org",
+    link: "https://git-scm.com",
   },
   {
     name: "ReactJs",
