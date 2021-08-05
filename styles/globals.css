@@ -18,6 +18,10 @@ body {
   font-family: "Gilroy";
 }
 
+.active {
+  border-bottom: 3px solid #ffffff;
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
