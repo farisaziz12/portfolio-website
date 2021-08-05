@@ -75,8 +75,6 @@ export const getContent = async () => {
       `https://cdn.contentful.com//spaces/tkgwajkrp88t/environments/master/entries?access_token=${process.env.CONTENTFUL_KEY}`
     );
 
-    console.log(response);
-
     const { items = [] } = await response.json();
 
     const data = {};
