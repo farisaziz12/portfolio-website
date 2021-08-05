@@ -68,3 +68,40 @@ export const getGithubRepos = async () => {
     console.error(error);
   }
 };
+
+export const getContent = async () => {
+  try {
+    const response = await fetch(
+      `https://cdn.contentful.com//spaces/tkgwajkrp88t/environments/master/entries?access_token=${process.env.CONTENTFUL_KEY}`
+    );
+
+    const { items } = await response.json();
+
+    const data = {};
+
+    items.forEach((item) => {
+      const { id: contentType } = item.sys.contentType.sys;
+      const { fields } = item;
+
+      if (data[contentType]) {
+        data[contentType].push(fields);
+      } else {
+        data[contentType] = [fields];
+      }
+    });
+
+    // order items
+    for (const key in data) {
+      if (Object.hasOwnProperty.call(data, key)) {
+        const field = data[key];
+        if (field[0].order) {
+          field.sort((a, b) => a.order - b.order);
+        }
+      }
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
