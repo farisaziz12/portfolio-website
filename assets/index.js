@@ -1,4 +1,5 @@
 import profilePic from "./profile-pic.png";
+import facePalmPic from "./face-palm.png";
 import javaScriptIcon from "./icons/javascript.svg";
 import reactJsIcon from "./icons/react.svg";
 import reactRouterIcon from "./icons/react-router.svg";
@@ -54,4 +55,5 @@ module.exports = {
   visualStudioCodeIcon,
   githubIcon,
   samsungTV,
+  facePalmPic,
 };
