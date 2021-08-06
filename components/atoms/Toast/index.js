@@ -16,7 +16,7 @@ export function Toast() {
         <a
           href="mailto:farisaziz12@gmail.com?subject=Faris, you're hired!"
           id="toast"
-          className="load-hidden absolute text-center bg-white text-black font-bold tracking-wider text-lg px-8 py-1 rounded-2xl cursor-pointer mt-16"
+          className="load-hidden absolute z-10 text-center bg-white text-black font-bold tracking-wider text-lg px-10 py-1.5 rounded-2xl cursor-pointer mt-16"
         >
           Hire Me!
         </a>
