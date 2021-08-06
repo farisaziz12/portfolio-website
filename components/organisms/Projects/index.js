@@ -20,22 +20,29 @@ export function Projects({ header, subHeader, projects }) {
   );
 }
 
-function Project({
-  name,
-  description,
-  repoUrl,
-  livePreview,
-  shouldShowDemo,
-  stack = [],
-  displayIcon,
-  isPrivateRepo,
-  demoComponent,
-}) {
+function Project(props) {
+  const {
+    name,
+    description,
+    repoUrl,
+    livePreview,
+    shouldShowDemo,
+    stack = [],
+    displayIcon,
+    isPrivateRepo,
+    demoComponent,
+  } = props;
+
   const { src, isDarkIcon } = resolveIcon(displayIcon);
   const techSack = stack.join(" - ") || "";
   return (
-    <div className="p-4 lg:p-20 lg:w-full lg:h-min">
-      {shouldShowDemo && resolveComponents({ component: demoComponent })}
+    <div className="p-4 lg:pl-20 lg:pr-20 lg:w-full lg:h-min">
+      {shouldShowDemo && (
+        <div>
+          {resolveComponents({ component: demoComponent }, { [demoComponent]: props })}
+          <h1 className="text-center p-4 lg:block hidden">{name} Demo</h1>
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-2xl md:flex text-black">
         <img
           id="stack-icon"
@@ -48,7 +55,7 @@ function Project({
               : " bg-black")
           }
         />
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <h2 className="font-bold text-xl md:text-3xl mb-2">
             {name}{" "}
             <span className="font-light text-lg md:text-lg mb-2">
@@ -63,7 +70,9 @@ function Project({
               Tech Stack: <span className="font-light">{techSack}</span>
             </h3>
           )}
-          <div className="mb-8">{resolveRichText(description)}</div>
+          <div className="mb-8 rich-text-block text-sm md:text-base lg:text-lg overflow-hidden break-words">
+            {resolveRichText(description)}
+          </div>
           {isPrivateRepo ? (
             <button className={styles.privateButton} disabled>
               Private Project
