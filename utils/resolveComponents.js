@@ -1,4 +1,4 @@
-import { Skills, Projects, TVAppDemo } from "../components";
+import { Skills, Projects, TVAppDemo, LaptopDemo } from "../components";
 
 export const resolveComponents = (data, propMappings = {}) => {
   const { component } = data;
@@ -14,8 +14,13 @@ export const resolveComponents = (data, propMappings = {}) => {
       return <Skills {...mapProps()} key={component} />;
     case "projects":
       return <Projects {...mapProps()} key={component} />;
-    case "tv-app" || "tv":
+    case "tv-app":
+    case "tv":
       return <TVAppDemo key={component} />;
+    case "mac":
+    case "laptop":
+    case "computer":
+      return <LaptopDemo {...mapProps()} key={component} />;
 
     default:
       break;
