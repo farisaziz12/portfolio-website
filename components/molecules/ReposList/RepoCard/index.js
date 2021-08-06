@@ -1,4 +1,5 @@
 import React from "react";
+import { githubIcon } from "../../../../assets";
 import styles from "./styles";
 
 export function RepoCard({ name, language, updatedAt, url, description }) {
@@ -7,6 +8,7 @@ export function RepoCard({ name, language, updatedAt, url, description }) {
       <div className="m-3">
         <div className={styles.nameAndLangContainer}>
           <h2 className={styles.name}>{name}</h2>
+          <img className={styles.ghLogo} src={githubIcon.src} alt="GitHub logo" />
           <span className={styles.lang}>{language}</span>
         </div>
         <p className={styles.description}>{description || "No description"}</p>

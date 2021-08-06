@@ -51,19 +51,60 @@ export const getGithubRepos = async () => {
 
     const data = await response.json();
 
-    const formatedData = data.map(
-      ({ name, updated_at, language, html_url, description = "" }) => ({
-        name,
-        updatedAt: updated_at,
-        language,
-        url: html_url,
-        description,
-      })
+    if (Array.isArray(data)) {
+      const formatedData = data.map(
+        ({ name, updated_at, language, html_url, description = "" }) => ({
+          name,
+          updatedAt: updated_at,
+          language,
+          url: html_url,
+          description,
+        })
+      );
+
+      return formatedData
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .slice(0, 3);
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const getContent = async () => {
+  try {
+    const response = await fetch(
+      `https://cdn.contentful.com//spaces/tkgwajkrp88t/environments/master/entries?access_token=${process.env.CONTENTFUL_KEY}`
     );
 
-    return formatedData
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      .slice(0, 3);
+    const { items = [] } = await response.json();
+
+    const data = {};
+
+    items.forEach((item) => {
+      const { id: contentType } = item.sys.contentType.sys;
+      const { fields } = item;
+
+      if (data[contentType]) {
+        data[contentType].push(fields);
+      } else {
+        data[contentType] = [fields];
+      }
+    });
+
+    // order items
+    for (const key in data) {
+      if (Object.hasOwnProperty.call(data, key)) {
+        const field = data[key];
+        if (field[0].order) {
+          field.sort((a, b) => a.order - b.order);
+        }
+      }
+    }
+
+    return data;
   } catch (error) {
     console.error(error);
   }

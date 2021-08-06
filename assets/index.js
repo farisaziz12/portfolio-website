@@ -1,4 +1,5 @@
 import profilePic from "./profile-pic.png";
+import facePalmPic from "./face-palm.png";
 import javaScriptIcon from "./icons/javascript.svg";
 import reactJsIcon from "./icons/react.svg";
 import reactRouterIcon from "./icons/react-router.svg";
@@ -24,6 +25,8 @@ import gitIcon from "./icons/git.svg";
 import accessibilityIcon from "./icons/accessibility.svg";
 import visualStudioCodeIcon from "./icons/visual-studio-code.svg";
 import githubIcon from "./icons/github.svg";
+import samsungTV from "./samsung-tv.png";
+import macImg from "./mac.png";
 
 module.exports = {
   profilePic,
@@ -52,4 +55,7 @@ module.exports = {
   accessibilityIcon,
   visualStudioCodeIcon,
   githubIcon,
+  samsungTV,
+  facePalmPic,
+  macImg,
 };

@@ -1,34 +1,31 @@
-import Head from "next/head";
-import { Navbar, Intro, Skills, LearnMore } from "../components";
-import { getGithubContributions, getGithubRepos } from "../api";
+import { Navbar, Intro, LearnMore, HeadTag } from "../components";
+import { getGithubContributions, getGithubRepos, getContent } from "../api";
+import { resolveComponents } from "../utils";
 
-export default function Home({ contributions, repos }) {
+export default function Home({ contributions, repos = [], projects, sections = [] }) {
   return (
     <div className="h-full w-full text-white">
-      <Head>
-        <title>Faris Aziz Dev</title>
-        <link rel="icon" href="/favicon.ico" />
-        <script src="https://unpkg.com/scrollreveal"></script>
-      </Head>
+      <HeadTag />
       <Navbar />
       <Intro />
       <LearnMore contributions={contributions} repos={repos} />
-      <Skills />
+      {sections[0] && sections.map((section) => resolveComponents(section, { projects }))}
     </div>
   );
 }
 
-export async function getStaticProps(context) {
+export async function getServerSideProps(context) {
   try {
     const contributions = await getGithubContributions();
     const repos = await getGithubRepos();
+    const { projects = [], sections = [] } = await getContent();
 
     return {
-      props: { contributions, repos },
+      props: { contributions, repos, projects, sections },
     };
   } catch (error) {
     return {
-      props: { contributions: 0, repos: [] },
+      props: { contributions: 0, repos: [], projects: [], sections: [] },
     };
   }
 }
