@@ -51,19 +51,23 @@ export const getGithubRepos = async () => {
 
     const data = await response.json();
 
-    const formatedData = data.map(
-      ({ name, updated_at, language, html_url, description = "" }) => ({
-        name,
-        updatedAt: updated_at,
-        language,
-        url: html_url,
-        description,
-      })
-    );
+    if (Array.isArray(data)) {
+      const formatedData = data.map(
+        ({ name, updated_at, language, html_url, description = "" }) => ({
+          name,
+          updatedAt: updated_at,
+          language,
+          url: html_url,
+          description,
+        })
+      );
 
-    return formatedData
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      .slice(0, 3);
+      return formatedData
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .slice(0, 3);
+    } else {
+      return [];
+    }
   } catch (error) {
     console.error(error);
   }
