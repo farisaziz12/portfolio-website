@@ -14,21 +14,11 @@ export default function Home({ contributions, repos = [], projects, sections = [
   );
 }
 
-export async function getStaticProps(context) {
+export async function getServerSideProps(context) {
   try {
     const contributions = await getGithubContributions();
     const repos = await getGithubRepos();
     const { projects = [], sections = [] } = await getContent();
-
-    // // fallback
-    // console.log(sections);
-    // if (sections.length === 0) {
-    //   sections.push(
-    //     navItems.map((navItem) => {
-    //       component: navItem.link;
-    //     })
-    //   );
-    // }
 
     return {
       props: { contributions, repos, projects, sections },
