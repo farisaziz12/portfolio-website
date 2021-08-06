@@ -1,10 +1,10 @@
 const title = "place-self-start text-3xl pl-6 pb-2 md:text-4xl lg:text-6xl font-bold";
 const subtitle = "place-self-start text-l pl-6 pb-12 md:text-xl lg:text-3xl font-light ";
 
-const skillTitle = "justify-self-center text-xs md:text-xl lg:text-xl font-light p-1";
-const skillBlock = "p-5 grid place-items-center text-center";
+const skillTitle = "justify-self-center text-xs md:text-xl lg:text-xl font-light pt-2";
+const skillBlock = "p-5 grid place-items-center place-content-center text-center";
 
-const skillIcon = "object-contain h-16 w-16 md:w-18 md:h-18 lg:w-24 lg:w-24";
+const skillIcon = "object-contain h-16 w-auto md:w-auto md:h-18 lg:w-auto lg:h-24";
 
 const skillsGrid = "w-11/12 grid grid-cols-3 md:grid-cols-6";
 
