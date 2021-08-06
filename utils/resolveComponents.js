@@ -1,4 +1,4 @@
-import { Skills, Projects, TVAppDemo, LaptopDemo } from "../components";
+import { Skills, Projects, TVAppDemo, LaptopDemo, Services } from "../components";
 
 export const resolveComponents = (data, propMappings = {}) => {
   const { component } = data;
@@ -6,6 +6,8 @@ export const resolveComponents = (data, propMappings = {}) => {
   const mapProps = () => {
     if (propMappings[component]) {
       return { [component]: propMappings[component], ...data };
+    } else {
+      return data;
     }
   };
 
@@ -14,6 +16,8 @@ export const resolveComponents = (data, propMappings = {}) => {
       return <Skills {...mapProps()} key={component} />;
     case "projects":
       return <Projects {...mapProps()} key={component} />;
+    case "services":
+      return <Services {...mapProps()} key={component} />;
     case "tv-app":
     case "tv":
       return <TVAppDemo key={component} />;
