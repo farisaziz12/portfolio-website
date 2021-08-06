@@ -35,6 +35,24 @@ body {
   border-bottom: 3px solid #ffffff;
 }
 
+.loader {
+  position: absolute;
+  height: 40px;
+  width: 40px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  border: 1px solid #1d9af2;
+  opacity: 1;
+  animation: spinner4 800ms linear infinite;
+}
+
+@keyframes spinner4 {
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
