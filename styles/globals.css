@@ -31,13 +31,6 @@ body {
   margin: 1rem 0 1rem 0;
 }
 
-.rich-text-block code {
-  color: rgb(220, 60, 20);
-  background-color: rgb(39, 37, 37);
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-}
-
 .active {
   border-bottom: 3px solid #ffffff;
 }
