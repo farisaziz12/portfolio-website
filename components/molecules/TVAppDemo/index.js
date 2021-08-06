@@ -8,7 +8,11 @@ export function TVAppDemo() {
   }, []);
 
   return (
-    <div id="tv-demo" className="lg:visible invisible flex justify-center">
+    <div
+      id="tv-demo"
+      style={{ marginBottom: "-3vw" }}
+      className="lg:flex hidden justify-center"
+    >
       <div style={{ position: "relative", height: "27vw", width: "50vw" }}>
         <Image
           layout="fill"
