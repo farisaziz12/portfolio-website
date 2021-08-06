@@ -26,6 +26,7 @@ import accessibilityIcon from "./icons/accessibility.svg";
 import visualStudioCodeIcon from "./icons/visual-studio-code.svg";
 import githubIcon from "./icons/github.svg";
 import samsungTV from "./samsung-tv.png";
+import macImg from "./mac.png";
 
 module.exports = {
   profilePic,
@@ -56,4 +57,5 @@ module.exports = {
   githubIcon,
   samsungTV,
   facePalmPic,
+  macImg,
 };
