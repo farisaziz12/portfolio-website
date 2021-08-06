@@ -11,6 +11,8 @@ const lang = "text-sm font-mono text-gray-500 rounded-full px-2 hidden lg:block"
 const description =
   "font-light font-mono text-xs md:text-sm text-gray-700 hover:text-gray-900 transition-all duration-200";
 
-const styles = { card, nameAndLangContainer, name, lang, description };
+const ghLogo = "w-4 h-4 fixed bottom-1 left-1";
+
+const styles = { card, nameAndLangContainer, name, lang, description, ghLogo };
 
 module.exports = styles;
