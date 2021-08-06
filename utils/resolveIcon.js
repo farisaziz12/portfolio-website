@@ -11,23 +11,27 @@ import {
 export const resolveIcon = (icon) => {
   if (!icon) return { src: "" };
 
+  const generateIconProps = (icon, isDarkIcon = false) => {
+    return { src: icon.src, isDarkIcon };
+  };
+
   const normalizedIconName = icon.toLowerCase();
   switch (normalizedIconName) {
     case "reactjs" || "react.js" || "react":
-      return reactJsIcon;
+      return generateIconProps(reactJsIcon);
     case "nextjs" || "next.js":
-      return nextJsIcon;
+      return generateIconProps(nextJsIcon, true);
     case "javascript":
-      return javaScriptIcon;
+      return generateIconProps(javaScriptIcon);
     case "typescript":
-      return typescriptIcon;
+      return generateIconProps(typescriptIcon);
     case "bash":
-      return bashIcon;
+      return generateIconProps(bashIcon);
     case "ruby":
-      return rubyIcon;
+      return generateIconProps(rubyIcon);
     case "nodejs" || "node":
-      return nodeJsIcon;
+      return generateIconProps(nodeJsIcon);
     default:
-      return javaScriptIcon;
+      return generateIconProps(javaScriptIcon);
   }
 };
