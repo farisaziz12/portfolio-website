@@ -17,9 +17,12 @@ export const resolveIcon = (icon) => {
 
   const normalizedIconName = icon.toLowerCase();
   switch (normalizedIconName) {
-    case "reactjs" || "react.js" || "react":
+    case "reactjs":
+    case "react.js":
+    case "react":
       return generateIconProps(reactJsIcon);
-    case "nextjs" || "next.js":
+    case "nextjs":
+    case "next.js":
       return generateIconProps(nextJsIcon, true);
     case "javascript":
       return generateIconProps(javaScriptIcon);
@@ -29,7 +32,8 @@ export const resolveIcon = (icon) => {
       return generateIconProps(bashIcon);
     case "ruby":
       return generateIconProps(rubyIcon);
-    case "nodejs" || "node":
+    case "nodejs":
+    case "node":
       return generateIconProps(nodeJsIcon);
     default:
       return generateIconProps(javaScriptIcon);
