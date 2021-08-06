@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { resolveComponents, resolveIcon, resolveRichText } from "../../../utils";
 import styles from "./styles";
 
-export function Projects({ header, subHeader, projects }) {
+export function Projects({ header, subheader, projects }) {
   useEffect(() => {
     ScrollReveal().reveal("#stack-icon", { delay: 250, scale: 0.5 });
   }, []);
@@ -11,7 +11,7 @@ export function Projects({ header, subHeader, projects }) {
     <div id="projects" className="grid justify-items-center mt-24">
       <h1 className={styles.title}>{header || "Projects"}</h1>
       <h2 className={styles.subtitle}>
-        {subHeader || "Cool Tech Projects I Have Developed"}
+        {subheader || "Cool Tech Projects I Have Developed"}
       </h2>
       {projects.map((project, index) => (
         <Project {...project} key={index} />
