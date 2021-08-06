@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { resolveComponents, resolveIcon, resolveRichText } from "../../../utils";
 import styles from "./styles";
 
 export function Projects({ header, subHeader, projects }) {
+  useEffect(() => {
+    ScrollReveal().reveal("#stack-icon", { delay: 250, scale: 0.5 });
+  }, []);
+
   return (
     <div id="projects" className="grid justify-items-center mt-24">
       <h1 className={styles.title}>{header || "Projects"}</h1>
@@ -27,16 +31,22 @@ function Project({
   isPrivateRepo,
   demoComponent,
 }) {
-  const { src } = resolveIcon(displayIcon);
+  const { src, isDarkIcon } = resolveIcon(displayIcon);
   const techSack = stack.join(" - ") || "";
   return (
     <div className="p-4 lg:p-20 lg:w-full lg:h-min">
       {shouldShowDemo && resolveComponents({ component: demoComponent })}
       <div className="bg-white rounded-lg shadow-2xl md:flex text-black">
         <img
+          id="stack-icon"
           src={src}
           alt={name}
-          className="md:w-2/12 rounded-t-lg md:rounded-l-lg md:rounded-t-none bg-black w-full p-4"
+          className={
+            "md:w-2/12 rounded-t-lg md:rounded-l-lg md:rounded-r-none w-full p-4" +
+            (isDarkIcon
+              ? " bg-white border-b-2 md:border-r-2 border-gray-300"
+              : " bg-black")
+          }
         />
         <div className="p-6">
           <h2 className="font-bold text-xl md:text-3xl mb-2">
@@ -53,13 +63,13 @@ function Project({
               Tech Stack: <span className="font-light">{techSack}</span>
             </h3>
           )}
-          <div className="mb-8">{resolveRichText(description.content)}</div>
+          <div className="mb-8">{resolveRichText(description)}</div>
           {isPrivateRepo ? (
             <button className={styles.privateButton} disabled>
               Private Project
             </button>
           ) : (
-            <div className="inline-flex flex-wrap justify-center gap-2">
+            <div className="inline-flex flex-wrap justify-center">
               {repoUrl && (
                 <a href={repoUrl} target="_blank" className={styles.button}>
                   Source Code
