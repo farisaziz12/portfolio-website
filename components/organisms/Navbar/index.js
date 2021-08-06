@@ -1,12 +1,12 @@
-import React, { useState, useEffect, animateScroll as scroll } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-scroll";
-import { Menu } from "../../molecules";
-import { navItems } from "./navItems";
+import { Menu, Toast } from "../../";
+import { resolveNavItems } from "../../../utils";
 import styles from "./styles";
 
-export function Navbar() {
+export function Navbar({ sections }) {
   const [showMenu, setShowMenu] = useState(false);
-  const [navbarItems, setNavbarItems] = useState(navItems);
+  const [navbarItems, setNavbarItems] = useState(resolveNavItems(sections));
   const toggleShowMenu = () => {
     setShowMenu((prevState) => !prevState);
   };
@@ -34,6 +34,7 @@ export function Navbar() {
             navBar.classList.remove(style);
           });
           downloadButton.classList.remove("border-2");
+
           setNavbarItems((prevState) => prevState.slice(1, prevState.length));
         }
       }
@@ -42,6 +43,7 @@ export function Navbar() {
 
   return (
     <>
+      <Toast />
       <nav id="top" className={styles.navbar}>
         <div className={styles.navbarTitleContainer}>
           <h1 className={styles.navbarTitle}>Faris Aziz</h1>
@@ -67,6 +69,7 @@ export function Navbar() {
           </div>
           <div>
             <a
+              target="_blank"
               id="downloadButton"
               href="/pdf/CV.pdf"
               download="faris_aziz_cv"
