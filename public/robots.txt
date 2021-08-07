@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.faziz-dev.com
+
+# Sitemaps
+Sitemap: https://www.faziz-dev.com/sitemap.xml
