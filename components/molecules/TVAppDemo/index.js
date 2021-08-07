@@ -28,6 +28,7 @@ export function TVAppDemo() {
           className="drop-shadow-2xl"
           src={samsungTV.src}
           onLoad={handleLoadedImage}
+          alt="tv-demo"
         />
       </div>
       {shouldShowVideo ? (

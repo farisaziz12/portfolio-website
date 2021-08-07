@@ -29,6 +29,7 @@ export function LaptopDemo({ computer: { name } }) {
           className="drop-shadow-2xl"
           src={macImg.src}
           onLoad={handleLoadedImage}
+          alt="laptop-demo"
         />
       </div>
       {shouldShowVideo ? (
