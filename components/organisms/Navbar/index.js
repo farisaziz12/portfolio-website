@@ -4,7 +4,7 @@ import { Menu, Toast } from "../../";
 import { resolveNavItems } from "../../../utils";
 import styles from "./styles";
 
-export function Navbar({ sections }) {
+export function Navbar({ sections, toast }) {
   const [showMenu, setShowMenu] = useState(false);
   const [navbarItems, setNavbarItems] = useState(resolveNavItems(sections));
   const toggleShowMenu = () => {
@@ -43,7 +43,7 @@ export function Navbar({ sections }) {
 
   return (
     <>
-      <Toast />
+      <Toast {...toast} />
       <nav id="top" className={styles.navbar}>
         <div className={styles.navbarTitleContainer}>
           <h1 className={styles.navbarTitle}>Faris Aziz</h1>
