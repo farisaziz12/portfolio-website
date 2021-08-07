@@ -35,7 +35,7 @@ export const resolveIcon = (icon) => {
       return generateIconProps(rubyIcon);
     case "nodejs":
     case "node":
-      return generateIconProps(nodeJsIcon);
+      return generateIconProps(nodeJsIcon, true);
     case "rxjs":
       return generateIconProps(reactiveXIcon);
     default:
