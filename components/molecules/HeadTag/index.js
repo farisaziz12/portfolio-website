@@ -20,7 +20,19 @@ export function HeadTag() {
 
   return (
     <Head>
-      <title>Faris Aziz - Full Stack Software Engineer</title>
+      <title>Faris Aziz - Developer Portfolio</title>
+      <meta
+        name="description"
+        content="Full Stack Software Engineer | Frontend | Backend | ReactJs | NodeJs | JavaScript"
+      />
+      <meta property="og:title" content="Faris Aziz - Developer Portfolio" />
+      <meta
+        property="og:description"
+        content="Full Stack Software Engineer | Frontend | Backend | ReactJs | NodeJs | JavaScript"
+      />
+      <meta property="og:url" content="https://www.faziz-dev.com/" />
+      <meta property="og:type" content="website" />
+      <meta name="robots" content="index, follow" />
       <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
       <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
       <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png" />
