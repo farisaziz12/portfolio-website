@@ -8,6 +8,7 @@ export default function Home({
   projects,
   sections = [],
   toast,
+  footerLinks = [],
 }) {
   return (
     <div className="h-full w-full text-white">
@@ -16,7 +17,7 @@ export default function Home({
       <Intro />
       <LearnMore contributions={contributions} repos={repos} />
       {sections[0] && sections.map((section) => resolveComponents(section, { projects }))}
-      <Footer />
+      <Footer footerLinks={footerLinks} />
     </div>
   );
 }
@@ -25,14 +26,33 @@ export async function getServerSideProps(context) {
   try {
     const contributions = await getGithubContributions();
     const repos = await getGithubRepos();
-    const { projects = [], sections = [], toast = [] } = await getContent();
+    const {
+      projects = [],
+      sections = [],
+      toast = [],
+      footerLinks = [],
+    } = await getContent();
 
     return {
-      props: { contributions, repos, projects, sections, toast: toast[0] || {} },
+      props: {
+        contributions,
+        repos,
+        projects,
+        sections,
+        footerLinks,
+        toast: toast[0] || {},
+      },
     };
   } catch (error) {
     return {
-      props: { contributions: 0, repos: [], projects: [], sections: [], toast: {} },
+      props: {
+        contributions: 0,
+        repos: [],
+        projects: [],
+        sections: [],
+        toast: {},
+        footerLinks: [],
+      },
     };
   }
 }
