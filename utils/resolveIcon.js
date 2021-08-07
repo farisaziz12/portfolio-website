@@ -6,6 +6,7 @@ import {
   rubyIcon,
   bashIcon,
   typescriptIcon,
+  reactiveXIcon,
 } from "../assets";
 
 export const resolveIcon = (icon) => {
@@ -35,6 +36,8 @@ export const resolveIcon = (icon) => {
     case "nodejs":
     case "node":
       return generateIconProps(nodeJsIcon);
+    case "rxjs":
+      return generateIconProps(reactiveXIcon);
     default:
       return generateIconProps(javaScriptIcon);
   }
