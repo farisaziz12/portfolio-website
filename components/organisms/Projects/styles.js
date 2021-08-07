@@ -15,7 +15,8 @@ const demoContainer = "p-4 lg:pl-20 lg:pr-20 lg:w-full lg:h-min";
 
 const demoHeader = "text-center p-4 lg:block hidden";
 
-const stackIcon = "md:w-2/12 rounded-t-lg md:rounded-l-lg md:rounded-r-none w-full p-4";
+const stackIcon =
+  "lg:max-w-xs md:w-2/12 rounded-t-lg md:rounded-l-lg md:rounded-r-none w-full p-4";
 
 const description =
   "mb-8 rich-text-block text-sm md:text-base lg:text-lg overflow-hidden break-words";
