@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import ReactGA from "react-ga";
+import ReactGA from "react-ga4";
 import { Navbar, Intro, LearnMore, HeadTag, Footer } from "../components";
 import { getGithubContributions, getGithubRepos, getContent } from "../api";
 import { resolveComponents } from "../utils";
