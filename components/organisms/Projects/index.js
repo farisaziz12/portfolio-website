@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { resolveComponents, resolveIcon, resolveRichText } from "../../../utils";
+import {
+  registerEvent,
+  resolveComponents,
+  resolveIcon,
+  resolveRichText,
+} from "../../../utils";
 import styles from "./styles";
 
 export function Projects({ header, subheader, projects }) {
@@ -78,12 +83,22 @@ function Project(props) {
           ) : (
             <div className={styles.buttonsContainer}>
               {repoUrl && (
-                <a href={repoUrl} target="_blank" className={styles.button}>
+                <a
+                  onClick={() => registerEvent(`${name} Source Code Viewed`)}
+                  href={repoUrl}
+                  target="_blank"
+                  className={styles.button}
+                >
                   Source Code
                 </a>
               )}
               {livePreview && (
-                <a href={livePreview} target="_blank" className={styles.button}>
+                <a
+                  onClick={() => registerEvent(`${name} Live Preview Viewed`)}
+                  href={livePreview}
+                  target="_blank"
+                  className={styles.button}
+                >
                   Live Preview
                 </a>
               )}

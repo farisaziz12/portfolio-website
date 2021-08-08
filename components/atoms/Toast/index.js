@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { registerEvent } from "../../../utils";
 import styles from "./styles";
 
 export function Toast({
@@ -19,16 +20,22 @@ export function Toast({
     });
   }, []);
 
+  const handleCloseForm = () => {
+    setShouldShowForm(false);
+    registerEvent("Form Closed");
+  };
+
   const renderButton = () => {
     const buttonText = text || "Hire Me!";
 
+    const handleShowForm = () => {
+      registerEvent("Toast Clicked");
+      setShouldShowForm(true);
+    };
+
     if (shouldUseEmbeddedForm) {
       return (
-        <button
-          onClick={() => setShouldShowForm(true)}
-          id="toast"
-          className={styles.toastButton}
-        >
+        <button onClick={handleShowForm} id="toast" className={styles.toastButton}>
           {buttonText}
         </button>
       );
@@ -39,6 +46,7 @@ export function Toast({
             anchorTagLink || "mailto:farisaziz12@gmail.com?subject=Faris, you're hired!"
           }
           id="toast"
+          onClick={() => registerEvent("Toast Clicked")}
           className={styles.toastButton}
         >
           {buttonText}
@@ -51,10 +59,7 @@ export function Toast({
     <>
       <div className={styles.toastContainer}>{shouldShowToast && renderButton()}</div>
       {shouldShowForm && (
-        <Form
-          closeForm={() => setShouldShowForm(false)}
-          embeddedFormLink={embeddedFormLink}
-        />
+        <Form closeForm={handleCloseForm} embeddedFormLink={embeddedFormLink} />
       )}
     </>
   );

@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { facePalmPic } from "../assets";
 import { HeadTag } from "../components";
+import { registerEvent } from "../utils";
 
 export default function Custom404() {
   const [counter, setCounter] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
+    registerEvent("Landed on Error 404 Page");
     const interval = setInterval(() => {
       setCounter((prevState) => {
         if (prevState === 4) {
           router.push("/");
+          registerEvent("Redirected Home from Error 404 Page");
           return 0;
         } else {
           return prevState + 1;

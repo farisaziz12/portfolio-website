@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-scroll";
 import { profilePic } from "../../../assets";
+import { registerEvent } from "../../../utils";
 import styles from "./styles";
 
 export function Intro() {
@@ -15,7 +16,15 @@ export function Intro() {
         Hi, my name is <strong>Faris!</strong>
       </h1>
       <h2 className={styles.subtitle}>I am a Full Stack Software Engineer</h2>
-      <Link to="learn-more" offset={-100} spy hashSpy smooth className={styles.button}>
+      <Link
+        onClick={() => registerEvent("Learn More Button Clicked")}
+        to="learn-more"
+        offset={-100}
+        spy
+        hashSpy
+        smooth
+        className={styles.button}
+      >
         Learn More!
       </Link>
     </div>

@@ -1,3 +1,5 @@
+import React, { useEffect } from "react";
+import ReactGA from "react-ga";
 import { Navbar, Intro, LearnMore, HeadTag, Footer } from "../components";
 import { getGithubContributions, getGithubRepos, getContent } from "../api";
 import { resolveComponents } from "../utils";
@@ -10,6 +12,11 @@ export default function Home({
   toast,
   footerLinks = [],
 }) {
+  useEffect(() => {
+    ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
+    ReactGA.pageview(window.location.pathname + window.location.hash);
+  }, []);
+
   return (
     <div className="h-full w-full text-white">
       <HeadTag />

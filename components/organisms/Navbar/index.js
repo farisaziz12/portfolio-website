@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-scroll";
 import { Menu, Toast } from "../../";
-import { resolveNavItems } from "../../../utils";
+import { resolveNavItems, registerEvent } from "../../../utils";
 import styles from "./styles";
 
 export function Navbar({ sections, toast }) {
@@ -62,6 +62,7 @@ export function Navbar({ sections, toast }) {
                 hashSpy
                 smooth
                 className={styles.navbarItem}
+                onClick={() => registerEvent(`Navigated to ${name}`)}
               >
                 {name}
               </Link>
@@ -69,6 +70,7 @@ export function Navbar({ sections, toast }) {
           </div>
           <div>
             <a
+              onClick={() => registerEvent("CV Download")}
               target="_blank"
               id="downloadButton"
               href="/pdf/CV.pdf"
