@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { facePalmPic } from "../assets";
 import { HeadTag } from "../components";
-import { registerEvent } from "../utils";
+import { registerEvent, setupDarkMode } from "../utils";
 
-export default function Custom404() {
+export default function Custom404({ isDarkMode }) {
   const [counter, setCounter] = useState(0);
   const router = useRouter();
 
@@ -26,6 +26,10 @@ export default function Custom404() {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    setupDarkMode(isDarkMode);
+  }, [isDarkMode]);
 
   return (
     <div className="h-screen w-screen inline-flex flex-wrap justify-center items-center">
