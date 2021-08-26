@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { DarkModeProvider, DarkModeContext } from "../contexts";
+import { initSessionTracker } from "../utils";
 import "tailwindcss/tailwind.css";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
+    initSessionTracker();
     const logStyles = [
       "color: #fff",
       "background-color: #444",
