@@ -8,6 +8,7 @@ A cool little Progressive Web Application to showcase my developer skills
 - Styled with Tailwind CSS
 - Responsive/Mobile Friendly
 - Content controlled from the Contenful CMS
+- Dark Mode
 
 
 # Demo
