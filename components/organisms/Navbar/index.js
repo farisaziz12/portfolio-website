@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-scroll";
+import { Toggle } from "../../atoms";
 import { Menu, Toast } from "../../";
+import { DarkModeContext } from "../../../contexts";
 import { resolveNavItems, registerEvent } from "../../../utils";
 import styles from "./styles";
 
 export function Navbar({ sections, toast }) {
+  const [isDarkMode, toggleDarkMode] = useContext(DarkModeContext);
+
   const [showMenu, setShowMenu] = useState(false);
   const [navbarItems, setNavbarItems] = useState(resolveNavItems(sections));
   const toggleShowMenu = () => {
@@ -48,10 +52,11 @@ export function Navbar({ sections, toast }) {
         <div className={styles.navbarTitleContainer}>
           <h1 className={styles.navbarTitle}>Faris Aziz</h1>
         </div>
+
         <Menu toggle={toggleShowMenu} />
         <div
           id="navbar"
-          className={styles.navbarItemsContainer + (showMenu ? "" : " hidden")}
+          className={styles.navbarItemsContainer + (showMenu ? "mb-0" : " hidden")}
         >
           <div className={styles.navbarItems}>
             {navbarItems.map(({ name, link }, index) => (
@@ -68,6 +73,7 @@ export function Navbar({ sections, toast }) {
               </Link>
             ))}
           </div>
+
           <div>
             <a
               onClick={() => registerEvent("CV Download")}
@@ -80,6 +86,12 @@ export function Navbar({ sections, toast }) {
               Download CV
             </a>
           </div>
+          <Toggle
+            className="mt-4 md:mt-0"
+            isChecked={isDarkMode}
+            toggleChecked={toggleDarkMode}
+            name="Dark Mode"
+          />
         </div>
       </nav>
     </>
