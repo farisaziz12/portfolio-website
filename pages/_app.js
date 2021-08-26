@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { DarkModeProvider, DarkModeContext } from "../contexts";
-import { initSessionTracker } from "../utils";
+import { initSessionTracker, registerEvent } from "../utils";
 import "tailwindcss/tailwind.css";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
     initSessionTracker();
+    const referrer = document.referrer;
+    if (referrer) registerEvent("referred from " + referrer);
     const logStyles = [
       "color: #fff",
       "background-color: #444",

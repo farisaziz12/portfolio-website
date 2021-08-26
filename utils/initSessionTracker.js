@@ -28,6 +28,4 @@ export const initSessionTracker = () => {
     };
     r.sessionID = function () {};
   })(0, 8628303428743813, "//static.asayer.io/tracker.js", 1, 28);
-
-  window.asayer.metadata("referrer", document.referrer);
 };
