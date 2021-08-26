@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import ReactGA from "react-ga4";
 import { Navbar, Intro, LearnMore, HeadTag, Footer } from "../components";
 import { getGithubContributions, getGithubRepos, getContent } from "../api";
-import { resolveComponents } from "../utils";
+import { resolveComponents, setupDarkMode } from "../utils";
 
 export default function Home({
   contributions,
@@ -11,14 +11,19 @@ export default function Home({
   sections = [],
   toast,
   footerLinks = [],
+  isDarkMode,
 }) {
   useEffect(() => {
     ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
     ReactGA.pageview(window.location.pathname + window.location.hash);
   }, []);
 
+  useEffect(() => {
+    setupDarkMode(isDarkMode);
+  }, [isDarkMode]);
+
   return (
-    <div className="h-full w-full text-white">
+    <div className={"h-full w-full text-white" + (isDarkMode ? " dark" : "")}>
       <HeadTag />
       <Navbar sections={sections} toast={toast} />
       <Intro />

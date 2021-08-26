@@ -10,9 +10,17 @@
     url("../assets/fonts/Gilroy/Gilroy-ExtraBold.otf") format("opentype");
 }
 
-body {
-  width: 100%;
+.body-light {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+}
+
+.body-dark {
+  background: linear-gradient(-45deg, #434343, #000000, #2c3e50, #000000);
+}
+
+.body-light,
+.body-dark {
+  width: 100%;
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
   font-family: "Gilroy";
