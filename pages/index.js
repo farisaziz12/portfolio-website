@@ -22,10 +22,11 @@ export default function Home({
     setupDarkMode(isDarkMode);
   }, [isDarkMode]);
 
+  const navSections = [...new Set(sections.map((section) => section.component))];
   return (
     <div className={"h-full w-full text-white" + (isDarkMode ? " dark" : "")}>
       <HeadTag />
-      <Navbar sections={sections} toast={toast} />
+      <Navbar sections={navSections} toast={toast} />
       <Intro />
       <LearnMore contributions={contributions} repos={repos} />
       {sections[0] && sections.map((section) => resolveComponents(section, { projects }))}
