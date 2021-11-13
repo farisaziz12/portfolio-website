@@ -1,8 +1,8 @@
 export const resolveNavItems = (sections) => {
-  return sections.map(({ component }) => {
+  return sections.map((section) => {
     return {
-      name: component.replace(/\w/, (firstLetter) => firstLetter.toUpperCase()),
-      link: component,
+      name: section.replace(/\w/, (firstLetter) => firstLetter.toUpperCase()),
+      link: section,
     };
   });
 };
