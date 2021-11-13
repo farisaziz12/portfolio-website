@@ -34,7 +34,7 @@ export const resolveComponents = (data, propMappings = {}) => {
       return <Services {...mapProps()} key={key} />;
     case "tv-app":
     case "tv":
-      return <TVAppDemo key={key} />;
+      return <TVAppDemo {...mapProps()} key={key} />;
     case "mac":
     case "laptop":
     case "computer":

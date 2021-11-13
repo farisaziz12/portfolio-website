@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { samsungTV } from "../../../assets";
+import { resolveVideoSource } from "../../../utils";
 
-export function TVAppDemo() {
+export function TVAppDemo({ tv: { name } }) {
   const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export function TVAppDemo() {
           playsInline
           preload="none"
         >
-          <source src="/video/tv-app.mp4" type="video/mp4"></source>
+          <source src={resolveVideoSource(name)} type="video/mp4"></source>
         </video>
       ) : (
         <div className="loader"></div>
