@@ -85,12 +85,15 @@ export const getContent = async () => {
 
     items.forEach((item) => {
       const { id: contentType } = item.sys.contentType.sys;
-      const { fields } = item;
+      const {
+        fields,
+        sys: { id },
+      } = item;
 
       if (data[contentType]) {
-        data[contentType].push(fields);
+        data[contentType].push({ id, ...fields });
       } else {
-        data[contentType] = [fields];
+        data[contentType] = [{ id, ...fields }];
       }
     });
 
