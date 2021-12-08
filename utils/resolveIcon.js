@@ -60,7 +60,7 @@ export const resolveIcon = (icon) => {
       };
     case "raycast":
       return {
-        src: "https://console.dev/img/interviews/raycast-petr-nikolaev-logo.png",
+        src: "https://cdn.dribbble.com/users/1139587/screenshots/14688359/dec_02_raycast_logo_animation-2.png?compress=1&resize=300x400",
         isDarkIcon: false,
       };
     case "skiddle":
