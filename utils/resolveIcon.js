@@ -40,7 +40,7 @@ export const resolveIcon = (icon) => {
       return generateIconProps(reactiveXIcon);
     case "discovery-plus":
       return {
-        src: "https://cdn.freelogovectors.net/wp-content/uploads/2020/12/discovery-plus-logo.png",
+        src: "https://press.discoveryplus.com/wp-content/uploads/2021/01/discovery-plus-logo-vertical-white-wordmark.jpg",
         isDarkIcon: false,
       };
     case "alexa":
