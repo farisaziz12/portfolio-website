@@ -68,6 +68,11 @@ export const resolveIcon = (icon) => {
         src: "https://s3-eu-west-1.amazonaws.com/skiddlecdn-general/assets/logo/png/skiddle-logo-white-stacked.png",
         isDarkIcon: false,
       };
+    case "fiit":
+      return {
+        src: "https://play-lh.googleusercontent.com/ySq9SahjHuJViHh6PRTRw5Ka0OS5W91qfuJvj2ZRj5sMxiFxSRdOcl5v9oXkJk_g0jw",
+        isDarkIcon: true,
+      }
     default:
       return generateIconProps(javaScriptIcon);
   }
