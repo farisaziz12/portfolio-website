@@ -78,6 +78,11 @@ export const resolveIcon = (icon) => {
         src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/1024px-GraphQL_Logo.svg.png",
         isDarkIcon: false,
       }
+    case "docker":
+      return {
+        src: "https://www.docker.com/wp-content/uploads/2022/03/vertical-logo-monochromatic.png",
+        isDarkIcon: false,
+      }
     default:
       return generateIconProps(javaScriptIcon);
   }

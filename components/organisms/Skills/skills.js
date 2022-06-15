@@ -23,6 +23,8 @@ import {
   gitIcon,
   accessibilityIcon,
   visualStudioCodeIcon,
+  dockerIcon,
+  graphQLIcon,
 } from "../../../assets";
 
 export const skills = [
@@ -47,9 +49,9 @@ export const skills = [
     link: "https://reactjs.org",
   },
   {
-    name: "React Router",
-    icon: reactRouterIcon,
-    link: "https://reactrouter.com",
+    name: "GraphQL",
+    icon: graphQLIcon,
+    link: "https://graphql.org/",
   },
   {
     name: "NextJs",
@@ -107,9 +109,9 @@ export const skills = [
     link: "https://www.json.org/json-en.html",
   },
   {
-    name: "Ruby On Rails",
-    icon: rubyIcon,
-    link: "https://www.ruby-lang.org/en/",
+    name: "Docker",
+    icon: dockerIcon,
+    link: "https://www.docker.com/",
   },
   {
     name: "PostgreSQL",

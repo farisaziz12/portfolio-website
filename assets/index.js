@@ -27,6 +27,8 @@ import visualStudioCodeIcon from "./icons/visual-studio-code.svg";
 import githubIcon from "./icons/github.svg";
 import samsungTV from "./samsung-tv.png";
 import macImg from "./mac.png";
+import dockerIcon from "./icons/docker.svg";
+import graphQLIcon from "./icons/graphql.svg";
 
 module.exports = {
   profilePic,
@@ -58,4 +60,6 @@ module.exports = {
   samsungTV,
   facePalmPic,
   macImg,
+  dockerIcon,
+  graphQLIcon,
 };
