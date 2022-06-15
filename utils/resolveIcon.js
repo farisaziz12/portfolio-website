@@ -73,6 +73,11 @@ export const resolveIcon = (icon) => {
         src: "https://play-lh.googleusercontent.com/ySq9SahjHuJViHh6PRTRw5Ka0OS5W91qfuJvj2ZRj5sMxiFxSRdOcl5v9oXkJk_g0jw",
         isDarkIcon: true,
       }
+    case "graphql":
+      return {
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/1024px-GraphQL_Logo.svg.png",
+        isDarkIcon: false,
+      }
     default:
       return generateIconProps(javaScriptIcon);
   }
