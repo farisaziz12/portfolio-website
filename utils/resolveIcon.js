@@ -45,7 +45,7 @@ export const resolveIcon = (icon) => {
       };
     case "alexa":
       return {
-        src: "https://d3ogm7ac91k97u.cloudfront.net/en-US/alexa/branding/alexa-guidelines/brand-guidelines/the-alexa-logo.thumb.800.480.png",
+        src: "https://smarthomeblog.de/wp-content/uploads/2018/10/Alexa-Logo-e1538735664768.png",
         isDarkIcon: false,
       };
     case "eurosport":
