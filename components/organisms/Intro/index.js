@@ -16,6 +16,13 @@ export function Intro() {
         Hi, my name is <strong>Faris!</strong>
       </h1>
       <h2 className={styles.subtitle}>I am a Full Stack Software Engineer</h2>
+      <a target="_blank" className="mb-4" href="https://mentorcruise.com/mentor/farisaziz/">
+        <img
+          src="https://cdn.mentorcruise.com/img/banner/navy-booking-badge.svg"
+          width="240"
+          alt="MentorCruise"
+        />
+      </a>
       <Link
         onClick={() => registerEvent("Learn More Button Clicked")}
         to="learn-more"
@@ -25,7 +32,7 @@ export function Intro() {
         smooth
         className={styles.button}
       >
-        Learn More!
+        Learn More
       </Link>
     </div>
   );
