@@ -16,7 +16,11 @@ export function Intro() {
         Hi, my name is <strong>Faris!</strong>
       </h1>
       <h2 className={styles.subtitle}>I am a Full Stack Software Engineer</h2>
-      <a target="_blank" className="mb-4" href="https://mentorcruise.com/mentor/farisaziz/">
+      <a
+        target="_blank"
+        className="mb-4"
+        href="https://mentorcruise.com/mentor/farisaziz/"
+      >
         <img
           src="https://cdn.mentorcruise.com/img/banner/navy-booking-badge.svg"
           width="240"

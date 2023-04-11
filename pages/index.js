@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
 import { Navbar, Intro, LearnMore, HeadTag, Footer } from "../components";
 import { getGithubContributions, getGithubRepos, getContent } from "../api";
@@ -13,6 +13,8 @@ export default function Home({
   footerLinks = [],
   isDarkMode,
 }) {
+  const [mediumPosts, setMediumPosts] = useState([]);
+
   useEffect(() => {
     ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
     ReactGA.pageview(window.location.pathname + window.location.hash);
@@ -22,13 +24,19 @@ export default function Home({
     setupDarkMode(isDarkMode);
   }, [isDarkMode]);
 
-  const navSections = [...new Set(sections.map((section) => section.component))];
+  useEffect(() => {
+    fetch("/api/medium-feed").then(resp => resp.json()).then(({items}) => {
+      setMediumPosts(items)
+    })
+  }, [])
+
+  const navSections = ["posts", ...new Set(sections.map((section) => section.component))];
   return (
     <div className={"h-full w-full text-white" + (isDarkMode ? " dark" : "")}>
       <HeadTag />
       <Navbar sections={navSections} toast={toast} />
       <Intro />
-      <LearnMore contributions={contributions} repos={repos} />
+      <LearnMore contributions={contributions} repos={repos} mediumPosts={mediumPosts}  />
       {sections[0] && sections.map((section) => resolveComponents(section, { projects }))}
       <Footer footerLinks={footerLinks} />
     </div>

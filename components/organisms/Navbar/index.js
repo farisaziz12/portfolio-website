@@ -19,6 +19,7 @@ export function Navbar({ sections, toast }) {
     const navBar = document.getElementById("navbar");
     const downloadButton = document.getElementById("downloadButton");
     const stylesArr = styles.navBackground.split(" ");
+
     window.addEventListener("scroll", () => {
       if (document.body.scrollTop >= 200 || document.documentElement.scrollTop >= 200) {
         if (!Array.from(navBar.classList).includes(stylesArr[0])) {
