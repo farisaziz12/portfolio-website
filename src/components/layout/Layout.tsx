@@ -21,24 +21,39 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     exit: { opacity: 0 }
   };
 
+  // Fix for SSR - always render children but hide content until mounted
+  // This ensures SEO tags are included in the HTML
+  const content = (
+    <AnimatePresence mode="wait">
+      <motion.main 
+        className="flex-grow pt-20"
+        variants={pageVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{ duration: 0.4 }}
+      >
+        {children}
+      </motion.main>
+    </AnimatePresence>
+  );
+
+  // If not mounted yet, render a simplified version without theme context
+  if (!mounted) {
+    return (
+      <div className="flex flex-col min-h-screen bg-white text-gray-900">
+        <Header />
+        {content}
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <ThemeProvider>
       <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
         <Header />
-        
-        <AnimatePresence mode="wait">
-          <motion.main 
-            className="flex-grow pt-20"
-            variants={pageVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.4 }}
-          >
-            {mounted && children}
-          </motion.main>
-        </AnimatePresence>
-        
+        {content}
         <Footer />
         
         {/* Cursor follower effect */}

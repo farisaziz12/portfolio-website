@@ -41,8 +41,8 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [theme, mounted]);
 
-  if (!mounted) return null;
-
+  // Return provider regardless of mounted state to ensure SSR works
+  // Only the theme-switching functionality depends on mounted state
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}

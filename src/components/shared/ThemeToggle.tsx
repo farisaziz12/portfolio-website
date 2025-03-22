@@ -1,11 +1,21 @@
 // components/shared/ThemeToggle.js
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeProvider';
 
 const ThemeToggle = () => {
   const context = useContext(ThemeContext);
-  if (!context) throw new Error('ThemeToggle must be used within a ThemeProvider');
+  const [mounted, setMounted] = useState(false);
+  
+  // Handle SSR - only run theme toggle on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // If context is null or not mounted yet, render a placeholder
+  if (!context || !mounted) {
+    return <div className="w-9 h-9" />; // Empty placeholder with the same size
+  }
   
   const { theme, setTheme } = context;
   
