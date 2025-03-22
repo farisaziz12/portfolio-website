@@ -90,7 +90,7 @@ const Hero = ({ scrollY }: { scrollY: number }) => {
                 className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg font-medium transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-              >
+              >m
                 Upcoming Talks
               </motion.a>
             </Link>
@@ -125,18 +125,18 @@ const Hero = ({ scrollY }: { scrollY: number }) => {
       </div>
       
       <motion.div 
-        className="absolute bottom-10 left-0 right-0 flex justify-center items-center text-gray-400"
+        className="absolute bottom-4 sm:bottom-10 left-0 right-0 flex justify-center items-center text-gray-400"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
       >
         <div className="flex flex-col items-center">
-          <p className="mb-2 text-sm">Scroll to explore</p>
-          <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center pt-2">
+          <p className="mb-1 sm:mb-2 text-xs sm:text-sm">Scroll to explore</p>
+          <div className="w-5 sm:w-6 h-8 sm:h-10 border-2 border-gray-400 rounded-full flex justify-center pt-2">
             <motion.div 
-              className="w-1.5 h-1.5 bg-gray-400 rounded-full"
+              className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-gray-400 rounded-full"
               animate={{ 
-                y: [0, 12, 0],
+                y: [0, 8, 0],
               }}
               transition={{
                 repeat: Infinity,

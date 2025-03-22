@@ -140,8 +140,8 @@ const AboutPage = () => {
             <div className="container mx-auto px-6 py-16">
                 {/* Tab Navigation */}
                 <div className="mb-8 sm:mb-12">
-                    {/* Grid on mobile, horizontal on desktop */}
-                    <div className="w-full px-4 sm:px-0">
+                    {/* Grid on mobile, centered horizontal on desktop */}
+                    <div className="w-full px-4 sm:px-0 flex justify-center">
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-md grid grid-cols-2 sm:inline-flex gap-1">
                             {[
                                 { id: 'journey', label: 'My Journey' },
@@ -363,17 +363,6 @@ const AboutPage = () => {
                     </motion.div>
                 </div>
             </div>
-
-            {/* Add this CSS to your global styles */}
-            <style jsx global>{`
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
         </Layout>
     );
 };
