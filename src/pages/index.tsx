@@ -1,115 +1,153 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+// pages/index.js
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { motion } from 'framer-motion';
+import Layout from '../components/layout/Layout';
+import Hero from '../components/home/Hero';
+import FeaturedProjects from '../components/home/FeaturedProjects';
+import UpcomingTalks from '../components/home/UpcomingTalks';
+import CompaniesWorkedWith from '../components/home/CompaniesWorkedWith';
+import AnimatedSection from '../components/shared/AnimatedSection';
+import { getSpeakingEvents, SpeakingEvent } from '../data/speaking-events';
+import { getProjects, Project } from '../data/projects';
+import { Company, getCompanies } from '../data/companies';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
 
-export default function Home() {
+interface HomeProps {
+  upcomingEvents: SpeakingEvent[];
+  featuredProjects: Project[];
+  companies: Company[];
+}
+
+export default function Home({ upcomingEvents, featuredProjects, companies }: HomeProps) {
+  // Track scroll position for animations
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <Layout>
+      <Head>
+        <title>Faris Aziz | Frontend Engineer & Conference Speaker</title>
+        <meta
+          name="description"
+          content="Engineering Manager & Frontend SME | Conference Speaker | Frontend Expert in NextJS, TS/JS & NodeJS | Pioneering a Tech Culture of Innovation"
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      </Head>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <Hero scrollY={scrollY} />
+      <AnimatedSection className="py-16 md:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Tech Expertise</h2>
+          <p className="text-center text-lg max-w-2xl mx-auto mb-12 text-gray-600 dark:text-gray-300">
+            I build scalable, maintainable frontend systems with a focus on performance and team impact. Specialized in Next.js, TypeScript, and JavaScript, with deep experience in engineering leadership at fast-moving startups.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {[
+            {
+              icon: "🚀",
+              title: "Frontend Engineering",
+              description: "Built resilient, accessible UIs at scale using React, Next.js, and modern tooling."
+            },
+            {
+              icon: "🧭",
+              title: "Engineering Leadership",
+              description: "Led teams of 10+ engineers, designed career ladders, and scaled orgs from seed to 60+ developers."
+            },
+            {
+              icon: "⚙️",
+              title: "System Design",
+              description: "Designed and maintained scalable web architectures across product lifecycle stages."
+            }
+          ].map((skill, index) => (
+            <motion.div
+              key={index}
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <div className="text-4xl mb-4">{skill.icon}</div>
+              <h3 className="text-xl font-semibold mb-2">{skill.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{skill.description}</p>
+            </motion.div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </AnimatedSection>
+
+      <AnimatedSection className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+        <CompaniesWorkedWith companies={companies} />
+      </AnimatedSection>
+
+      <AnimatedSection className="py-16 md:py-24">
+        <FeaturedProjects projects={featuredProjects} />
+      </AnimatedSection>
+
+      <AnimatedSection className="py-16 md:py-24 bg-blue-50 dark:bg-blue-900/20">
+        <UpcomingTalks events={upcomingEvents} />
+      </AnimatedSection>
+
+      <AnimatedSection className="py-16 md:py-24">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="text-center max-w-3xl mx-auto"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Let&apos;s Connect! 🚀</h2>
+          <p className="text-lg mb-8 text-gray-600 dark:text-gray-300">
+            Looking for a speaker for your next event, consultant for your project, or just want to chat about web development?
+          </p>
+          <motion.a
+            href="/contact"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Get In Touch
+          </motion.a>
+        </motion.div>
+      </AnimatedSection>
+    </Layout>
   );
+}
+
+export async function getStaticProps() {
+  // Get only upcoming events (filter by date)
+  const allEvents = getSpeakingEvents();
+  const upcomingEvents = allEvents.filter(
+    event => new Date(event.date) >= new Date()
+  ).slice(0, 3); // Show only 3 upcoming events
+
+  // Get featured projects
+  const featuredProjects = getProjects().filter(project => project.featured).slice(0, 4);
+
+  // Get companies worked with
+  const companies = getCompanies();
+
+  return {
+    props: {
+      upcomingEvents,
+      featuredProjects,
+      companies,
+    },
+    // Revalidate every 24 hours to keep upcoming events fresh
+    revalidate: 86400,
+  };
 }
