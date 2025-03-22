@@ -43,7 +43,7 @@ export default function Home({ upcomingEvents, featuredProjects, companies }: Ho
       </Head>
 
       <Hero scrollY={scrollY} />
-      <AnimatedSection className="py-16 md:py-24">
+      <AnimatedSection className="py-16 px-4 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

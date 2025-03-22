@@ -94,15 +94,6 @@ const Hero = ({ scrollY }: { scrollY: number }) => {
                 Upcoming Talks
               </motion.a>
             </Link>
-            <Link href="/experience" legacyBehavior>
-              <motion.a 
-                className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600/10 px-8 rounded-lg font-medium transition-colors flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                View My Work
-              </motion.a>
-            </Link>
           </motion.div>
         </div>
         

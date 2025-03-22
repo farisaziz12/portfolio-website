@@ -99,7 +99,7 @@ const projects = [
       "/images/projects/zurichjs.png"
     ],
     liveUrl: "https://zurichjs.com?utm_source=personal-site&utm_medium=contact-link&utm_campaign=js-community-2025",
-    githubUrl: "https://github.com/zurichjs/website",
+    githubUrl: "https://github.com/zurich-js/zurichjs-website",
     featured: true,
     date: "2024-10-01",
     role: "Founder & Developer",

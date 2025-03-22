@@ -139,25 +139,29 @@ const AboutPage = () => {
             {/* Main Content with Tabs */}
             <div className="container mx-auto px-6 py-16">
                 {/* Tab Navigation */}
-                <div className="flex justify-center mb-12 overflow-x-auto pb-2">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-md inline-flex">
-                        {[
-                            { id: 'journey', label: 'My Journey' },
-                            { id: 'values', label: 'Core Values' },
-                            { id: 'skills', label: 'Skillset' },
-                            { id: 'fun', label: 'Fun Facts' }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-5 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
-                                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                <div className="mb-8 sm:mb-12">
+                    {/* Grid on mobile, horizontal on desktop */}
+                    <div className="w-full px-4 sm:px-0">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-md grid grid-cols-2 sm:inline-flex gap-1">
+                            {[
+                                { id: 'journey', label: 'My Journey' },
+                                { id: 'values', label: 'Core Values' },
+                                { id: 'skills', label: 'Skillset' },
+                                { id: 'fun', label: 'Fun Facts' }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`px-3 sm:px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                                        activeTab === tab.id
+                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -359,6 +363,17 @@ const AboutPage = () => {
                     </motion.div>
                 </div>
             </div>
+
+            {/* Add this CSS to your global styles */}
+            <style jsx global>{`
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </Layout>
     );
 };
