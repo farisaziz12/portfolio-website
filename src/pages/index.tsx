@@ -1,6 +1,5 @@
 // pages/index.js
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
 import Hero from '../components/home/Hero';
@@ -8,6 +7,7 @@ import FeaturedProjects from '../components/home/FeaturedProjects';
 import UpcomingTalks from '../components/home/UpcomingTalks';
 import CompaniesWorkedWith from '../components/home/CompaniesWorkedWith';
 import AnimatedSection from '../components/shared/AnimatedSection';
+import SEO from '../components/shared/SEO';
 import { getSpeakingEvents, SpeakingEvent } from '../data/speaking-events';
 import { getProjects, Project } from '../data/projects';
 import { Company, getCompanies } from '../data/companies';
@@ -34,14 +34,12 @@ export default function Home({ upcomingEvents, featuredProjects, companies }: Ho
 
   return (
     <Layout>
-      <Head>
-        <title>Faris Aziz | Frontend Engineer & Conference Speaker</title>
-        <meta
-          name="description"
-          content="Engineering Manager & Frontend SME | Conference Speaker | Frontend Expert in NextJS, TS/JS & NodeJS | Pioneering a Tech Culture of Innovation"
-        />
-        <meta property="og:image" content="/images/profile.jpg" />
-      </Head>
+      <SEO 
+        title="Faris Aziz | Frontend Engineer & Conference Speaker"
+        description="Engineering Manager & Frontend SME specializing in Next.js, React, and TypeScript. Conference speaker and workshop facilitator with expertise in building scalable frontend systems."
+        image="/images/profile.jpg"
+        keywords="frontend engineer, conference speaker, next.js expert, react developer, typescript, javascript, engineering manager, zurichjs"
+      />
 
       <Hero scrollY={scrollY} />
       <AnimatedSection className="py-16 px-4 md:py-24">

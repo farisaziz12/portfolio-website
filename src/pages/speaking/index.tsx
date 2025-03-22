@@ -1,12 +1,12 @@
 // pages/speaking/index.js
-import { useState } from 'react';
-import Head from 'next/head';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Layout from '../../components/layout/Layout';
 import SpeakingHero from '../../components/speaking/SpeakingHero';
 import TalkCard from '../../components/speaking/TalkCard';
 import AnimatedSection from '../../components/shared/AnimatedSection';
+import SEO from '../../components/shared/SEO';
 import { getSpeakingEvents } from '../../data/speaking-events';
 import type { SpeakingEvent } from '../../data/speaking-events';
 import countryFlagEmoji from "country-flag-emoji";
@@ -24,15 +24,51 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
     filter === 'all' || event.type.toLowerCase() === filter
   );
   
+  // Generate JSON-LD structured data for events
+  const structuredData = useMemo(() => {
+    const eventData = upcomingEvents.map(event => ({
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      'name': `${event.title} at ${event.conference}`,
+      'startDate': event.date,
+      'location': {
+        '@type': 'Place',
+        'name': event.conference,
+        'address': event.location
+      },
+      'description': event.description,
+      'performer': {
+        '@type': 'Person',
+        'name': 'Faris Aziz'
+      },
+      'organizer': {
+        '@type': 'Organization',
+        'name': event.conference
+      },
+      'eventStatus': 'https://schema.org/EventScheduled',
+      'eventAttendanceMode': 'https://schema.org/OfflineEventAttendanceMode',
+      'image': '/images/speaking/1.jpeg',
+      'url': event.eventUrl || 'https://farisaziz.com/speaking'
+    }));
+    
+    return JSON.stringify(eventData);
+  }, [upcomingEvents]);
+  
   return (
     <Layout>
-      <Head>
-        <title>Speaking & Events | Faris Aziz</title>
-        <meta 
-          name="description" 
-          content="Conference talks, workshops, and meetups by Faris Aziz - Frontend Engineer and Conference Speaker" 
-        />
-      </Head>
+      <SEO
+        title="Speaking Events & Workshops | Faris Aziz"
+        description="Conference talks, workshops, and tech meetups by Faris Aziz. Join me at upcoming events or explore my past presentations on frontend development, engineering leadership, and web technologies."
+        image="/images/speaking/1.jpeg"
+        article={true}
+        keywords="tech speaker, conference talks, workshops, frontend development, tech meetups, engineering leadership, JavaScript conferences, NextJS talks, React workshops"
+      />
+      
+      {/* JSON-LD structured data */}
+      <script 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
+      />
       
       <SpeakingHero />
       

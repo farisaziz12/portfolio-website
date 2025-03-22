@@ -1,10 +1,10 @@
 // pages/about.js
 import { useState } from 'react';
-import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
+import SEO from '../components/shared/SEO';
 import Timeline from '../components/about/Timeline';
 import ValuesCard from '../components/about/ValuesCard';
 import Skillset from '../components/about/Skillset';
@@ -59,13 +59,11 @@ const AboutPage = () => {
 
     return (
         <Layout>
-            <Head>
-                <title>About Faris Aziz | Frontend Engineer & Conference Speaker</title>
-                <meta
-                    name="description"
-                    content="Learn about Faris Aziz - Engineering Manager, Frontend Expert, Conference Speaker, and tech community builder with experience at Navro, Fiit, and more."
-                />
-            </Head>
+            <SEO
+                title="About Faris Aziz | My Journey, Values & Expertise"
+                description="Learn about my journey as a frontend engineering leader, my core values, technical expertise, and what drives me to build community-focused tech initiatives."
+                keywords="engineering leadership, frontend expert, tech community, software engineering, career journey, technical leadership, mentorship, NextJS expert"
+            />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-b from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-900 py-16 md:py-24">
