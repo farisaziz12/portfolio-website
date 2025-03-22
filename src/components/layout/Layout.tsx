@@ -6,7 +6,7 @@ import Header from './Header';
 import Footer from './Footer';
 import ThemeProvider from '../context/ThemeProvider';
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
   const [mounted, setMounted] = useState(false);
   
   // After component mounts, allow rendering on client

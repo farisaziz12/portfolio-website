@@ -1,7 +1,7 @@
 // components/shared/AnimatedSection.js
 import { motion } from 'framer-motion';
 
-const AnimatedSection = ({ children, className = '', delay = 0 }) => {
+const AnimatedSection = ({ children, className = '', delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) => {
   return (
     <motion.section
       className={className}
