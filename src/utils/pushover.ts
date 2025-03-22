@@ -8,8 +8,8 @@ interface PushoverMessage {
 
 
 // Pushover credentials from environment variables
-const PUSHOVER_TOKEN = process.env.PUSHOVER_TOKEN || '';
-const PUSHOVER_USER = process.env.PUSHOVER_USER || '';
+const PUSHOVER_TOKEN = process.env.NEXT_PUBLIC_PUSHOVER_TOKEN || '';
+const PUSHOVER_USER = process.env.NEXT_PUBLIC_PUSHOVER_USER || '';
 
 export async function sendPushoverNotification(message: PushoverMessage): Promise<void> {
   try {
