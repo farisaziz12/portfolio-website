@@ -12,7 +12,7 @@ interface SEOProps {
 const SEO = ({ 
   title = 'Faris Aziz | Frontend Engineer & Conference Speaker',
   description = 'Engineering Manager & Frontend SME | Conference Speaker | Frontend Expert in NextJS, TS/JS & NodeJS | Pioneering a Tech Culture of Innovation',
-  image = '/images/og-image.jpg',
+  image = '/images/profile.jpg',
   article = false,
   keywords = 'frontend, engineering, nextjs, react, typescript, javascript, conference speaker, web development'
 }: SEOProps) => {
