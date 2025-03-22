@@ -39,6 +39,7 @@ export default function Home({ upcomingEvents, featuredProjects, companies }: Ho
         description="Engineering Manager & Frontend SME specializing in Next.js, React, and TypeScript. Conference speaker and workshop facilitator with expertise in building scalable frontend systems."
         image="/images/profile.jpg"
         keywords="frontend engineer, conference speaker, next.js expert, react developer, typescript, javascript, engineering manager, zurichjs"
+        pathname="/"
       />
 
       <Hero scrollY={scrollY} />

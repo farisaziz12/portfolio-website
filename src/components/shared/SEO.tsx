@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 
 interface SEOProps {
   title?: string;
@@ -7,6 +6,7 @@ interface SEOProps {
   image?: string;
   article?: boolean;
   keywords?: string;
+  pathname?: string;
 }
 
 const SEO = ({ 
@@ -14,11 +14,11 @@ const SEO = ({
   description = 'Engineering Manager & Frontend SME | Conference Speaker | Frontend Expert in NextJS, TS/JS & NodeJS | Pioneering a Tech Culture of Innovation',
   image = '/images/profile.jpg',
   article = false,
-  keywords = 'frontend, engineering, nextjs, react, typescript, javascript, conference speaker, web development'
+  keywords = 'frontend, engineering, nextjs, react, typescript, javascript, conference speaker, web development',
+  pathname = ''
 }: SEOProps) => {
-  const router = useRouter();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://faziz-dev.com';
-  const canonicalUrl = `${siteUrl}${router.asPath}`;
+  const canonicalUrl = `${siteUrl}${pathname}`;
   const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
   return (

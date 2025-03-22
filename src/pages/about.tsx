@@ -63,6 +63,7 @@ const AboutPage = () => {
                 title="About Faris Aziz | My Journey, Values & Expertise"
                 description="Learn about my journey as a frontend engineering leader, my core values, technical expertise, and what drives me to build community-focused tech initiatives."
                 keywords="engineering leadership, frontend expert, tech community, software engineering, career journey, technical leadership, mentorship, NextJS expert"
+                pathname="/about"
             />
 
             {/* Hero Section */}
