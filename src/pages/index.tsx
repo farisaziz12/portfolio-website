@@ -40,6 +40,7 @@ export default function Home({ upcomingEvents, featuredProjects, companies }: Ho
           name="description"
           content="Engineering Manager & Frontend SME | Conference Speaker | Frontend Expert in NextJS, TS/JS & NodeJS | Pioneering a Tech Culture of Innovation"
         />
+        <meta property="og:image" content="/images/profile.jpg" />
       </Head>
 
       <Hero scrollY={scrollY} />
