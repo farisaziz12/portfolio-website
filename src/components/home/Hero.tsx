@@ -90,7 +90,7 @@ const Hero = ({ scrollY }: { scrollY: number }) => {
                 className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg font-medium transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-              >m
+              >
                 Upcoming Talks
               </motion.a>
             </Link>
