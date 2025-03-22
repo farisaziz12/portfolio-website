@@ -39,15 +39,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 
   // If not mounted yet, render a simplified version without theme context
-  if (!mounted) {
-    return (
-      <div className="flex flex-col min-h-screen bg-white text-gray-900">
-        <Header />
-        {content}
-        <Footer />
-      </div>
-    );
-  }
+  if (!mounted)return null
 
   return (
     <ThemeProvider>
