@@ -1,9 +1,16 @@
 // components/context/ThemeProvider.js
 import { createContext, useState, useEffect } from 'react';
 
-export const ThemeContext = createContext(null);
+// Add interface for context value
+interface ThemeContextType {
+  theme: string;
+  setTheme: React.Dispatch<React.SetStateAction<string>>;
+}
 
-const ThemeProvider = ({ children }) => {
+// Update context creation with proper type
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState('light');
   const [mounted, setMounted] = useState(false);
 

@@ -4,7 +4,10 @@ import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeProvider';
 
 const ThemeToggle = () => {
-  const { theme, setTheme } = useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('ThemeToggle must be used within a ThemeProvider');
+  
+  const { theme, setTheme } = context;
   
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
