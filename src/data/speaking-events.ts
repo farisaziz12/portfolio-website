@@ -145,15 +145,37 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://london.cityjsconf.org/talk/5EoBZeY6MVZDsrt68Vp3Tx"
   },
   {
-    title: "Talk TBD",
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
     type: "Conference",
     conference: "CityJS London",
     location: "London, United Kingdom",
     date: "2025-04-25",
-    description: "TBD",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I’ll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://london.cityjsconf.org/"
+  },
+    {
+    title: "TBD",
+    type: "Workshop",
+    conference: "CityJS Athens",
+    location: "Athens, Greece",
+    date: "2025-05-28",
+    description: "TBD",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://greece.cityjsconf.org/"
+  },
+  {
+    title: "TBD",
+    type: "Conference",
+    conference: "CityJS Athens",
+    location: "Athens, Greece",
+    date: "2025-05-29",
+    description: "TBD",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://greece.cityjsconf.org/"
   },
   {
     title: "Zurich JS Meetup #5: May the Code Be With You",
