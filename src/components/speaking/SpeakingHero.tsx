@@ -2,6 +2,7 @@
 import { events } from '@/data/speaking-events';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export const speakingPhotos = [
   '/images/speaking/1.jpeg',
@@ -9,9 +10,39 @@ export const speakingPhotos = [
   '/images/speaking/3.jpeg',
   '/images/speaking/4.jpeg',
   '/images/speaking/5.jpeg',
+  '/images/speaking/6.jpeg',
+  '/images/speaking/7.jpeg',
+  '/images/speaking/8.jpeg',
+  '/images/speaking/9.jpeg',
 ];
 
 const SpeakingHero = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Auto-advance carousel on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    
+    const interval = setInterval(() => {
+      setActiveIndex((current) => (current + 1) % speakingPhotos.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isMobile]);
+  
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-900 py-12 sm:py-16 md:py-24">
       {/* Background decorations - hide on mobile */}
@@ -111,34 +142,98 @@ const SpeakingHero = () => {
         </div>
       </div>
       
-      {/* Speaking Images - Stack on mobile */}
+      {/* Speaking Images - Creative Display */}
       <motion.div 
-        className="mt-6 sm:mt-8 max-w-6xl mx-auto px-4 sm:px-6"
+        className="mt-6 sm:mt-12 max-w-6xl mx-auto px-4 sm:px-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          {speakingPhotos.slice(0, 5).map((photo, i) => (
-            <motion.div
-              key={i}
-              className={`relative rounded-lg overflow-hidden ${
-                i === 2 ? 'col-span-2 sm:col-span-2 sm:row-span-2' : 'col-span-1'
-              } ${i === 2 ? 'h-[200px] sm:h-[240px]' : 'h-[100px] sm:h-[120px]'}`}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Image
-                src={photo}
-                alt="Speaking at tech events"
-                fill
-                className="object-cover"
-                sizes={i === 2 
-                  ? "(max-width: 640px) 66vw, 40vw" 
-                  : "(max-width: 640px) 33vw, 20vw"}
+        {/* Mobile Carousel */}
+        <div className="block md:hidden relative overflow-hidden">
+          <div className="relative h-[350px] w-full rounded-xl overflow-hidden shadow-lg">
+            {speakingPhotos.map((photo, i) => (
+              <motion.div
+                key={i}
+                className="absolute inset-0"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ 
+                  opacity: activeIndex === i ? 1 : 0,
+                  scale: activeIndex === i ? 1 : 0.9,
+                  zIndex: activeIndex === i ? 10 : 0
+                }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image
+                  src={photo}
+                  alt={photo}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={i === activeIndex}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Carousel Indicators */}
+          <div className="flex justify-center mt-4 gap-2">
+            {speakingPhotos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIndex(i)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  activeIndex === i 
+                    ? 'bg-blue-600 w-4' 
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+                aria-label={`Go to slide ${i+1}`}
               />
-            </motion.div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Masonry */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-12 gap-3 auto-rows-[100px]">
+            {speakingPhotos.map((photo, i) => {
+              // Define different sizes for variety in the masonry layout
+              const sizes = [
+                "col-span-4 row-span-2", // medium rectangle
+                "col-span-3 row-span-3", // tall rectangle
+                "col-span-5 row-span-3", // large rectangle
+                "col-span-3 row-span-2", // small rectangle
+                "col-span-4 row-span-2", // medium rectangle
+                "col-span-5 row-span-2", // wide rectangle
+                "col-span-3 row-span-3", // tall rectangle
+                "col-span-4 row-span-2", // medium rectangle
+                "col-span-5 row-span-2", // wide rectangle
+              ];
+              
+              return (
+                <motion.div
+                  key={i}
+                  className={`relative rounded-xl overflow-hidden shadow-md ${sizes[i]} transform transition-all duration-500`}
+                  whileHover={{ 
+                    scale: 1.03, 
+                    zIndex: 10, 
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 + (i * 0.1) }}
+                >
+                  <Image
+                    src={photo}
+                    alt={photo}
+                    fill
+                    className="object-cover transition-transform duration-700 hover:scale-110"
+                    sizes="(max-width: 1280px) 33vw, 25vw"
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </motion.div>
     </section>

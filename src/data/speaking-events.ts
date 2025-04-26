@@ -150,29 +150,29 @@ export const events: SpeakingEvent[] = [
     conference: "CityJS London",
     location: "London, United Kingdom",
     date: "2025-04-25",
-    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I’ll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://london.cityjsconf.org/"
   },
     {
-    title: "TBD",
+    title: "From Zero to Production with TanStack Query",
     type: "Workshop",
     conference: "CityJS Athens",
     location: "Athens, Greece",
     date: "2025-05-28",
-    description: "TBD",
+    description: "This workshop gives you a practical introduction to TanStack Query in modern React and Next.js apps. In three hours, you'll learn how to replace manual data fetching with a structured, cache-aware approach using TanStack Query. We'll cover the fundamentals: setting it up, fetching and mutating data, caching, query invalidation, and how to handle loading and error states. You'll also see how TanStack Query helps with validation, simplifies state management, and moves your app closer to production readiness. No prior experience with TanStack Query is needed, but you should know React and be comfortable writing async code. You'll leave with a clear understanding of how and when to use TanStack Query in real projects.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://greece.cityjsconf.org/"
   },
   {
-    title: "TBD",
+    title: "Engineering Without a Safety Net: Where It Works and Where It Hurts",
     type: "Conference",
     conference: "CityJS Athens",
     location: "Athens, Greece",
     date: "2025-05-29",
-    description: "TBD",
+    description: "Testing, monitoring, observability. They're rarely urgent, often skipped, and easy to dismiss when things are moving fast. But what's the real cost of deferring them, and how much can you actually get away with? This talk explores the tradeoffs of skipping traditional engineering practices in the name of speed, and what happens when you try to layer them in after a system has already scaled. It's not about dogma or checklists, it's about pragmatism, risk, and timing.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://greece.cityjsconf.org/"
@@ -187,6 +187,28 @@ export const events: SpeakingEvent[] = [
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://zurichjs.com/events/zurichjs-6"
+  },
+  {
+    title: "Zurich JS Meetup #6: June's Server Solstice",
+    type: "Meetup",
+    conference: "Zurich JS",
+    location: "Zurich, Switzerland",
+    date: "2025-06-19",
+    description: "Hosting the 6th Zurich JS Meetup.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurich-js-meetup-6-june-s-server-solstice"
+  },
+  {
+    title: "Zurich JS Meetup #7: Sizzling Hot JavaScript",
+    type: "Meetup",
+    conference: "Zurich JS",
+    location: "Zurich, Switzerland",
+    date: "2025-07-24",
+    description: "Hosting the 7th Zurich JS Meetup.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurich-js-meetup-7-sizzling-hot-java-script"
   },
 ];
 

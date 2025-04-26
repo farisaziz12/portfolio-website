@@ -61,7 +61,7 @@ const Header = () => {
         {/* Logo */}
         <Link href="/" legacyBehavior>
           <motion.a 
-            className="text-xl font-bold flex items-center"
+            className="text-xl font-bold flex items-center cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -76,7 +76,7 @@ const Header = () => {
           {navLinks.map((link) => (
             <Link key={link.path} href={link.path} legacyBehavior>
               <motion.a 
-                className={`px-3 py-2 mx-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+                className={`px-3 py-2 mx-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
                   router.pathname === link.path 
                     ? 'text-blue-600 font-medium' 
                     : 'text-gray-700 dark:text-gray-300'
@@ -95,7 +95,7 @@ const Header = () => {
             href="https://github.com/farisaziz12" 
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
             aria-label="GitHub Profile"
@@ -109,7 +109,7 @@ const Header = () => {
             href="https://www.linkedin.com/in/farisaziz12" 
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
             whileHover={{ scale: 1.1, rotate: -5 }}
             whileTap={{ scale: 0.95 }}
             aria-label="LinkedIn Profile"
@@ -136,7 +136,7 @@ const Header = () => {
           <ThemeToggle />
           
           <button 
-            className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -172,7 +172,7 @@ const Header = () => {
                 {navLinks.map((link) => (
                   <Link key={link.path} href={link.path} legacyBehavior>
                     <a 
-                      className={`px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                      className={`px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${
                         router.pathname === link.path 
                           ? 'text-blue-600 font-medium' 
                           : 'text-gray-700 dark:text-gray-300'
@@ -200,7 +200,7 @@ const Header = () => {
                     href="https://github.com/farisaziz12" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
                     aria-label="GitHub Profile"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -212,7 +212,7 @@ const Header = () => {
                     href="https://www.linkedin.com/in/farisaziz12" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
                     aria-label="LinkedIn Profile"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -224,7 +224,7 @@ const Header = () => {
                     href="https://twitter.com/farisaziz12" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
                     aria-label="Twitter Profile"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -248,7 +248,7 @@ const Header = () => {
             exit={{ opacity: 0, height: 0 }}
           >
             <p>
-              🎉 Join me at <strong>ZurichJS</strong> on Oct 10th! <a href="#" className="underline hover:text-white/90">Get tickets</a>
+              🎉 Join me at <strong>ZurichJS</strong> on Oct 10th! <a href="#" className="underline hover:text-white/90 cursor-pointer">Get tickets</a>
             </p>
           </motion.div>
         )}
