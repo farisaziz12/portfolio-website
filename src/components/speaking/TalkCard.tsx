@@ -1,6 +1,5 @@
 // components/speaking/TalkCard.js
 import { useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { SpeakingEvent } from '@/data/speaking-events';
 import EventDetailModal from './EventDetailModal';
