@@ -210,6 +210,17 @@ export const events: SpeakingEvent[] = [
     videoUrl: null,
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-7-sizzling-hot-java-script"
   },
+  {
+    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer’s Journey",
+    type: "Conference",
+    conference: "Software Architecture Conference",
+    location: "Online",
+    date: "2025-08-05",
+    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I’ll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://softwarearchitecture.live/"
+  },
 ];
 
 // Add slugs to all events
