@@ -189,6 +189,17 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://zurichjs.com/events/zurichjs-6"
   },
   {
+    title: "From Fragile to Future Proof: Solving Web Monetization Chaos with Payment Systems that Scale",
+    type: "Conference",
+    conference: "Frontend Nation",
+    location: "Online",
+    date: "2025-06-04",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://frontendnation.com"
+  },
+  {
     title: "Zurich JS Meetup #6: June's Server Solstice",
     type: "Meetup",
     conference: "Zurich JS",
