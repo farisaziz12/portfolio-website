@@ -55,18 +55,24 @@ const UpcomingTalks = ({ events }: { events: SpeakingEvent[] }) => {
                 {event.conference}
               </div>
               
-              <Link href={event.eventUrl} legacyBehavior>
-                <motion.a 
-                  className="text-blue-600 font-medium inline-flex items-center hover:underline"
-                  whileHover={{ x: 4 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  Event Details
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </motion.a>
-              </Link>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {formatDate(event.date)} • {event.location}
+              </div>
+              
+              {event.eventUrl && (
+                <Link href={event.eventUrl} legacyBehavior>
+                  <motion.a 
+                    className="text-blue-600 font-medium inline-flex items-center hover:underline"
+                    whileHover={{ x: 4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    Event Details
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.a>
+                </Link>
+              )}
             </div>
           </motion.div>
         ))}

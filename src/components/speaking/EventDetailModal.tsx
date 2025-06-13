@@ -25,6 +25,10 @@ const EventDetailModal = ({ event, isOpen, onClose }: EventDetailModalProps) => 
         return 'bg-blue-600';
       case 'panel':
         return 'bg-orange-600';
+      case 'podcast':
+        return 'bg-pink-600';
+      case 'webinar':
+        return 'bg-teal-600';
       default:
         return 'bg-gray-600';
     }
@@ -113,19 +117,21 @@ const EventDetailModal = ({ event, isOpen, onClose }: EventDetailModalProps) => 
         </div>
         
         {/* Event URL Button */}
-        <div className="mt-6">
-          <a 
-            href={event.eventUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            Visit Event Page
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
-        </div>
+        {event.eventUrl && (
+          <div className="mt-6">
+            <a 
+              href={event.eventUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              Visit Event Page
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
+        )}
       </div>
     </Modal>
   );

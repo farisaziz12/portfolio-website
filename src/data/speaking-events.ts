@@ -11,14 +11,14 @@ const createSlug = (title: string) => {
 
 export interface SpeakingEvent {
   title: string;
-  type: 'Conference' | 'Workshop' | 'Meetup';
+  type: 'Conference' | 'Workshop' | 'Meetup' | 'Podcast' | 'Webinar';
   conference: string;
   location: string;
   date: string;
   description: string;
   slidesUrl: string | null;
   videoUrl: string | null;
-  eventUrl: string;
+  eventUrl: string | null;
 }
 
 // Mock speaking events data
@@ -222,15 +222,70 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-7-sizzling-hot-java-script"
   },
   {
-    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer’s Journey",
+    title: "Building Real World React Applications",
+    type: "Webinar",
+    conference: "Webinar with Praveen",
+    location: "Online",
+    date: "2025-06-22",
+    description: "A comprehensive webinar exploring practical approaches to building production-ready React applications. Learn about real-world challenges, best practices, and architectural patterns that make React applications scalable and maintainable.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "Faris Aziz @GYFF for Hapidev",
+    type: "Podcast",
+    conference: "GYFF",
+    location: "Online",
+    date: "2025-06-27",
+    description: "Join me as I share my journey into software engineering, from CrossFit instructor to tech leader. I'll discuss how I transitioned into tech, built communities like ZurichJS, and developed my passion for mentoring and public speaking. Learn about the challenges, opportunities, and lessons learned along the way.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
     type: "Conference",
     conference: "Software Architecture Conference",
     location: "Online",
     date: "2025-08-05",
-    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I’ll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
+    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I'll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://softwarearchitecture.live/"
+  },
+  {
+    title: "Zurich JS Meetup #8: Flare up your Performance",
+    type: "Meetup",
+    conference: "Zurich JS",
+    location: "Zurich, Switzerland",
+    date: "2025-09-10",
+    description: "Hosting the 8th Zurich JS Meetup with a focus on performance optimization.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurich-js-meetup-8-flare-up-your-performance"
+  },
+  {
+    title: "Solving Real-World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
+    type: "Conference",
+    conference: "Voxxed Days Crete",
+    location: "Heraklion, Greece",
+    date: "2025-09-27",
+    description: "Discover how to optimize frontend performance and resilience when working with challenging APIs. Through a fintech case study, learn practical strategies using Next.js, TanStack Query, and the Backend-for-Frontend pattern to tackle common issues like payload bloat, caching, and network efficiency.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://crete.voxxeddays.com/"
+  },
+  {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Meetup",
+    conference: "VueJsTalks",
+    location: "Online",
+    date: "2025-07-16",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://lu.ma/vuestic"
   },
 ];
 

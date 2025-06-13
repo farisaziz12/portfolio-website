@@ -115,7 +115,7 @@ const UpcomingEventCalendar = ({ events }: { events: SpeakingEvent[] }) => {
   
   // Helper function to get badge color based on event type
   const getBadgeColor = (type: string) => {
-    switch ((type || '').toLowerCase()) {
+    switch (type.toLowerCase()) {
       case 'conference':
         return 'bg-purple-600';
       case 'workshop':
@@ -124,6 +124,10 @@ const UpcomingEventCalendar = ({ events }: { events: SpeakingEvent[] }) => {
         return 'bg-blue-600';
       case 'panel':
         return 'bg-orange-600';
+      case 'podcast':
+        return 'bg-pink-600';
+      case 'webinar':
+        return 'bg-teal-600';
       default:
         return 'bg-gray-600';
     }
@@ -191,15 +195,25 @@ const UpcomingEventCalendar = ({ events }: { events: SpeakingEvent[] }) => {
               {dayEvents.length > 0 && (
                 <div className="mt-1 space-y-1">
                   {dayEvents.map((event, index) => (
-                    <Link key={index} href={event.eventUrl} legacyBehavior>
-                      <motion.a 
+                    event.eventUrl ? (
+                      <Link key={index} href={event.eventUrl} legacyBehavior>
+                        <motion.a 
+                          className={`block text-left text-xs p-1 rounded ${getBadgeColor(event.type)} text-white truncate`}
+                          whileHover={{ scale: 1.02 }}
+                          title={`${event.title} at ${event.conference}`}
+                        >
+                          {event.title.length > 18 ? event.title.substring(0, 16) + '...' : event.title}
+                        </motion.a>
+                      </Link>
+                    ) : (
+                      <div 
+                        key={index}
                         className={`block text-left text-xs p-1 rounded ${getBadgeColor(event.type)} text-white truncate`}
-                        whileHover={{ scale: 1.02 }}
                         title={`${event.title} at ${event.conference}`}
                       >
                         {event.title.length > 18 ? event.title.substring(0, 16) + '...' : event.title}
-                      </motion.a>
-                    </Link>
+                      </div>
+                    )
                   ))}
                 </div>
               )}
@@ -221,17 +235,19 @@ const UpcomingEventCalendar = ({ events }: { events: SpeakingEvent[] }) => {
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(event.date)} • {event.location}
                   </div>
-                  <Link href={event.eventUrl} legacyBehavior>
-                    <motion.a 
-                      className="text-blue-600 text-sm hover:underline inline-flex items-center mt-1"
-                      whileHover={{ x: 2 }}
-                    >
-                      Details
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </motion.a>
-                  </Link>
+                  {event.eventUrl && (
+                    <Link href={event.eventUrl} legacyBehavior>
+                      <motion.a 
+                        className="text-blue-600 text-sm hover:underline inline-flex items-center mt-1"
+                        whileHover={{ x: 2 }}
+                      >
+                        Details
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </motion.a>
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

@@ -329,6 +329,12 @@ function getBadgeColor(type: string) {
       return 'bg-green-600';
     case 'meetup':
       return 'bg-blue-600';
+    case 'panel':
+      return 'bg-orange-600';
+    case 'podcast':
+      return 'bg-pink-600';
+    case 'webinar':
+      return 'bg-teal-600';
     default:
       return 'bg-gray-600';
   }

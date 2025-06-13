@@ -43,7 +43,7 @@ export default function UpcomingEvents({ events }: { events: SpeakingEvent[] }) 
                 <div className="flex flex-wrap justify-center gap-4 mb-8">
                   <Link href="/contact" legacyBehavior>
                     <motion.a 
-                      className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+                      className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors cursor-pointer"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -53,7 +53,7 @@ export default function UpcomingEvents({ events }: { events: SpeakingEvent[] }) 
                   
                   <Link href="/speaking" legacyBehavior>
                     <motion.a 
-                      className="inline-block bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600/10 font-medium py-3 px-8 rounded-lg transition-colors"
+                      className="inline-flex items-center justify-center bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600/10 font-medium py-3 px-8 rounded-lg transition-colors cursor-pointer"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -140,7 +140,7 @@ export default function UpcomingEvents({ events }: { events: SpeakingEvent[] }) 
               </p>
               <Link href="/contact" legacyBehavior>
                 <motion.a 
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+                  className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -165,7 +165,7 @@ export default function UpcomingEvents({ events }: { events: SpeakingEvent[] }) 
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/speaking" legacyBehavior>
                 <motion.a 
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                  className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -174,7 +174,7 @@ export default function UpcomingEvents({ events }: { events: SpeakingEvent[] }) 
               </Link>
               <Link href="/contact" legacyBehavior>
                 <motion.a 
-                  className="inline-block bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600/10 font-medium py-3 px-6 rounded-lg transition-colors"
+                  className="inline-flex items-center justify-center bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600/10 font-medium py-3 px-6 rounded-lg transition-colors cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
