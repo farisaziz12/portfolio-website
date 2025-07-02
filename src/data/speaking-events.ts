@@ -23,7 +23,7 @@ export interface SpeakingEvent {
 
 // Mock speaking events data
 export const events: SpeakingEvent[] = [
-    {
+  {
     title: "Data Fetching Unleashed: Next.js, React Query & their BFF",
     type: "Meetup",
     conference: "React Advanced London",
@@ -89,7 +89,7 @@ export const events: SpeakingEvent[] = [
     videoUrl: "https://www.youtube.com/watch?v=EV5wWqoYNjg",
     eventUrl: "https://reactandchill.live/"
   },
-    {
+  {
     title: "Unleashing NextJS/React Performance & Resiliency",
     type: "Workshop",
     conference: "Reactjs day",
@@ -100,7 +100,7 @@ export const events: SpeakingEvent[] = [
     videoUrl: null,
     eventUrl: "https://2024.reactjsday.it/workshop/react_performance.html"
   },
-    {
+  {
     title: "Solving Real World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
     type: "Conference",
     conference: "Voxxed Days Zurich",
@@ -122,7 +122,7 @@ export const events: SpeakingEvent[] = [
     videoUrl: null,
     eventUrl: "https://www.jsday.it/talks_speakers/"
   },
-    {
+  {
     title: "Zurich JS Meetup #4: April stands for AI",
     type: "Meetup",
     conference: "Zurich JS",
@@ -155,7 +155,18 @@ export const events: SpeakingEvent[] = [
     videoUrl: null,
     eventUrl: "https://london.cityjsconf.org/"
   },
-    {
+  {
+    title: "Zurich JS Meetup #5: May the Code Be With You",
+    type: "Meetup",
+    conference: "Zurich JS",
+    location: "Zurich, Switzerland",
+    date: "2025-05-15",
+    description: "Hosting the 5th Zurich JS Meetup.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurichjs-6"
+  },
+  {
     title: "From Zero to Production with TanStack Query",
     type: "Workshop",
     conference: "CityJS Athens",
@@ -176,17 +187,6 @@ export const events: SpeakingEvent[] = [
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://greece.cityjsconf.org/"
-  },
-  {
-    title: "Zurich JS Meetup #5: May the Code Be With You",
-    type: "Meetup",
-    conference: "Zurich JS",
-    location: "Zurich, Switzerland",
-    date: "2025-05-15",
-    description: "Hosting the 5th Zurich JS Meetup.",
-    slidesUrl: null,
-    videoUrl: null,
-    eventUrl: "https://zurichjs.com/events/zurichjs-6"
   },
   {
     title: "From Fragile to Future Proof: Solving Web Monetization Chaos with Payment Systems that Scale",
@@ -211,17 +211,6 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-6-june-s-server-solstice"
   },
   {
-    title: "Zurich JS Meetup #7: Sizzling Hot JavaScript",
-    type: "Meetup",
-    conference: "Zurich JS",
-    location: "Zurich, Switzerland",
-    date: "2025-07-24",
-    description: "Hosting the 7th Zurich JS Meetup.",
-    slidesUrl: null,
-    videoUrl: null,
-    eventUrl: "https://zurichjs.com/events/zurich-js-meetup-7-sizzling-hot-java-script"
-  },
-  {
     title: "Building Real World React Applications",
     type: "Webinar",
     conference: "Webinar with Praveen",
@@ -244,6 +233,39 @@ export const events: SpeakingEvent[] = [
     eventUrl: null
   },
   {
+    title: "Engineering Without a Safety Net: Where It Works and Where It Hurts",
+    type: "Meetup",
+    conference: "BKK.JS",
+    location: "Bangkok, Thailand",
+    date: "2025-07-11",
+    description: "Testing, monitoring, observability. They're rarely urgent, often skipped, and easy to dismiss when things are moving fast. But what's the real cost of deferring them, and how much can you actually get away with? This talk explores the tradeoffs of skipping traditional engineering practices in the name of speed, and what happens when you try to layer them in after a system has already scaled. It's not about dogma or checklists, it's about pragmatism, risk, and timing.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://www.eventpop.me/e/96871/bkkjs-23"
+  },
+  {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Meetup",
+    conference: "VueJsTalks",
+    location: "Online",
+    date: "2025-07-16",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://lu.ma/vuestic"
+  },
+  {
+    title: "Zurich JS Meetup #7: Sizzling Hot JavaScript",
+    type: "Meetup",
+    conference: "Zurich JS",
+    location: "Zurich, Switzerland",
+    date: "2025-07-24",
+    description: "Hosting the 7th Zurich JS Meetup.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurich-js-meetup-7-sizzling-hot-java-script"
+  },
+  {
     title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
     type: "Conference",
     conference: "Software Architecture Conference",
@@ -260,32 +282,32 @@ export const events: SpeakingEvent[] = [
     conference: "Zurich JS",
     location: "Zurich, Switzerland",
     date: "2025-09-10",
-    description: "Hosting the 8th Zurich JS Meetup with a focus on performance optimization.",
+    description: "Hosting the 8th Zurich JS Meetup.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-8-flare-up-your-performance"
   },
   {
-    title: "Solving Real-World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
+    title: "Solving Real World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
     type: "Conference",
     conference: "Voxxed Days Crete",
-    location: "Heraklion, Greece",
+    location: "Crete, Greece",
     date: "2025-09-27",
     description: "Discover how to optimize frontend performance and resilience when working with challenging APIs. Through a fintech case study, learn practical strategies using Next.js, TanStack Query, and the Backend-for-Frontend pattern to tackle common issues like payload bloat, caching, and network efficiency.",
     slidesUrl: null,
     videoUrl: null,
-    eventUrl: "https://crete.voxxeddays.com/"
+    eventUrl: "https://crete.voxxeddays.com/speaker-details/?id=1164"
   },
   {
-    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
-    type: "Meetup",
-    conference: "VueJsTalks",
-    location: "Online",
-    date: "2025-07-16",
-    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
+    type: "Conference",
+    conference: "React Summit US",
+    location: "New York, United States",
+    date: "2025-11-08",
+    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I'll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
     slidesUrl: null,
     videoUrl: null,
-    eventUrl: "https://lu.ma/vuestic"
+    eventUrl: "https://reactsummit.us/#person-faris-aziz"
   },
 ];
 

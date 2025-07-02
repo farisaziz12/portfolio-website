@@ -368,7 +368,8 @@ const getCountryCode = (country: string): string => {
     'Germany': 'DE',
     'Netherlands': 'NL',
     'Austria': 'AT',
-    'Greece': 'GR'
+    'Greece': 'GR',
+    'Thailand': 'TH'
   };
   return codes[country as keyof typeof codes] || '';
 };
