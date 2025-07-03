@@ -299,11 +299,33 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://crete.voxxeddays.com/speaker-details/?id=1164"
   },
   {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Conference",
+    conference: "International JavaScript Conference",
+    location: "Munich, Germany",
+    date: "2025-10-28",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://javascript-conference.com/munich/"
+  },
+  {
+    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
+    type: "Conference",
+    conference: "International JavaScript Conference",
+    location: "Munich, Germany",
+    date: "2025-10-28",
+    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I'll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://javascript-conference.com/munich/"
+  },
+  {
     title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
     type: "Conference",
     conference: "React Summit US",
     location: "New York, United States",
-    date: "2025-11-08",
+    date: "2025-11-18",
     description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I'll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
     slidesUrl: null,
     videoUrl: null,
