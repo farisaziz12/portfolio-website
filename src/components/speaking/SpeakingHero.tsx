@@ -2,7 +2,7 @@
 import { events } from '@/data/speaking-events';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export const speakingPhotos = [
   '/images/speaking/1.jpeg',
@@ -19,6 +19,29 @@ export const speakingPhotos = [
 const SpeakingHero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Get unique conference and meetup names from events data with their types
+  const { conferences, meetups } = useMemo(() => {
+    const conferenceMap = new Map();
+    const meetupMap = new Map();
+    
+    events.forEach(event => {
+      if (event.type === 'Conference') {
+        if (!conferenceMap.has(event.conference)) {
+          conferenceMap.set(event.conference, event.type);
+        }
+      } else if (event.type === 'Meetup') {
+        if (!meetupMap.has(event.conference)) {
+          meetupMap.set(event.conference, event.type);
+        }
+      }
+    });
+    
+    return {
+      conferences: Array.from(conferenceMap.keys()),
+      meetups: Array.from(meetupMap.keys())
+    };
+  }, []);
 
   // Check if we're on mobile
   useEffect(() => {
@@ -112,46 +135,101 @@ const SpeakingHero = () => {
           
           {/* Stats - Enhanced */}
           <motion.div
-            className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-8 mb-10 sm:mb-14"
+            className="flex justify-center gap-6 mb-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             {[
-              { label: "Events", count: `${events.length}+` },
-              { label: "Cities", count: "6+" },
+              { 
+                label: "Speaking Events", 
+                count: events.length, 
+                icon: "🎤",
+                color: "from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400",
+                bgColor: "bg-blue-50 dark:bg-blue-900/20",
+                borderColor: "border-blue-200 dark:border-blue-800"
+              },
+              { 
+                label: "Cities Worldwide", 
+                count: 6, 
+                icon: "🌍",
+                color: "from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400",
+                bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+                borderColor: "border-emerald-200 dark:border-emerald-800"
+              },
             ].map((stat, index) => (
-              <div key={index} className="text-center px-6 py-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
-                <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">{stat.count}</p>
-                <p className="text-gray-700 dark:text-gray-300 font-medium">{stat.label}</p>
-              </div>
+              <motion.div 
+                key={index} 
+                className={`text-center px-8 py-6 ${stat.bgColor} backdrop-blur-sm rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border ${stat.borderColor} min-w-[140px]`}
+                whileHover={{ scale: 1.02, y: -2 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.2 + (index * 0.1) }}
+              >
+                <div className="text-3xl mb-2">{stat.icon}</div>
+                <p className={`text-4xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-1`}>
+                  {stat.count}
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 font-semibold text-sm leading-tight">
+                  {stat.label}
+                </p>
+              </motion.div>
             ))}
           </motion.div>
           
-          {/* Tech event logos - Enhanced */}
-          <motion.div
-            className="mb-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 items-center">
-              {["React Advanced London", "CityJS", "ZurichJS", "React & Chill", "Reactjs Day", "jsday", "Voxxed Days Zurich", "Zurich ReactJS Meetup"].map((event, i) => (
-                <motion.div
-                  key={i}
-                  className="relative h-16 w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-2 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 shadow-sm"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 + (i * 0.1) }}
-                  whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
-                >
-                  <div className="text-xs sm:text-sm font-medium text-center text-gray-700 dark:text-gray-300">
-                    {event}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          {/* Conferences Section */}
+          {conferences.length > 0 && (
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-center">
+                Conferences
+              </h3>
+              <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
+                {conferences.map((conference, i) => (
+                  <motion.div
+                    key={i}
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 border border-slate-200 dark:border-slate-700"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: 0.3 + (i * 0.05) }}
+                  >
+                    {conference}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Meetups Section */}
+          {meetups.length > 0 && (
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-center">
+                Meetups
+              </h3>
+              <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
+                {meetups.map((meetup, i) => (
+                  <motion.div
+                    key={i}
+                    className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-lg text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors duration-200 border border-emerald-200 dark:border-emerald-700/50"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: 0.4 + (i * 0.05) }}
+                  >
+                    {meetup}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
       
