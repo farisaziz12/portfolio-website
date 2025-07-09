@@ -186,7 +186,7 @@ const SpeakingHero = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-center">
-                Conferences
+                I've spoken at the following conferences
               </h3>
               <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
                 {conferences.map((conference, i) => (
@@ -213,7 +213,7 @@ const SpeakingHero = () => {
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-center">
-                Meetups
+                I've spoken at the following meetups
               </h3>
               <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
                 {meetups.map((meetup, i) => (
