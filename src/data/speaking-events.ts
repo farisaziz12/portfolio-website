@@ -79,6 +79,17 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://www.meetup.com/zurich-reactjs-meetup/events/300779542/?eventOrigin=group_events_list"
   },
   {
+    title: "Ask Me Anything: Career Journey & Lessons Learned",
+    type: "Meetup",
+    conference: "Flatiron School",
+    location: "New York, United States",
+    date: "2024-07-18",
+    description: "An AMA session at the Flatiron School campus in NYC's financial district. Join me as I share my career journey, lessons learned, mistakes to avoid, and how I've managed to get back on my feet every time I've stumbled. An incredible opportunity to give back to the community that helped shape my career and support new talent entering the software industry.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
     title: "Data Fetching Unleashed: Next.js, React Query and their BFF",
     type: "Conference",
     conference: "React & Chill Conference",
@@ -90,6 +101,17 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://reactandchill.live/"
   },
   {
+    title: "The Art of Tech Talks",
+    type: "Webinar",
+    conference: "Bletchley Institute - Signal Boost",
+    location: "Online",
+    date: "2024-09-17",
+    description: "An exciting and interactive session on mastering tech presentation skills. Covering how to prepare for your first tech talk, tips for connecting with your audience, and strategies to make your presentation stand out. Whether you're gearing up for your first conference or looking to polish your speaking skills, this session provides valuable insights and practical tips to enhance your presentation game.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
     title: "Unleashing NextJS/React Performance & Resiliency",
     type: "Workshop",
     conference: "Reactjs day",
@@ -99,6 +121,28 @@ export const events: SpeakingEvent[] = [
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://2024.reactjsday.it/workshop/react_performance.html"
+  },
+  {
+    title: "Ask Me Anything: Career Journey & Lessons Learned",
+    type: "Meetup",
+    conference: "Flatiron School",
+    location: "New York, United States",
+    date: "2025-02-13",
+    description: "An AMA session at the Flatiron School campus in NYC's financial district. Join me as I share my career journey, lessons learned, mistakes to avoid, and how I've managed to get back on my feet every time I've stumbled. An incredible opportunity to give back to the community that helped shape my career and support new talent entering the software industry.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Meetup",
+    conference: "Web Zurich",
+    location: "Zurich, Switzerland",
+    date: "2025-02-28",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://www.meetup.com/web-zurich/events/305943582"
   },
   {
     title: "Solving Real World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
@@ -288,6 +332,17 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-8-flare-up-your-performance"
   },
   {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Conference",
+    conference: "WhatTheStack",
+    location: "Skopje, Macedonia",
+    date: "2025-09-20",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance. I'll share real-world lessons from handling multi-gateway integrations, regulatory complexities, and millions in transactions, helping you design Frontend payment architectures that scale without breaking a sweat.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://wts.sh/"
+  },
+  {
     title: "Solving Real World Data Fetching Challenges with Next.js and TanStack Query: A Pragmatic Case Study",
     type: "Conference",
     conference: "Voxxed Days Crete",
@@ -332,6 +387,8 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://reactsummit.us/#person-faris-aziz"
   },
 ];
+
+export const uniqueCitiesCount = new Set(events.map(event => event.location)).size;
 
 // Add slugs to all events
 const eventsWithSlugs = events.map(event => ({

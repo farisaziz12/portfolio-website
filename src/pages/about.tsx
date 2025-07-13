@@ -8,6 +8,7 @@ import SEO from '../components/shared/SEO';
 import Timeline from '../components/about/Timeline';
 import ValuesCard from '../components/about/ValuesCard';
 import Skillset from '../components/about/Skillset';
+import { uniqueCitiesCount } from '@/data/speaking-events';
 
 const AboutPage = () => {
     // Tab state for different sections
@@ -16,7 +17,7 @@ const AboutPage = () => {
     // Fun facts about me
     const funFacts = [
         "I'm passionate about building community-driven tech events 🎉",
-        "I've spoken at conferences across 6+ cities! 🌍",
+        `I've spoken at conferences across ${uniqueCitiesCount}+ cities! 🌍`,
         "CrossFit certified & enthusiast 🏋️‍♂️",
         "I love contributing to open-source projects in my free time 💻",
         "I've helped hundreds of developers level up through mentorship 🚀",
@@ -256,7 +257,7 @@ const AboutPage = () => {
                                             },
                                             {
                                                 title: "International Speaker",
-                                                description: "Delivered talks and workshops at several conferences across 6+ cities, sharing technical knowledge with thousands of developers."
+                                                description: `Delivered talks and workshops at several conferences across ${uniqueCitiesCount}+ cities, sharing technical knowledge with thousands of developers.`
                                             },
                                         ].map((achievement, index) => (
                                             <motion.div

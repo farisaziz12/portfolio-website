@@ -9,7 +9,7 @@ import AnimatedSection from '../../components/shared/AnimatedSection';
 import SEO from '../../components/shared/SEO';
 import { getSpeakingEvents } from '../../data/speaking-events';
 import type { SpeakingEvent } from '../../data/speaking-events';
-import countryFlagEmoji from "country-flag-emoji";
+import { getUniqueLocations } from '../../utils/countryFlags';
 
 interface SpeakingProps {
   pastEvents: SpeakingEvent[];
@@ -265,7 +265,7 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
                               className="inline-flex items-center text-blue-600 hover:text-blue-700"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 002 2v8a2 2 0 002 2z" />
                               </svg>
                               Watch Talk
                             </a>
@@ -345,34 +345,6 @@ function formatDate(dateString: string) {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 }
-
-// Helper function to get unique locations with country codes
-const getUniqueLocations = (events: SpeakingEvent[]) => {
-  const locations = new Set(events.map(event => event.location));
-  return Array.from(locations).map(location => {
-    const country = location.split(', ')[1];
-    const city = location.split(', ')[0];
-    const countryCode = getCountryCode(country);
-    const flag = countryCode ? countryFlagEmoji.get(countryCode)?.emoji : '🌍';
-    return { city, country, flag };
-  });
-};
-
-// Helper function to get country codes
-const getCountryCode = (country: string): string => {
-  const codes = {
-    'Switzerland': 'CH',
-    'United Kingdom': 'GB',
-    'United States': 'US',
-    'Italy': 'IT',
-    'Germany': 'DE',
-    'Netherlands': 'NL',
-    'Austria': 'AT',
-    'Greece': 'GR',
-    'Thailand': 'TH'
-  };
-  return codes[country as keyof typeof codes] || '';
-};
 
 export async function getStaticProps() {
   const allEvents = getSpeakingEvents();

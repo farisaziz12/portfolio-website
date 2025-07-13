@@ -1,5 +1,5 @@
 // components/speaking/SpeakingHero.js
-import { events } from '@/data/speaking-events';
+import { events, uniqueCitiesCount } from '@/data/speaking-events';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
@@ -143,7 +143,7 @@ const SpeakingHero = () => {
             {[
               { 
                 label: "Speaking Events", 
-                count: events.length, 
+                count: `${events.length}+`, 
                 icon: "🎤",
                 color: "from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400",
                 bgColor: "bg-blue-50 dark:bg-blue-900/20",
@@ -151,7 +151,7 @@ const SpeakingHero = () => {
               },
               { 
                 label: "Cities Worldwide", 
-                count: 6, 
+                count: `${uniqueCitiesCount}+`, 
                 icon: "🌍",
                 color: "from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400",
                 bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
