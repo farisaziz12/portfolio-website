@@ -424,7 +424,7 @@ export const events: SpeakingEvent[] = [
     type: "Meetup",
     conference: "ZurichJS Pro",
     location: "Zurich, Switzerland",
-    date: "2025-11-13",
+    date: "2025-10-28",
     description: "Every web app has ghosts lurking in the shadows. This October, we'll shine a flashlight on the dark corners of modern web development, exploring how to hunt down hidden performance drains, invisible vulnerabilities, and subtle bugs waiting to strike.",
     slidesUrl: null,
     videoUrl: null,
