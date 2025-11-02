@@ -332,6 +332,17 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://zurichjs.com/events/zurich-js-meetup-8-flare-up-your-performance"
   },
   {
+    title: "Frontend Architecture at Scale with Faris Aziz",
+    type: "Podcast",
+    conference: "Señors @ Scale",
+    location: "Online",
+    date: "2025-09-14",
+    description: "Join me on the Señors @ Scale podcast where we dive deep into frontend architecture at scale. Discussing real-world challenges, architectural patterns, and strategies for building scalable frontend systems that can handle enterprise-level complexity.",
+    slidesUrl: null,
+    videoUrl: "https://www.youtube.com/watch?v=4AtijFQQIZY",
+    eventUrl: "https://www.youtube.com/watch?v=4AtijFQQIZY"
+  },
+  {
     title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
     type: "Conference",
     conference: "WhatTheStack",
@@ -376,7 +387,62 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://javascript-conference.com/munich/"
   },
   {
-    title: "Caching, Payloads, and Other Dark Arts: A Frontend Engineer's Journey",
+    title: "Panel Moderator: Stripe Startup Leaders Dinner",
+    type: "Meetup",
+    conference: "Stripe",
+    location: "Zurich, Switzerland",
+    date: "2025-10-23",
+    description: "Moderating a panel discussion at Stripe's exclusive startup leaders dinner, bringing together founders and tech leaders to discuss the future of payments and startup growth strategies.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "Guest Judge: Figma Make-a-thon",
+    type: "Conference",
+    conference: "Friends of Figma Zurich",
+    location: "Zurich, Switzerland",
+    date: "2025-10-25",
+    description: "One day. One tool. Endless ways to Make. Serving as a guest judge for Figma's first Make-a-thon - a design jam meets hackathon where 35-40 makers build AI-powered prototypes in a single day. Evaluating projects across categories including Best Use of Figma AI, Most Impact, and People's Choice.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://friends.figma.com/events/details/figma-zurich-presents-figma-make-a-thon-a-community-jam-for-the-makers-at-heart/"
+  },
+  {
+    title: "Real-World React: The Architectural Crash Course for Scalability, Resilience, and Observability (feat. Next.js)",
+    type: "Workshop",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2025-11-12",
+    description: "A 3-hour crash course covering essential production-ready patterns through rapid-fire lessons, hands-on exercises, and real-world examples. Learn architectural patterns that bring stability to your React applications before the winter code freeze sets in.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/workshops/react-architecture"
+  },
+  {
+    title: "ZurichJS Pro Meetup: H(a)unt the gaps in your Apps",
+    type: "Meetup",
+    conference: "ZurichJS Pro",
+    location: "Zurich, Switzerland",
+    date: "2025-11-13",
+    description: "Every web app has ghosts lurking in the shadows. This October, we'll shine a flashlight on the dark corners of modern web development, exploring how to hunt down hidden performance drains, invisible vulnerabilities, and subtle bugs waiting to strike.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/pro-zurichjs-meetup-9"
+  },
+  {
+    title: "It Worked on My Machine: Debugging Without the Screenshot Olympics",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2025-11-13",
+    description: "Every developer has lived their own version of 'it worked on my machine'. Mine involved a client who stayed after a CrossFit class so I could debug a broken payment flow with them, outdoors, on their laptop, armed with blurry WhatsApp screenshots and bug reports that made no sense. I even found myself explaining how to open the browser network tab to someone who'd never seen DevTools. In this talk, I'm bringing that same 2020 app back to life, a weekend React-and-Rails project held together by hope, to see how we'd tackle those same problems today. We'll look at how modern full-stack session recordings and AI-assisted IDEs turn that chaos into context in a world where we now ship vibe-coded apps faster than ever.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurichjs-10-1st-anniversary-special-edition"
+  },
+  {
+    title: "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions",
     type: "Conference",
     conference: "React Summit US",
     location: "New York, United States",
@@ -385,6 +451,127 @@ export const events: SpeakingEvent[] = [
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://reactsummit.us/#person-faris-aziz"
+  },
+  {
+    title: "From Fragile to Future-Proof: Solving Web Monetization Chaos with Payment Systems That Scale",
+    type: "Conference",
+    conference: "JSNation US",
+    location: "New York, United States",
+    date: "2025-11-20",
+    description: "When expanding into global markets, payment integration becomes a technical and strategic challenge. Relying on a single provider like Stripe is fantastic until you hit a certain scale, from reliability issues to compliance roadblocks. This talk explores payment orchestration—treating payments as a dynamic system rather than a static feature—to balance cost, conversion rates, and compliance.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "Engineering Without a Safety Net: Where It Works and Where It Hurts",
+    type: "Meetup",
+    conference: "Software Social NYC",
+    location: "New York, United States",
+    date: "2025-11-20",
+    description: "Testing, monitoring, observability. They're rarely urgent, often skipped, and easy to dismiss when things are moving fast. But what's the real cost of deferring them, and how much can you actually get away with? This talk explores the tradeoffs of skipping traditional engineering practices in the name of speed, and what happens when you try to layer them in after a system has already scaled.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://www.meetup.com/sonarqube-nyc/events/311767372/"
+  },
+  {
+    title: "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions",
+    type: "Meetup",
+    conference: "LisboaJS",
+    location: "Lisbon, Portugal",
+    date: "2025-12-18",
+    description: "When your backend is untouchable but your frontend is falling apart—how do you fix the UX? In this talk, I'll share how we rescued a sluggish fintech dashboard using a BFF layer, smart caching, and real-world profiling, without touching a single backend line.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://luma.com/y8qe9gcc"
+  },
+  {
+    title: "ZurichJS X Stripe: Navigating Payments in the New Year",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-01-22",
+    description: "A special collaborative meetup with Stripe exploring payment technologies and strategies for the new year.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/jan-2026"
+  },
+  {
+    title: "CityJS Singapore Community Meetup",
+    type: "Meetup",
+    conference: "CityJS Singapore",
+    location: "Singapore",
+    date: "2026-02-04",
+    description: "Join us for a community meetup the day before the CityJS Singapore workshops, connecting with local developers and conference attendees.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://singapore.cityjsconf.org/"
+  },
+  {
+    title: "From Zero to Production with TanStack Query",
+    type: "Workshop",
+    conference: "CityJS Singapore",
+    location: "Singapore",
+    date: "2026-02-05",
+    description: "This workshop gives you a practical introduction to TanStack Query in modern React and Next.js apps. In three hours, you'll learn how to replace manual data fetching with a structured, cache-aware approach. We'll cover the fundamentals: setting it up, fetching and mutating data, caching, query invalidation, and how to handle loading and error states.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://singapore.cityjsconf.org/"
+  },
+  {
+    title: "Real-World React: The Architectural Crash Course for Scalability, Resilience, and Observability (feat. Next.js)",
+    type: "Workshop",
+    conference: "CityJS Singapore",
+    location: "Singapore",
+    date: "2026-02-05",
+    description: "A hands-on workshop exploring production-ready React and Next.js development. Learn practical performance optimization techniques, resilience patterns, and component architecture best practices. Through real-world examples, discover how to build maintainable applications that scale from startup to enterprise needs.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://singapore.cityjsconf.org/"
+  },
+  {
+    title: "Conference Day (Talk TBA)",
+    type: "Conference",
+    conference: "CityJS Singapore",
+    location: "Singapore",
+    date: "2026-02-06",
+    description: "Speaking at CityJS Singapore conference day.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://singapore.cityjsconf.org/"
+  },
+  {
+    title: "Master of Ceremonies",
+    type: "Conference",
+    conference: "Front Conference",
+    location: "Zurich, Switzerland",
+    date: "2026-02-27",
+    description: "Serving as Master of Ceremonies for Front Conference, one of Switzerland's premier frontend development conferences.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://frontconference.com/"
+  },
+  {
+    title: "From Zero to Production with TanStack Query",
+    type: "Workshop",
+    conference: "CityJS London",
+    location: "London, United Kingdom",
+    date: "2026-04-15",
+    description: "This workshop gives you a practical introduction to TanStack Query in modern React and Next.js apps. In three hours, you'll learn how to replace manual data fetching with a structured, cache-aware approach. We'll cover the fundamentals: setting it up, fetching and mutating data, caching, query invalidation, and how to handle loading and error states.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://london.cityjsconf.org/"
+  },
+  {
+    title: "Conference Day (Talk TBA)",
+    type: "Conference",
+    conference: "CityJS London",
+    location: "London, United Kingdom",
+    date: "2026-04-16",
+    description: "Speaking at CityJS London conference day. Talk to be determined.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://london.cityjsconf.org/"
   },
 ];
 

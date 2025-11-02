@@ -18,11 +18,54 @@ interface SpeakingProps {
 
 export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) {
   const [filter, setFilter] = useState('all');
-  
-  // Filter events by type if needed
-  const filteredPastEvents = pastEvents.filter(event => 
-    filter === 'all' || event.type.toLowerCase() === filter
-  );
+  const [yearFilter, setYearFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 12;
+
+  // Get unique years from past events
+  const years = useMemo(() => {
+    const yearSet = new Set(pastEvents.map(event => new Date(event.date).getFullYear()));
+    return ['all', ...Array.from(yearSet).sort((a, b) => b - a)];
+  }, [pastEvents]);
+
+  // Filter events by type, year, and search query
+  const filteredPastEvents = useMemo(() => {
+    return pastEvents.filter(event => {
+      const matchesType = filter === 'all' || event.type.toLowerCase() === filter;
+      const matchesYear = yearFilter === 'all' || new Date(event.date).getFullYear().toString() === yearFilter;
+      const matchesSearch = searchQuery === '' ||
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.conference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesType && matchesYear && matchesSearch;
+    });
+  }, [pastEvents, filter, yearFilter, searchQuery]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPastEvents.length / eventsPerPage);
+  const paginatedEvents = useMemo(() => {
+    const startIndex = (currentPage - 1) * eventsPerPage;
+    return filteredPastEvents.slice(startIndex, startIndex + eventsPerPage);
+  }, [filteredPastEvents, currentPage]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
+
+  const handleYearFilterChange = (newYear: string) => {
+    setYearFilter(newYear);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
   
   // Generate JSON-LD structured data for events
   const structuredData = useMemo(() => {
@@ -126,7 +169,48 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
               </motion.div>
             )}
           </AnimatedSection>
-          
+
+          {/* Conference Logos Strip */}
+          <AnimatedSection className="mt-24">
+            <motion.div
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured At</h2>
+              <p className="text-lg max-w-2xl mx-auto text-gray-600 dark:text-gray-300">
+                Proud to have shared knowledge at these amazing conferences and events
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {[
+                { name: 'React Summit', type: 'Conference' },
+                { name: 'JSNation', type: 'Conference' },
+                { name: 'CityJS', type: 'Conference' },
+                { name: 'Voxxed Days', type: 'Conference' },
+                { name: 'ReactJS Day', type: 'Conference' },
+                { name: 'Frontend Nation', type: 'Conference' },
+                { name: 'International JavaScript Conference', type: 'Conference' },
+                { name: 'ZurichJS', type: 'Meetup' },
+              ].map((conf, index) => (
+                <motion.div
+                  key={index}
+                  className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                >
+                  <h3 className="font-semibold text-lg mb-1">{conf.name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{conf.type}</p>
+                </motion.div>
+              ))}
+            </div>
+          </AnimatedSection>
+
           {/* Map Section */}
           <AnimatedSection className="mt-24">
             <motion.div 
@@ -167,9 +251,10 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
           </AnimatedSection>
           
           {/* Past Events Section */}
-          <AnimatedSection className="mt-24">
-            <motion.div 
-              className="text-center mb-12"
+          <div id="past-talks">
+            <AnimatedSection className="mt-24">
+              <motion.div
+                className="text-center mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -179,16 +264,67 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
               <p className="text-lg max-w-2xl mx-auto text-gray-600 dark:text-gray-300 mb-6">
                 A collection of my previous speaking engagements, workshops, and conference appearances.
               </p>
-              
-              {/* Filter buttons */}
+
+              {/* Search Bar */}
+              <div className="max-w-xl mx-auto mb-8">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by title, conference, or location..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {searchQuery && (
+                    <button
+                      onClick={() => handleSearchChange('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Year Filter */}
+              <div className="flex justify-center flex-wrap gap-3 mb-4">
+                {years.map((year) => (
+                  <motion.button
+                    key={year}
+                    onClick={() => handleYearFilterChange(year.toString())}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      yearFilter === year.toString()
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {year === 'all' ? 'All Years' : year}
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Type Filter buttons */}
               <div className="flex justify-center flex-wrap gap-3 mt-6">
-                {['all', 'conference', 'workshop', 'meetup'].map((type) => (
+                {['all', 'conference', 'workshop', 'meetup', 'podcast', 'webinar'].map((type) => (
                   <motion.button
                     key={type}
-                    onClick={() => setFilter(type)}
+                    onClick={() => handleFilterChange(type)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      filter === type 
-                        ? 'bg-blue-600 text-white' 
+                      filter === type
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                     whileHover={{ scale: 1.05 }}
@@ -198,11 +334,16 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
                   </motion.button>
                 ))}
               </div>
+
+              {/* Results count */}
+              <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
+                Showing {filteredPastEvents.length} event{filteredPastEvents.length !== 1 ? 's' : ''}
+              </p>
             </motion.div>
             
             <div className="space-y-6 max-w-4xl mx-auto">
-              {filteredPastEvents.length > 0 ? (
-                filteredPastEvents.map((event, index) => (
+              {paginatedEvents.length > 0 ? (
+                paginatedEvents.map((event, index) => (
                   <motion.div
                     key={index}
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
@@ -276,7 +417,7 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
                   </motion.div>
                 ))
               ) : (
-                <motion.div 
+                <motion.div
                   className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
@@ -287,31 +428,172 @@ export default function Speaking({ pastEvents, upcomingEvents }: SpeakingProps) 
                 </motion.div>
               )}
             </div>
-          </AnimatedSection>
-          
-          {/* Call to Action */}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <motion.div
+                className="flex justify-center items-center gap-2 mt-8"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Previous
+                </button>
+
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-4 py-2 rounded-lg transition-colors ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return <span key={page} className="px-2 py-2 text-gray-500">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Next
+                </button>
+              </motion.div>
+            )}
+            </AnimatedSection>
+          </div>
+
+          {/* Call to Action - Segmented for Different Audiences */}
           <AnimatedSection className="mt-24">
-            <motion.div 
-              className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-8 text-center max-w-4xl mx-auto"
+            <motion.div
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-8 md:p-12 text-center max-w-5xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Looking for a speaker for your event? 🎙️</h2>
-              <p className="text-lg mb-6 max-w-2xl mx-auto">
-                Excited to share insights on frontend development, engineering leadership, 
-                and building scalable systems! I&apos;m available for conferences, workshops, and meetups.
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Let&apos;s Work Together</h2>
+              <p className="text-lg mb-8 max-w-2xl mx-auto text-gray-600 dark:text-gray-300">
+                Whether you&apos;re organizing a conference, looking for workshops, or want to connect at an upcoming event
               </p>
-              <Link href="/contact" legacyBehavior>
-                <motion.a 
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                {/* Conference Organizers */}
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Get In Touch
-                </motion.a>
-              </Link>
+                  <Link href="/contact" legacyBehavior>
+                    <a className="block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all">
+                      <div className="text-3xl mb-3">🎤</div>
+                      <h3 className="font-semibold mb-2">Book Me to Speak</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Conference talks & keynotes
+                      </p>
+                    </a>
+                  </Link>
+                </motion.div>
+
+                {/* Companies */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Link href="/contact" legacyBehavior>
+                    <a className="block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all">
+                      <div className="text-3xl mb-3">🛠️</div>
+                      <h3 className="font-semibold mb-2">Request Workshop</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Team training & workshops
+                      </p>
+                    </a>
+                  </Link>
+                </motion.div>
+
+                {/* Attendees */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Link href="/speaking/upcoming" legacyBehavior>
+                    <a className="block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all">
+                      <div className="text-3xl mb-3">📅</div>
+                      <h3 className="font-semibold mb-2">Meet Me at Event</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        View upcoming events
+                      </p>
+                    </a>
+                  </Link>
+                </motion.div>
+
+                {/* Developers */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <button
+                    onClick={() => {
+                      const pastSection = document.querySelector('#past-talks');
+                      pastSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="w-full block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <div className="text-3xl mb-3">🎥</div>
+                    <h3 className="font-semibold mb-2">Watch Past Talks</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Videos & slides available
+                    </p>
+                  </button>
+                </motion.div>
+              </div>
+
+              {/* Popular Topics */}
+              <div className="mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="font-semibold mb-4 text-lg">Popular Topics I Cover:</h3>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {[
+                    'Next.js & React Performance',
+                    'Data Fetching Strategies',
+                    'Payment Systems Architecture',
+                    'Engineering Leadership',
+                    'Building Scalable Systems',
+                    'TanStack Query',
+                  ].map((topic, index) => (
+                    <span
+                      key={index}
+                      className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           </AnimatedSection>
         </div>
