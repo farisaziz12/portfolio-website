@@ -474,6 +474,17 @@ export const events: SpeakingEvent[] = [
     videoUrl: null,
     eventUrl: "https://www.meetup.com/sonarqube-nyc/events/311767372/"
   },
+    {
+    title: "ZurichJS X Supabase Social",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2025-12-08",
+    description: "​No slides, no prep, no pressure. A relaxed night for people who build things, whether you are a founder, a CTO, or a developer who ships fast and figures things out along the way.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/zurichjs-supabase-dec-2025"
+  },
   {
     title: "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions",
     type: "Meetup",
@@ -530,15 +541,26 @@ export const events: SpeakingEvent[] = [
     eventUrl: "https://singapore.cityjsconf.org/"
   },
   {
-    title: "Conference Day (Talk TBA)",
+    title: "Performance Without Memoization, The Atomic Design Approach",
     type: "Conference",
     conference: "CityJS Singapore",
     location: "Singapore",
     date: "2026-02-06",
-    description: "Speaking at CityJS Singapore conference day.",
+    description: "Most teams fight React performance with memoization band aids and prop drilling acrobatics. We obsess over useMemo and useCallback, sprinkle React.memo everywhere and hope for the best. Yet performance problems keep surfacing. The root issue is usually not missing memoization, it is misunderstood component architecture. This talk reveals how React’s reconciliation algorithm actually works, and how combining it with Atomic Design principles gives you a natural performance model without hacks. By structuring components around stability boundaries and predictable render surfaces, you avoid unnecessary re renders from the start and remove half the memo calls currently in your codebase. I will show real examples at scale, common reconciliation traps, measurable outcomes when refactoring with atomic boundaries and how to test and profile effectively. You will leave knowing where React pays attention, how to design with reconciliation in mind and why deleting memoization might be the fastest performance improvement you ship all year.",
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://singapore.cityjsconf.org/"
+  },
+  {
+    title: "ZurichJS X Front Conference: Warm Up",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-02-26",
+    description: "Official warm-up event for Front Conference, bringing together the JavaScript community before the main conference.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/feb-2026"
   },
   {
     title: "Master of Ceremonies",
@@ -550,6 +572,105 @@ export const events: SpeakingEvent[] = [
     slidesUrl: null,
     videoUrl: null,
     eventUrl: "https://frontconference.com/"
+  },
+  {
+    title: "ZurichJS X VDZ: Warm Up",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-03-23",
+    description: "Official warm-up event for Voxxed Days Zurich, bringing together the JavaScript community before the main conference.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/march-2026"
+  },
+  {
+    title: "Orchestrating Millions Across the Globe: Reactive Payments at Scale",
+    type: "Conference",
+    conference: "jsday",
+    location: "Bologna, Italy",
+    date: "2026-04-09",
+    description: "When your platform expands into markets beyond your own and has ever growing monetization needs, 'just integrate Stripe' is easier said than done. Here's how looking at payments as technical orchestration rather than just a feature solves growth bottlenecks.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://www.jsday.it/"
+  },
+  {
+    title: "ZurichJS X Stripe",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-04-23",
+    description: "A special collaborative meetup with Stripe exploring payment technologies and strategies.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "ZurichJS Pro: May the Source Map Be With You",
+    type: "Meetup",
+    conference: "ZurichJS Pro",
+    location: "Zurich, Switzerland",
+    date: "2026-05-21",
+    description: "A premium ZurichJS Pro Meetup featuring world-class speakers and exclusive content.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://zurichjs.com/events/may-2026"
+  },
+  {
+    title: "ZurichJS X Stripe",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-06-18",
+    description: "A special collaborative meetup with Stripe exploring payment technologies and strategies.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "ZurichJS Summer Social",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-07-23",
+    description: "A relaxed summer social gathering for the Zurich JavaScript community.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "ZurichJS Conf Warm Up Meetup",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-09-09",
+    description: "A special edition warm-up meetup to kick off the ZurichJS Conf conference week. Join us for an evening of community building, networking, and informal discussions.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
+  },
+  {
+    title: "ZurichJS Conf 2026",
+    type: "Conference",
+    conference: "ZurichJS Conf",
+    location: "Zurich, Switzerland",
+    date: "2026-09-11",
+    description: "The International Community Conference - four days of community building, learning, and networking. From grassroots meetups to cutting-edge technical sessions, bringing together JavaScript enthusiasts from around the world.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: "https://conf.zurichjs.com/"
+  },
+  {
+    title: "ZurichJS 2nd Anniversary Special",
+    type: "Meetup",
+    conference: "ZurichJS",
+    location: "Zurich, Switzerland",
+    date: "2026-11-19",
+    description: "Celebrating two years of ZurichJS with a special anniversary meetup featuring community highlights and future plans.",
+    slidesUrl: null,
+    videoUrl: null,
+    eventUrl: null
   },
   {
     title: "From Zero to Production with TanStack Query",
