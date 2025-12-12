@@ -1,0 +1,126 @@
+---
+/**
+ * SpotlightCard - Card with spotlight hover effect
+ * Inspired by ReactBits SpotlightCard component
+ */
+interface Props {
+  class?: string;
+  spotlightColor?: string;
+  borderColor?: string;
+}
+
+const {
+  class: className = '',
+  spotlightColor = 'rgba(99, 102, 241, 0.15)',
+  borderColor = 'rgba(99, 102, 241, 0.5)'
+} = Astro.props;
+---
+
+<div
+  class:list={['spotlight-card', className]}
+  style={`--spotlight-color: ${spotlightColor}; --spotlight-border: ${borderColor}`}
+  data-spotlight-card
+>
+  <div class="spotlight-card__spotlight"></div>
+  <div class="spotlight-card__border"></div>
+  <div class="spotlight-card__content">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .spotlight-card {
+    position: relative;
+    border-radius: 1rem;
+    background: var(--surface-raised);
+    overflow: hidden;
+  }
+
+  .spotlight-card__spotlight {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(
+      600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      var(--spotlight-color),
+      transparent 40%
+    );
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .spotlight-card:hover .spotlight-card__spotlight {
+    opacity: 1;
+  }
+
+  .spotlight-card__border {
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1px;
+    background: radial-gradient(
+      400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      var(--spotlight-border),
+      transparent 40%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .spotlight-card:hover .spotlight-card__border {
+    opacity: 1;
+  }
+
+  .spotlight-card__content {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+  }
+
+  /* Default border when not hovered */
+  .spotlight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1px;
+    background: var(--edge);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    transition: opacity 0.3s ease;
+  }
+
+  .spotlight-card:hover::before {
+    opacity: 0.3;
+  }
+</style>
+
+<script>
+  function initSpotlightCards() {
+    const cards = document.querySelectorAll('[data-spotlight-card]');
+
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const event = e as MouseEvent;
+        const rect = (card as HTMLElement).getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
+        (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initSpotlightCards);
+  document.addEventListener('astro:after-swap', initSpotlightCards);
+</script>

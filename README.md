@@ -1,40 +1,175 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# faziz-dev.com
 
-## Getting Started
+Personal portfolio and speaker platform for Faris Aziz - Staff Software Engineer, Conference Speaker & Workshop Instructor.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend**: [Astro](https://astro.build/) 5.x with React islands
+- **CMS**: [Sanity](https://www.sanity.io/) v3 with custom schemas
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with custom design tokens
+- **Monorepo**: pnpm workspaces
+
+## Project Structure
+
+```
+/
+├── apps/
+│   ├── web/                 # Astro website
+│   │   ├── src/
+│   │   │   ├── components/  # Astro & React components
+│   │   │   ├── layouts/     # Page layouts
+│   │   │   ├── lib/sanity/  # Sanity client & queries
+│   │   │   ├── pages/       # Astro pages
+│   │   │   └── styles/      # Global styles
+│   │   └── public/          # Static assets
+│   └── studio/              # Sanity Studio
+│       ├── schemas/         # Content schemas
+│       └── desk/            # Desk structure
+├── packages/
+│   └── shared/              # Shared types & utilities
+├── scripts/
+│   └── migrate-content.ts   # Content migration script
+└── .migration-data/         # Backup of original content
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+- Node.js 20+
+- pnpm 9+
+- Sanity account (for CMS)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+# Clone the repository
+git clone https://github.com/farisaziz12/portfolio-website.git
+cd portfolio-website
 
-## Learn More
+# Install dependencies
+pnpm install
 
-To learn more about Next.js, take a look at the following resources:
+# Set up environment variables
+cp apps/web/.env.example apps/web/.env
+cp apps/studio/.env.example apps/studio/.env
+# Edit .env files with your Sanity credentials
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```bash
+# Start all apps (web + studio)
+pnpm dev
 
-## Deploy on Vercel
+# Start only the website
+pnpm web
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Start only Sanity Studio
+pnpm studio
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Building
+
+```bash
+# Build all apps
+pnpm build
+
+# Build only the website
+pnpm --filter web build
+```
+
+## Environment Variables
+
+### apps/web/.env
+
+```env
+PUBLIC_SANITY_PROJECT_ID=your_project_id
+PUBLIC_SANITY_DATASET=production
+```
+
+### apps/studio/.env
+
+```env
+SANITY_STUDIO_PROJECT_ID=your_project_id
+SANITY_STUDIO_DATASET=production
+```
+
+### Root (for migration script)
+
+```env
+SANITY_PROJECT_ID=your_project_id
+SANITY_DATASET=production
+SANITY_API_TOKEN=your_write_token
+```
+
+## Content Migration
+
+To migrate content from the backup JSON files to Sanity:
+
+```bash
+# Set environment variables
+export SANITY_PROJECT_ID=your_project_id
+export SANITY_DATASET=production
+export SANITY_API_TOKEN=your_write_token
+
+# Run migration
+pnpm migrate
+```
+
+See [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) for detailed content management instructions.
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home page with hero, stats, upcoming events |
+| `/speaking` | Speaking overview with upcoming/past events |
+| `/events` | All events archive |
+| `/events/[slug]` | Individual event detail |
+| `/talks` | Available talks index |
+| `/talks/[slug]` | Talk detail with event history |
+| `/workshops` | Workshops index |
+| `/workshops/[slug]` | Workshop detail |
+| `/invite` | Speaker kit for event organizers |
+| `/about` | About page with work experience |
+| `/projects` | Projects portfolio |
+| `/projects/[slug]` | Project detail |
+| `/media` | Photo/video gallery |
+| `/blog` | External posts & podcasts |
+| `/rss.xml` | RSS feed |
+
+## Sanity Schemas
+
+| Schema | Description |
+|--------|-------------|
+| `talk` | Canonical talk topics |
+| `event` | Speaking event occurrences |
+| `workshop` | Workshop offerings |
+| `project` | Portfolio projects |
+| `company` | Work experience |
+| `media` | Gallery photos/videos |
+| `testimonial` | Social proof quotes |
+| `externalPost` | External articles/podcasts |
+| `page` | Editable pages |
+| `speakerProfile` | Speaker kit singleton |
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Connect your GitHub repository to Vercel
+2. Set the root directory to `apps/web`
+3. Add environment variables in Vercel dashboard
+4. Deploy!
+
+### Sanity Studio
+
+```bash
+cd apps/studio
+npx sanity deploy
+```
+
+## License
+
+MIT

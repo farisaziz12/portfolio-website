@@ -1,0 +1,158 @@
+---
+/**
+ * Aurora - Animated gradient background effect
+ * Inspired by ReactBits Aurora component
+ */
+interface Props {
+  class?: string;
+  colors?: string[];
+  speed?: 'slow' | 'normal' | 'fast';
+  blur?: number;
+  opacity?: number;
+}
+
+const {
+  class: className = '',
+  colors = ['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4'],
+  speed = 'normal',
+  blur = 80,
+  opacity = 0.5
+} = Astro.props;
+
+const speedMap = {
+  slow: '20s',
+  normal: '12s',
+  fast: '6s'
+};
+---
+
+<div
+  class:list={['aurora', className]}
+  style={`--aurora-speed: ${speedMap[speed]}; --aurora-blur: ${blur}px; --aurora-opacity: ${opacity}`}
+  aria-hidden="true"
+>
+  <div class="aurora__container">
+    {colors.map((color, index) => (
+      <div
+        class="aurora__blob"
+        style={`--blob-color: ${color}; --blob-index: ${index}; --blob-count: ${colors.length}`}
+      />
+    ))}
+  </div>
+</div>
+
+<style>
+  .aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .aurora__container {
+    position: absolute;
+    inset: -50%;
+    filter: blur(var(--aurora-blur, 80px));
+    opacity: var(--aurora-opacity, 0.5);
+  }
+
+  .aurora__blob {
+    position: absolute;
+    width: 40%;
+    height: 40%;
+    border-radius: 50%;
+    background: var(--blob-color);
+    animation: auroraMove var(--aurora-speed, 12s) ease-in-out infinite;
+    animation-delay: calc(var(--blob-index) * calc(var(--aurora-speed, 12s) / var(--blob-count)));
+  }
+
+  .aurora__blob:nth-child(1) {
+    top: 0;
+    left: 0;
+    animation-name: auroraMove1;
+  }
+
+  .aurora__blob:nth-child(2) {
+    top: 0;
+    right: 0;
+    animation-name: auroraMove2;
+  }
+
+  .aurora__blob:nth-child(3) {
+    bottom: 0;
+    left: 20%;
+    animation-name: auroraMove3;
+  }
+
+  .aurora__blob:nth-child(4) {
+    bottom: 0;
+    right: 20%;
+    animation-name: auroraMove4;
+  }
+
+  @keyframes auroraMove1 {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(30%, 20%) scale(1.1);
+    }
+    50% {
+      transform: translate(60%, 10%) scale(0.9);
+    }
+    75% {
+      transform: translate(30%, 30%) scale(1.05);
+    }
+  }
+
+  @keyframes auroraMove2 {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(-20%, 30%) scale(0.9);
+    }
+    50% {
+      transform: translate(-40%, 20%) scale(1.1);
+    }
+    75% {
+      transform: translate(-20%, 40%) scale(0.95);
+    }
+  }
+
+  @keyframes auroraMove3 {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20%, -30%) scale(1.05);
+    }
+    50% {
+      transform: translate(40%, -20%) scale(0.9);
+    }
+    75% {
+      transform: translate(10%, -40%) scale(1.1);
+    }
+  }
+
+  @keyframes auroraMove4 {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(-30%, -20%) scale(0.95);
+    }
+    50% {
+      transform: translate(-20%, -40%) scale(1.1);
+    }
+    75% {
+      transform: translate(-40%, -10%) scale(0.9);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora__blob {
+      animation: none;
+    }
+  }
+</style>

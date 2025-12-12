@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { allMediaQuery } from '../lib/sanity/queries';
+import { formatDate, getCountryFlag } from 'shared/utils';
+
+interface MediaItem {
+  _id: string;
+  title?: string;
+  type: string;
+  image?: any;
+  videoUrl?: string;
+  date?: string;
+  location?: string;
+  description?: string;
+  event?: {
+    _id: string;
+    title: string;
+    slug: string;
+  };
+  credit?: string;
+  featured?: boolean;
+}
+
+const media = await sanityFetch<MediaItem[]>(allMediaQuery).catch(() => []);
+
+// Group media by type
+const photos = media.filter((m) => m.type === 'photo');
+const videos = media.filter((m) => m.type === 'video');
+const press = media.filter((m) => m.type === 'press');
+---
+
+<BaseLayout
+  title="Media | Faris Aziz"
+  description="Photos, videos, and press coverage from Faris Aziz's speaking engagements at conferences and meetups around the world."
+  pathname="/media"
+>
+  <section class="section">
+    <div class="container">
+      <div class="max-w-4xl">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6" transition:name="page-title">
+          Media Gallery
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          Photos and videos from conferences, meetups, and speaking engagements around the world.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {media.length > 0 ? (
+    <>
+      <!-- Videos Section -->
+      {videos.length > 0 && (
+        <section class="section bg-gray-50 dark:bg-gray-800/50">
+          <div class="container">
+            <h2 class="section-title">Talk Recordings</h2>
+            <p class="section-subtitle">Watch recordings of my presentations</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {videos.map((item: any) => (
+                <a
+                  href={item.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-hover overflow-hidden group"
+                >
+                  <div class="aspect-video bg-gray-100 dark:bg-gray-700 relative">
+                    {item.image ? (
+                      <img
+                        src={urlFor(item.image).width(400).height(225).url()}
+                        alt={item.title}
+                        class="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div class="w-full h-full flex items-center justify-center">
+                        <svg class="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="p-4">
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                    {item.event && (
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        {item.event.title}
+                      </p>
+                    )}
+                    {item.date && (
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(item.date, { month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Photos Section -->
+      {photos.length > 0 && (
+        <section class="section">
+          <div class="container">
+            <h2 class="section-title">Photos</h2>
+            <p class="section-subtitle">Snapshots from events around the world</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {photos.map((item: any) => (
+                <div class="card overflow-hidden group">
+                  {item.image && (
+                    <div class="aspect-square bg-gray-100 dark:bg-gray-700">
+                      <img
+                        src={urlFor(item.image).width(400).height(400).url()}
+                        alt={item.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div class="p-3">
+                    <p class="text-sm text-gray-900 dark:text-white font-medium line-clamp-1">
+                      {item.title}
+                    </p>
+                    {item.location && (
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {getCountryFlag(item.location.country)} {item.location.city}
+                      </p>
+                    )}
+                    {item.credit && (
+                      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        Photo: {item.credit}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Press Section -->
+      {press.length > 0 && (
+        <section class="section bg-gray-50 dark:bg-gray-800/50">
+          <div class="container">
+            <h2 class="section-title">Press & Features</h2>
+            <p class="section-subtitle">Articles and mentions</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
+              {press.map((item: any) => (
+                <div class="card p-6">
+                  <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                    {item.title}
+                  </h3>
+                  {item.description && (
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      {item.description}
+                    </p>
+                  )}
+                  {item.date && (
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(item.date, { month: 'long', year: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+    <section class="section">
+      <div class="container">
+        <div class="card p-12 text-center max-w-2xl mx-auto">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Media content will appear here once added to Sanity.
+          </p>
+          <a href="/speaking" class="text-blue-600 dark:text-blue-400 hover:underline">
+            View speaking events &rarr;
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  <section class="section bg-blue-600 dark:bg-blue-700">
+    <div class="container text-center">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+        Want professional photos at your event?
+      </h2>
+      <p class="text-blue-100 mb-8 max-w-2xl mx-auto">
+        I'm always happy to share professional photos and videos from events. Let's discuss how to capture great content together.
+      </p>
+      <a href="/invite" class="btn bg-white text-blue-600 hover:bg-blue-50">
+        Get in touch
+      </a>
+    </div>
+  </section>
+</BaseLayout>

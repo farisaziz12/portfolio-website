@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(du:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm sanity documents query:*)",
+      "Bash(while read id)",
+      "Bash(do pnpm sanity documents delete $id --yes)",
+      "Bash(done)",
+      "Bash(node --version:*)",
+      "Bash(xargs ls:*)",
+      "Bash(paste:*)",
+      "Bash(wc:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm build:*)"
+    ]
+  }
+}

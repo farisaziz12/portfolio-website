@@ -1,0 +1,191 @@
+---
+import ThemeToggle from '../islands/ThemeToggle';
+import { sanityFetch } from '../../lib/sanity/client';
+import { upcomingEventsQuery } from '../../lib/sanity/queries';
+
+interface UpcomingEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  type: string;
+  conference: string;
+  date: string;
+  location?: {
+    city?: string;
+    country?: string;
+  };
+}
+
+const pathname = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/speaking', label: 'Speaking' },
+  { href: '/talks', label: 'Talks' },
+  { href: '/workshops', label: 'Workshops' },
+  { href: '/about', label: 'About' },
+];
+
+function isActive(href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname.startsWith(href);
+}
+
+// Fetch next upcoming event
+const upcomingEvents = await sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []);
+const nextEvent = upcomingEvents[0];
+
+// Format date nicely
+function formatEventDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+---
+
+<header class="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-edge">
+  <nav class="container" aria-label="Main navigation">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo / Name -->
+      <div class="flex items-center gap-4">
+        <a
+          href="/"
+          class="font-display font-semibold text-body-lg text-ink hover:text-accent transition-colors"
+        >
+          Faris Aziz
+        </a>
+
+        {/* Next Event - Desktop */}
+        {nextEvent && (
+          <a
+            href={`/events/${nextEvent.slug}`}
+            class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs bg-surface-overlay rounded-full border border-edge hover:border-accent/50 transition-colors"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            <span class="text-ink-muted">{nextEvent.type === 'meetup' ? 'Next' : 'Next'}:</span>
+            <span class="text-ink font-medium">{nextEvent.conference}</span>
+            <span class="text-ink-faint">•</span>
+            <span class="text-ink-muted">{formatEventDate(nextEvent.date)}</span>
+          </a>
+        )}
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-8">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="nav-link"
+            aria-current={isActive(link.href) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))}
+
+        <div class="w-px h-5 bg-edge" aria-hidden="true"></div>
+
+        <ThemeToggle client:load />
+
+        <a href="/invite" class="btn-primary">
+          Invite me
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="flex items-center gap-3 md:hidden">
+        <ThemeToggle client:load />
+
+        <button
+          type="button"
+          class="btn-ghost p-2"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          id="mobile-menu-button"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div
+      id="mobile-menu"
+      class="hidden md:hidden pb-4"
+      role="navigation"
+      aria-label="Mobile navigation"
+    >
+      <div class="flex flex-col gap-1 pt-2">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="px-3 py-2.5 rounded-md text-body font-medium text-ink-muted hover:text-ink hover:bg-surface-overlay transition-colors"
+            aria-current={isActive(link.href) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))}
+
+        <div class="my-2 h-px bg-edge" aria-hidden="true"></div>
+
+        <a
+          href="/invite"
+          class="px-3 py-2.5 rounded-md text-body font-medium text-accent hover:bg-accent-muted transition-colors"
+        >
+          Invite me to speak
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  function setupMobileMenu() {
+    const button = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
+
+    if (!button || !menu) return;
+
+    button.addEventListener('click', () => {
+      const isExpanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!isExpanded));
+      menu.classList.toggle('hidden');
+
+      // Update icon
+      const svg = button.querySelector('svg');
+      if (svg) {
+        svg.innerHTML = isExpanded
+          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />'
+          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!button.contains(e.target as Node) && !menu.contains(e.target as Node)) {
+        button.setAttribute('aria-expanded', 'false');
+        menu.classList.add('hidden');
+
+        const svg = button.querySelector('svg');
+        if (svg) {
+          svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
+        }
+      }
+    });
+
+    // Close menu on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+        button.setAttribute('aria-expanded', 'false');
+        menu.classList.add('hidden');
+        button.focus();
+      }
+    });
+  }
+
+  // Run on initial load
+  setupMobileMenu();
+
+  // Re-run after View Transitions
+  document.addEventListener('astro:after-swap', setupMobileMenu);
+</script>

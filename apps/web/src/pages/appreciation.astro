@@ -1,0 +1,1009 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { client, urlFor } from '../lib/sanity/client';
+import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
+
+// Fetch all data
+const [socialPosts, testimonials] = await Promise.all([
+  client.fetch(allSocialPostsQuery),
+  client.fetch(allTestimonialsQuery),
+]);
+
+// Group posts by related content
+const postsWithContext = socialPosts.filter((p: any) => p.relatedTalk || p.relatedEvent);
+const otherPosts = socialPosts.filter((p: any) => !p.relatedTalk && !p.relatedEvent);
+
+// Featured testimonials (first 3)
+const featuredTestimonials = testimonials.filter((t: any) => t.featured).slice(0, 3);
+const otherTestimonials = testimonials.filter((t: any) => !t.featured || featuredTestimonials.length === 0);
+
+const stats = {
+  total: socialPosts.length + testimonials.length,
+  posts: socialPosts.length,
+  testimonials: testimonials.length,
+  twitter: socialPosts.filter((p: any) => p.platform === 'twitter').length,
+  linkedin: socialPosts.filter((p: any) => p.platform === 'linkedin').length,
+};
+---
+
+<BaseLayout
+  title="Wall of Appreciation | Faris Aziz"
+  description="Kind words, mentions, and testimonials from the community about my talks, work, and contributions."
+  pathname="/appreciation"
+>
+  <!-- Hero Section -->
+  <section class="relative min-h-[60vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-28">
+      <div class="max-w-4xl">
+        <!-- Terminal intro -->
+        <div class="terminal max-w-md mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">appreciation.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> cat community_feedback.md</span>
+            <div class="terminal__output">Loading {stats.total} kind words...</div>
+          </div>
+        </div>
+
+        <h1 class="hero-title mb-6">
+          <span class="block text-ink">Wall of</span>
+          <span class="block hero-title--gradient">Appreciation</span>
+        </h1>
+
+        <p class="text-lead max-w-2xl mb-10">
+          Real feedback from conferences, colleagues, and the tech community.
+          Every mention motivates me to keep sharing knowledge.
+        </p>
+
+        <!-- Quick Stats -->
+        <div class="flex flex-wrap gap-8 mb-10">
+          <div class="stat-item">
+            <span class="stat-item__value text-accent">{stats.posts}</span>
+            <span class="stat-item__label">Social Posts</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__value text-violet-500">{stats.testimonials}</span>
+            <span class="stat-item__label">Testimonials</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__value text-pink-500">{stats.twitter + stats.linkedin}</span>
+            <span class="stat-item__label">Platforms</span>
+          </div>
+        </div>
+
+        <!-- Jump Links -->
+        <div class="flex flex-wrap gap-3">
+          <a href="#testimonials" class="btn-primary">
+            View Testimonials
+            <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </a>
+          <a href="#social-posts" class="btn-secondary">
+            Browse Social Posts
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Testimonials -->
+  {featuredTestimonials.length > 0 && (
+    <section id="testimonials" class="section-dark py-20 md:py-28 relative overflow-hidden">
+      <div class="absolute inset-0 dot-pattern opacity-20"></div>
+
+      <div class="container relative z-10">
+        <div class="text-center mb-12">
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">What People Say</p>
+          <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">
+            Featured <span class="text-gradient">Testimonials</span>
+          </h2>
+          <p class="text-slate-400 text-lg max-w-xl mx-auto">
+            Feedback that means the most from people I've worked with
+          </p>
+        </div>
+
+        <div class="testimonials-featured">
+          {featuredTestimonials.map((testimonial: any, index: number) => (
+            <div class="testimonial-featured" style={`--index: ${index}`}>
+              <div class="testimonial-featured__quote">
+                <svg class="testimonial-featured__icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+                <p class="testimonial-featured__text">{testimonial.quote}</p>
+              </div>
+              <div class="testimonial-featured__author">
+                {testimonial.image ? (
+                  <img
+                    src={urlFor(testimonial.image).width(80).height(80).url()}
+                    alt={testimonial.author}
+                    class="testimonial-featured__avatar"
+                  />
+                ) : (
+                  <div class="testimonial-featured__avatar testimonial-featured__avatar--placeholder">
+                    {testimonial.author?.charAt(0)}
+                  </div>
+                )}
+                <div class="testimonial-featured__info">
+                  <span class="testimonial-featured__name">{testimonial.author}</span>
+                  {(testimonial.role || testimonial.company) && (
+                    <span class="testimonial-featured__role">
+                      {testimonial.role}{testimonial.company && ` at ${testimonial.company}`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {otherTestimonials.length > 0 && (
+          <div class="mt-16">
+            <h3 class="text-xl font-display font-semibold text-white mb-8 text-center">More Testimonials</h3>
+            <div class="testimonials-grid">
+              {otherTestimonials.map((testimonial: any, index: number) => (
+                <div class="testimonial-card" style={`--index: ${index}`}>
+                  <p class="testimonial-card__quote">"{testimonial.quote}"</p>
+                  <div class="testimonial-card__footer">
+                    {testimonial.image ? (
+                      <img
+                        src={urlFor(testimonial.image).width(48).height(48).url()}
+                        alt={testimonial.author}
+                        class="testimonial-card__avatar"
+                      />
+                    ) : (
+                      <div class="testimonial-card__avatar testimonial-card__avatar--placeholder">
+                        {testimonial.author?.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <span class="testimonial-card__name">{testimonial.author}</span>
+                      {(testimonial.role || testimonial.company) && (
+                        <span class="testimonial-card__role">
+                          {testimonial.role}{testimonial.company && ` at ${testimonial.company}`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Social Posts Section -->
+  <section id="social-posts" class="section py-16 md:py-24">
+    <div class="container">
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div>
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-2">From the Community</p>
+          <h2 class="heading-2">Social Mentions</h2>
+          <p class="text-ink-muted mt-2">Posts from X and LinkedIn about my talks and work</p>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="filter-pills" role="tablist">
+          <button class="filter-pill active" data-filter="all" role="tab" aria-selected="true">
+            All <span class="filter-pill__count">{socialPosts.length}</span>
+          </button>
+          <button class="filter-pill" data-filter="twitter" role="tab" aria-selected="false">
+            <svg class="filter-pill__icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            X <span class="filter-pill__count">{stats.twitter}</span>
+          </button>
+          <button class="filter-pill" data-filter="linkedin" role="tab" aria-selected="false">
+            <svg class="filter-pill__icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            LinkedIn <span class="filter-pill__count">{stats.linkedin}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="posts-grid">
+        {socialPosts.map((post: any, index: number) => (
+          <div class={`post-wrapper ${(post.relatedTalk || post.relatedEvent) ? 'post-wrapper--has-context' : ''}`} data-type={post.platform} style={`--index: ${index}`}>
+            {/* Related Context - WRAPPER around the card */}
+            {(post.relatedTalk || post.relatedEvent) && (
+              <a
+                href={post.relatedTalk ? `/talks/${post.relatedTalk.slug}` : `/events/${post.relatedEvent.slug}`}
+                class="post-context-wrapper"
+              >
+                <span class="post-context-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="post-context-text">About: {post.relatedTalk?.title || post.relatedEvent?.conference}</span>
+                  <svg class="post-context-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </a>
+            )}
+
+            {/* The actual post card */}
+            <a
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class={`post-card post-card--${post.platform}`}
+            >
+              {/* Header */}
+              <div class="post-card__header">
+                {post.authorImage ? (
+                  <img
+                    src={urlFor(post.authorImage).width(48).height(48).url()}
+                    alt={post.author}
+                    class="post-card__avatar"
+                  />
+                ) : (
+                  <div class={`post-card__avatar post-card__avatar--placeholder post-card__avatar--${post.platform}`}>
+                    {post.author?.charAt(0)}
+                  </div>
+                )}
+                <div class="post-card__author">
+                  <span class="post-card__name">{post.author}</span>
+                  {post.authorRole && (
+                    <span class="post-card__role">{post.authorRole}</span>
+                  )}
+                  {post.postDate && (
+                    <span class="post-card__date">
+                      {new Date(post.postDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  )}
+                </div>
+                <div class={`post-card__platform post-card__platform--${post.platform}`}>
+                  {post.platform === 'twitter' ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <p class="post-card__content">{post.content}</p>
+
+              {/* Footer */}
+              <div class="post-card__footer">
+                {post.content.length > 200 && (
+                  <button class="post-card__expand" data-expand-btn>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="expand-text">Show more</span>
+                  </button>
+                )}
+                <span class="post-card__cta">
+                  Read on {post.platform === 'twitter' ? 'X' : 'LinkedIn'}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 17L17 7M17 7H7M17 7V17" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" style="display: none;">
+        <div class="text-6xl mb-4">🔍</div>
+        <p class="text-ink-muted">No posts match the current filter.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-20 md:py-28">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">
+          Want to share your experience?
+        </h2>
+        <p class="text-white/80 text-lg mb-8">
+          If you've attended one of my talks or worked with me, I'd love to hear your feedback.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+          <a
+            href="https://twitter.com/FarisAziz12"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:bg-white/90 transition-all"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            Tag me on X
+          </a>
+          <a
+            href="https://linkedin.com/in/farisaziz12"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/20 transition-all"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            Connect on LinkedIn
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Stats */
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-item__value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+
+  .stat-item__label {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  /* Featured Testimonials */
+  .testimonials-featured {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .testimonial-featured {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    animation: fadeUp 0.6s ease-out both;
+    animation-delay: calc(var(--index) * 0.1s);
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .testimonial-featured__quote {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .testimonial-featured__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--accent);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+  }
+
+  .testimonial-featured__text {
+    color: white;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .testimonial-featured__author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .testimonial-featured__avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .testimonial-featured__avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+  }
+
+  .testimonial-featured__info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .testimonial-featured__name {
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .testimonial-featured__role {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.875rem;
+  }
+
+  /* Testimonials Grid (smaller cards) */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .testimonial-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    animation: fadeUp 0.5s ease-out both;
+    animation-delay: calc(var(--index) * 0.05s);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .testimonial-card:hover {
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+  }
+
+  .testimonial-card__quote {
+    color: rgba(255,255,255,0.9);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 1rem;
+  }
+
+  .testimonial-card__footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .testimonial-card__avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .testimonial-card__avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+
+  .testimonial-card__name {
+    display: block;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8125rem;
+  }
+
+  .testimonial-card__role {
+    display: block;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.6875rem;
+  }
+
+  /* Filter Pills */
+  .filter-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--edge);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-pill:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+
+  .filter-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .filter-pill__icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .filter-pill__count {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* Posts Grid */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 1024px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Post Wrapper - contains context + card */
+  .post-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.5s ease-out both;
+    animation-delay: calc(var(--index) * 0.03s);
+  }
+
+  .post-wrapper.hidden {
+    display: none;
+  }
+
+  /* Context Wrapper - wraps around the card */
+  .post-wrapper--has-context {
+    padding: 0.5rem;
+    border-radius: 1.25rem;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .post-wrapper--has-context:hover {
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+  }
+
+  .post-context-wrapper {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+  }
+
+  .post-context-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .post-context-label svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  .post-context-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-context-arrow {
+    opacity: 0.6;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .post-context-wrapper:hover .post-context-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+
+  /* Post Card */
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .post-card--twitter {
+    background: #000;
+    color: #e7e9ea;
+  }
+
+  .post-card--twitter:hover {
+    box-shadow: 0 8px 30px rgba(29, 155, 240, 0.2);
+  }
+
+  .post-card--linkedin {
+    background: #fff;
+    color: #000;
+    border: 1px solid #e0e0e0;
+  }
+
+  .post-card--linkedin:hover {
+    box-shadow: 0 8px 30px rgba(10, 102, 194, 0.15);
+  }
+
+  /* Post Card Header */
+  .post-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-card__avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .post-card__avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+  }
+
+  .post-card__avatar--twitter {
+    background: #333;
+  }
+
+  .post-card__avatar--linkedin {
+    background: #0a66c2;
+  }
+
+  .post-card__author {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-card__name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+  }
+
+  .post-card--twitter .post-card__name {
+    color: #fff;
+  }
+
+  .post-card__role {
+    display: block;
+    font-size: 0.6875rem;
+    line-height: 1.3;
+  }
+
+  .post-card--twitter .post-card__role {
+    color: rgb(113 118 123);
+  }
+
+  .post-card--linkedin .post-card__role {
+    color: #666;
+  }
+
+  .post-card__date {
+    display: block;
+    font-size: 0.6875rem;
+    margin-top: 0.125rem;
+  }
+
+  .post-card--twitter .post-card__date {
+    color: rgb(113 118 123);
+  }
+
+  .post-card--linkedin .post-card__date {
+    color: #666;
+  }
+
+  .post-card__platform {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .post-card__platform--twitter {
+    color: #fff;
+  }
+
+  .post-card__platform--linkedin {
+    color: #0a66c2;
+  }
+
+  /* Post Content */
+  .post-card__content {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .post-card__content.expanded {
+    -webkit-line-clamp: unset;
+    display: block;
+  }
+
+  /* Post Footer */
+  .post-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .post-card--twitter .post-card__footer {
+    border-top: 1px solid rgb(47 51 54);
+  }
+
+  .post-card--linkedin .post-card__footer {
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .post-card__expand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    margin-left: -0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .post-card--twitter .post-card__expand {
+    color: rgb(231 233 234);
+  }
+
+  .post-card--twitter .post-card__expand:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #1d9bf0;
+  }
+
+  .post-card--linkedin .post-card__expand {
+    color: #666;
+  }
+
+  .post-card--linkedin .post-card__expand:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #0a66c2;
+  }
+
+  .post-card__expand svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    transition: transform 0.2s;
+  }
+
+  .post-card__expand.expanded svg {
+    transform: rotate(180deg);
+  }
+
+  .post-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    margin-left: auto;
+    transition: all 0.2s;
+  }
+
+  .post-card--twitter .post-card__cta {
+    color: #1d9bf0;
+  }
+
+  .post-card--linkedin .post-card__cta {
+    color: #0a66c2;
+  }
+
+  .post-card__cta svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    transition: transform 0.2s;
+  }
+
+  .post-card:hover .post-card__cta svg {
+    transform: translate(2px, -2px);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-featured,
+    .testimonial-card,
+    .post-wrapper {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  function initFilters() {
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const postWrappers = document.querySelectorAll('.post-wrapper');
+    const emptyState = document.querySelector('.empty-state') as HTMLElement;
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const filter = pill.getAttribute('data-filter');
+
+        // Update active state
+        filterPills.forEach(p => {
+          p.classList.remove('active');
+          p.setAttribute('aria-selected', 'false');
+        });
+        pill.classList.add('active');
+        pill.setAttribute('aria-selected', 'true');
+
+        // Filter posts
+        let visibleCount = 0;
+        postWrappers.forEach(wrapper => {
+          const type = wrapper.getAttribute('data-type');
+          const shouldShow = filter === 'all' || type === filter;
+
+          if (shouldShow) {
+            wrapper.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            wrapper.classList.add('hidden');
+          }
+        });
+
+        // Show empty state if needed
+        if (emptyState) {
+          emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+      });
+    });
+  }
+
+  function initExpandButtons() {
+    const expandButtons = document.querySelectorAll('[data-expand-btn]');
+    expandButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const card = btn.closest('.post-card');
+        if (!card) return;
+
+        const content = card.querySelector('.post-card__content') as HTMLElement;
+        if (!content) return;
+
+        const wasExpanded = content.classList.contains('expanded');
+
+        // Collapse all other expanded posts first
+        document.querySelectorAll('.post-card__content.expanded').forEach(otherContent => {
+          if (otherContent !== content) {
+            const otherCard = otherContent.closest('.post-card');
+            const otherBtn = otherCard?.querySelector('[data-expand-btn]');
+            const otherTextSpan = otherBtn?.querySelector('.expand-text') as HTMLElement;
+
+            otherContent.classList.remove('expanded');
+            otherBtn?.classList.remove('expanded');
+            if (otherTextSpan) {
+              otherTextSpan.textContent = 'Show more';
+            }
+          }
+        });
+
+        // Toggle current post
+        const isExpanded = !wasExpanded;
+        content.classList.toggle('expanded', isExpanded);
+        btn.classList.toggle('expanded', isExpanded);
+
+        const textSpan = btn.querySelector('.expand-text') as HTMLElement;
+        if (textSpan) {
+          textSpan.textContent = isExpanded ? 'Show less' : 'Show more';
+        }
+      });
+    });
+  }
+
+  function init() {
+    initFilters();
+    initExpandButtons();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:after-swap', init);
+</script>

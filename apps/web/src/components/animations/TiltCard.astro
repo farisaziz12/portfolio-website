@@ -1,0 +1,117 @@
+---
+/**
+ * TiltCard - Card with 3D tilt effect on hover
+ * Inspired by ReactBits TiltedCard component
+ */
+interface Props {
+  class?: string;
+  maxTilt?: number;
+  scale?: number;
+  perspective?: number;
+  glare?: boolean;
+  glareOpacity?: number;
+}
+
+const {
+  class: className = '',
+  maxTilt = 10,
+  scale = 1.02,
+  perspective = 1000,
+  glare = true,
+  glareOpacity = 0.2
+} = Astro.props;
+---
+
+<div
+  class:list={['tilt-card', className]}
+  style={`--max-tilt: ${maxTilt}deg; --tilt-scale: ${scale}; --perspective: ${perspective}px; --glare-opacity: ${glareOpacity}`}
+  data-tilt-card
+  data-glare={glare}
+>
+  <div class="tilt-card__inner">
+    <slot />
+  </div>
+  {glare && <div class="tilt-card__glare"></div>}
+</div>
+
+<style>
+  .tilt-card {
+    position: relative;
+    transform-style: preserve-3d;
+    perspective: var(--perspective, 1000px);
+  }
+
+  .tilt-card__inner {
+    transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .tilt-card:hover .tilt-card__inner {
+    transform: rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg)) scale(var(--tilt-scale, 1.02));
+  }
+
+  .tilt-card__glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, var(--glare-opacity, 0.2)) 0%,
+      transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    transform: translateZ(1px);
+  }
+
+  .tilt-card:hover .tilt-card__glare {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tilt-card__inner {
+      transition: none;
+    }
+    .tilt-card:hover .tilt-card__inner {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  function initTiltCards() {
+    const cards = document.querySelectorAll('[data-tilt-card]');
+
+    cards.forEach(card => {
+      const inner = card.querySelector('.tilt-card__inner') as HTMLElement;
+      if (!inner) return;
+
+      const maxTilt = parseFloat(getComputedStyle(card as HTMLElement).getPropertyValue('--max-tilt')) || 10;
+
+      card.addEventListener('mousemove', (e) => {
+        const event = e as MouseEvent;
+        const rect = (card as HTMLElement).getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        const rotateY = ((mouseX - centerX) / centerX) * maxTilt;
+        const rotateX = ((centerY - mouseY) / centerY) * maxTilt;
+
+        (card as HTMLElement).style.setProperty('--rotate-x', `${rotateX}deg`);
+        (card as HTMLElement).style.setProperty('--rotate-y', `${rotateY}deg`);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        (card as HTMLElement).style.setProperty('--rotate-x', '0deg');
+        (card as HTMLElement).style.setProperty('--rotate-y', '0deg');
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initTiltCards);
+  document.addEventListener('astro:after-swap', initTiltCards);
+</script>

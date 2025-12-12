@@ -1,0 +1,269 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { externalPostsQuery } from '../lib/sanity/queries';
+import { formatDate } from 'shared/utils';
+
+interface ExternalPost {
+  _id: string;
+  title: string;
+  url: string;
+  type: string;
+  publishedAt: string;
+  source?: string;
+  excerpt?: string;
+  image?: any;
+}
+
+const posts = await sanityFetch<ExternalPost[]>(externalPostsQuery).catch(() => []);
+
+// Group by type
+const articles = posts.filter((p) => p.type === 'article');
+const podcasts = posts.filter((p) => p.type === 'podcast');
+const interviews = posts.filter((p) => p.type === 'interview');
+const other = posts.filter((p) => !['article', 'podcast', 'interview'].includes(p.type));
+---
+
+<BaseLayout
+  title="Blog & Content | Faris Aziz"
+  description="Articles, podcasts, and external content by Faris Aziz on React, Next.js, payments, and software development."
+  pathname="/blog"
+>
+  <section class="section">
+    <div class="container">
+      <div class="max-w-4xl">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6" transition:name="page-title">
+          Blog & Content
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          Articles, podcast appearances, and other content I've created or contributed to.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {posts.length > 0 ? (
+    <>
+      <!-- Articles -->
+      {articles.length > 0 && (
+        <section class="section bg-gray-50 dark:bg-gray-800/50">
+          <div class="container">
+            <h2 class="section-title">Articles</h2>
+            <p class="section-subtitle">Written content and tutorials</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
+              {articles.map((post: any) => (
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-hover overflow-hidden group"
+                >
+                  {post.image && (
+                    <div class="aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                      <img
+                        src={urlFor(post.image).width(400).height(225).url()}
+                        alt={post.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div class="p-6">
+                    {post.source && (
+                      <span class="badge-gray text-xs mb-3">{post.source}</span>
+                    )}
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    {post.excerpt && (
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                    )}
+                    {post.publishedAt && (
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Podcasts -->
+      {podcasts.length > 0 && (
+        <section class="section">
+          <div class="container">
+            <h2 class="section-title">Podcast Appearances</h2>
+            <p class="section-subtitle">Episodes I've been a guest on</p>
+
+            <div class="grid gap-4 max-w-4xl">
+              {podcasts.map((post: any) => (
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-hover p-6 flex flex-col md:flex-row gap-4 items-start"
+                >
+                  {post.image && (
+                    <div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                      <img
+                        src={urlFor(post.image).width(80).height(80).url()}
+                        alt={post.title}
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div class="flex-grow">
+                    {post.source && (
+                      <span class="badge-purple text-xs mb-2">{post.source}</span>
+                    )}
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                      {post.title}
+                    </h3>
+                    {post.excerpt && (
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                    )}
+                    {post.publishedAt && (
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(post.publishedAt, { month: 'long', year: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                  <div class="flex-shrink-0 text-blue-600 dark:text-blue-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Interviews -->
+      {interviews.length > 0 && (
+        <section class="section bg-gray-50 dark:bg-gray-800/50">
+          <div class="container">
+            <h2 class="section-title">Interviews</h2>
+            <p class="section-subtitle">Conversations and features</p>
+
+            <div class="grid md:grid-cols-2 gap-6 max-w-4xl">
+              {interviews.map((post: any) => (
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-hover p-6 group"
+                >
+                  {post.source && (
+                    <span class="badge-blue text-xs mb-3">{post.source}</span>
+                  )}
+                  <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {post.title}
+                  </h3>
+                  {post.excerpt && (
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                  )}
+                  {post.publishedAt && (
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(post.publishedAt, { month: 'long', year: 'numeric' })}
+                    </p>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Other Content -->
+      {other.length > 0 && (
+        <section class="section">
+          <div class="container">
+            <h2 class="section-title">More Content</h2>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
+              {other.map((post: any) => (
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-hover p-6 group"
+                >
+                  <div class="flex items-center gap-2 mb-3">
+                    {post.type && (
+                      <span class="badge-gray text-xs">{post.type}</span>
+                    )}
+                    {post.source && (
+                      <span class="text-xs text-gray-500 dark:text-gray-400">{post.source}</span>
+                    )}
+                  </div>
+                  <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {post.title}
+                  </h3>
+                  {post.publishedAt && (
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                    </p>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+    <section class="section">
+      <div class="container">
+        <div class="card p-12 text-center max-w-2xl mx-auto">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Blog posts and external content will appear here once added to Sanity.
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <a
+              href="https://twitter.com/FarisAziz12"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Follow on Twitter
+            </a>
+            <a
+              href="https://linkedin.com/in/farisaziz12"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  <section class="section bg-blue-600 dark:bg-blue-700">
+    <div class="container text-center">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+        Want me on your podcast?
+      </h2>
+      <p class="text-blue-100 mb-8 max-w-2xl mx-auto">
+        I love discussing React, payments, developer experience, and career growth. Let's have a conversation.
+      </p>
+      <a href="/invite" class="btn bg-white text-blue-600 hover:bg-blue-50">
+        Get in touch
+      </a>
+    </div>
+  </section>
+</BaseLayout>

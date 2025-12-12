@@ -1,0 +1,434 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import { eventBySlugQuery, allEventsQuery } from '../../lib/sanity/queries';
+import { formatDate, getCountryFlag } from 'shared/utils';
+
+interface EventDetail {
+  _id: string;
+  title: string;
+  slug: string;
+  type: string;
+  conference: string;
+  date: string;
+  endDate?: string;
+  description?: string;
+  location?: {
+    city?: string;
+    country?: string;
+    isOnline?: boolean;
+    venue?: string;
+  };
+  links?: {
+    eventUrl?: string;
+    videoUrl?: string;
+    slidesUrl?: string;
+  };
+  talk?: {
+    _id: string;
+    title: string;
+    slug: string;
+    abstract?: string;
+    topics?: string[];
+    duration?: number;
+    takeaways?: string[];
+  };
+  workshop?: {
+    _id: string;
+    title: string;
+    slug: string;
+    description?: string;
+    duration?: string;
+    technologies?: string[];
+    level?: string;
+    prerequisites?: string[];
+    outcomes?: string[];
+  };
+  relatedMedia?: {
+    _id: string;
+    type: string;
+    image?: any;
+    videoUrl?: string;
+    description?: string;
+  }[];
+  featured?: boolean;
+}
+
+interface EventListItem {
+  _id: string;
+  slug: string;
+}
+
+export async function getStaticPaths() {
+  const events = await sanityFetch<EventListItem[]>(allEventsQuery).catch(() => []);
+  return events.map((event) => ({
+    params: { slug: event.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const event = await sanityFetch<EventDetail | null>(eventBySlugQuery, { slug }).catch(() => null);
+
+if (!event) {
+  return Astro.redirect('/404');
+}
+
+const isPast = new Date(event.date) < new Date();
+const hasVideo = event.links?.videoUrl;
+const hasSlides = event.links?.slidesUrl;
+
+function getTypeColor(type: string) {
+  switch (type) {
+    case 'conference': return 'bg-accent-muted text-accent border-accent/20';
+    case 'workshop': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+    case 'meetup': return 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800';
+    case 'podcast': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+    default: return 'bg-surface-overlay text-ink-muted border-edge';
+  }
+}
+
+function getTypeGradient(type: string) {
+  switch (type) {
+    case 'conference': return 'from-accent via-violet-600 to-pink-600';
+    case 'workshop': return 'from-emerald-600 via-teal-600 to-cyan-600';
+    case 'meetup': return 'from-violet-600 via-purple-600 to-fuchsia-600';
+    case 'podcast': return 'from-rose-600 via-pink-600 to-orange-600';
+    default: return 'from-accent via-violet-600 to-pink-600';
+  }
+}
+---
+
+<BaseLayout
+  title={`${event.title} | ${event.conference} | Faris Aziz`}
+  description={event.description || `${event.title} at ${event.conference}`}
+  pathname={`/events/${slug}`}
+>
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-accent/5 via-violet-500/5 to-pink-500/5"></div>
+
+    <div class="container relative z-10 pt-20 md:pt-28 pb-16">
+      <div class="max-w-4xl">
+        <!-- Breadcrumb -->
+        <a href="/events" class="inline-flex items-center gap-2 text-ink-muted hover:text-accent mb-8 transition-colors">
+          <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+          All events
+        </a>
+
+        <!-- Terminal intro -->
+        <div class="terminal max-w-lg mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">event.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> cat ./events/{slug}.json</span>
+            <div class="terminal__output">Loading event details...</div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class={`tag ${getTypeColor(event.type)}`}>{event.type}</span>
+          {event.featured && (
+            <span class="tag bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800">
+              Featured
+            </span>
+          )}
+          {isPast && (
+            <span class="tag">Past Event</span>
+          )}
+          {hasVideo && (
+            <span class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-200 dark:border-emerald-800">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+              Recording
+            </span>
+          )}
+        </div>
+
+        <!-- Title -->
+        <h1 class="hero-title mb-4" transition:name="page-title">
+          <span class="block text-ink">{event.title}</span>
+        </h1>
+
+        <!-- Conference Name -->
+        <p class="text-2xl md:text-3xl text-accent font-display font-medium mb-8">
+          {event.conference}
+        </p>
+
+        <!-- Meta Info -->
+        <div class="flex flex-wrap gap-6 mb-10">
+          <div class="flex items-center gap-3 text-ink-muted">
+            <div class="w-12 h-12 rounded-xl bg-surface-overlay border border-edge flex items-center justify-center">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-ink">{formatDate(event.date)}</div>
+              {event.endDate && event.endDate !== event.date && (
+                <div class="text-sm">to {formatDate(event.endDate)}</div>
+              )}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 text-ink-muted">
+            <div class="w-12 h-12 rounded-xl bg-surface-overlay border border-edge flex items-center justify-center">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-ink flex items-center gap-2">
+                <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
+                {event.location?.city}
+              </div>
+              <div class="text-sm">{event.location?.country}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        {event.description && (
+          <p class="text-lead max-w-3xl mb-10">
+            {event.description}
+          </p>
+        )}
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4">
+          {event.links?.eventUrl && (
+            <a href={event.links.eventUrl} target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4 group glow">
+              <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Event website
+            </a>
+          )}
+          {event.links?.videoUrl && (
+            <a href={event.links.videoUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4 group">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+              Watch recording
+            </a>
+          )}
+          {event.links?.slidesUrl && (
+            <a href={event.links.slidesUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4 group">
+              <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              View slides
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Talk Info -->
+  {event.talk && (
+    <section class="section-subtle py-16 md:py-20">
+      <div class="container">
+        <div class="max-w-4xl mx-auto">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="heading-2 mb-0">About the Talk</h2>
+              <p class="text-ink-muted">Details about the presentation</p>
+            </div>
+          </div>
+
+          <a href={`/talks/${event.talk.slug}`} class="group block bg-surface-raised rounded-2xl border border-edge hover:border-accent/50 transition-all duration-300 overflow-hidden">
+            <!-- Gradient Top Bar -->
+            <div class="h-1.5 bg-gradient-to-r from-accent via-violet-500 to-pink-500"></div>
+
+            <div class="p-8">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <h3 class="font-display font-bold text-xl md:text-2xl text-ink group-hover:text-accent transition-colors">
+                  {event.talk.title}
+                </h3>
+                <svg class="w-6 h-6 text-ink-faint group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              {event.talk.abstract && (
+                <p class="text-ink-muted mb-6 line-clamp-3 leading-relaxed">
+                  {event.talk.abstract}
+                </p>
+              )}
+              {event.talk.topics && event.talk.topics.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-6">
+                  {event.talk.topics.slice(0, 5).map((topic: string) => (
+                    <div class="topic-badge">
+                      <span class="topic-badge__name">{topic}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <span class="text-accent font-medium text-sm inline-flex items-center gap-1">
+                View full talk details
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Workshop Info -->
+  {event.workshop && (
+    <section class="section-subtle py-16 md:py-20">
+      <div class="container">
+        <div class="max-w-4xl mx-auto">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="heading-2 mb-0">About the Workshop</h2>
+              <p class="text-ink-muted">Details about the hands-on session</p>
+            </div>
+          </div>
+
+          <a href={`/workshops/${event.workshop.slug}`} class="group block bg-surface-raised rounded-2xl border border-edge hover:border-emerald-500/50 transition-all duration-300 overflow-hidden">
+            <!-- Gradient Top Bar -->
+            <div class="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+
+            <div class="p-8">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <h3 class="font-display font-bold text-xl md:text-2xl text-ink group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  {event.workshop.title}
+                </h3>
+                <svg class="w-6 h-6 text-ink-faint group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              {event.workshop.description && (
+                <p class="text-ink-muted mb-6 line-clamp-3 leading-relaxed">
+                  {event.workshop.description}
+                </p>
+              )}
+              <span class="text-emerald-600 dark:text-emerald-400 font-medium text-sm inline-flex items-center gap-1">
+                View full workshop details
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Related Media -->
+  {event.relatedMedia && event.relatedMedia.length > 0 && (
+    <section class="section py-16 md:py-20">
+      <div class="container">
+        <div class="max-w-5xl mx-auto">
+          <h2 class="heading-2 mb-8">Media from this Event</h2>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {event.relatedMedia.map((item: any) => (
+              <div class="card overflow-hidden group">
+                {item.type === 'video' && item.videoUrl ? (
+                  <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" class="block aspect-video bg-surface-overlay relative">
+                    {item.image ? (
+                      <img
+                        src={urlFor(item.image).width(400).height(225).url()}
+                        alt={item.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div class="w-full h-full flex items-center justify-center">
+                        <svg class="w-16 h-16 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </a>
+                ) : item.image && (
+                  <div class="aspect-video bg-surface-overlay overflow-hidden">
+                    <img
+                      src={urlFor(item.image).width(400).height(225).url()}
+                      alt={item.title}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <div class="p-4">
+                  <span class="tag text-xs mb-2">{item.type}</span>
+                  <p class="text-sm text-ink-muted">{item.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class={`absolute inset-0 bg-gradient-to-br ${getTypeGradient(event.type)}`}></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-20 md:py-24">
+      <div class="max-w-3xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Accepting invitations
+        </div>
+
+        <h2 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-4">
+          Want me at your event?
+        </h2>
+        <p class="text-white/80 text-lg mb-8 max-w-xl mx-auto">
+          I'm available for conferences, meetups, podcasts, and workshops worldwide. Let's discuss how I can contribute to your event.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/invite"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+          >
+            Invite me to speak
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <a
+            href="/talks"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+          >
+            Browse my talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

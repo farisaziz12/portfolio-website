@@ -1,0 +1,106 @@
+---
+/**
+ * CountUp - Animated number counter
+ * Inspired by ReactBits CountUp component
+ */
+interface Props {
+  end: number;
+  class?: string;
+  duration?: number;
+  delay?: number;
+  suffix?: string;
+  prefix?: string;
+}
+
+const {
+  end,
+  class: className = '',
+  duration = 2,
+  delay = 0,
+  suffix = '',
+  prefix = ''
+} = Astro.props;
+---
+
+<span
+  class:list={['count-up', className]}
+  data-count-up
+  data-value={end}
+  data-duration={duration}
+  data-delay={delay}
+>
+  {prefix}<span class="count-up__number">0</span>{suffix}
+</span>
+
+<style>
+  .count-up {
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .count-up__number {
+    display: inline-block;
+  }
+</style>
+
+<script>
+  function easeOutExpo(t: number): number {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function animateCountUp(element: HTMLElement) {
+    const numberEl = element.querySelector('.count-up__number');
+    if (!numberEl) return;
+
+    const targetValue = parseInt(element.dataset.value || '0', 10);
+    const duration = parseFloat(element.dataset.duration || '2') * 1000;
+    const delay = parseFloat(element.dataset.delay || '0') * 1000;
+
+    let startTime: number | null = null;
+    let currentValue = 0;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      currentValue = Math.floor(easeOutExpo(progress) * targetValue);
+      numberEl.textContent = currentValue.toLocaleString();
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        numberEl.textContent = targetValue.toLocaleString();
+      }
+    };
+
+    setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, delay);
+  }
+
+  function initCountUp() {
+    const elements = document.querySelectorAll('[data-count-up]');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCountUp(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    elements.forEach(el => {
+      // Reset number to 0 for page transitions
+      const numberEl = el.querySelector('.count-up__number');
+      if (numberEl) {
+        numberEl.textContent = '0';
+      }
+      observer.observe(el);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initCountUp);
+  document.addEventListener('astro:after-swap', initCountUp);
+</script>

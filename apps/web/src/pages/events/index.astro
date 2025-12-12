@@ -1,0 +1,918 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityFetch } from '../../lib/sanity/client';
+import { allEventsQuery, speakingStatsQuery } from '../../lib/sanity/queries';
+import EventsFilter from '../../components/islands/EventsFilter';
+
+// Animation components
+import SplitText from '../../components/animations/SplitText.astro';
+import BlurText from '../../components/animations/BlurText.astro';
+import Aurora from '../../components/animations/Aurora.astro';
+import CountUp from '../../components/animations/CountUp.astro';
+import ScrollReveal from '../../components/animations/ScrollReveal.astro';
+import Magnetic from '../../components/animations/Magnetic.astro';
+import SpotlightCard from '../../components/animations/SpotlightCard.astro';
+
+// Types
+interface SanityEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  type: string;
+  conference: string;
+  date: string;
+  location?: {
+    city?: string;
+    country?: string;
+    isOnline?: boolean;
+  };
+  description?: string;
+  talk?: {
+    _id: string;
+    title: string;
+    slug: string;
+  };
+  links?: {
+    eventUrl?: string;
+    videoUrl?: string;
+    slidesUrl?: string;
+  };
+  featured?: boolean;
+}
+
+interface SpeakingStats {
+  totalEvents: number;
+  upcomingEvents: number;
+  countries: number;
+  cities: number;
+  talks: number;
+  workshops: number;
+}
+
+// Fetch data - no defaults, fail silently
+let events: SanityEvent[] = [];
+let stats: SpeakingStats | null = null;
+
+try {
+  const [eventsData, statsData] = await Promise.all([
+    sanityFetch<SanityEvent[]>(allEventsQuery),
+    sanityFetch<SpeakingStats>(speakingStatsQuery),
+  ]);
+  events = eventsData || [];
+  stats = statsData || null;
+} catch (error) {
+  console.error('Failed to fetch events data:', error);
+}
+
+// Split events into upcoming and past
+const now = new Date();
+now.setHours(0, 0, 0, 0);
+const upcomingEvents = events.filter((e) => new Date(e.date) >= now);
+const pastEvents = events.filter((e) => new Date(e.date) < now);
+
+// Compute stats from actual data if available
+const videosCount = events.filter((e) => e.links?.videoUrl).length;
+const uniqueCountries = [...new Set(events.map((e) => e.location?.country).filter(Boolean))] as string[];
+const uniqueCities = [...new Set(events.map((e) => e.location?.city).filter(Boolean))] as string[];
+
+// Country flag helper for Astro template
+const countryToCode: Record<string, string> = {
+  'United Kingdom': 'GB', 'United States': 'US', 'Switzerland': 'CH', 'Greece': 'GR',
+  'Italy': 'IT', 'Germany': 'DE', 'Singapore': 'SG', 'Thailand': 'TH', 'Portugal': 'PT',
+  'Macedonia': 'MK', 'Spain': 'ES', 'France': 'FR', 'Netherlands': 'NL', 'Belgium': 'BE',
+  'Austria': 'AT', 'Poland': 'PL', 'Czech Republic': 'CZ', 'Sweden': 'SE', 'Norway': 'NO',
+  'Denmark': 'DK', 'Finland': 'FI', 'Ireland': 'IE', 'Australia': 'AU', 'Canada': 'CA',
+  'Japan': 'JP', 'South Korea': 'KR', 'India': 'IN', 'Brazil': 'BR', 'Mexico': 'MX',
+  'Argentina': 'AR', 'Israel': 'IL', 'UAE': 'AE', 'Online': '🌐',
+};
+
+function getCountryFlag(countryName?: string): string {
+  if (!countryName) return '🌐';
+  const code = countryToCode[countryName];
+  if (code === '🌐') return code;
+  if (code) {
+    const codePoints = code.toUpperCase().split('').map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  }
+  return '🌐';
+}
+---
+
+<BaseLayout
+  title="All Events | Faris Aziz"
+  description="Complete list of speaking engagements by Faris Aziz at conferences, meetups, and workshops around the world."
+  pathname="/events"
+>
+  <!-- Hero Section with Aurora Background -->
+  <section class="events-hero relative min-h-[80vh] flex items-center overflow-hidden">
+    <!-- Aurora Background -->
+    <Aurora
+      colors={['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4']}
+      blur={120}
+      opacity={0.15}
+      speed="slow"
+    />
+
+    <!-- Grid Pattern Overlay -->
+    <div class="absolute inset-0 events-grid-pattern opacity-30"></div>
+
+    <!-- Floating Particles -->
+    <div class="events-particles" aria-hidden="true">
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+    </div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-5xl">
+        <!-- Terminal intro with typing effect -->
+        <ScrollReveal animation="fade-up" class="mb-8">
+          <div class="terminal max-w-md animate-terminal-glow">
+            <div class="terminal__header">
+              <div class="terminal__dots">
+                <div class="terminal__dot terminal__dot--red"></div>
+                <div class="terminal__dot terminal__dot--yellow"></div>
+                <div class="terminal__dot terminal__dot--green"></div>
+              </div>
+              <span class="terminal__title">events.sh</span>
+            </div>
+            <div class="terminal__body">
+              <span class="terminal__prompt">$</span>
+              <span class="terminal__command terminal-typing"> ls ./events --all --sort=date</span>
+              <div class="terminal__output">Found {events.length} events...</div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <!-- Big Bold Animated Title -->
+        <h1 class="hero-title mb-8">
+          <span class="block text-ink">
+            <SplitText text="All" animation="fade-up" stagger={0.05} delay={0.2} />
+          </span>
+          <span class="block text-accent">
+            <SplitText text="Events" animation="fade-up" stagger={0.05} delay={0.4} />
+          </span>
+        </h1>
+
+        <BlurText
+          text="Complete archive of my speaking engagements at conferences, meetups, and workshops around the world."
+          class="text-lead max-w-2xl mb-10"
+          delay={0.5}
+          duration={0.8}
+        />
+
+        <!-- Animated Topic Pills -->
+        <ScrollReveal animation="fade-up" delay={0.6} class="mb-12">
+          <div class="flex flex-wrap gap-3">
+            {[
+              { icon: '🎤', name: 'conferences', color: 'from-blue-500 to-indigo-600' },
+              { icon: '👥', name: 'meetups', color: 'from-violet-500 to-purple-600' },
+              { icon: '🛠️', name: 'workshops', color: 'from-emerald-500 to-teal-600' },
+              { icon: '🎙️', name: 'podcasts', color: 'from-rose-500 to-pink-600' },
+            ].map((topic, i) => (
+              <div
+                class="topic-pill group"
+                style={`--delay: ${i * 0.1}s`}
+              >
+                <span class={`topic-pill__glow bg-gradient-to-r ${topic.color}`}></span>
+                <span class="topic-pill__icon">{topic.icon}</span>
+                <span class="topic-pill__name">{topic.name}</span>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+
+        <!-- CTA Buttons -->
+        <ScrollReveal animation="fade-up" delay={0.7}>
+          <div class="flex flex-wrap gap-4">
+            <Magnetic strength={0.15} radius={100}>
+              <a href="/invite" class="events-cta-primary group">
+                <span class="events-cta__shine"></span>
+                <span class="relative z-10 flex items-center gap-2">
+                  Invite me to speak
+                  <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.1} radius={80}>
+              <a href="/talks" class="events-cta-secondary">
+                Browse talks
+              </a>
+            </Magnetic>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+
+    <!-- Floating Stats Card -->
+    {events.length > 0 && (
+      <div class="absolute bottom-8 right-8 hidden xl:block">
+        <ScrollReveal animation="scale" delay={0.8}>
+          <div class="floating-stats-card">
+            <div class="floating-stats-card__glow"></div>
+            <div class="floating-stats-card__inner">
+              <div class="grid grid-cols-2 gap-6">
+                <div class="text-center">
+                  <div class="text-3xl font-display font-bold text-accent">
+                    <CountUp end={events.length} duration={2} delay={1} />+
+                  </div>
+                  <div class="text-xs text-ink-faint uppercase tracking-wider">Events</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-3xl font-display font-bold text-violet-500">
+                    <CountUp end={uniqueCountries.length} duration={2} delay={1.2} />+
+                  </div>
+                  <div class="text-xs text-ink-faint uppercase tracking-wider">Countries</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </div>
+    )}
+  </section>
+
+  <!-- Stats Bento Grid - Only show if we have data -->
+  {events.length > 0 && (
+    <section class="relative py-16 md:py-20 overflow-hidden">
+      <div class="absolute inset-0 bg-surface-raised"></div>
+      <div class="absolute inset-0 dot-pattern opacity-30"></div>
+
+      <div class="container relative z-10">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
+          <!-- Total Events -->
+          <ScrollReveal animation="fade-up" delay={0}>
+            <SpotlightCard class="stat-card stat-card--featured" spotlightColor="rgba(99, 102, 241, 0.15)">
+              <div class="stat-card__inner">
+                <div class="stat-card__icon-wrapper">
+                  <div class="stat-card__icon bg-gradient-to-br from-accent to-indigo-600">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="stat-card__value text-accent">
+                  <CountUp end={events.length} duration={2.5} delay={0.3} />+
+                </div>
+                <div class="stat-card__label">Total Events</div>
+              </div>
+            </SpotlightCard>
+          </ScrollReveal>
+
+          <!-- Countries -->
+          <ScrollReveal animation="fade-up" delay={0.1}>
+            <SpotlightCard class="stat-card" spotlightColor="rgba(139, 92, 246, 0.15)">
+              <div class="stat-card__inner">
+                <div class="stat-card__icon-wrapper">
+                  <div class="stat-card__icon bg-gradient-to-br from-violet-500 to-purple-600">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="stat-card__value text-violet-500">
+                  <CountUp end={uniqueCountries.length} duration={2.5} delay={0.4} />+
+                </div>
+                <div class="stat-card__label">Countries</div>
+              </div>
+            </SpotlightCard>
+          </ScrollReveal>
+
+          <!-- Cities -->
+          <ScrollReveal animation="fade-up" delay={0.2}>
+            <SpotlightCard class="stat-card" spotlightColor="rgba(236, 72, 153, 0.15)">
+              <div class="stat-card__inner">
+                <div class="stat-card__icon-wrapper">
+                  <div class="stat-card__icon bg-gradient-to-br from-pink-500 to-rose-600">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="stat-card__value text-pink-500">
+                  <CountUp end={uniqueCities.length} duration={2.5} delay={0.5} />+
+                </div>
+                <div class="stat-card__label">Cities</div>
+              </div>
+            </SpotlightCard>
+          </ScrollReveal>
+
+          <!-- Videos -->
+          <ScrollReveal animation="fade-up" delay={0.3}>
+            <SpotlightCard class="stat-card" spotlightColor="rgba(16, 185, 129, 0.15)">
+              <div class="stat-card__inner">
+                <div class="stat-card__icon-wrapper">
+                  <div class="stat-card__icon bg-gradient-to-br from-emerald-500 to-teal-600">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="stat-card__value text-emerald-500">
+                  <CountUp end={videosCount} duration={2.5} delay={0.6} />
+                </div>
+                <div class="stat-card__label">Videos</div>
+              </div>
+            </SpotlightCard>
+          </ScrollReveal>
+        </div>
+
+        <!-- Country Flags Marquee - Only show if we have countries -->
+        {uniqueCountries.length > 0 && (
+          <ScrollReveal animation="fade-up" delay={0.4} class="mt-12">
+            <div class="countries-marquee">
+              <div class="countries-marquee__track">
+                {[...uniqueCountries, ...uniqueCountries].map((country) => (
+                  <span class="countries-marquee__item">
+                    <span class="text-2xl">{getCountryFlag(country)}</span>
+                    <span class="text-sm text-ink-muted">{country}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Events Section with Filtering -->
+  <section class="relative py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div>
+            <h2 class="heading-2 mb-2">Event Archive</h2>
+            <p class="text-ink-muted text-lg">Filter and explore all speaking engagements</p>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-ink-faint">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            {events.length} events total
+          </div>
+        </div>
+
+        {events.length > 0 ? (
+          <EventsFilter client:load events={events} splitByTime={true} />
+        ) : (
+          <div class="card p-12 text-center max-w-2xl mx-auto">
+            <div class="text-6xl mb-6">📅</div>
+            <h3 class="heading-3 mb-4">Coming Soon</h3>
+            <p class="text-ink-muted mb-6">
+              Events will appear here once content is migrated to Sanity.
+            </p>
+            <a href="/invite" class="btn-primary">
+              Invite me to speak
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="events-cta-section relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 events-grid-pattern opacity-10"></div>
+
+    <!-- Animated Shapes -->
+    <div class="cta-shapes" aria-hidden="true">
+      <div class="cta-shape cta-shape--1"></div>
+      <div class="cta-shape cta-shape--2"></div>
+      <div class="cta-shape cta-shape--3"></div>
+    </div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <ScrollReveal animation="scale">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-sm font-medium mb-8 border border-white/20">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            </span>
+            Currently accepting invitations
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+            Want me at your event?
+          </h2>
+        </ScrollReveal>
+
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+            I'm always excited to speak at new conferences, meetups, and workshops. Let's make it happen.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Magnetic strength={0.2} radius={120}>
+              <a
+                href="/invite"
+                class="cta-button-white group"
+              >
+                <span class="cta-button__ripple"></span>
+                <span class="relative z-10 flex items-center gap-2">
+                  Invite me to speak
+                  <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </span>
+              </a>
+            </Magnetic>
+            <a
+              href="/talks"
+              class="cta-button-ghost"
+            >
+              Browse my talks
+            </a>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Hero Section */
+  .events-hero {
+    background: rgb(var(--surface));
+  }
+
+  .events-grid-pattern {
+    background-image:
+      linear-gradient(rgb(var(--accent) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent) / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Floating Particles */
+  .events-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .events-particles .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgb(var(--accent));
+    opacity: 0.3;
+  }
+
+  .events-particles .particle:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation: float-particle 15s ease-in-out infinite;
+  }
+
+  .events-particles .particle:nth-child(2) {
+    top: 60%;
+    left: 80%;
+    animation: float-particle 18s ease-in-out infinite reverse;
+    background: rgb(139 92 246);
+  }
+
+  .events-particles .particle:nth-child(3) {
+    top: 80%;
+    left: 30%;
+    animation: float-particle 20s ease-in-out infinite 2s;
+    background: rgb(236 72 153);
+  }
+
+  .events-particles .particle:nth-child(4) {
+    top: 30%;
+    left: 70%;
+    animation: float-particle 17s ease-in-out infinite 1s;
+  }
+
+  .events-particles .particle:nth-child(5) {
+    top: 50%;
+    left: 5%;
+    animation: float-particle 22s ease-in-out infinite 3s;
+    background: rgb(6 182 212);
+  }
+
+  @keyframes float-particle {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translate(50px, -30px) scale(1.5);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate(-30px, -60px) scale(1);
+      opacity: 0.2;
+    }
+    75% {
+      transform: translate(20px, -20px) scale(1.3);
+      opacity: 0.4;
+    }
+  }
+
+  /* Terminal Glow Animation */
+  .animate-terminal-glow {
+    animation: terminal-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes terminal-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgb(var(--accent) / 0.1);
+    }
+    50% {
+      box-shadow: 0 0 40px rgb(var(--accent) / 0.2);
+    }
+  }
+
+  /* Terminal Typing Effect */
+  .terminal-typing {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing 2s steps(30) 0.5s forwards;
+    width: 0;
+    display: inline-block;
+  }
+
+  @keyframes typing {
+    to { width: 100%; }
+  }
+
+  /* Topic Pills */
+  .topic-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgb(var(--surface-raised));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(var(--ink));
+    cursor: default;
+    overflow: hidden;
+    animation: topic-pill-enter 0.5s ease-out calc(var(--delay) + 0.6s) both;
+    transition: all 0.3s ease;
+  }
+
+  .topic-pill:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--accent) / 0.5);
+    box-shadow: 0 10px 30px -10px rgb(var(--accent) / 0.2);
+  }
+
+  .topic-pill__glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .topic-pill:hover .topic-pill__glow {
+    opacity: 0.1;
+  }
+
+  .topic-pill__icon {
+    font-size: 1.125rem;
+    transition: transform 0.3s ease;
+  }
+
+  .topic-pill:hover .topic-pill__icon {
+    transform: scale(1.2) rotate(-5deg);
+  }
+
+  .topic-pill__name {
+    font-family: var(--font-mono);
+    text-transform: lowercase;
+  }
+
+  @keyframes topic-pill-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* CTA Buttons */
+  .events-cta-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: rgb(var(--accent));
+    color: white;
+    font-weight: 600;
+    font-size: 1.125rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .events-cta-primary:hover {
+    background: rgb(var(--accent-hover));
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -10px rgb(var(--accent) / 0.4);
+  }
+
+  .events-cta__shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .events-cta-primary:hover .events-cta__shine {
+    left: 100%;
+  }
+
+  .events-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    color: rgb(var(--ink));
+    font-weight: 600;
+    font-size: 1.125rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .events-cta-secondary:hover {
+    border-color: rgb(var(--edge-strong));
+    background: rgb(var(--surface-raised));
+    transform: translateY(-2px);
+  }
+
+  /* Floating Stats Card */
+  .floating-stats-card {
+    position: relative;
+    animation: float-stats 4s ease-in-out infinite;
+  }
+
+  .floating-stats-card__glow {
+    position: absolute;
+    inset: -10px;
+    background: linear-gradient(135deg, rgb(var(--accent) / 0.2), rgb(139 92 246 / 0.2));
+    border-radius: 1.5rem;
+    filter: blur(20px);
+    opacity: 0.5;
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  .floating-stats-card__inner {
+    position: relative;
+    background: rgb(var(--surface-raised) / 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgb(var(--edge));
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+
+  @keyframes float-stats {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Stat Cards */
+  .stat-card {
+    height: 100%;
+  }
+
+  .stat-card__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  .stat-card__icon-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .stat-card__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover .stat-card__icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .stat-card__value {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .stat-card__value {
+      font-size: 3rem;
+    }
+  }
+
+  .stat-card__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgb(var(--ink-muted));
+  }
+
+  /* Countries Marquee */
+  .countries-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  }
+
+  .countries-marquee__track {
+    display: flex;
+    gap: 2rem;
+    animation: marquee 30s linear infinite;
+    width: max-content;
+  }
+
+  .countries-marquee__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 9999px;
+    white-space: nowrap;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* CTA Section */
+  .events-cta-section {
+    position: relative;
+  }
+
+  .cta-shapes {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .cta-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .cta-shape--1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    left: -100px;
+    animation: shape-float 15s ease-in-out infinite;
+  }
+
+  .cta-shape--2 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    right: -50px;
+    animation: shape-float 18s ease-in-out infinite reverse;
+  }
+
+  .cta-shape--3 {
+    width: 150px;
+    height: 150px;
+    top: 50%;
+    left: 60%;
+    animation: shape-float 12s ease-in-out infinite 2s;
+  }
+
+  @keyframes shape-float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(30px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+  }
+
+  /* CTA Buttons */
+  .cta-button-white {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: white;
+    color: rgb(109 40 217);
+    font-weight: 700;
+    font-size: 1.125rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  .cta-button-white:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4);
+  }
+
+  .cta-button-white:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  .cta-button__ripple {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(109, 40, 217, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+
+  .cta-button-white:hover .cta-button__ripple {
+    transform: translateX(100%);
+  }
+
+  .cta-button-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-weight: 600;
+    font-size: 1.125rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .cta-button-ghost:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .events-particles .particle,
+    .floating-stats-card,
+    .cta-shape,
+    .countries-marquee__track {
+      animation: none;
+    }
+
+    .terminal-typing {
+      width: auto;
+      animation: none;
+    }
+  }
+</style>
