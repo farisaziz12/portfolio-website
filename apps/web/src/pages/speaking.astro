@@ -1,0 +1,240 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sanityFetch } from '../lib/sanity/client';
+import { allEventsQuery } from '../lib/sanity/queries';
+import EventsFilter from '../components/islands/EventsFilter';
+
+interface SpeakingEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  type: string;
+  conference: string;
+  date: string;
+  location?: {
+    city?: string;
+    country?: string;
+    isOnline?: boolean;
+  };
+  links?: {
+    eventUrl?: string;
+    videoUrl?: string;
+    slidesUrl?: string;
+  };
+  featured?: boolean;
+}
+
+// Fetch all events - EventsFilter will handle upcoming filtering
+let events: SpeakingEvent[] = [];
+
+try {
+  events = await sanityFetch<SpeakingEvent[]>(allEventsQuery) || [];
+} catch (error) {
+  console.error('Failed to fetch events:', error);
+}
+
+const topics = [
+  { icon: '⚛️', name: 'React', code: 'react' },
+  { icon: '▲', name: 'Next.js', code: 'nextjs' },
+  { icon: '💳', name: 'Payments', code: 'payments' },
+  { icon: '🛠️', name: 'DX', code: 'dx' },
+  { icon: '🏗️', name: 'Architecture', code: 'arch' },
+  { icon: '🧪', name: 'Testing', code: 'testing' },
+];
+---
+
+<BaseLayout
+  title="Speaking | Faris Aziz"
+  description="Upcoming speaking engagements by Faris Aziz at conferences, meetups, and workshops around the world."
+  pathname="/speaking"
+>
+  <!-- Hero Section - Bold & Creative -->
+  <section class="relative min-h-[70vh] flex items-center overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-5xl">
+        <!-- Terminal-style intro -->
+        <div class="terminal max-w-md mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">speaker.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> whoami</span>
+            <div class="terminal__output">Conference Speaker & Workshop Instructor</div>
+          </div>
+        </div>
+
+        <!-- Big Bold Title -->
+        <h1 class="hero-title mb-8">
+          <span class="block text-ink">I speak at</span>
+          <span class="block hero-title--gradient">conferences</span>
+          <span class="block text-ink-muted text-4xl md:text-5xl lg:text-6xl mt-4">worldwide.</span>
+        </h1>
+
+        <!-- Topic Pills -->
+        <div class="flex flex-wrap gap-3 mb-12">
+          {topics.map((topic) => (
+            <div class="topic-badge">
+              <span class="topic-badge__icon">{topic.icon}</span>
+              <span class="topic-badge__name">{topic.code}</span>
+            </div>
+          ))}
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap gap-4">
+          <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
+            Invite me to speak
+            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+          <a href="/talks" class="btn-secondary text-lg px-8 py-4">
+            Browse talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Events - Using EventsFilter -->
+  <section class="section py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-4 mb-10">
+          <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+          <h2 class="heading-2">Upcoming Events</h2>
+        </div>
+
+        {events.length > 0 ? (
+          <EventsFilter
+            client:load
+            events={events}
+            upcomingOnly={true}
+            showArchiveLink={true}
+          />
+        ) : (
+          <div class="card p-12 text-center max-w-2xl mx-auto">
+            <div class="text-6xl mb-6">📅</div>
+            <h3 class="heading-3 mb-4">No Upcoming Events</h3>
+            <p class="text-ink-muted mb-6">
+              Check back soon for new speaking engagements.
+            </p>
+            <a href="/events" class="btn-primary">
+              Browse past events
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Topics I Speak About - Bento Grid -->
+  <section class="section-dark py-20 md:py-28 relative overflow-hidden">
+    <div class="absolute inset-0 dot-pattern opacity-20"></div>
+
+    <div class="container relative z-10">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">
+          Topics I <span class="text-gradient">Speak About</span>
+        </h2>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+          Real-world experience from building production systems at scale
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+        <!-- Featured Topic - Spans 2 -->
+        <div class="lg:col-span-2 bg-gradient-to-br from-accent/20 to-violet-500/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300 group">
+          <div class="text-5xl mb-6">⚛️</div>
+          <h3 class="font-display font-bold text-2xl text-white mb-3">React & Next.js</h3>
+          <p class="text-slate-300 mb-4">Advanced patterns, Server Components, performance optimization, and scalable architecture for production applications.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">hooks</span>
+            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">SSR</span>
+            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">performance</span>
+          </div>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-4xl mb-4">💳</div>
+          <h3 class="font-display font-bold text-xl text-white mb-2">Payment Systems</h3>
+          <p class="text-slate-400 text-sm">Stripe, checkout flows, subscription billing</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-4xl mb-4">🛠️</div>
+          <h3 class="font-display font-bold text-xl text-white mb-2">Developer Experience</h3>
+          <p class="text-slate-400 text-sm">Tooling, workflows, productivity</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-4xl mb-4">🏗️</div>
+          <h3 class="font-display font-bold text-xl text-white mb-2">Architecture</h3>
+          <p class="text-slate-400 text-sm">Design systems, monorepos, micro-frontends</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-4xl mb-4">🧪</div>
+          <h3 class="font-display font-bold text-xl text-white mb-2">Testing</h3>
+          <p class="text-slate-400 text-sm">Playwright, Vitest, TDD strategies</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-4xl mb-4">🤖</div>
+          <h3 class="font-display font-bold text-xl text-white mb-2">AI Integration</h3>
+          <p class="text-slate-400 text-sm">LLMs, AI-assisted development</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Currently accepting speaking invitations
+        </div>
+
+        <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+          Want me at your event?
+        </h2>
+        <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+          I'm available for conferences, meetups, podcasts, and workshops. Let's make your event memorable.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/invite"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+          >
+            Send speaker invite
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <a
+            href="/talks"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+          >
+            Browse my talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,292 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityFetch } from '../../lib/sanity/client';
+import { allWorkshopsQuery } from '../../lib/sanity/queries';
+
+interface Workshop {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  duration?: string;
+  technologies?: string[];
+  isBookable?: boolean;
+}
+
+const workshops = await sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []);
+const bookableWorkshops = workshops.filter((w) => w.isBookable !== false);
+---
+
+<BaseLayout
+  title="Workshops | Faris Aziz"
+  description="Hands-on workshops by Faris Aziz on React, Next.js, and modern web development. Available for conferences and corporate training."
+  pathname="/workshops"
+>
+  <!-- Hero Section -->
+  <section class="relative min-h-[70vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-5xl">
+        <!-- Terminal intro -->
+        <div class="terminal max-w-lg mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">workshop.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> npm run workshop --interactive</span>
+            <div class="terminal__output">Starting hands-on learning session...</div>
+          </div>
+        </div>
+
+        <h1 class="hero-title mb-8">
+          <span class="block text-ink">Hands-on</span>
+          <span class="block hero-title--gradient">Workshops</span>
+        </h1>
+
+        <p class="text-lead max-w-2xl mb-12">
+          Interactive sessions where participants learn by building.
+          Available for <span class="text-accent font-medium">conferences</span>,
+          <span class="text-accent font-medium">corporate training</span>, and
+          <span class="text-accent font-medium">bootcamps</span>.
+        </p>
+
+        <div class="flex flex-wrap gap-4">
+          <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
+            Book a workshop
+            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+          <a href="/talks" class="btn-secondary text-lg px-8 py-4">
+            View talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Workshops - Feature Cards -->
+  <section class="section-dark py-20 md:py-28 relative overflow-hidden">
+    <div class="absolute inset-0 dot-pattern opacity-20"></div>
+
+    <div class="container relative z-10">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">
+          Why <span class="text-gradient">Workshops</span>?
+        </h2>
+        <p class="text-slate-400 text-lg max-w-xl mx-auto">
+          Deep learning through hands-on practice
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="bg-gradient-to-br from-accent/20 to-violet-500/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-display font-bold text-xl text-white mb-3">Hands-On Learning</h3>
+          <p class="text-slate-300">Build real projects during the session with guided exercises and practical examples.</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 class="font-display font-bold text-xl text-white mb-3">Small Groups</h3>
+          <p class="text-slate-400">Interactive format allows for personalized attention and Q&A throughout.</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h3 class="font-display font-bold text-xl text-white mb-3">Take-Home Materials</h3>
+          <p class="text-slate-400">Comprehensive materials and code samples to continue learning after.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Available Workshops -->
+  <section class="section py-20 md:py-28">
+    <div class="container">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+          <h2 class="heading-2 mb-2">Available Workshops</h2>
+          <p class="text-ink-muted text-lg">Interactive sessions designed for hands-on learning</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-ink-faint">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          {bookableWorkshops.length} workshops available
+        </div>
+      </div>
+
+      {workshops.length > 0 ? (
+        <div class="grid lg:grid-cols-2 gap-6 max-w-6xl">
+          {workshops.map((workshop: any, index: number) => (
+            <a
+              href={`/workshops/${workshop.slug}`}
+              class="group relative bg-surface-raised rounded-2xl border border-edge overflow-hidden hover:border-accent/50 hover:shadow-xl transition-all duration-300"
+            >
+              <!-- Gradient Top Bar -->
+              <div class="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+
+              <div class="p-8">
+                <!-- Header -->
+                <div class="flex items-start justify-between gap-4 mb-6">
+                  <div class="flex flex-wrap items-center gap-2">
+                    {workshop.duration && (
+                      <span class="tag tag-workshop">{workshop.duration}</span>
+                    )}
+                    {workshop.level && (
+                      <span class="tag">{workshop.level}</span>
+                    )}
+                  </div>
+                  {workshop.isBookable !== false && (
+                    <span class="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      Bookable
+                    </span>
+                  )}
+                </div>
+
+                <!-- Title -->
+                <h3 class="font-display font-bold text-2xl text-ink mb-4 group-hover:text-accent transition-colors">
+                  {workshop.title}
+                </h3>
+
+                <!-- Description -->
+                {workshop.description && (
+                  <p class="text-ink-muted mb-6 line-clamp-2 leading-relaxed">
+                    {workshop.description}
+                  </p>
+                )}
+
+                <!-- Technologies -->
+                {workshop.technologies && workshop.technologies.length > 0 && (
+                  <div class="flex flex-wrap gap-2 mb-6">
+                    {workshop.technologies.slice(0, 5).map((tech: string) => (
+                      <span class="px-2 py-1 text-xs font-mono bg-surface-overlay text-ink-faint rounded border border-edge">
+                        {tech}
+                      </span>
+                    ))}
+                    {workshop.technologies.length > 5 && (
+                      <span class="px-2 py-1 text-xs text-ink-faint">
+                        +{workshop.technologies.length - 5}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <!-- Footer -->
+                <div class="flex items-center justify-between pt-4 border-t border-edge">
+                  <span class="text-sm text-ink-muted group-hover:text-accent transition-colors">
+                    View details
+                  </span>
+                  <svg class="w-5 h-5 text-ink-faint group-hover:text-accent group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="card p-12 text-center max-w-2xl mx-auto">
+          <div class="text-6xl mb-6">🛠️</div>
+          <h3 class="heading-3 mb-4">Coming Soon</h3>
+          <p class="text-ink-muted mb-6">
+            Workshop details will appear here once content is added.
+          </p>
+          <a href="/invite" class="btn-primary">
+            Contact me about workshops
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Workshop Topics - Grid -->
+  <section class="section-subtle py-20 md:py-28">
+    <div class="container">
+      <div class="text-center mb-16">
+        <h2 class="heading-2 mb-4">Workshop Topics</h2>
+        <p class="text-ink-muted text-lg max-w-xl mx-auto">
+          Areas I specialize in for hands-on training
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+        <div class="bento__item text-center py-10">
+          <div class="text-5xl mb-4">⚛️</div>
+          <h3 class="font-display font-semibold text-ink mb-2">React Deep Dive</h3>
+          <p class="text-ink-muted text-sm">Advanced patterns and architecture</p>
+        </div>
+        <div class="bento__item text-center py-10">
+          <div class="text-5xl mb-4">▲</div>
+          <h3 class="font-display font-semibold text-ink mb-2">Next.js</h3>
+          <p class="text-ink-muted text-sm">App Router, SSR, and deployment</p>
+        </div>
+        <div class="bento__item text-center py-10">
+          <div class="text-5xl mb-4">💳</div>
+          <h3 class="font-display font-semibold text-ink mb-2">Payments</h3>
+          <p class="text-ink-muted text-sm">Stripe integration and checkout</p>
+        </div>
+        <div class="bento__item text-center py-10">
+          <div class="text-5xl mb-4">🧪</div>
+          <h3 class="font-display font-semibold text-ink mb-2">Testing</h3>
+          <p class="text-ink-muted text-sm">Playwright, Vitest, and TDD</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+          Need a custom workshop?
+        </h2>
+        <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+          I can create tailored workshops for your team or event. Let's discuss your specific learning objectives.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/invite"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-teal-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+          >
+            Get in touch
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <a
+            href="/talks"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+          >
+            View my talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

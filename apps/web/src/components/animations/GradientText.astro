@@ -1,0 +1,63 @@
+---
+/**
+ * GradientText - Animated gradient text effect
+ * Inspired by ReactBits GradientText/ShinyText components
+ */
+interface Props {
+  text: string;
+  class?: string;
+  colors?: string[];
+  animate?: boolean;
+  speed?: number;
+  tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span';
+}
+
+const {
+  text,
+  class: className = '',
+  colors = ['#6366f1', '#8b5cf6', '#ec4899', '#6366f1'],
+  animate = true,
+  speed = 3,
+  tag: Tag = 'span'
+} = Astro.props;
+
+const gradientColors = colors.join(', ');
+---
+
+<Tag
+  class:list={['gradient-text', { 'gradient-text--animated': animate }, className]}
+  style={`--gradient-colors: ${gradientColors}; --gradient-speed: ${speed}s`}
+>
+  {text}
+</Tag>
+
+<style>
+  .gradient-text {
+    background: linear-gradient(90deg, var(--gradient-colors));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+  }
+
+  .gradient-text--animated {
+    animation: gradientShift var(--gradient-speed, 3s) linear infinite;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gradient-text--animated {
+      animation: none;
+      background-position: 0% center;
+    }
+  }
+</style>

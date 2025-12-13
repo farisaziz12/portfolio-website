@@ -1,0 +1,139 @@
+---
+/**
+ * ScrollReveal - Animate elements as they enter viewport
+ * General purpose scroll animation wrapper
+ */
+interface Props {
+  class?: string;
+  animation?: 'fade-up' | 'fade-down' | 'fade-left' | 'fade-right' | 'scale' | 'blur' | 'flip';
+  delay?: number;
+  duration?: number;
+  distance?: number;
+  threshold?: number;
+  once?: boolean;
+}
+
+const {
+  class: className = '',
+  animation = 'fade-up',
+  delay = 0,
+  duration = 0.6,
+  distance = 30,
+  threshold = 0.1,
+  once = true
+} = Astro.props;
+---
+
+<div
+  class:list={['scroll-reveal', `scroll-reveal--${animation}`, className]}
+  style={`--reveal-delay: ${delay}s; --reveal-duration: ${duration}s; --reveal-distance: ${distance}px`}
+  data-scroll-reveal
+  data-threshold={threshold}
+  data-once={once}
+>
+  <slot />
+</div>
+
+<style>
+  .scroll-reveal {
+    opacity: 0;
+    transition:
+      opacity var(--reveal-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1),
+      transform var(--reveal-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1),
+      filter var(--reveal-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0s);
+    will-change: opacity, transform, filter;
+  }
+
+  /* Fade Up */
+  .scroll-reveal--fade-up {
+    transform: translateY(var(--reveal-distance, 30px));
+  }
+
+  /* Fade Down */
+  .scroll-reveal--fade-down {
+    transform: translateY(calc(var(--reveal-distance, 30px) * -1));
+  }
+
+  /* Fade Left */
+  .scroll-reveal--fade-left {
+    transform: translateX(var(--reveal-distance, 30px));
+  }
+
+  /* Fade Right */
+  .scroll-reveal--fade-right {
+    transform: translateX(calc(var(--reveal-distance, 30px) * -1));
+  }
+
+  /* Scale */
+  .scroll-reveal--scale {
+    transform: scale(0.9);
+  }
+
+  /* Blur */
+  .scroll-reveal--blur {
+    filter: blur(10px);
+    transform: translateY(calc(var(--reveal-distance, 30px) / 2));
+  }
+
+  /* Flip */
+  .scroll-reveal--flip {
+    transform: perspective(1000px) rotateX(-10deg);
+    transform-origin: center top;
+  }
+
+  /* Visible state */
+  .scroll-reveal--visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-reveal {
+      opacity: 1;
+      transform: none;
+      filter: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initScrollReveal() {
+    requestAnimationFrame(() => {
+      const elements = document.querySelectorAll('[data-scroll-reveal]');
+
+      elements.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        const threshold = parseFloat(htmlEl.dataset.threshold || '0.1');
+        const once = htmlEl.dataset.once !== 'false';
+
+        // Reset state for page transitions
+        el.classList.remove('scroll-reveal--visible');
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('scroll-reveal--visible');
+              if (once) {
+                observer.unobserve(entry.target);
+              }
+            } else if (!once) {
+              entry.target.classList.remove('scroll-reveal--visible');
+            }
+          });
+        }, { threshold });
+
+        requestAnimationFrame(() => {
+          observer.observe(el);
+        });
+      });
+    });
+  }
+
+  // Initialize on first load
+  initScrollReveal();
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initScrollReveal);
+</script>

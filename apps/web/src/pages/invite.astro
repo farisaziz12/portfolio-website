@@ -1,0 +1,1583 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Aurora from '../components/animations/Aurora.astro';
+import CountUp from '../components/animations/CountUp.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import SpotlightCard from '../components/animations/SpotlightCard.astro';
+import Magnetic from '../components/animations/Magnetic.astro';
+import TiltCard from '../components/animations/TiltCard.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import {
+  speakerProfileQuery,
+  allTalksQuery,
+  featuredTestimonialsQuery,
+  speakingStatsQuery,
+  upcomingEventsQuery,
+} from '../lib/sanity/queries';
+
+// Types
+interface TopicCluster {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+interface Format {
+  name: string;
+  duration: string;
+  description: string;
+}
+
+interface Headshot {
+  _key: string;
+  asset: any;
+  style?: 'formal' | 'casual' | 'speaking' | 'headshot';
+  downloadable?: boolean;
+  alt?: string;
+}
+
+interface SpeakerProfile {
+  tagline?: string;
+  bioShort?: string;
+  bioMedium?: string;
+  bioFull?: any[]; // Portable Text blocks
+  topicClusters?: TopicCluster[];
+  formats?: Format[];
+  travelBase?: string;
+  technicalRequirements?: string;
+  headshots?: Headshot[];
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+    email?: string;
+  };
+}
+
+interface Talk {
+  _id: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+  topics?: string[];
+  eventCount: number;
+}
+
+interface Testimonial {
+  _id: string;
+  quote: string;
+  author: string;
+  role?: string;
+  company?: string;
+  image?: any;
+}
+
+interface SpeakingStats {
+  totalEvents: number;
+  countries: number;
+  cities: number;
+}
+
+interface UpcomingEvent {
+  _id: string;
+  title: string;
+  date: string;
+}
+
+// Fetch data
+const [profile, talks, testimonials, stats, upcomingEvents] = await Promise.all([
+  sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
+  sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
+  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+  sanityFetch<SpeakingStats | null>(speakingStatsQuery).catch(() => null),
+  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
+]);
+
+const contactEmail = profile?.socialLinks?.email;
+const downloadableHeadshots = profile?.headshots?.filter(h => h.downloadable !== false) || [];
+
+// Headshot style labels
+const styleLabels: Record<string, string> = {
+  formal: 'Formal',
+  casual: 'Casual',
+  speaking: 'Speaking',
+  headshot: 'Portrait',
+};
+
+// Headshot resolution presets with use cases
+const headshotResolutions = [
+  { name: 'Small', width: 400, label: 'S', tooltip: 'Small (400px) - Social & thumbnails' },
+  { name: 'Medium', width: 800, label: 'M', tooltip: 'Medium (800px) - Web use' },
+  { name: 'Large', width: 1200, label: 'L', tooltip: 'Large (1200px) - Print & high-res' },
+  { name: 'Original', width: 0, label: 'XL', tooltip: 'Original - Full resolution' },
+];
+
+// Topic colors for visual variety
+const topicColors = [
+  'from-blue-500 to-indigo-600',
+  'from-indigo-500 to-violet-600',
+  'from-violet-500 to-purple-600',
+  'from-purple-500 to-pink-600',
+];
+
+// Generate 12-month calendar data
+const now = new Date();
+const months: { name: string; year: number; month: number; eventCount: number }[] = [];
+
+for (let i = 0; i < 12; i++) {
+  const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+  const monthEvents = upcomingEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate.getMonth() === date.getMonth() && eventDate.getFullYear() === date.getFullYear();
+  });
+
+  months.push({
+    name: date.toLocaleString('en-US', { month: 'short' }),
+    year: date.getFullYear(),
+    month: date.getMonth(),
+    eventCount: monthEvents.length,
+  });
+}
+
+// Availability status helper
+function getAvailabilityStatus(count: number): { label: string; color: string; bgColor: string } {
+  if (count <= 2) return { label: 'Open', color: 'text-emerald-500', bgColor: 'bg-emerald-500/20' };
+  if (count <= 4) return { label: 'Limited', color: 'text-amber-500', bgColor: 'bg-amber-500/20' };
+  return { label: 'Booked', color: 'text-rose-500', bgColor: 'bg-rose-500/20' };
+}
+
+// Convert Portable Text to plain text
+function portableTextToPlain(blocks: any[] | undefined): string {
+  if (!blocks) return '';
+  return blocks
+    .filter((block: any) => block._type === 'block')
+    .map((block: any) => block.children?.map((child: any) => child.text).join('') || '')
+    .join('\n\n');
+}
+
+// Bio data for pills
+const bioFullText = portableTextToPlain(profile?.bioFull);
+const bios = [
+  { id: 'full', label: 'Full', wordCount: '300+', text: bioFullText },
+  { id: 'medium', label: 'Medium', wordCount: '~150', text: profile?.bioMedium || '' },
+  { id: 'short', label: 'Short', wordCount: '~50', text: profile?.bioShort || '' },
+].filter(bio => bio.text);
+---
+
+<BaseLayout
+  title="Speaker Kit | Faris Aziz"
+  description="Speaker kit with bios, headshots, topics, and booking information for conferences, meetups, and workshops."
+  pathname="/invite"
+>
+  <!-- Hero Section - matches index.astro style -->
+  <section class="relative min-h-[85vh] flex items-center overflow-hidden">
+    <Aurora class="opacity-30" colors={['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4']} speed="slow" blur={100} />
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-4xl">
+        <!-- Terminal intro -->
+        <div class="terminal max-w-sm mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">speaker-kit.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> cat ./speaker/profile.json</span>
+            <div class="terminal__output">Loading speaker info...</div>
+          </div>
+        </div>
+
+        <!-- Availability Badge -->
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full mb-6 animate-fade-in">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-emerald-500 text-sm font-medium">Available for events</span>
+        </div>
+
+        <h1 class="hero-title mb-6">
+          <span class="block text-ink mb-2 hero-animate" style="--delay: 0.1s">Speaker</span>
+          <span class="block text-accent hero-animate" style="--delay: 0.2s">Kit</span>
+        </h1>
+
+        {profile?.tagline && (
+          <p class="text-lead max-w-2xl mb-10 hero-animate" style="--delay: 0.3s">
+            {profile.tagline}
+          </p>
+        )}
+
+        <!-- Stats -->
+        {stats && (
+          <div class="flex flex-wrap gap-6 mb-10">
+            <div class="flex items-center gap-2">
+              <CountUp end={stats.totalEvents} class="text-3xl font-display font-bold text-accent" suffix="+" delay={0.8} duration={2} />
+              <span class="text-ink-muted text-sm uppercase tracking-wider">Events</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <CountUp end={stats.countries} class="text-3xl font-display font-bold text-violet-500" suffix="+" delay={1} duration={2} />
+              <span class="text-ink-muted text-sm uppercase tracking-wider">Countries</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <CountUp end={stats.cities} class="text-3xl font-display font-bold text-pink-500" suffix="+" delay={1.2} duration={2} />
+              <span class="text-ink-muted text-sm uppercase tracking-wider">Cities</span>
+            </div>
+          </div>
+        )}
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap items-center gap-4">
+          {contactEmail && (
+            <Magnetic strength={0.2} radius={150}>
+              <a href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`} class="btn-primary text-lg px-8 py-4 group glow">
+                Get in touch
+                <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </Magnetic>
+          )}
+          <Magnetic strength={0.2} radius={150}>
+            <a href="/speaking" class="btn-secondary text-lg px-8 py-4">
+              View past events
+            </a>
+          </Magnetic>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Availability Calendar Section -->
+  <section class="relative overflow-hidden py-20 md:py-28">
+    <div class="absolute inset-0 bg-gradient-to-b from-surface to-surface-raised"></div>
+    <div class="absolute inset-0 grid-pattern opacity-30"></div>
+
+    <div class="container relative z-10">
+      <ScrollReveal animation="fade-up">
+        <div class="text-center mb-12">
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Booking Calendar</p>
+          <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+            My <span class="hero-title--gradient">Availability</span>
+          </h2>
+          <p class="text-ink-muted text-lg max-w-xl mx-auto">
+            Plan ahead — see when I'm available for your event
+          </p>
+        </div>
+      </ScrollReveal>
+
+      <!-- Calendar Grid -->
+      <ScrollReveal animation="fade-up" delay={0.1}>
+        <div class="calendar-grid">
+          {months.map((month, index) => {
+            const status = getAvailabilityStatus(month.eventCount);
+            return (
+              <div class="calendar-month" data-delay={index * 0.05}>
+                <div class="calendar-month__header">
+                  <span class="calendar-month__name">{month.name}</span>
+                  <span class="calendar-month__year">{month.year}</span>
+                </div>
+                <div class={`calendar-month__status ${status.bgColor}`}>
+                  <span class={`calendar-month__dot ${status.color.replace('text-', 'bg-')}`}></span>
+                  <span class={`calendar-month__label ${status.color}`}>{status.label}</span>
+                </div>
+                {month.eventCount > 0 && (
+                  <span class="calendar-month__count">{month.eventCount} event{month.eventCount > 1 ? 's' : ''}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </ScrollReveal>
+
+      <!-- Legend -->
+      <ScrollReveal animation="fade-up" delay={0.2}>
+        <div class="calendar-legend">
+          <div class="calendar-legend__item">
+            <span class="calendar-legend__dot bg-emerald-500"></span>
+            <span>Open (0-2 events)</span>
+          </div>
+          <div class="calendar-legend__item">
+            <span class="calendar-legend__dot bg-amber-500"></span>
+            <span>Limited (3-4 events)</span>
+          </div>
+          <div class="calendar-legend__item">
+            <span class="calendar-legend__dot bg-rose-500"></span>
+            <span>Booked (5+ events)</span>
+          </div>
+        </div>
+      </ScrollReveal>
+    </div>
+  </section>
+
+  <!-- Bios Section -->
+  {bios.length > 0 && (
+    <section class="section py-20 md:py-28" id="bios">
+      <div class="container">
+        <ScrollReveal animation="fade-up">
+          <div class="text-center mb-12">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">For Event Materials</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+              Speaker <span class="hero-title--gradient">Bios</span>
+            </h2>
+            <p class="text-ink-muted text-lg max-w-xl mx-auto">
+              Ready-to-use bios for your event website and programs
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <div class="max-w-3xl mx-auto">
+            <SpotlightCard>
+              <div class="p-6">
+                <!-- Bio Pills -->
+                <div class="bio-header">
+                  <div class="bio-pills" role="tablist">
+                    {bios.map((bio, index) => (
+                      <button
+                        class={`bio-pill ${bio.id === 'medium' ? 'active' : ''}`}
+                        data-bio-id={bio.id}
+                        role="tab"
+                        aria-selected={bio.id === 'medium' ? 'true' : 'false'}
+                      >
+                        {bio.label}
+                        <span class="bio-pill__count">{bio.wordCount}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <button class="copy-btn" id="bio-copy-btn" data-text={bios.find(b => b.id === 'medium')?.text || bios[0]?.text}>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2"/>
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+
+                <!-- Bio Content -->
+                <div class="bio-content">
+                  {bios.map((bio) => (
+                    <div
+                      class={`bio-text ${bio.id === 'medium' ? 'active' : ''}`}
+                      data-bio-content={bio.id}
+                      data-text={bio.text}
+                    >
+                      <p class="text-ink-muted text-sm leading-relaxed whitespace-pre-line">{bio.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </SpotlightCard>
+          </div>
+        </ScrollReveal>
+
+        <!-- Social Links -->
+        {profile?.socialLinks && (
+          <ScrollReveal animation="fade-up" delay={0.2}>
+            <div class="flex justify-center gap-4 mt-8">
+              {profile.socialLinks.twitter && (
+                <a href={profile.socialLinks.twitter} target="_blank" rel="noopener" class="social-link" title="Twitter/X">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+              )}
+              {profile.socialLinks.linkedin && (
+                <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener" class="social-link" title="LinkedIn">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+                </a>
+              )}
+              {profile.socialLinks.github && (
+                <a href={profile.socialLinks.github} target="_blank" rel="noopener" class="social-link" title="GitHub">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+              )}
+            </div>
+          </ScrollReveal>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Headshots Section -->
+  {downloadableHeadshots.length > 0 && (
+    <section class="relative overflow-hidden py-20 md:py-28" id="headshots">
+      <div class="absolute inset-0 bg-surface-raised"></div>
+      <div class="absolute inset-0 grid-pattern opacity-30"></div>
+
+      <div class="container relative z-10">
+        <ScrollReveal animation="fade-up">
+          <div class="text-center mb-12">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Press Materials</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+              <span class="hero-title--gradient">Headshots</span>
+            </h2>
+            <p class="text-ink-muted text-lg max-w-xl mx-auto">
+              High-resolution photos for marketing and event promotion
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div class="headshot-gallery">
+          {downloadableHeadshots.map((headshot: Headshot, index: number) => (
+            <ScrollReveal animation="fade-up" delay={0.1 + index * 0.1}>
+              <div class="headshot-card" data-headshot-index={index} data-full-url={urlFor(headshot).width(1600).format('jpg').quality(95).url()}>
+                <button class="headshot-card__image" aria-label="View full size">
+                  <img
+                    src={urlFor(headshot).width(400).height(400).url()}
+                    alt={headshot.alt || 'Speaker headshot'}
+                    loading="lazy"
+                  />
+                  <div class="headshot-card__overlay">
+                    <span class="headshot-card__expand">
+                      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                      </svg>
+                    </span>
+                  </div>
+                </button>
+                <div class="headshot-card__info">
+                  <div class="headshot-card__meta">
+                    <span class="headshot-card__style">
+                      {headshot.style ? styleLabels[headshot.style] || headshot.style : 'Portrait'}
+                    </span>
+                  </div>
+
+                  {/* Mobile: Single prominent download button */}
+                  <button
+                    class="headshot-card__download-mobile download-btn-mobile"
+                    data-url={urlFor(headshot).width(1200).format('jpg').quality(95).url()}
+                    data-filename={`faris-aziz-${headshot.style || 'headshot'}-large.jpg`}
+                    aria-label="Download high-resolution image"
+                  >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    <span>Download</span>
+                  </button>
+
+                  {/* Desktop: Size options */}
+                  <div class="headshot-card__download-desktop">
+                    <span class="headshot-card__download-label">
+                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                      </svg>
+                      Size
+                    </span>
+                    <div class="headshot-card__downloads">
+                      {headshotResolutions.map((res) => (
+                        <button
+                          class="download-btn"
+                          title={res.tooltip}
+                          data-url={res.width > 0
+                            ? urlFor(headshot).width(res.width).format('jpg').quality(95).url()
+                            : urlFor(headshot).format('jpg').url()
+                          }
+                          data-filename={`faris-aziz-${headshot.style || 'headshot'}-${res.name.toLowerCase()}.jpg`}
+                        >
+                          {res.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+
+        <!-- Download guide -->
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <p class="text-center text-ink-faint text-xs mt-6">
+            <span class="font-medium">Size guide:</span> S = Social media · M = Website · L = Print · XL = Original
+          </p>
+        </ScrollReveal>
+      </div>
+    </section>
+  )}
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox__close" aria-label="Close lightbox">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <button class="lightbox__prev" aria-label="Previous image">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="lightbox__next" aria-label="Next image">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+    <div class="lightbox__content">
+      <img class="lightbox__image" src="" alt="Full size headshot" />
+    </div>
+    <div class="lightbox__counter"></div>
+  </div>
+
+  <!-- Topics Section -->
+  {profile?.topicClusters && profile.topicClusters.length > 0 && (
+    <section class="section py-20 md:py-28" id="topics">
+      <div class="container">
+        <ScrollReveal animation="fade-up">
+          <div class="text-center mb-12">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Topics & Expertise</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+              What I <span class="hero-title--gradient">Speak About</span>
+            </h2>
+            <p class="text-ink-muted text-lg max-w-xl mx-auto">
+              Deep-dives into the topics I'm most passionate about
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div class="topic-grid">
+          {profile.topicClusters.map((topic: TopicCluster, index: number) => (
+            <ScrollReveal animation="fade-up" delay={0.1 + index * 0.1} class="h-full">
+              <a href="/talks" class="topic-card group">
+                <div class={`topic-card__glow bg-gradient-to-br ${topicColors[index % topicColors.length]}`}></div>
+                <span class="topic-card__icon">{topic.icon}</span>
+                <h3 class="topic-card__title">{topic.title}</h3>
+                {topic.description && (
+                  <p class="topic-card__description">{topic.description}</p>
+                )}
+                <span class="topic-card__arrow">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </span>
+              </a>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Formats & Logistics -->
+  {(profile?.formats || profile?.travelBase) && (
+    <section class="relative overflow-hidden py-20 md:py-28" id="logistics">
+      <div class="absolute inset-0 bg-surface-raised"></div>
+      <div class="absolute inset-0 grid-pattern opacity-30"></div>
+
+      <div class="container relative z-10">
+        <ScrollReveal animation="fade-up">
+          <div class="text-center mb-12">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Logistics</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+              Formats & <span class="hero-title--gradient">Details</span>
+            </h2>
+          </div>
+        </ScrollReveal>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {profile?.formats && profile.formats.length > 0 && (
+            <ScrollReveal animation="fade-up" delay={0.1}>
+              <SpotlightCard class="h-full">
+                <div class="p-6 h-full">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center text-2xl">
+                      🎤
+                    </div>
+                    <h3 class="font-display font-bold text-xl text-ink">Talk Formats</h3>
+                  </div>
+                  <div class="space-y-3">
+                    {profile.formats.map((format: Format) => (
+                      <div class="flex items-center justify-between py-2 border-b border-edge last:border-0">
+                        <span class="font-medium text-ink">{format.name}</span>
+                        <span class="text-sm text-ink-muted font-mono">{format.duration}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          )}
+
+          {profile?.travelBase && (
+            <ScrollReveal animation="fade-up" delay={0.2}>
+              <SpotlightCard class="h-full">
+                <div class="p-6 h-full">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-2xl">
+                      🌍
+                    </div>
+                    <h3 class="font-display font-bold text-xl text-ink">Based In</h3>
+                  </div>
+                  <p class="text-ink text-lg font-medium mb-2">{profile.travelBase}</p>
+                  <p class="text-ink-faint text-sm">Available for international events</p>
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          )}
+
+          {profile?.technicalRequirements && (
+            <ScrollReveal animation="fade-up" delay={0.3}>
+              <SpotlightCard class="h-full">
+                <div class="p-6 h-full">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-2xl">
+                      🖥️
+                    </div>
+                    <h3 class="font-display font-bold text-xl text-ink">Technical</h3>
+                  </div>
+                  <p class="text-ink-muted text-sm whitespace-pre-line">{profile.technicalRequirements}</p>
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Available Talks -->
+  {talks.length > 0 && (
+    <section class="section py-20 md:py-28" id="talks">
+      <div class="container">
+        <ScrollReveal animation="fade-up">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 max-w-5xl mx-auto">
+            <div>
+              <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Ready to Deliver</p>
+              <h2 class="text-3xl md:text-4xl font-display font-bold text-ink">Available Talks</h2>
+            </div>
+            <Magnetic strength={0.15}>
+              <a href="/talks" class="btn-secondary group">
+                View all talks
+                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </Magnetic>
+          </div>
+        </ScrollReveal>
+
+        <div class="grid sm:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {talks.slice(0, 4).map((talk: Talk, index: number) => (
+            <ScrollReveal animation="fade-up" delay={index * 0.1}>
+              <SpotlightCard class="h-full">
+                <a href={`/talks/${talk.slug}`} class="block p-6 h-full group">
+                  <div class="h-1 bg-gradient-to-r from-accent via-violet-500 to-pink-500 -mx-6 -mt-6 mb-6 rounded-t-2xl"></div>
+                  <h3 class="font-display font-semibold text-lg text-ink group-hover:text-accent transition-colors mb-2">
+                    {talk.title}
+                  </h3>
+                  {talk.abstract && (
+                    <p class="text-ink-muted text-sm line-clamp-2 mb-4">{talk.abstract}</p>
+                  )}
+                  {talk.eventCount > 0 && (
+                    <p class="text-xs text-ink-faint">
+                      <span class="inline-flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Delivered {talk.eventCount}x
+                      </span>
+                    </p>
+                  )}
+                </a>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Testimonials -->
+  {testimonials.length > 0 && (
+    <section class="relative overflow-hidden py-20 md:py-28" id="testimonials">
+      <div class="absolute inset-0 bg-surface-raised"></div>
+
+      <div class="container relative z-10">
+        <ScrollReveal animation="fade-up">
+          <div class="text-center mb-12">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Social Proof</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-ink">
+              What <span class="hero-title--gradient">Organizers</span> Say
+            </h2>
+          </div>
+        </ScrollReveal>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {testimonials.slice(0, 6).map((testimonial: Testimonial, index: number) => (
+            <ScrollReveal animation="fade-up" delay={index * 0.1}>
+              <SpotlightCard class="h-full">
+                <div class="p-6 h-full flex flex-col">
+                  <svg class="w-8 h-8 text-accent/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                  <p class="text-ink-muted text-sm mb-6 flex-1 line-clamp-4">"{testimonial.quote}"</p>
+                  <div class="flex items-center gap-3 pt-4 border-t border-edge">
+                    {testimonial.image && (
+                      <img
+                        src={urlFor(testimonial.image).width(48).height(48).url()}
+                        alt={testimonial.author}
+                        class="w-10 h-10 rounded-full object-cover"
+                      />
+                    )}
+                    <div class="min-w-0">
+                      <p class="font-medium text-ink text-sm truncate">{testimonial.author}</p>
+                      {(testimonial.role || testimonial.company) && (
+                        <p class="text-xs text-ink-faint truncate">
+                          {testimonial.role}{testimonial.company && `, ${testimonial.company}`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  {contactEmail && (
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+      <div class="absolute inset-0 grid-pattern opacity-10"></div>
+      <Aurora class="opacity-20" colors={['#ffffff', '#e0e7ff', '#c7d2fe']} speed="slow" blur={120} />
+
+      <div class="container relative z-10 py-24 md:py-32">
+        <div class="max-w-4xl mx-auto text-center">
+          <ScrollReveal animation="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Available for bookings
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal animation="fade-up" delay={0.1}>
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+              Let's work together
+            </h2>
+          </ScrollReveal>
+
+          <ScrollReveal animation="blur" delay={0.2}>
+            <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+              Interested in having me speak at your event? I'd love to hear from you.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal animation="fade-up" delay={0.3}>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <Magnetic strength={0.15} radius={100}>
+                <a
+                  href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`}
+                  class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+                >
+                  Send an inquiry
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </a>
+              </Magnetic>
+              <Magnetic strength={0.15} radius={100}>
+                <a
+                  href="/speaking"
+                  class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+                >
+                  View past events
+                </a>
+              </Magnetic>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  /* Hero animation - CSS only for view transitions compatibility */
+  .hero-animate {
+    animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes heroFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-animate {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Calendar Grid */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .calendar-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .calendar-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .calendar-month {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 1rem;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .calendar-month:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-2px);
+  }
+
+  .calendar-month__header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+  }
+
+  .calendar-month__name {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+
+  .calendar-month__year {
+    font-size: 0.75rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .calendar-month__status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+  }
+
+  .calendar-month__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+  }
+
+  .calendar-month__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .calendar-month__count {
+    display: block;
+    font-size: 0.6875rem;
+    color: rgb(var(--ink-faint));
+    margin-top: 0.5rem;
+  }
+
+  /* Calendar Legend */
+  .calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .calendar-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  .calendar-legend__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+  }
+
+  /* Bio Header */
+  .bio-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 480px) {
+    .bio-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  /* Bio Pills */
+  .bio-pills {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.5rem;
+    width: fit-content;
+  }
+
+  .bio-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    background: transparent;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .bio-pill:hover {
+    color: rgb(var(--ink));
+  }
+
+  .bio-pill.active {
+    color: rgb(var(--ink));
+    background: rgb(var(--surface));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  }
+
+  .bio-pill__count {
+    font-size: 0.6875rem;
+    color: rgb(var(--ink-faint));
+    font-weight: 400;
+  }
+
+  .bio-pill.active .bio-pill__count {
+    color: rgb(var(--ink-muted));
+  }
+
+  /* Bio Content */
+  .bio-content {
+    position: relative;
+    min-height: 100px;
+  }
+
+  .bio-text {
+    display: none;
+  }
+
+  .bio-text.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Copy Button */
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: fit-content;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    color: rgb(var(--accent));
+    border-color: rgb(var(--accent) / 0.5);
+  }
+
+  /* Social Link */
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.75rem;
+    color: rgb(var(--ink-muted));
+    transition: all 0.2s ease;
+  }
+
+  .social-link:hover {
+    color: rgb(var(--accent));
+    border-color: rgb(var(--accent) / 0.5);
+    transform: translateY(-2px);
+  }
+
+  /* Headshot Gallery */
+  .headshot-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 640px) {
+    .headshot-gallery {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+  }
+
+  .headshot-card {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .headshot-card:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-2px);
+  }
+
+  .headshot-card__image {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: block;
+  }
+
+  .headshot-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .headshot-card:hover .headshot-card__image img {
+    transform: scale(1.05);
+  }
+
+  .headshot-card__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0);
+    transition: background 0.3s ease;
+  }
+
+  .headshot-card:hover .headshot-card__overlay {
+    background: rgb(0 0 0 / 0.35);
+  }
+
+  .headshot-card__expand {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    color: rgb(var(--ink));
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+  }
+
+  .headshot-card:hover .headshot-card__expand {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .headshot-card__info {
+    padding: 0.75rem;
+  }
+
+  .headshot-card__meta {
+    margin-bottom: 0.5rem;
+  }
+
+  .headshot-card__style {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+
+  /* Mobile Download Button - prominent, easy to tap */
+  .headshot-card__download-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, rgb(var(--accent)), rgb(139 92 246));
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+  }
+
+  .headshot-card__download-mobile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgb(var(--accent) / 0.3);
+  }
+
+  .headshot-card__download-mobile:active {
+    transform: translateY(0);
+  }
+
+  /* Desktop Download Section */
+  .headshot-card__download-desktop {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .headshot-card__download-mobile {
+      display: none;
+    }
+
+    .headshot-card__download-desktop {
+      display: flex;
+    }
+  }
+
+  .headshot-card__download-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    color: rgb(var(--ink-faint));
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .headshot-card__downloads {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  /* Download Button */
+  .download-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(var(--ink-muted));
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .download-btn:hover {
+    color: rgb(var(--accent));
+    border-color: rgb(var(--accent) / 0.5);
+    background: rgb(var(--accent) / 0.1);
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .lightbox.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .lightbox__close,
+  .lightbox__prev,
+  .lightbox__next {
+    position: absolute;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(255 255 255 / 0.1);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .lightbox__close:hover,
+  .lightbox__prev:hover,
+  .lightbox__next:hover {
+    background: rgb(255 255 255 / 0.2);
+  }
+
+  .lightbox__close { top: 1.5rem; right: 1.5rem; }
+  .lightbox__prev { left: 1.5rem; top: 50%; transform: translateY(-50%); }
+  .lightbox__next { right: 1.5rem; top: 50%; transform: translateY(-50%); }
+
+  .lightbox__content {
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+
+  .lightbox__image {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 0.5rem;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+
+  .lightbox.open .lightbox__image {
+    transform: scale(1);
+  }
+
+  .lightbox__counter {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.875rem;
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  /* Topic Grid */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-width: 64rem;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 640px) {
+    .topic-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .topic-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Topic Card */
+  .topic-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+    min-height: 220px;
+  }
+
+  .topic-card:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-4px);
+  }
+
+  .topic-card__glow {
+    position: absolute;
+    inset: -100%;
+    opacity: 0;
+    filter: blur(60px);
+    transition: opacity 0.3s ease;
+  }
+
+  .topic-card:hover .topic-card__glow {
+    opacity: 0.15;
+  }
+
+  .topic-card__icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  .topic-card__title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    margin-bottom: 0.5rem;
+  }
+
+  .topic-card__description {
+    font-size: 0.8125rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .topic-card__arrow {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    color: rgb(var(--accent));
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: all 0.3s ease;
+  }
+
+  .topic-card:hover .topic-card__arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+</style>
+
+<script>
+  // Download file helper
+  async function downloadFile(url: string, filename: string) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, '_blank');
+    }
+  }
+
+  // Lightbox state
+  let currentImageIndex = 0;
+  let headshotUrls: string[] = [];
+
+  function openLightbox(index: number) {
+    currentImageIndex = index;
+    const lightbox = document.getElementById('lightbox');
+    const image = lightbox?.querySelector('.lightbox__image') as HTMLImageElement;
+    const counter = lightbox?.querySelector('.lightbox__counter');
+
+    if (lightbox && image && headshotUrls[index]) {
+      image.src = headshotUrls[index];
+      if (counter) counter.textContent = `${index + 1} / ${headshotUrls.length}`;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function navigateLightbox(direction: number) {
+    const newIndex = (currentImageIndex + direction + headshotUrls.length) % headshotUrls.length;
+    openLightbox(newIndex);
+  }
+
+  function init() {
+    // Collect headshot URLs
+    headshotUrls = Array.from(document.querySelectorAll('[data-headshot-index]'))
+      .map(el => el.getAttribute('data-full-url') || '');
+
+    // Bio pills
+    document.querySelectorAll('.bio-pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const bioId = pill.getAttribute('data-bio-id');
+        if (!bioId) return;
+
+        // Update active pill
+        document.querySelectorAll('.bio-pill').forEach(p => {
+          p.classList.remove('active');
+          p.setAttribute('aria-selected', 'false');
+        });
+        pill.classList.add('active');
+        pill.setAttribute('aria-selected', 'true');
+
+        // Update visible content
+        document.querySelectorAll('.bio-text').forEach(content => {
+          content.classList.remove('active');
+        });
+        const activeContent = document.querySelector(`[data-bio-content="${bioId}"]`);
+        activeContent?.classList.add('active');
+
+        // Update copy button text
+        const copyBtn = document.getElementById('bio-copy-btn');
+        const text = activeContent?.getAttribute('data-text');
+        if (copyBtn && text) {
+          copyBtn.setAttribute('data-text', text);
+        }
+      });
+    });
+
+    // Copy buttons
+    document.querySelectorAll('.copy-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const text = btn.getAttribute('data-text');
+        if (text) {
+          await navigator.clipboard.writeText(text);
+          const span = btn.querySelector('span');
+          if (span) {
+            const original = span.textContent;
+            span.textContent = 'Copied!';
+            btn.classList.add('!text-emerald-500', '!border-emerald-500/50');
+            setTimeout(() => {
+              span.textContent = original;
+              btn.classList.remove('!text-emerald-500', '!border-emerald-500/50');
+            }, 1500);
+          }
+        }
+      });
+    });
+
+    // Download buttons (desktop size options)
+    document.querySelectorAll('.download-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const url = btn.getAttribute('data-url');
+        const filename = btn.getAttribute('data-filename');
+        if (url && filename) {
+          const original = btn.textContent;
+          btn.textContent = '...';
+          await downloadFile(url, filename);
+          btn.textContent = '✓';
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1500);
+        }
+      });
+    });
+
+    // Mobile download buttons
+    document.querySelectorAll('.download-btn-mobile').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const url = btn.getAttribute('data-url');
+        const filename = btn.getAttribute('data-filename');
+        if (url && filename) {
+          const span = btn.querySelector('span');
+          if (span) span.textContent = 'Downloading...';
+          await downloadFile(url, filename);
+          if (span) {
+            span.textContent = 'Done!';
+            setTimeout(() => {
+              span.textContent = 'Download';
+            }, 2000);
+          }
+        }
+      });
+    });
+
+    // Headshot image click to expand
+    document.querySelectorAll('.headshot-card__image').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[data-headshot-index]');
+        if (card) {
+          const index = parseInt(card.getAttribute('data-headshot-index') || '0', 10);
+          openLightbox(index);
+        }
+      });
+    });
+
+    // Lightbox controls
+    document.querySelector('.lightbox__close')?.addEventListener('click', closeLightbox);
+    document.querySelector('.lightbox__prev')?.addEventListener('click', () => navigateLightbox(-1));
+    document.querySelector('.lightbox__next')?.addEventListener('click', () => navigateLightbox(1));
+
+    // Lightbox keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const lightbox = document.getElementById('lightbox');
+      if (!lightbox?.classList.contains('open')) return;
+
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
+
+    // Close lightbox on backdrop click
+    document.getElementById('lightbox')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('lightbox__content')) {
+        closeLightbox();
+      }
+    });
+  }
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,1145 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import { talkBySlugQuery, allTalkSlugsQuery, socialPostsForTalkQuery } from '../../lib/sanity/queries';
+import { formatDate, getCountryFlag } from 'shared/utils';
+
+interface TalkEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  date: string;
+  conference: string;
+  location?: {
+    city?: string;
+    country?: string;
+  };
+  links?: {
+    videoUrl?: string;
+    slidesUrl?: string;
+  };
+  talkVersion?: {
+    _id: string;
+    title: string;
+    slug: string;
+  };
+}
+
+interface TalkVersion {
+  _id: string;
+  title: string;
+  slug: string;
+  version?: string;
+}
+
+interface TalkDetails {
+  _id: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+  audience?: string;
+  takeaways?: string[];
+  topics?: string[];
+  duration?: number;
+  version?: string;
+  isCurrentVersion?: boolean;
+  versionNotes?: string;
+  events?: TalkEvent[];
+  otherVersions?: TalkVersion[];
+  parentTalkDetails?: {
+    _id: string;
+    title: string;
+    slug: string;
+  };
+  allFamilyEvents?: TalkEvent[];
+  assets?: {
+    slidesUrl?: string;
+    videoUrl?: string;
+    repoUrl?: string;
+    demoUrl?: string;
+  };
+  relatedMedia?: {
+    _id: string;
+    type: string;
+    image?: any;
+    videoUrl?: string;
+    description?: string;
+  }[];
+}
+
+interface TalkListItem {
+  _id: string;
+  title: string;
+  slug: string;
+}
+
+interface SocialPost {
+  _id: string;
+  url: string;
+  platform: 'twitter' | 'linkedin';
+  author: string;
+  authorHandle?: string;
+  authorImage?: any;
+  authorRole?: string;
+  content: string;
+  postDate?: string;
+}
+
+export async function getStaticPaths() {
+  const talks = await sanityFetch<TalkListItem[]>(allTalkSlugsQuery).catch(() => []);
+  return talks.map((talk) => ({
+    params: { slug: talk.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const talk = await sanityFetch<TalkDetails | null>(talkBySlugQuery, { slug }).catch(() => null);
+
+if (!talk) {
+  return Astro.redirect('/404');
+}
+
+// Fetch social posts related to this talk
+const socialPosts = await sanityFetch<SocialPost[]>(socialPostsForTalkQuery, { talkId: talk._id }).catch(() => []);
+
+const hasVersions = talk.otherVersions && talk.otherVersions.length > 0;
+const isVariation = !!talk.parentTalkDetails;
+const isDeprecated = hasVersions && !talk.isCurrentVersion;
+const currentVersion = talk.otherVersions?.find((v: any) => v.isCurrentVersion);
+// Use family events if versions exist, otherwise use this talk's events
+const displayEvents = hasVersions ? (talk.allFamilyEvents || []) : (talk.events || []);
+const eventCount = displayEvents.length;
+const hasVideo = displayEvents.some((e: any) => e.links?.videoUrl);
+
+// Group events by version for timeline display
+const eventsByVersion = hasVersions ? displayEvents.reduce((acc: any, event: any) => {
+  const versionId = event.talkVersion?._id || 'unknown';
+  const versionLabel = event.talkVersion?.version || event.talkVersion?.title || 'Original';
+  if (!acc[versionId]) {
+    acc[versionId] = {
+      id: versionId,
+      label: versionLabel,
+      slug: event.talkVersion?.slug,
+      isCurrent: versionId === talk._id,
+      events: []
+    };
+  }
+  acc[versionId].events.push(event);
+  return acc;
+}, {}) : null;
+
+// Sort versions by their first event date (newest first)
+const sortedVersions = eventsByVersion
+  ? Object.values(eventsByVersion).sort((a: any, b: any) => {
+      const dateA = a.events[0]?.date ? new Date(a.events[0].date).getTime() : 0;
+      const dateB = b.events[0]?.date ? new Date(b.events[0].date).getTime() : 0;
+      return dateB - dateA;
+    })
+  : null;
+---
+
+<BaseLayout
+  title={`${talk.title} | Talks | Faris Aziz`}
+  description={talk.abstract || `${talk.title} - A talk by Faris Aziz`}
+  pathname={`/talks/${slug}`}
+>
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-accent/5 via-violet-500/5 to-pink-500/5"></div>
+
+    <div class="container relative z-10 pt-16 md:pt-28 pb-10 md:pb-16 px-4 md:px-6">
+      <div class="max-w-4xl">
+        <!-- Breadcrumb -->
+        <a href="/talks" class="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-accent mb-6 md:mb-8 transition-colors">
+          <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+          All talks
+        </a>
+
+        <!-- Mobile deprecation notice -->
+        {isDeprecated && currentVersion && (
+          <div class="deprecation-mobile sm:hidden mb-4">
+            <div class="deprecation-mobile__badge">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Older Version</span>
+            </div>
+            <a href={`/talks/${currentVersion.slug}`} class="deprecation-mobile__link">
+              View latest →
+            </a>
+          </div>
+        )}
+
+        <!-- Terminal intro with deprecation notice -->
+        <div class={`terminal mb-6 md:mb-8 animate-fade-in hidden sm:block ${isDeprecated ? 'terminal--deprecated max-w-xl' : 'max-w-lg'}`}>
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">talk.sh</span>
+            {isDeprecated && (
+              <span class="terminal__badge">archived</span>
+            )}
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> cat ./talks/{slug}.md</span>
+
+            {isDeprecated && currentVersion ? (
+              <div class="terminal__output terminal__output--deprecated">
+                <div class="terminal__meta">
+                  <div class="terminal__meta-row">
+                    <span class="terminal__meta-label">status</span>
+                    <span class="terminal__meta-value terminal__meta-value--warning">⚠ archived</span>
+                  </div>
+                  {talk.version && (
+                    <div class="terminal__meta-row">
+                      <span class="terminal__meta-label">viewing</span>
+                      <span class="terminal__meta-value">{talk.version}</span>
+                    </div>
+                  )}
+                  <div class="terminal__meta-row">
+                    <span class="terminal__meta-label">latest</span>
+                    <a href={`/talks/${currentVersion.slug}`} class="terminal__meta-link">
+                      {currentVersion.version || currentVersion.title}
+                      <span class="terminal__meta-arrow">→</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div class="terminal__output">Loading talk details...</div>
+            )}
+          </div>
+        </div>
+
+        <!-- Tags Row - smaller on mobile -->
+        <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-4 md:mb-6">
+          <span class="tag tag-conference text-xs md:text-sm">Talk</span>
+          {talk.duration && (
+            <span class="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium text-ink-muted bg-surface-overlay rounded-full border border-edge">
+              <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {talk.duration}m
+            </span>
+          )}
+          {eventCount > 0 && (
+            <span class="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium text-accent bg-accent-muted rounded-full border border-accent/20">
+              <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {eventCount}x
+            </span>
+          )}
+          {hasVideo && (
+            <span class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-200 dark:border-emerald-800">
+              <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+              <span class="hidden sm:inline">Recording</span>
+            </span>
+          )}
+          {talk.version && hasVersions && (
+            <span class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 rounded-full border border-violet-200 dark:border-violet-800">
+              {talk.version}
+            </span>
+          )}
+          {talk.isCurrentVersion && hasVersions && (
+            <span class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full border border-amber-200 dark:border-amber-800">
+              <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span class="hidden sm:inline">Latest</span>
+            </span>
+          )}
+        </div>
+
+        <!-- Title - responsive sizing -->
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-4 md:mb-6 leading-tight" transition:name="page-title">
+          <span class="block text-ink">{talk.title}</span>
+        </h1>
+
+        <!-- Abstract - smaller on mobile -->
+        {talk.abstract && (
+          <p class="text-base md:text-lg lg:text-xl text-ink-muted max-w-3xl mb-6 md:mb-10 leading-relaxed">
+            {talk.abstract}
+          </p>
+        )}
+
+        <!-- CTA Buttons - stack on mobile -->
+        <div class="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
+          <a href="/invite" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group glow justify-center">
+            Book this talk
+            <svg class="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+          {talk.assets?.slidesUrl && (
+            <a href={talk.assets.slidesUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group justify-center">
+              <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Slides
+            </a>
+          )}
+          {talk.assets?.repoUrl && (
+            <a href={talk.assets.repoUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group justify-center">
+              <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z" />
+              </svg>
+              Code
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Stats Bento -->
+  <section class="section-subtle py-8 md:py-16">
+    <div class="container px-4 md:px-6">
+      <div class="grid grid-cols-4 gap-2 md:gap-4 max-w-4xl mx-auto">
+        <div class="bento__item flex flex-col items-center justify-center py-3 md:py-6 px-2">
+          <div class="text-xl md:text-3xl mb-1 md:mb-2">⏱️</div>
+          <div class="text-lg md:text-2xl font-display font-bold text-ink">{talk.duration || '30'}</div>
+          <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Min</div>
+        </div>
+        <div class="bento__item flex flex-col items-center justify-center py-3 md:py-6 px-2">
+          <div class="text-xl md:text-3xl mb-1 md:mb-2">🎯</div>
+          <div class="text-lg md:text-2xl font-display font-bold text-accent">{eventCount}</div>
+          <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Times</div>
+        </div>
+        <div class="bento__item flex flex-col items-center justify-center py-3 md:py-6 px-2">
+          <div class="text-xl md:text-3xl mb-1 md:mb-2">🏷️</div>
+          <div class="text-lg md:text-2xl font-display font-bold text-violet-500">{talk.topics?.length || 0}</div>
+          <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Topics</div>
+        </div>
+        <div class="bento__item bento__item--featured flex flex-col items-center justify-center py-3 md:py-6 px-2">
+          <div class="text-xl md:text-3xl mb-1 md:mb-2">{hasVideo ? '📹' : '✨'}</div>
+          <div class="text-lg md:text-2xl font-display font-bold text-white">{hasVideo ? 'Yes' : 'Live'}</div>
+          <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">{hasVideo ? 'Video' : 'Only'}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Grid Section -->
+  <section class="section py-10 md:py-20 overflow-x-hidden">
+    <div class="container px-4 md:px-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid lg:grid-cols-3 gap-6 md:gap-8 min-w-0">
+          <!-- Main Content -->
+          <div class="lg:col-span-2 min-w-0 space-y-8 md:space-y-10">
+            <!-- Key Takeaways -->
+            {talk.takeaways && talk.takeaways.length > 0 && (
+              <div>
+                <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-8">
+                  <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="text-lg md:text-2xl font-display font-bold text-ink">What You'll Learn</h2>
+                    <p class="text-ink-muted text-sm hidden sm:block">Key takeaways from this talk</p>
+                  </div>
+                </div>
+
+                <div class="space-y-3 md:space-y-4">
+                  {talk.takeaways.map((takeaway: string) => (
+                    <div class="card p-4 md:p-5 group hover:border-accent/30 transition-all">
+                      <div class="flex items-start gap-3 md:gap-4">
+                        <div class="flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                          <svg class="w-4 h-4 md:w-5 md:h-5 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                        <p class="text-sm md:text-base text-ink leading-relaxed">{takeaway}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <!-- Past Events -->
+            {displayEvents.length > 0 && (
+              <div class="w-full">
+                {/* Section Header */}
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-display font-bold text-ink">
+                      {hasVersions ? 'Talk Evolution' : 'Deliveries'}
+                    </h2>
+                    <p class="text-xs text-ink-muted">
+                      {eventCount} {eventCount === 1 ? 'event' : 'events'}{hasVersions ? ` · ${sortedVersions?.length} versions` : ''}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Timeline view for versioned talks */}
+                {hasVersions && sortedVersions ? (
+                  <div class="space-y-4">
+                    {sortedVersions.map((version: any, versionIndex: number) => (
+                      <div class={`rounded-xl border overflow-hidden ${
+                        version.isCurrent
+                          ? 'border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10'
+                          : 'border-edge bg-surface-raised'
+                      }`}>
+                        {/* Version Header */}
+                        <div class="p-4 flex items-center gap-3">
+                          <div class={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${
+                            version.isCurrent
+                              ? 'bg-gradient-to-br from-amber-400 to-orange-500'
+                              : 'bg-gradient-to-br from-violet-500 to-purple-600'
+                          }`}>
+                            {version.isCurrent ? (
+                              <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                              </svg>
+                            ) : (
+                              <span>v{sortedVersions.length - versionIndex}</span>
+                            )}
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 min-w-0">
+                              <span class="text-base font-bold text-ink truncate min-w-0 flex-1">{version.label}</span>
+                              {version.isCurrent && (
+                                <span class="shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase bg-sky-200 dark:bg-sky-800 text-sky-800 dark:text-sky-200 rounded">
+                                  Viewing
+                                </span>
+                              )}
+                              {version.id === currentVersion?._id && (
+                                <span class="shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 rounded">
+                                  Latest
+                                </span>
+                              )}
+                            </div>
+                            <div class="text-xs text-ink-muted truncate">
+                              {version.events.length} {version.events.length === 1 ? 'event' : 'events'}
+                              {!version.isCurrent && version.slug && (
+                                <> · <a href={`/talks/${version.slug}`} class="text-accent hover:underline">view version</a></>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Events */}
+                        <div class="border-t border-edge/50">
+                          {version.events.map((event: any, eventIndex: number) => (
+                            <a
+                              href={`/events/${event.slug}`}
+                              class={`flex items-center gap-3 p-3 hover:bg-surface-overlay/50 active:bg-surface-overlay transition-colors ${
+                                eventIndex !== version.events.length - 1 ? 'border-b border-edge/30' : ''
+                              }`}
+                            >
+                              {/* Date */}
+                              <div class="shrink-0 w-10 text-center">
+                                <div class="text-base font-bold text-ink leading-tight">
+                                  {new Date(event.date).getDate()}
+                                </div>
+                                <div class="text-[10px] text-ink-muted uppercase leading-tight">
+                                  {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}'{new Date(event.date).toLocaleDateString('en-US', { year: '2-digit' })}
+                                </div>
+                              </div>
+
+                              {/* Event details */}
+                              <div class="min-w-0 flex-1">
+                                <div class="font-medium text-sm text-ink truncate">
+                                  {event.conference}
+                                </div>
+                                <div class="text-xs text-ink-muted flex items-center gap-1">
+                                  <span class="shrink-0">{getCountryFlag(event.location?.country)}</span>
+                                  <span class="truncate">{event.location?.city}</span>
+                                </div>
+                              </div>
+
+                              {/* Video indicator */}
+                              <div class="shrink-0">
+                                {event.links?.videoUrl ? (
+                                  <div class="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center">
+                                    <svg class="w-3.5 h-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <svg class="w-4 h-4 text-ink-faint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                  </svg>
+                                )}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Simple list for non-versioned talks */
+                  <div class="space-y-3">
+                    {displayEvents.map((event: any) => (
+                      <a
+                        href={`/events/${event.slug}`}
+                        class="flex items-center gap-3 p-3 bg-surface-raised rounded-xl border border-edge hover:border-accent/30 active:bg-surface-overlay transition-all"
+                      >
+                        {/* Date Block */}
+                        <div class="shrink-0 w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex flex-col items-center justify-center text-white">
+                          <div class="text-lg font-bold leading-none">
+                            {new Date(event.date).getDate()}
+                          </div>
+                          <div class="text-[9px] uppercase opacity-80">
+                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div class="min-w-0 flex-1">
+                          <div class="font-semibold text-sm text-ink truncate">
+                            {event.conference}
+                          </div>
+                          <div class="text-xs text-ink-muted flex items-center gap-1">
+                            <span class="shrink-0">{getCountryFlag(event.location?.country)}</span>
+                            <span class="truncate">{event.location?.city}</span>
+                            <span class="shrink-0 text-ink-faint">·</span>
+                            <span class="shrink-0 text-ink-faint">{new Date(event.date).getFullYear()}</span>
+                          </div>
+                        </div>
+
+                        {/* Arrow/Video */}
+                        <div class="shrink-0">
+                          {event.links?.videoUrl ? (
+                            <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                              <svg class="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <svg class="w-5 h-5 text-ink-faint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <!-- Sidebar -->
+          <div class="min-w-0 space-y-4 lg:space-y-6">
+
+            <!-- Book This Talk - Primary CTA (Mobile First) -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent via-violet-600 to-purple-700">
+              {/* Background pattern */}
+              <div class="absolute inset-0 opacity-10">
+                <div class="absolute inset-0 book-talk-pattern"></div>
+              </div>
+
+              <div class="relative p-5 lg:p-6">
+                {/* Availability badge */}
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-full text-white text-xs font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Available to book
+                  </span>
+                </div>
+
+                {/* Content */}
+                <h3 class="font-display font-bold text-white text-lg lg:text-xl mb-2">
+                  Want this talk at your event?
+                </h3>
+                <p class="text-white/80 text-sm mb-5 leading-relaxed">
+                  I can deliver this talk at conferences, meetups, or corporate events.
+                </p>
+
+                {/* Quick stats */}
+                <div class="flex gap-4 mb-5 pb-5 border-b border-white/20">
+                  <div>
+                    <div class="text-xl lg:text-2xl font-bold text-white">{talk.duration || 30}</div>
+                    <div class="text-[10px] text-white/60 uppercase tracking-wide">minutes</div>
+                  </div>
+                  <div>
+                    <div class="text-xl lg:text-2xl font-bold text-white">{eventCount}</div>
+                    <div class="text-[10px] text-white/60 uppercase tracking-wide">deliveries</div>
+                  </div>
+                  {hasVideo && (
+                    <div>
+                      <div class="text-xl lg:text-2xl font-bold text-emerald-300">✓</div>
+                      <div class="text-[10px] text-white/60 uppercase tracking-wide">recording</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA Button */}
+                <a
+                  href="/invite"
+                  class="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-white text-violet-700 font-bold text-base rounded-xl hover:bg-white/95 active:scale-[0.98] transition-all shadow-lg"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Invite me to speak
+                </a>
+
+                {/* Secondary action */}
+                {talk.assets?.slidesUrl && (
+                  <a
+                    href={talk.assets.slidesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center justify-center gap-2 w-full mt-3 px-4 py-2.5 text-white/90 text-sm font-medium hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Preview slides
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <!-- Info Cards Grid (Mobile: 2 columns, Desktop: stacked) -->
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4">
+              <!-- Audience Card -->
+              {talk.audience && (
+                <div class="card p-4 lg:p-5">
+                  <div class="flex items-center gap-2 mb-2.5">
+                    <div class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                      <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink text-xs lg:text-sm">Audience</h3>
+                  </div>
+                  <p class="text-ink-muted text-xs lg:text-sm leading-relaxed line-clamp-3 lg:line-clamp-none">{talk.audience}</p>
+                </div>
+              )}
+
+              <!-- Topics Card -->
+              {talk.topics && talk.topics.length > 0 && (
+                <div class="card p-4 lg:p-5">
+                  <div class="flex items-center gap-2 mb-2.5">
+                    <div class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                      <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink text-xs lg:text-sm">Topics</h3>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5">
+                    {talk.topics.slice(0, 4).map((topic: string) => (
+                      <span class="px-2 py-0.5 text-[10px] lg:text-xs bg-surface-overlay rounded-full border border-edge text-ink-muted">{topic}</span>
+                    ))}
+                    {talk.topics.length > 4 && (
+                      <span class="px-2 py-0.5 text-[10px] lg:text-xs text-ink-faint">+{talk.topics.length - 4}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <!-- Version History Card (Conditional) -->
+            {hasVersions && (
+              <div class="card p-4 lg:p-5">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="font-display font-semibold text-ink text-xs lg:text-sm">Version History</h3>
+                    <p class="text-[10px] lg:text-xs text-ink-muted">{(talk.otherVersions?.length || 0) + 1} versions</p>
+                  </div>
+                </div>
+
+                {talk.versionNotes && (
+                  <div class="mb-3 p-2.5 bg-surface-overlay rounded-lg border border-edge">
+                    <p class="text-[10px] lg:text-xs text-ink-muted italic line-clamp-2">"{talk.versionNotes}"</p>
+                  </div>
+                )}
+
+                <div class="space-y-1.5">
+                  {talk.isCurrentVersion && (
+                    <div class="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                      <span class="text-xs font-medium text-ink flex-grow truncate">This version</span>
+                      <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wide">Current</span>
+                    </div>
+                  )}
+
+                  {talk.otherVersions?.slice(0, 3).map((version: any) => (
+                    <a
+                      href={`/talks/${version.slug}`}
+                      class="group flex items-center gap-2 p-2 bg-surface-overlay hover:bg-surface-raised rounded-lg border border-edge hover:border-accent/30 transition-all"
+                    >
+                      <div class={`w-2 h-2 rounded-full flex-shrink-0 ${version.isCurrentVersion ? 'bg-amber-500' : 'bg-ink-faint'}`}></div>
+                      <span class="text-xs font-medium text-ink group-hover:text-accent transition-colors flex-grow truncate">
+                        {version.version || version.title}
+                      </span>
+                      {version.eventCount > 0 && (
+                        <span class="text-[10px] text-ink-faint flex-shrink-0">{version.eventCount}x</span>
+                      )}
+                      <svg class="w-3.5 h-3.5 text-ink-faint group-hover:text-accent transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
+                  ))}
+
+                  {(talk.otherVersions?.length || 0) > 3 && (
+                    <p class="text-[10px] text-ink-faint text-center pt-1">
+                      +{(talk.otherVersions?.length || 0) - 3} more versions
+                    </p>
+                  )}
+                </div>
+
+                {/* Only show "Evolved from" if parent is not the current version (can't evolve FROM a newer version) */}
+                {isVariation && talk.parentTalkDetails && currentVersion?._id !== talk.parentTalkDetails._id && (
+                  <div class="mt-3 pt-3 border-t border-edge">
+                    <p class="text-[10px] text-ink-muted mb-1">Evolved from:</p>
+                    <a
+                      href={`/talks/${talk.parentTalkDetails.slug}`}
+                      class="text-xs text-accent font-medium hover:underline flex items-center gap-1"
+                    >
+                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      {talk.parentTalkDetails.title}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Media Section -->
+  {talk.relatedMedia && talk.relatedMedia.length > 0 && (
+    <section class="section-subtle py-16 md:py-20">
+      <div class="container">
+        <div class="max-w-5xl mx-auto">
+          <h2 class="heading-2 mb-8">Media & Resources</h2>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {talk.relatedMedia.map((item: any) => (
+              <div class="card overflow-hidden group">
+                {item.image && (
+                  <div class="aspect-video bg-surface-overlay overflow-hidden">
+                    <img
+                      src={urlFor(item.image).width(400).height(225).url()}
+                      alt={item.title}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <div class="p-4">
+                  <p class="text-sm text-ink-muted">{item.title}</p>
+                  {item.videoUrl && (
+                    <a
+                      href={item.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 text-sm text-accent font-medium mt-2 hover:underline"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                      Watch video
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Community Feedback Section -->
+  {socialPosts.length > 0 && (
+    <section class="section-dark py-16 md:py-20 relative overflow-hidden">
+      <div class="absolute inset-0 dot-pattern opacity-10"></div>
+
+      <div class="container relative z-10 px-4 md:px-6">
+        <div class="max-w-5xl mx-auto">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl md:text-2xl font-display font-bold text-white">What People Are Saying</h2>
+              <p class="text-slate-400 text-sm">Feedback specifically about "{talk.title}"</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            {socialPosts.slice(0, 4).map((post) => (
+              <a
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class={`social-card social-card--${post.platform}`}
+              >
+                <div class="social-card__header">
+                  {post.authorImage ? (
+                    <img
+                      src={urlFor(post.authorImage).width(48).height(48).url()}
+                      alt={post.author}
+                      class="social-card__avatar"
+                    />
+                  ) : (
+                    <div class={`social-card__avatar social-card__avatar--placeholder social-card__avatar--${post.platform}`}>
+                      {post.author?.charAt(0)}
+                    </div>
+                  )}
+                  <div class="social-card__author">
+                    <span class="social-card__name">{post.author}</span>
+                    {post.authorRole && (
+                      <span class="social-card__role">{post.authorRole}</span>
+                    )}
+                  </div>
+                  <div class={`social-card__platform social-card__platform--${post.platform}`}>
+                    {post.platform === 'twitter' ? (
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <p class="social-card__content">{post.content}</p>
+                {post.postDate && (
+                  <span class="social-card__date">
+                    {new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+              </a>
+            ))}
+          </div>
+
+          {socialPosts.length > 4 && (
+            <div class="text-center mt-8">
+              <a href="/appreciation" class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                View all {socialPosts.length} mentions
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-12 md:py-28 px-4 md:px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-white/20 rounded-full text-white/90 text-xs md:text-sm font-medium mb-4 md:mb-8">
+          <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Available for booking
+        </div>
+
+        <h2 class="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 md:mb-6">
+          Interested in this talk?
+        </h2>
+        <p class="text-white/80 text-sm md:text-xl mb-6 md:mb-10 max-w-2xl mx-auto px-4">
+          I can deliver this talk at your conference, meetup, or corporate event.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4 sm:px-0">
+          <a
+            href="/invite"
+            class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-violet-700 font-bold text-base md:text-lg rounded-xl hover:bg-white/90 transition-all duration-200 active:scale-95 shadow-xl"
+          >
+            Book this talk
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <a
+            href="/talks"
+            class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white/10 text-white font-semibold text-base md:text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+          >
+            Browse other talks
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .book-talk-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Terminal Deprecated State */
+  .terminal--deprecated {
+    border-color: rgba(251, 191, 36, 0.5);
+  }
+
+  .terminal__badge {
+    margin-left: auto;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 0.25rem;
+  }
+
+  .terminal__output--deprecated {
+    padding: 0.5rem 0.75rem;
+    background: rgba(251, 191, 36, 0.05);
+    border-radius: 0.375rem;
+    border: 1px solid rgba(251, 191, 36, 0.15);
+  }
+
+  .terminal__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-left: 0.25rem;
+  }
+
+  .terminal__meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .terminal__meta-label {
+    color: #64748b;
+    min-width: 4rem;
+  }
+
+  .terminal__meta-label::after {
+    content: ':';
+  }
+
+  .terminal__meta-value {
+    color: #94a3b8;
+  }
+
+  .terminal__meta-value--warning {
+    color: #fbbf24;
+  }
+
+  .terminal__meta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #34d399;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .terminal__meta-link:hover {
+    color: #6ee7b7;
+  }
+
+  .terminal__meta-arrow {
+    opacity: 0.6;
+    transition: all 0.15s;
+  }
+
+  .terminal__meta-link:hover .terminal__meta-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+
+  /* Mobile deprecation notice */
+  .deprecation-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid #fbbf24;
+    border-radius: 0.75rem;
+  }
+
+  .deprecation-mobile__badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fbbf24;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .deprecation-mobile__link {
+    color: #60a5fa;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .deprecation-mobile__link:hover {
+    text-decoration: underline;
+  }
+
+  /* Social Cards */
+  .social-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .social-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .social-card--twitter {
+    background: #000;
+    color: #e7e9ea;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .social-card--twitter:hover {
+    box-shadow: 0 8px 30px rgba(29, 155, 240, 0.2);
+  }
+
+  .social-card--linkedin {
+    background: #fff;
+    color: #000;
+    border: 1px solid #e0e0e0;
+  }
+
+  .social-card--linkedin:hover {
+    box-shadow: 0 8px 30px rgba(10, 102, 194, 0.15);
+  }
+
+  .social-card__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .social-card__avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .social-card__avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+  }
+
+  .social-card__avatar--twitter {
+    background: #333;
+  }
+
+  .social-card__avatar--linkedin {
+    background: #0a66c2;
+  }
+
+  .social-card__author {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .social-card__name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+
+  .social-card--twitter .social-card__name {
+    color: #fff;
+  }
+
+  .social-card__role {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .social-card--twitter .social-card__role {
+    color: rgb(113 118 123);
+  }
+
+  .social-card--linkedin .social-card__role {
+    color: #666;
+  }
+
+  .social-card__platform {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .social-card__platform--twitter {
+    color: #fff;
+  }
+
+  .social-card__platform--linkedin {
+    color: #0a66c2;
+  }
+
+  .social-card__content {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .social-card__date {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .social-card--twitter .social-card__date {
+    color: rgb(113 118 123);
+  }
+
+  .social-card--linkedin .social-card__date {
+    color: #666;
+  }
+</style>

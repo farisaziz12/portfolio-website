@@ -9,11 +9,12 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  "references": [
-    { "path": "./apps/web" },
-    { "path": "./apps/studio" },
-    { "path": "./packages/shared" }
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

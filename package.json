@@ -1,32 +1,31 @@
 {
   "name": "faziz-dev",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "pnpm run --parallel -r dev",
+    "build": "pnpm run -r build",
+    "lint": "pnpm run -r lint",
+    "typecheck": "pnpm run -r typecheck",
+    "studio": "pnpm --filter studio dev",
+    "web": "pnpm --filter web dev",
+    "migrate": "node --env-file=.env --import tsx scripts/migrate-content.ts",
+    "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts"
   },
   "dependencies": {
-    "@next/third-parties": "^15.2.3",
-    "country-flag-emoji": "^1.0.3",
-    "framer-motion": "^12.5.0",
-    "next": "14.2.24",
-    "react": "^18",
-    "react-dom": "^18"
+    "@sanity/client": "^6.24.1"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.16",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.24",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.2",
+    "eslint": "^9.16.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.14.4"
 }

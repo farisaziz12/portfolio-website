@@ -1,0 +1,78 @@
+---
+/**
+ * Magnetic - Elements that follow cursor with magnetic effect
+ * Inspired by ReactBits Magnet component
+ */
+interface Props {
+  class?: string;
+  strength?: number;
+  radius?: number;
+}
+
+const {
+  class: className = '',
+  strength = 0.3,
+  radius = 200
+} = Astro.props;
+---
+
+<div
+  class:list={['magnetic', className]}
+  data-magnetic
+  data-strength={strength}
+  data-radius={radius}
+>
+  <slot />
+</div>
+
+<style>
+  .magnetic {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+    will-change: transform;
+  }
+</style>
+
+<script>
+  function initMagnetic() {
+    const elements = document.querySelectorAll('[data-magnetic]');
+
+    elements.forEach(el => {
+      const strength = parseFloat((el as HTMLElement).dataset.strength || '0.3');
+      const radius = parseFloat((el as HTMLElement).dataset.radius || '200');
+
+      const handleMouseMove = (e: MouseEvent) => {
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const distanceX = e.clientX - centerX;
+        const distanceY = e.clientY - centerY;
+        const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+        if (distance < radius) {
+          const magnetX = distanceX * strength;
+          const magnetY = distanceY * strength;
+          (el as HTMLElement).style.transform = `translate(${magnetX}px, ${magnetY}px)`;
+        }
+      };
+
+      const handleMouseLeave = () => {
+        (el as HTMLElement).style.transform = '';
+      };
+
+      el.addEventListener('mousemove', handleMouseMove as EventListener);
+      el.addEventListener('mouseleave', handleMouseLeave);
+
+      // Also track parent for better interaction area
+      const parent = el.parentElement;
+      if (parent) {
+        parent.addEventListener('mousemove', handleMouseMove as EventListener);
+        parent.addEventListener('mouseleave', handleMouseLeave);
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initMagnetic);
+  document.addEventListener('astro:after-swap', initMagnetic);
+</script>

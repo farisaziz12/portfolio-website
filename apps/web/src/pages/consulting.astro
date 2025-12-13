@@ -1,0 +1,339 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SpotlightCard from '../components/animations/SpotlightCard.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
+import { sanityFetch } from '../lib/sanity/client';
+import { consultingOffersQuery, featuredImpactMetricsQuery } from '../lib/sanity/queries';
+
+interface ServiceOffer {
+  _id: string;
+  title: string;
+  slug: string;
+  serviceType: 'consulting' | 'mentorship';
+  shortDescription: string;
+  bestFor?: string;
+  outcomes?: string[];
+  engagementFormat?: string;
+  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
+  price?: number;
+  priceCurrency?: string;
+  priceUnit?: string;
+  bookingUrl: string;
+  featured?: boolean;
+  order?: number;
+}
+
+// Fetch consulting offers from Sanity
+const offers = await sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []);
+
+const expertise = [
+  { icon: '⚛️', title: 'React & Next.js', description: 'Advanced patterns, Server Components, performance optimization' },
+  { icon: '💳', title: 'Payment Systems', description: 'Stripe integration, checkout flows, subscription billing' },
+  { icon: '🏗️', title: 'Architecture', description: 'Scalable systems, monorepos, micro-frontends' },
+  { icon: '🛠️', title: 'Developer Experience', description: 'Build tooling, CI/CD, testing strategies' },
+  { icon: '📊', title: 'Performance', description: 'Core Web Vitals, bundle optimization, caching' },
+  { icon: '🔐', title: 'Security', description: 'Auth patterns, API security, best practices' },
+];
+---
+
+<BaseLayout
+  title="Consulting | Faris Aziz"
+  description="Technical consulting for teams and startups. Architecture reviews, technical strategy, and hands-on implementation."
+  pathname="/consulting"
+>
+  <!-- Hero Section -->
+  <section class="relative min-h-[60vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-28">
+      <div class="max-w-4xl">
+        <ScrollReveal>
+          <a href="/services" class="inline-flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-6 text-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to services
+          </a>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.1}>
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full text-accent text-sm font-medium mb-6">
+            <span class="text-xl">💼</span>
+            Consulting
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.2}>
+          <h1 class="hero-title mb-6">
+            <span class="block text-ink">Ship better</span>
+            <span class="block hero-title--gradient">software, faster.</span>
+          </h1>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.3}>
+          <p class="text-xl md:text-2xl text-ink-muted max-w-2xl mb-10">
+            Hands-on technical expertise to help your team solve hard problems and build scalable systems.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.4}>
+          <div class="flex flex-wrap gap-4">
+            <a href="#offers" class="btn-primary text-lg px-8 py-4 group">
+              View offers
+              <svg class="w-5 h-5 ml-2 group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </a>
+            <a href="https://cal.com" target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4">
+              Book discovery call
+            </a>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- Areas of Expertise -->
+  <section class="section py-16 md:py-20 bg-surface-overlay/50">
+    <div class="container">
+      <div class="text-center mb-12">
+        <ScrollReveal>
+          <h2 class="heading-3 mb-4">Areas of Expertise</h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-ink-muted max-w-2xl mx-auto">
+            Battle-tested knowledge from building production systems at scale
+          </p>
+        </ScrollReveal>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        {expertise.map((item, index) => (
+          <ScrollReveal delay={0.05 * index}>
+            <div class="p-5 rounded-xl bg-surface border border-edge hover:border-accent/30 transition-colors">
+              <span class="text-2xl mb-3 block">{item.icon}</span>
+              <h3 class="font-semibold text-ink mb-1">{item.title}</h3>
+              <p class="text-sm text-ink-muted">{item.description}</p>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Offers Section -->
+  <section id="offers" class="section py-20 md:py-28">
+    <div class="container">
+      <div class="text-center mb-16">
+        <ScrollReveal>
+          <h2 class="heading-2 mb-4">Consulting Packages</h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-ink-muted text-lg max-w-2xl mx-auto">
+            {offers.length > 0
+              ? 'Choose the engagement that fits your needs. All packages include a free discovery call.'
+              : 'Let\'s discuss your technical challenges and find the right solution'}
+          </p>
+        </ScrollReveal>
+      </div>
+
+      {offers.length > 0 ? (
+        <>
+          <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {offers.map((offer, index) => (
+              <ScrollReveal delay={0.1 * index}>
+                <ServiceOfferCard offer={offer} />
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal delay={0.4}>
+            <div class="text-center mt-12">
+              <p class="text-ink-muted mb-4">Not sure which package is right for you?</p>
+              <a href="https://cal.com" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                Book a free discovery call
+              </a>
+            </div>
+          </ScrollReveal>
+        </>
+      ) : (
+        <ScrollReveal delay={0.2}>
+          <div class="max-w-xl mx-auto text-center">
+            <div class="card p-10">
+              <div class="text-5xl mb-6">🗓️</div>
+              <h3 class="heading-3 mb-4">Book a Free Discovery Call</h3>
+              <p class="text-ink-muted mb-8">
+                Every project is different. Let's chat about your specific needs and I'll put together a custom proposal.
+              </p>
+              <a
+                href="https://cal.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-primary text-lg px-8 py-4 inline-flex items-center gap-2"
+              >
+                Schedule a call
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </ScrollReveal>
+      )}
+    </div>
+  </section>
+
+  <!-- Who This Is For -->
+  <section class="section-dark py-20 md:py-28 relative overflow-hidden">
+    <div class="absolute inset-0 dot-pattern opacity-20"></div>
+
+    <div class="container relative z-10">
+      <div class="max-w-4xl mx-auto">
+        <ScrollReveal>
+          <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-12 text-center">
+            Who This Is <span class="text-gradient">For</span>
+          </h2>
+        </ScrollReveal>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <ScrollReveal delay={0.1}>
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <h3 class="text-xl font-display font-bold text-white mb-4">Startup Founders</h3>
+              <p class="text-slate-400 mb-4">
+                You're moving fast but want to make sure you're building on a solid foundation. Need a technical sounding board or hands-on help.
+              </p>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Pre-seed to Series A companies
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Non-technical or semi-technical founders
+                </li>
+              </ul>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.2}>
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <h3 class="text-xl font-display font-bold text-white mb-4">Engineering Teams</h3>
+              <p class="text-slate-400 mb-4">
+                Your team is capable but needs outside expertise to tackle specific challenges or validate important decisions.
+              </p>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Teams of 3-20 engineers
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Facing scaling or refactoring challenges
+                </li>
+              </ul>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.3}>
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <h3 class="text-xl font-display font-bold text-white mb-4">Tech Leaders</h3>
+              <p class="text-slate-400 mb-4">
+                CTOs, tech leads, and engineering managers who want a trusted advisor to discuss strategy and architecture.
+              </p>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  New or first-time tech leaders
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Leaders inheriting legacy systems
+                </li>
+              </ul>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.4}>
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <h3 class="text-xl font-display font-bold text-white mb-4">Agencies</h3>
+              <p class="text-slate-400 mb-4">
+                Digital agencies that need senior React/Next.js expertise for client projects without hiring full-time.
+              </p>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  White-label development support
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Technical oversight for projects
+                </li>
+              </ul>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-indigo-700"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <ScrollReveal>
+          <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-6">
+            Let's solve your toughest challenges
+          </h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+            Book a free discovery call to discuss your needs and see if we're a good fit.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.2}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://cal.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+            >
+              Book discovery call
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </a>
+            <a
+              href="/mentorship"
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+            >
+              Or explore mentorship
+            </a>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

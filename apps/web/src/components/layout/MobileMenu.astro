@@ -1,0 +1,379 @@
+---
+/**
+ * MobileMenu - react.bits-inspired animated mobile navigation
+ * Full-screen overlay with staggered link animations
+ */
+
+interface NavItem {
+  label: string;
+  href: string;
+  isExternal?: boolean;
+  hasDropdown?: boolean;
+  dropdownItems?: {
+    label: string;
+    href: string;
+    description?: string;
+    icon?: string;
+    isExternal?: boolean;
+  }[];
+}
+
+interface Props {
+  navItems: NavItem[];
+  ctaButton?: {
+    label: string;
+    href: string;
+    isExternal?: boolean;
+  };
+}
+
+const { navItems, ctaButton } = Astro.props;
+const pathname = Astro.url.pathname;
+
+function isActive(href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname.startsWith(href);
+}
+---
+
+<!-- Mobile Menu Overlay -->
+<div
+  id="mobile-menu-overlay"
+  class="mobile-menu-overlay"
+  aria-hidden="true"
+>
+  <div class="mobile-menu-backdrop" data-menu-close></div>
+
+  <div class="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <!-- Header -->
+    <div class="mobile-menu-header">
+      <a href="/" class="font-display font-semibold text-xl text-ink" data-menu-close>
+        Faris Aziz
+      </a>
+      <button
+        type="button"
+        class="mobile-menu-close"
+        aria-label="Close menu"
+        data-menu-close
+      >
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="mobile-menu-nav">
+      {navItems.map((item, index) => (
+        <div class="mobile-menu-item" style={`--item-index: ${index};`}>
+          {item.hasDropdown && item.dropdownItems ? (
+            <div class="mobile-menu-group">
+              <span class="mobile-menu-group-label">{item.label}</span>
+              <div class="mobile-menu-group-items">
+                {item.dropdownItems.map((subItem) => (
+                  <a
+                    href={subItem.href}
+                    class="mobile-menu-sublink"
+                    data-menu-close
+                    target={subItem.isExternal ? '_blank' : undefined}
+                    rel={subItem.isExternal ? 'noopener noreferrer' : undefined}
+                  >
+                    {subItem.icon && <span class="mobile-menu-icon">{subItem.icon}</span>}
+                    <span>{subItem.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <a
+              href={item.href}
+              class:list={['mobile-menu-link', { 'is-active': isActive(item.href) }]}
+              data-menu-close
+              target={item.isExternal ? '_blank' : undefined}
+              rel={item.isExternal ? 'noopener noreferrer' : undefined}
+            >
+              {item.label}
+              {item.isExternal && (
+                <svg class="w-4 h-4 ml-1 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              )}
+            </a>
+          )}
+        </div>
+      ))}
+    </nav>
+
+    <!-- CTA Button -->
+    {ctaButton && (
+      <div class="mobile-menu-cta" style={`--item-index: ${navItems.length};`}>
+        <a
+          href={ctaButton.href}
+          class="mobile-menu-cta-button"
+          data-menu-close
+          target={ctaButton.isExternal ? '_blank' : undefined}
+          rel={ctaButton.isExternal ? 'noopener noreferrer' : undefined}
+        >
+          {ctaButton.label}
+          <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .mobile-menu-overlay.is-open {
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .mobile-menu-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .mobile-menu-overlay.is-open .mobile-menu-backdrop {
+    opacity: 1;
+  }
+
+  .mobile-menu-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    background: rgb(var(--surface));
+    border-left: 1px solid rgb(var(--edge));
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+
+  .mobile-menu-overlay.is-open .mobile-menu-panel {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+
+  .mobile-menu-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    color: rgb(var(--ink-muted));
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-close:hover {
+    background: rgb(var(--surface-overlay));
+    color: rgb(var(--ink));
+  }
+
+  .mobile-menu-nav {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mobile-menu-item {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  .mobile-menu-overlay.is-open .mobile-menu-item {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition-delay: calc(0.1s + var(--item-index) * 0.05s);
+  }
+
+  .mobile-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-link:hover,
+  .mobile-menu-link.is-active {
+    background: rgb(var(--surface-overlay));
+    color: rgb(var(--ink));
+  }
+
+  .mobile-menu-link.is-active {
+    color: rgb(var(--accent));
+  }
+
+  .mobile-menu-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-menu-group-label {
+    display: block;
+    padding: 0.75rem 1rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(var(--ink-faint));
+  }
+
+  .mobile-menu-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 0.5rem;
+  }
+
+  .mobile-menu-sublink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: rgb(var(--ink-muted));
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-sublink:hover {
+    background: rgb(var(--surface-overlay));
+    color: rgb(var(--ink));
+  }
+
+  .mobile-menu-icon {
+    font-size: 1.25rem;
+  }
+
+  .mobile-menu-cta {
+    padding: 1.5rem;
+    border-top: 1px solid rgb(var(--edge));
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .mobile-menu-overlay.is-open .mobile-menu-cta {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition-delay: calc(0.1s + var(--item-index) * 0.05s);
+  }
+
+  .mobile-menu-cta-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgb(var(--accent));
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-cta-button:hover {
+    background: rgb(var(--accent-hover));
+    transform: translateY(-1px);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-menu-backdrop,
+    .mobile-menu-panel,
+    .mobile-menu-item,
+    .mobile-menu-cta {
+      transition: none;
+    }
+
+    .mobile-menu-overlay.is-open .mobile-menu-item,
+    .mobile-menu-overlay.is-open .mobile-menu-cta {
+      transition: none;
+      transition-delay: 0s;
+    }
+  }
+</style>
+
+<script>
+  function setupMobileMenu() {
+    const menuButton = document.getElementById('mobile-menu-button');
+    const menuOverlay = document.getElementById('mobile-menu-overlay');
+
+    if (!menuButton || !menuOverlay) return;
+
+    // Capture non-null references for use in closures
+    const button = menuButton;
+    const overlay = menuOverlay;
+    const closeButtons = overlay.querySelectorAll('[data-menu-close]');
+
+    function openMenu() {
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      button.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      button.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    // Open menu
+    button.addEventListener('click', openMenu);
+
+    // Close menu on close button, backdrop click, or link click
+    closeButtons.forEach((btn) => {
+      btn.addEventListener('click', closeMenu);
+    });
+
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
+        closeMenu();
+        button.focus();
+      }
+    });
+
+    // Close on route change (for view transitions)
+    document.addEventListener('astro:before-swap', closeMenu);
+  }
+
+  // Initialize
+  setupMobileMenu();
+  document.addEventListener('astro:after-swap', setupMobileMenu);
+</script>

@@ -9,11 +9,15 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "shared": ["../../packages/shared/src"],
+      "shared/*": ["../../packages/shared/src/*"]
+    }
   },
-  "references": [
-    { "path": "./apps/web" },
-    { "path": "./apps/studio" },
-    { "path": "./packages/shared" }
-  ]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
 }

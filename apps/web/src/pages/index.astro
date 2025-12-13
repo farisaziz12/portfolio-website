@@ -1,0 +1,1161 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SocialWall from '../components/social/SocialWall.astro';
+import ImpactSection from '../components/impact/ImpactSection.astro';
+// Animation components
+import Aurora from '../components/animations/Aurora.astro';
+import CountUp from '../components/animations/CountUp.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import SpotlightCard from '../components/animations/SpotlightCard.astro';
+import Magnetic from '../components/animations/Magnetic.astro';
+import TiltCard from '../components/animations/TiltCard.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import {
+  upcomingEventsQuery,
+  featuredProjectsQuery,
+  speakingStatsQuery,
+  featuredMediaQuery,
+  featuredSocialPostsQuery,
+  featuredTestimonialsQuery,
+} from '../lib/sanity/queries';
+import { formatDate, getCountryFlag } from 'shared/utils';
+
+// Types
+interface UpcomingEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  type: string;
+  conference: string;
+  date: string;
+  location?: {
+    city?: string;
+    country?: string;
+  };
+}
+
+interface Project {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  category?: string;
+  technologies?: string[];
+  image?: any;
+  links?: any;
+}
+
+interface SpeakingStats {
+  totalEvents: number;
+  upcomingEvents: number;
+  countries: number;
+  cities: number;
+  talks: number;
+  workshops: number;
+}
+
+interface Media {
+  _id: string;
+  title?: string;
+  type?: string;
+  image?: any;
+  videoUrl?: string;
+  description?: string;
+}
+
+interface SocialPost {
+  _id: string;
+  url: string;
+  platform: 'linkedin' | 'twitter';
+  author: string;
+  authorHandle?: string;
+  authorImage?: any;
+  postImage?: any;
+  content: string;
+  tweetId?: string;
+  postDate?: string;
+  relatedTalk?: { title: string; slug: string };
+  relatedEvent?: { title: string; slug: string; conference: string };
+}
+
+interface Testimonial {
+  _id: string;
+  quote: string;
+  author: string;
+  role?: string;
+  company?: string;
+  image?: any;
+  context?: string;
+}
+
+// Fetch data from Sanity
+const [upcomingEvents, projects, stats, media, socialPosts, testimonials] = await Promise.all([
+  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
+  sanityFetch<Project[]>(featuredProjectsQuery).catch(() => []),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
+    totalEvents: 60,
+    upcomingEvents: 15,
+    countries: 12,
+    cities: 25,
+    talks: 0,
+    workshops: 0,
+  })),
+  sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
+  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
+  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+]);
+
+// Get next event if available
+const nextEvent = upcomingEvents[0] || null;
+
+// Social links
+const socials = [
+  {
+    name: 'GitHub',
+    href: 'https://github.com/farisaziz12',
+    icon: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z',
+  },
+  {
+    name: 'LinkedIn',
+    href: 'https://linkedin.com/in/farisaziz12',
+    icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+  },
+  {
+    name: 'X / Twitter',
+    href: 'https://twitter.com/FarisAziz12',
+    icon: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+  },
+  {
+    name: 'YouTube',
+    href: 'https://www.youtube.com/@farisaziz',
+    icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+  },
+];
+
+// Topics I speak about - enhanced with more details
+// Color palette unified: indigo → violet → pink → rose spectrum
+const topics = [
+  {
+    title: 'React & Next.js',
+    description: 'Performance, architecture, and production patterns',
+    longDescription: 'Deep dives into state management at scale, hooks patterns, and building performant web applications.',
+    icon: '⚛️',
+    color: 'from-blue-500 to-indigo-600',
+    tags: ['Hooks', 'Performance', 'Architecture'],
+  },
+  {
+    title: 'Payments & Fintech',
+    description: 'Orchestration, resilience, and scaling globally',
+    longDescription: 'Building robust payment systems, handling failures gracefully, and scaling financial infrastructure.',
+    icon: '💳',
+    color: 'from-indigo-500 to-violet-600',
+    tags: ['Stripe', 'Resilience', 'Scale'],
+  },
+  {
+    title: 'Developer Experience',
+    description: 'Tooling, productivity, and great workflows',
+    longDescription: 'Creating developer tools, improving team velocity, and building delightful development workflows.',
+    icon: '🛠️',
+    color: 'from-violet-500 to-purple-600',
+    tags: ['Tooling', 'DX', 'Productivity'],
+  },
+  {
+    title: 'Career & Community',
+    description: 'Growth, speaking, and building communities',
+    longDescription: 'Navigating tech careers, public speaking tips, and fostering inclusive developer communities.',
+    icon: '🚀',
+    color: 'from-purple-500 to-pink-600',
+    tags: ['Speaking', 'Growth', 'Community'],
+  },
+];
+---
+
+<BaseLayout
+  title="Faris Aziz — Staff Engineer & Conference Speaker"
+  description="Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. 60+ talks across 12 countries. Based in Zurich."
+>
+  <!-- Hero Section with Split Image Mosaic -->
+  <section class="hero-split-mosaic relative">
+    <!-- Aurora Background -->
+    <Aurora class="opacity-30" colors={['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4']} speed="slow" blur={100} />
+
+    <!-- Image Mosaic Side -->
+    <div class="hero-split-mosaic__images">
+      <div class="hero-mosaic-grid">
+        {media.length > 0 ? (
+          <>
+            <!-- Large featured image (2x2) -->
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large">
+              {media[0]?.image && (
+                <img
+                  src={urlFor(media[0].image).width(1200).height(1200).quality(90).url()}
+                  alt={media[0].description || "Speaking at conference"}
+                  loading="eager"
+                />
+              )}
+            </div>
+            <!-- Row 1 -->
+            <div class="hero-mosaic-grid__item">
+              {media[1]?.image && (
+                <img
+                  src={urlFor(media[1].image).width(600).height(600).quality(90).url()}
+                  alt={media[1].description || "Conference moment"}
+                  loading="eager"
+                />
+              )}
+            </div>
+            <div class="hero-mosaic-grid__item">
+              {media[2]?.image && (
+                <img
+                  src={urlFor(media[2].image).width(600).height(600).quality(90).url()}
+                  alt={media[2].description || "Workshop"}
+                  loading="eager"
+                />
+              )}
+            </div>
+            <!-- Row 2 -->
+            <div class="hero-mosaic-grid__item">
+              {media[3]?.image && (
+                <img
+                  src={urlFor(media[3].image).width(600).height(600).quality(90).url()}
+                  alt={media[3].description || "Tech talk"}
+                  loading="eager"
+                />
+              )}
+            </div>
+            <div class="hero-mosaic-grid__item">
+              {media[4]?.image && (
+                <img
+                  src={urlFor(media[4].image).width(600).height(600).quality(90).url()}
+                  alt={media[4].description || "Speaking"}
+                  loading="lazy"
+                />
+              )}
+            </div>
+            <!-- Row 3 - wide + singles -->
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide">
+              {media[5]?.image && (
+                <img
+                  src={urlFor(media[5].image).width(1200).height(600).quality(90).url()}
+                  alt={media[5].description || "Conference"}
+                  loading="lazy"
+                />
+              )}
+            </div>
+            <div class="hero-mosaic-grid__item">
+              {media[6]?.image && (
+                <img
+                  src={urlFor(media[6].image).width(600).height(600).quality(90).url()}
+                  alt={media[6].description || "Event"}
+                  loading="lazy"
+                />
+              )}
+            </div>
+            <div class="hero-mosaic-grid__item">
+              {media[7]?.image && (
+                <img
+                  src={urlFor(media[7].image).width(600).height(600).quality(90).url()}
+                  alt={media[7].description || "Presentation"}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large bg-gradient-to-br from-accent/20 to-violet-500/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-violet-500/20 to-pink-500/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-pink-500/20 to-amber-500/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-amber-500/20 to-emerald-500/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-emerald-500/20 to-cyan-500/30"></div>
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide bg-gradient-to-br from-cyan-500/20 to-accent/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-accent/20 to-violet-500/30"></div>
+            <div class="hero-mosaic-grid__item bg-gradient-to-br from-violet-500/20 to-pink-500/30"></div>
+          </>
+        )}
+      </div>
+    </div>
+
+    <!-- Content Side -->
+    <div class="hero-split-mosaic__content">
+      <div class="max-w-xl">
+        <!-- Terminal intro -->
+        <div class="terminal max-w-sm mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">faris.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> whoami</span>
+            <div class="terminal__output">Staff Engineer & Speaker</div>
+          </div>
+        </div>
+
+        <h1 class="hero-title mb-6">
+          <span class="block text-ink hero-animate" style="--delay: 0.1s">Faris</span>
+          <span class="block text-accent hero-animate" style="--delay: 0.2s">Aziz</span>
+        </h1>
+
+        <p class="text-lead max-w-lg mb-8 hero-animate" style="--delay: 0.3s">
+          Staff Software Engineer and Conference Speaker. I help teams ship resilient frontend systems and payment integrations.
+        </p>
+
+        <!-- Quick Stats inline -->
+        <div class="flex flex-wrap gap-6 mb-10">
+          <div class="flex items-center gap-2">
+            <CountUp end={stats.totalEvents} class="text-3xl font-display font-bold text-accent" suffix="+" delay={0.8} duration={2} />
+            <span class="text-ink-muted text-sm uppercase tracking-wider">Events</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <CountUp end={stats.countries} class="text-3xl font-display font-bold text-violet-500" suffix="+" delay={1} duration={2} />
+            <span class="text-ink-muted text-sm uppercase tracking-wider">Countries</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <CountUp end={stats.cities} class="text-3xl font-display font-bold text-pink-500" suffix="+" delay={1.2} duration={2} />
+            <span class="text-ink-muted text-sm uppercase tracking-wider">Cities</span>
+          </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="flex items-center gap-6 mb-10">
+          <div class="social-bar">
+            {socials.map((social) => (
+              <a
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label={`Follow on ${social.name}`}
+                title={social.name}
+              >
+                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={social.icon} />
+                </svg>
+              </a>
+            ))}
+          </div>
+          <span class="text-body-sm text-ink-faint hidden sm:inline">Follow my journey</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4">
+          <Magnetic strength={0.2} radius={150}>
+            <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
+              Invite me to speak
+              <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
+          </Magnetic>
+          <Magnetic strength={0.2} radius={150}>
+            <a href="/speaking" class="btn-secondary text-lg px-8 py-4">
+              View upcoming events
+            </a>
+          </Magnetic>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Next Event (if available) -->
+  {nextEvent && (
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+      <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+      <div class="container relative z-10 py-16 md:py-20">
+        <div class="max-w-4xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Catch me next at
+          </div>
+
+          <a href={`/events/${nextEvent.slug}`} class="block group">
+            <div class="flex flex-col md:flex-row md:items-center gap-6">
+              <div class="flex-shrink-0 bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                <div class="text-5xl md:text-6xl font-display font-bold text-white">
+                  {new Date(nextEvent.date).getDate()}
+                </div>
+                <div class="text-sm uppercase text-white/70 tracking-widest">
+                  {new Date(nextEvent.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </div>
+              </div>
+
+              <div class="flex-grow">
+                <h3 class="text-2xl md:text-3xl font-display font-bold text-white group-hover:text-white/90 transition-colors">
+                  {nextEvent.title}
+                </h3>
+                <p class="text-white/80 mt-2 text-lg">
+                  {nextEvent.conference}
+                </p>
+                <div class="flex items-center gap-2 mt-4 text-white/70">
+                  <span class="text-2xl">{getCountryFlag(nextEvent.location?.country || '')}</span>
+                  <span>{nextEvent.location?.city}, {nextEvent.location?.country}</span>
+                </div>
+              </div>
+
+              <div class="flex-shrink-0">
+                <div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+                  <svg class="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- What I Speak About - Interactive Showcase -->
+  <section class="topics-section relative overflow-hidden">
+    {/* Animated background */}
+    <div class="topics-bg">
+      <div class="topics-grid-lines"></div>
+      <div class="topics-glow topics-glow--1"></div>
+      <div class="topics-glow topics-glow--2"></div>
+    </div>
+
+    <div class="container relative z-10 py-16 md:py-20">
+      {/* Header */}
+      <div class="text-center mb-12">
+        <ScrollReveal animation="fade-up">
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Topics & Expertise</p>
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+            What I <span class="topics-title-highlight">Speak About</span>
+          </h2>
+        </ScrollReveal>
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-ink-muted text-base md:text-lg max-w-xl mx-auto">
+            From technical deep-dives to career guidance, I bring real-world experience to every talk
+          </p>
+        </ScrollReveal>
+      </div>
+
+      {/* Topics Grid - Compact 4 columns */}
+      <div class="topics-grid max-w-5xl mx-auto">
+        {topics.map((topic, index) => (
+          <div
+            class="topic-card"
+            style={`--index: ${index};`}
+            data-topic-card
+          >
+            {/* Gradient border on hover */}
+            <div class={`topic-card__border bg-gradient-to-br ${topic.color}`}></div>
+
+            {/* Card content */}
+            <div class="topic-card__inner">
+              {/* Icon and title row */}
+              <div class="topic-card__header">
+                <div class="topic-card__icon-wrapper">
+                  <div class={`topic-card__icon-bg bg-gradient-to-br ${topic.color}`}></div>
+                  <span class="topic-card__icon">{topic.icon}</span>
+                </div>
+                <h3 class="topic-card__title">{topic.title}</h3>
+              </div>
+
+              {/* Description */}
+              <p class="topic-card__description">{topic.description}</p>
+
+              {/* Tags always visible */}
+              <div class="topic-card__tags">
+                {topic.tags.map((tag: string) => (
+                  <span class={`topic-card__tag bg-gradient-to-r ${topic.color}`}>{tag}</span>
+                ))}
+              </div>
+
+              {/* Hover overlay with long description */}
+              <div class="topic-card__overlay">
+                <p class="topic-card__long-desc">{topic.longDescription}</p>
+                <span class="topic-card__cta">View talks →</span>
+              </div>
+
+              {/* Particle effects */}
+              <div class="topic-card__particles">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <ScrollReveal animation="fade-up" delay={0.3} class="mt-10 text-center">
+        <Magnetic strength={0.2} radius={120}>
+          <a href="/talks" class="topics-cta group">
+            <span class="topics-cta__text">Explore all talks</span>
+            <span class="topics-cta__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="topics-cta__shine"></span>
+          </a>
+        </Magnetic>
+      </ScrollReveal>
+    </div>
+  </section>
+
+  <style>
+    /* Hero animation - CSS only for view transitions compatibility */
+    .hero-animate {
+      animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes heroFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-animate {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .topics-section {
+      background: rgb(var(--surface-raised));
+      position: relative;
+    }
+
+    /* Add subtle top/bottom borders for section separation */
+    .topics-section::before,
+    .topics-section::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgb(var(--edge-strong)), transparent);
+    }
+
+    .topics-section::before { top: 0; }
+    .topics-section::after { bottom: 0; }
+
+    .topics-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .topics-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgb(var(--accent) / 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(var(--accent) / 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+    }
+
+    .topics-glow {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.08;
+      animation: float-glow 20s ease-in-out infinite;
+    }
+
+    .topics-glow--1 {
+      top: -100px;
+      left: -100px;
+      background: rgb(var(--accent));
+    }
+
+    .topics-glow--2 {
+      bottom: -100px;
+      right: -100px;
+      background: rgb(168 85 247); /* violet-500 */
+      animation-delay: -10s;
+    }
+
+    @keyframes float-glow {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, 20px) scale(1.05); }
+      66% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    .topics-title-highlight {
+      background: linear-gradient(135deg, rgb(var(--accent)), rgb(168 85 247), rgb(236 72 153));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Topics Grid - 4 equal columns */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+      .topics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Topic Card - Fixed height */
+    .topic-card {
+      position: relative;
+      border-radius: 1rem;
+      cursor: pointer;
+      height: 200px;
+    }
+
+    .topic-card__border {
+      position: absolute;
+      inset: 0;
+      border-radius: 1rem;
+      padding: 2px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .topic-card:hover .topic-card__border {
+      opacity: 1;
+    }
+
+    .topic-card__inner {
+      position: relative;
+      height: 100%;
+      background: rgb(var(--surface));
+      border: 1px solid rgb(var(--edge));
+      border-radius: 1rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .topic-card:hover .topic-card__inner {
+      background: rgb(var(--surface-overlay));
+      border-color: rgb(var(--edge-strong));
+      transform: translateY(-4px);
+      box-shadow: 0 10px 40px -10px rgb(var(--accent) / 0.15);
+    }
+
+    /* Header with icon and title */
+    .topic-card__header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .topic-card__icon-wrapper {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .topic-card__icon-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 0.75rem;
+      opacity: 0.15;
+      transition: all 0.3s ease;
+    }
+
+    .topic-card:hover .topic-card__icon-bg {
+      opacity: 0.25;
+      transform: rotate(3deg) scale(1.05);
+    }
+
+    .topic-card__icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .topic-card:hover .topic-card__icon {
+      transform: scale(1.1);
+    }
+
+    .topic-card__title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: rgb(var(--ink));
+      line-height: 1.2;
+    }
+
+    .topic-card__description {
+      color: rgb(var(--ink-muted));
+      font-size: 0.875rem;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+      flex: 1;
+    }
+
+    .topic-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+
+    .topic-card__tag {
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: white;
+      opacity: 0.85;
+    }
+
+    /* Hover overlay */
+    .topic-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: rgb(var(--surface) / 0.97);
+      backdrop-filter: blur(8px);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .topic-card:hover .topic-card__overlay {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .topic-card__long-desc {
+      color: rgb(var(--ink-muted));
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .topic-card__cta {
+      color: rgb(var(--accent));
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .topic-card:hover .topic-card__cta {
+      color: rgb(var(--accent-hover));
+    }
+
+    /* Particles */
+    .topic-card__particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 1rem;
+    }
+
+    .topic-card__particles span {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0;
+    }
+
+    .topic-card:hover .topic-card__particles span {
+      animation: particle-float 1.5s ease-out infinite;
+    }
+
+    .topic-card__particles span:nth-child(1) {
+      left: 20%;
+      bottom: 0;
+      color: rgb(var(--accent));
+    }
+
+    .topic-card__particles span:nth-child(2) {
+      left: 50%;
+      bottom: 0;
+      color: rgb(168 85 247); /* violet */
+      animation-delay: 0.2s;
+    }
+
+    .topic-card__particles span:nth-child(3) {
+      left: 80%;
+      bottom: 0;
+      color: rgb(236 72 153); /* pink */
+      animation-delay: 0.4s;
+    }
+
+    @keyframes particle-float {
+      0% {
+        transform: translateY(0) scale(0);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.8;
+        transform: translateY(-15px) scale(1);
+      }
+      100% {
+        transform: translateY(-60px) scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* CTA Button */
+    .topics-cta {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgb(var(--accent-muted));
+      border: 1px solid rgb(var(--accent) / 0.3);
+      border-radius: 9999px;
+      color: rgb(var(--ink));
+      font-weight: 600;
+      font-size: 1rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .topics-cta:hover {
+      border-color: rgb(var(--accent) / 0.6);
+      background: rgb(var(--accent) / 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -8px rgb(var(--accent) / 0.2);
+    }
+
+    .topics-cta__text {
+      position: relative;
+      z-index: 1;
+    }
+
+    .topics-cta__icon {
+      position: relative;
+      z-index: 1;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.3s ease;
+      color: rgb(var(--accent));
+    }
+
+    .topics-cta:hover .topics-cta__icon {
+      transform: translateX(3px);
+    }
+
+    .topics-cta__shine {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgb(var(--accent) / 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .topics-cta:hover .topics-cta__shine {
+      left: 100%;
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .topics-glow {
+        animation: none;
+      }
+      .topic-card__particles span {
+        animation: none;
+      }
+      .topic-card:hover .topic-card__inner {
+        transform: none;
+      }
+    }
+  </style>
+
+  <script>
+    function initTopicCards() {
+      const cards = document.querySelectorAll('[data-topic-card]');
+
+      cards.forEach(card => {
+        // Mouse move for spotlight effect
+        card.addEventListener('mousemove', (e) => {
+          const event = e as MouseEvent;
+          const rect = (card as HTMLElement).getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+          (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
+          (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
+        });
+
+        // Click to navigate to talks
+        card.addEventListener('click', () => {
+          window.location.href = '/talks';
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initTopicCards);
+    document.addEventListener('astro:after-swap', initTopicCards);
+  </script>
+
+  <!-- Impact by the Numbers -->
+  <ImpactSection variant="homepage" />
+
+  <!-- Work With Me - Services Section -->
+  <section class="section py-20 md:py-28 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-surface-overlay/30 to-transparent"></div>
+
+    <div class="container relative z-10">
+      <div class="text-center mb-12">
+        <ScrollReveal animation="fade-up">
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Services</p>
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="heading-2 mb-4">Work With Me</h2>
+        </ScrollReveal>
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-ink-muted text-lg max-w-xl mx-auto">
+            Beyond speaking, I offer consulting and mentorship to help teams and individuals level up
+          </p>
+        </ScrollReveal>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <!-- Consulting Card -->
+        <ScrollReveal animation="fade-up" delay={0.2}>
+          <a href="/consulting" class="group block h-full">
+            <SpotlightCard
+              class="h-full"
+              spotlightColor="rgba(99, 102, 241, 0.15)"
+              borderColor="rgba(99, 102, 241, 0.5)"
+            >
+              <div class="p-6 md:p-8 h-full flex flex-col">
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-2xl">
+                    💼
+                  </div>
+                  <h3 class="font-display text-xl font-bold text-ink group-hover:text-accent transition-colors">
+                    Consulting
+                  </h3>
+                </div>
+                <p class="text-ink-muted text-sm mb-4 flex-grow">
+                  Architecture reviews, technical strategy, and hands-on implementation for teams and startups.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Architecture</span>
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Strategy</span>
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Advisory</span>
+                </div>
+                <div class="flex items-center text-accent text-sm font-medium group-hover:gap-2 transition-all">
+                  <span>Learn more</span>
+                  <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </div>
+            </SpotlightCard>
+          </a>
+        </ScrollReveal>
+
+        <!-- Mentorship Card -->
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <a href="/mentorship" class="group block h-full">
+            <SpotlightCard
+              class="h-full"
+              spotlightColor="rgba(236, 72, 153, 0.15)"
+              borderColor="rgba(236, 72, 153, 0.5)"
+            >
+              <div class="p-6 md:p-8 h-full flex flex-col">
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-2xl">
+                    🧭
+                  </div>
+                  <h3 class="font-display text-xl font-bold text-ink group-hover:text-pink-500 transition-colors">
+                    Mentorship
+                  </h3>
+                </div>
+                <p class="text-ink-muted text-sm mb-4 flex-grow">
+                  1:1 coaching for engineers looking to grow their careers, skills, and confidence.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Career</span>
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Technical</span>
+                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Speaking</span>
+                </div>
+                <div class="flex items-center text-pink-500 text-sm font-medium group-hover:gap-2 transition-all">
+                  <span>Learn more</span>
+                  <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </div>
+            </SpotlightCard>
+          </a>
+        </ScrollReveal>
+      </div>
+
+      <ScrollReveal animation="fade-up" delay={0.4} class="mt-10 text-center">
+        <a href="/services" class="inline-flex items-center gap-2 text-ink-muted hover:text-ink font-medium transition-colors">
+          View all services
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
+      </ScrollReveal>
+    </div>
+  </section>
+
+  <!-- What People Say - Social Proof Section -->
+  {(socialPosts.length > 0 || testimonials.length > 0) && (
+    <SocialWall posts={socialPosts} testimonials={testimonials} />
+  )}
+
+  <!-- Featured Projects (if available) -->
+  {projects.length > 0 && (
+    <section class="section py-20 md:py-28">
+      <div class="container">
+        <ScrollReveal animation="fade-up">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+              <h2 class="heading-2 mb-2">Projects</h2>
+              <p class="text-ink-muted text-lg">Things I've built and contributed to</p>
+            </div>
+            <Magnetic strength={0.15}>
+              <a href="/projects" class="btn-secondary group">
+                View all
+                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </Magnetic>
+          </div>
+        </ScrollReveal>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.slice(0, 3).map((project: any, index: number) => (
+            <ScrollReveal animation="fade-up" delay={index * 0.1}>
+              <SpotlightCard class="h-full">
+                <a href={`/projects/${project.slug}`} class="group block h-full rounded-2xl overflow-hidden">
+                  <!-- Gradient Top Bar -->
+                  <div class="h-1 bg-gradient-to-r from-accent via-violet-500 to-pink-500"></div>
+
+                  {project.image && (
+                    <div class="aspect-video bg-surface-overlay overflow-hidden">
+                      <img
+                        src={urlFor(project.image).width(1200).height(680).quality(90).url()}
+                        alt={project.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  <div class="p-6">
+                    <span class="px-2 py-1 text-xs font-mono bg-surface-overlay text-ink-faint rounded border border-edge">
+                      {project.category}
+                    </span>
+                    <h3 class="font-display font-semibold text-lg text-ink mt-3 group-hover:text-accent transition-colors">
+                      {project.title}
+                    </h3>
+                    <p class="text-ink-muted text-sm mt-2 line-clamp-2">
+                      {project.description}
+                    </p>
+                  </div>
+                </a>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+    <Aurora class="opacity-20" colors={['#ffffff', '#e0e7ff', '#c7d2fe']} speed="slow" blur={120} />
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <ScrollReveal animation="fade-up">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Available for opportunities
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+            Let's work together
+          </h2>
+        </ScrollReveal>
+
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+            I speak at conferences, run workshops, and offer technical advisory. Let's discuss how I can contribute to your event or team.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Magnetic strength={0.15} radius={100}>
+              <a
+                href="/invite"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+              >
+                Invite me to speak
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.15} radius={100}>
+              <a
+                href="https://mentorcruise.com/mentor/farisaziz/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+              >
+                Get mentorship
+              </a>
+            </Magnetic>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

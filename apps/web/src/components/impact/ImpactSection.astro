@@ -1,0 +1,564 @@
+---
+/**
+ * ImpactSection - Main container for impact metrics
+ * Supports two variants: homepage (hero only) and full (with categories)
+ */
+import ImpactHero from './ImpactHero.astro';
+import MetricCard from './MetricCard.astro';
+import ScrollReveal from '../animations/ScrollReveal.astro';
+import Magnetic from '../animations/Magnetic.astro';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import {
+  featuredImpactMetricsQuery,
+  allImpactMetricsQuery,
+} from '../../lib/sanity/queries';
+
+interface Props {
+  variant?: 'homepage' | 'full';
+  showSponsors?: boolean;
+  class?: string;
+}
+
+const {
+  variant = 'homepage',
+  showSponsors = false,
+  class: className = '',
+} = Astro.props;
+
+// Types
+interface Category {
+  _id: string;
+  title: string;
+  slug: string;
+  icon?: string;
+  color?: string;
+  description?: string;
+  metrics: Metric[];
+}
+
+interface Metric {
+  _id: string;
+  label: string;
+  category?: Category;
+  metricType: string;
+  value?: number;
+  prefix?: string;
+  suffix?: string;
+  unit?: string;
+  timeWindow?: string;
+  previousValue?: number;
+  featured?: boolean;
+  highlightColor?: string;
+  sourceNote?: string;
+  sourceUrl?: string;
+  lastUpdated?: string;
+  proofItems?: any[];
+}
+
+interface Sponsor {
+  _id: string;
+  label: string;
+  sponsorLogo?: any;
+  sponsorName?: string;
+  sponsorUrl?: string;
+  category?: { title: string; icon?: string };
+}
+
+interface AllMetricsData {
+  categories: Category[];
+  sponsors: Sponsor[];
+}
+
+// Fetch data based on variant
+let featuredMetrics: Metric[] = [];
+let allData: AllMetricsData = { categories: [], sponsors: [] };
+
+if (variant === 'homepage') {
+  featuredMetrics = await sanityFetch<Metric[]>(featuredImpactMetricsQuery).catch(() => []);
+} else {
+  allData = await sanityFetch<AllMetricsData>(allImpactMetricsQuery).catch(() => ({
+    categories: [],
+    sponsors: [],
+  }));
+  // Also fetch featured for the hero section on full page
+  featuredMetrics = await sanityFetch<Metric[]>(featuredImpactMetricsQuery).catch(() => []);
+}
+
+const hasContent = variant === 'homepage' ? featuredMetrics.length > 0 : allData.categories.length > 0;
+const sponsors = showSponsors ? allData.sponsors : [];
+---
+
+{hasContent && (
+  <section class:list={['impact-section', `impact-section--${variant}`, className]}>
+    {/* Animated background */}
+    <div class="impact-bg">
+      <div class="impact-grid-lines"></div>
+      <div class="impact-glow impact-glow--1"></div>
+      <div class="impact-glow impact-glow--2"></div>
+    </div>
+
+    <div class="container relative z-10 py-16 md:py-20">
+      {/* Header */}
+      <div class="text-center mb-12">
+        <ScrollReveal animation="fade-up">
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">
+            Measurable Results
+          </p>
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
+            Impact by the <span class="impact-title-highlight">Numbers</span>
+          </h2>
+        </ScrollReveal>
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-ink-muted text-base md:text-lg max-w-xl mx-auto">
+            Real results from community building, engineering, and speaking
+          </p>
+        </ScrollReveal>
+      </div>
+
+      {/* Hero Metrics (always shown) */}
+      {featuredMetrics.length > 0 && (
+        <div class="mb-12">
+          <ImpactHero metrics={featuredMetrics} />
+        </div>
+      )}
+
+      {/* Full variant: Category Sections */}
+      {variant === 'full' && allData.categories.length > 0 && (
+        <div class="impact-categories">
+          {/* Category tabs for filtering (client-side) */}
+          <div class="impact-tabs mb-8" role="tablist" aria-label="Filter by category">
+            <button
+              class="impact-tab impact-tab--active"
+              role="tab"
+              aria-selected="true"
+              data-category="all"
+            >
+              All
+            </button>
+            {allData.categories.map((category) => (
+              <button
+                class="impact-tab"
+                role="tab"
+                aria-selected="false"
+                data-category={category.slug}
+              >
+                {category.icon && <span class="mr-1">{category.icon}</span>}
+                {category.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Category grids */}
+          {allData.categories.map((category, categoryIndex) => (
+            <div
+              class="impact-category-section"
+              data-category-grid={category.slug}
+            >
+              <ScrollReveal animation="fade-up" delay={categoryIndex * 0.1}>
+                <div class="impact-category-header mb-6">
+                  <div class="flex items-center gap-3">
+                    {category.icon && (
+                      <div class={`impact-category-icon-wrapper bg-gradient-to-br ${category.color || 'from-accent to-accent-dark'}`}>
+                        <span class="text-xl">{category.icon}</span>
+                      </div>
+                    )}
+                    <div>
+                      <h3 class="text-xl font-display font-bold text-ink">
+                        {category.title}
+                      </h3>
+                      {category.description && (
+                        <p class="text-sm text-ink-muted">{category.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              <div class="impact-metrics-grid">
+                {category.metrics?.map((metric, metricIndex) => (
+                  <ScrollReveal animation="fade-up" delay={metricIndex * 0.05}>
+                    <MetricCard metric={metric} />
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sponsors (optional) */}
+      {sponsors.length > 0 && (
+        <div class="impact-sponsors mt-16">
+          <ScrollReveal animation="fade-up">
+            <p class="text-center text-sm text-ink-faint uppercase tracking-wider mb-6">
+              Trusted by
+            </p>
+          </ScrollReveal>
+          <div class="impact-sponsors-grid">
+            {sponsors.map((sponsor, index) => (
+              <ScrollReveal animation="fade-up" delay={index * 0.1}>
+                {sponsor.sponsorUrl ? (
+                  <a
+                    href={sponsor.sponsorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="impact-sponsor-logo"
+                    title={sponsor.sponsorName || sponsor.label}
+                  >
+                    {sponsor.sponsorLogo && (
+                      <img
+                        src={urlFor(sponsor.sponsorLogo).width(200).height(80).url()}
+                        alt={sponsor.sponsorName || sponsor.label}
+                        loading="lazy"
+                      />
+                    )}
+                  </a>
+                ) : (
+                  <div class="impact-sponsor-logo" title={sponsor.sponsorName || sponsor.label}>
+                    {sponsor.sponsorLogo && (
+                      <img
+                        src={urlFor(sponsor.sponsorLogo).width(200).height(80).url()}
+                        alt={sponsor.sponsorName || sponsor.label}
+                        loading="lazy"
+                      />
+                    )}
+                  </div>
+                )}
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CTA (homepage only) */}
+      {variant === 'homepage' && (
+        <ScrollReveal animation="fade-up" delay={0.3} class="mt-10 text-center">
+          <Magnetic strength={0.2} radius={120}>
+            <a href="/impact" class="impact-cta group">
+              <span class="impact-cta__text">See full impact report</span>
+              <span class="impact-cta__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="impact-cta__shine"></span>
+            </a>
+          </Magnetic>
+        </ScrollReveal>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .impact-section {
+    background: rgb(var(--surface-raised));
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Section borders */
+  .impact-section::before,
+  .impact-section::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(var(--edge-strong)), transparent);
+  }
+
+  .impact-section::before { top: 0; }
+  .impact-section::after { bottom: 0; }
+
+  /* Background effects */
+  .impact-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .impact-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgb(var(--accent) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent) / 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  }
+
+  .impact-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.06;
+    animation: impact-float 20s ease-in-out infinite;
+  }
+
+  .impact-glow--1 {
+    top: -100px;
+    right: -100px;
+    background: rgb(16 185 129); /* emerald */
+  }
+
+  .impact-glow--2 {
+    bottom: -100px;
+    left: -100px;
+    background: rgb(var(--accent));
+    animation-delay: -10s;
+  }
+
+  @keyframes impact-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-30px, 20px) scale(1.05); }
+    66% { transform: translate(20px, -30px) scale(0.95); }
+  }
+
+  .impact-title-highlight {
+    background: linear-gradient(135deg, rgb(16 185 129), rgb(var(--accent)), rgb(168 85 247));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Category tabs */
+  .impact-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .impact-tab {
+    padding: 0.5rem 1rem;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .impact-tab:hover {
+    background: rgb(var(--surface-overlay));
+    border-color: rgb(var(--edge-strong));
+    color: rgb(var(--ink));
+  }
+
+  .impact-tab--active,
+  .impact-tab[aria-selected="true"] {
+    background: rgb(var(--accent) / 0.1);
+    border-color: rgb(var(--accent) / 0.3);
+    color: rgb(var(--accent));
+  }
+
+  .impact-tab:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+
+  /* Category sections */
+  .impact-category-section {
+    margin-bottom: 3rem;
+  }
+
+  .impact-category-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .impact-category-section[data-hidden="true"] {
+    display: none;
+  }
+
+  .impact-category-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+  }
+
+  /* Metrics grid */
+  .impact-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 1024px) {
+    .impact-metrics-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .impact-metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .impact-metrics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Sponsors */
+  .impact-sponsors-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .impact-sponsor-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: grayscale(100%) opacity(0.6);
+    transition: all 0.3s ease;
+  }
+
+  .impact-sponsor-logo:hover {
+    filter: grayscale(0%) opacity(1);
+  }
+
+  .impact-sponsor-logo img {
+    max-height: 40px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* CTA Button */
+  .impact-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgb(16 185 129 / 0.1);
+    border: 1px solid rgb(16 185 129 / 0.3);
+    border-radius: 9999px;
+    color: rgb(var(--ink));
+    font-weight: 600;
+    font-size: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .impact-cta:hover {
+    border-color: rgb(16 185 129 / 0.6);
+    background: rgb(16 185 129 / 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -8px rgb(16 185 129 / 0.2);
+  }
+
+  .impact-cta__text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .impact-cta__icon {
+    position: relative;
+    z-index: 1;
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: transform 0.3s ease;
+    color: rgb(16 185 129);
+  }
+
+  .impact-cta:hover .impact-cta__icon {
+    transform: translateX(3px);
+  }
+
+  .impact-cta__shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgb(16 185 129 / 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .impact-cta:hover .impact-cta__shine {
+    left: 100%;
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .impact-glow {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  function initImpactTabs() {
+    const tabs = document.querySelectorAll('.impact-tab');
+    const categoryGrids = document.querySelectorAll('[data-category-grid]');
+
+    if (tabs.length === 0) return;
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const category = (tab as HTMLElement).dataset.category;
+
+        // Update active tab
+        tabs.forEach(t => {
+          t.classList.remove('impact-tab--active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('impact-tab--active');
+        tab.setAttribute('aria-selected', 'true');
+
+        // Show/hide category grids
+        categoryGrids.forEach(grid => {
+          const gridCategory = (grid as HTMLElement).dataset.categoryGrid;
+          if (category === 'all' || gridCategory === category) {
+            (grid as HTMLElement).removeAttribute('data-hidden');
+          } else {
+            (grid as HTMLElement).setAttribute('data-hidden', 'true');
+          }
+        });
+      });
+
+      // Keyboard navigation
+      tab.addEventListener('keydown', (e) => {
+        const event = e as KeyboardEvent;
+        const tabsArray = Array.from(tabs);
+        const currentIndex = tabsArray.indexOf(tab);
+
+        let newIndex = currentIndex;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+          newIndex = (currentIndex + 1) % tabsArray.length;
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+          newIndex = (currentIndex - 1 + tabsArray.length) % tabsArray.length;
+        } else if (event.key === 'Home') {
+          newIndex = 0;
+        } else if (event.key === 'End') {
+          newIndex = tabsArray.length - 1;
+        }
+
+        if (newIndex !== currentIndex) {
+          event.preventDefault();
+          (tabsArray[newIndex] as HTMLElement).focus();
+          (tabsArray[newIndex] as HTMLElement).click();
+        }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initImpactTabs);
+  document.addEventListener('astro:after-swap', initImpactTabs);
+</script>

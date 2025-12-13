@@ -1,0 +1,103 @@
+---
+/**
+ * BlurText - Text reveals with blur-to-clear effect
+ * Inspired by ReactBits BlurText component
+ */
+interface Props {
+  text: string;
+  class?: string;
+  delay?: number;
+  duration?: number;
+  tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div';
+}
+
+const {
+  text,
+  class: className = '',
+  delay = 0,
+  duration = 1,
+  tag: Tag = 'span'
+} = Astro.props;
+---
+
+<Tag
+  class:list={['blur-text', className]}
+  style={`--blur-delay: ${delay}s; --blur-duration: ${duration}s`}
+  data-blur-text
+>
+  {text}
+</Tag>
+
+<style>
+  .blur-text {
+    display: inline-block;
+    opacity: 0;
+    filter: blur(20px);
+    transform: translateY(10px);
+    animation: blurReveal var(--blur-duration, 1s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--blur-delay, 0s);
+    animation-play-state: paused;
+  }
+
+  .blur-text--visible {
+    animation-play-state: running;
+  }
+
+  @keyframes blurReveal {
+    0% {
+      opacity: 0;
+      filter: blur(20px);
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blur-text {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  function initBlurText() {
+    requestAnimationFrame(() => {
+      const elements = document.querySelectorAll('[data-blur-text]');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('blur-text--visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      elements.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        // Reset animation state for page transitions
+        el.classList.remove('blur-text--visible');
+        // Force animation restart
+        htmlEl.style.animation = 'none';
+        htmlEl.offsetHeight; // Trigger reflow
+        htmlEl.style.animation = '';
+
+        requestAnimationFrame(() => {
+          observer.observe(el);
+        });
+      });
+    });
+  }
+
+  // Initialize on first load
+  initBlurText();
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initBlurText);
+</script>

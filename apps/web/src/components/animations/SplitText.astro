@@ -1,0 +1,219 @@
+---
+/**
+ * SplitText - Animates text character by character
+ * Inspired by ReactBits SplitText component
+ */
+interface Props {
+  text: string;
+  class?: string;
+  delay?: number;
+  stagger?: number;
+  animation?: 'fade-up' | 'fade-down' | 'scale' | 'rotate' | 'blur';
+  tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div';
+}
+
+const {
+  text,
+  class: className = '',
+  delay = 0,
+  stagger = 0.03,
+  animation = 'fade-up',
+  tag: Tag = 'span'
+} = Astro.props;
+
+const words = text.split(' ');
+---
+
+<Tag
+  class:list={['split-text', `split-text--${animation}`, className]}
+  style={`--base-delay: ${delay}s; --stagger: ${stagger}s`}
+  data-split-text
+>
+  {words.map((word, wordIndex) => (
+    <span class="split-text__word">
+      {word.split('').map((char, charIndex) => {
+        const totalIndex = words.slice(0, wordIndex).join('').length + wordIndex + charIndex;
+        return (
+          <span
+            class="split-text__char"
+            style={`--char-index: ${totalIndex}`}
+          >
+            {char}
+          </span>
+        );
+      })}
+      {wordIndex < words.length - 1 && <span class="split-text__space">&nbsp;</span>}
+    </span>
+  ))}
+</Tag>
+
+<style>
+  .split-text {
+    display: inline;
+  }
+
+  .split-text__word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .split-text__char {
+    display: inline-block;
+    opacity: 0;
+    animation: var(--split-animation) 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(var(--base-delay) + (var(--char-index) * var(--stagger)));
+  }
+
+  .split-text__space {
+    display: inline-block;
+  }
+
+  /* Fade Up Animation */
+  .split-text--fade-up .split-text__char {
+    --split-animation: splitFadeUp;
+  }
+
+  @keyframes splitFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Fade Down Animation */
+  .split-text--fade-down .split-text__char {
+    --split-animation: splitFadeDown;
+  }
+
+  @keyframes splitFadeDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scale Animation */
+  .split-text--scale .split-text__char {
+    --split-animation: splitScale;
+  }
+
+  @keyframes splitScale {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Rotate Animation */
+  .split-text--rotate .split-text__char {
+    --split-animation: splitRotate;
+    transform-origin: center bottom;
+  }
+
+  @keyframes splitRotate {
+    from {
+      opacity: 0;
+      transform: rotateX(-90deg);
+    }
+    to {
+      opacity: 1;
+      transform: rotateX(0);
+    }
+  }
+
+  /* Blur Animation */
+  .split-text--blur .split-text__char {
+    --split-animation: splitBlur;
+  }
+
+  @keyframes splitBlur {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .split-text__char {
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+</style>
+
+<script>
+  // Intersection Observer for triggering animation on scroll
+  function initSplitText() {
+    // Use requestAnimationFrame to ensure DOM is fully ready after view transitions
+    requestAnimationFrame(() => {
+      const elements = document.querySelectorAll('[data-split-text]');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('split-text--visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      elements.forEach(el => {
+        // Reset animation state for page transitions
+        el.classList.remove('split-text--visible');
+
+        const chars = el.querySelectorAll('.split-text__char');
+        chars.forEach(char => {
+          const htmlChar = char as HTMLElement;
+          // Force animation restart by cloning the node
+          htmlChar.style.animation = 'none';
+          htmlChar.offsetHeight; // Trigger reflow
+          htmlChar.style.animation = '';
+          htmlChar.style.animationPlayState = 'paused';
+        });
+
+        // Small delay before observing to ensure styles are applied
+        requestAnimationFrame(() => {
+          observer.observe(el);
+        });
+      });
+    });
+  }
+
+  // Play animation when visible - only add style once
+  if (!document.getElementById('split-text-style')) {
+    const style = document.createElement('style');
+    style.id = 'split-text-style';
+    style.textContent = `
+      .split-text--visible .split-text__char {
+        animation-play-state: running !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Initialize on first load
+  initSplitText();
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initSplitText);
+</script>
