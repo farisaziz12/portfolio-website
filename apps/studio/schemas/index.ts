@@ -11,6 +11,9 @@ import page from './page';
 import speakerProfile from './speakerProfile';
 import impactCategory from './impactCategory';
 import impactMetric from './impactMetric';
+import serviceOffer from './serviceOffer';
+import servicePage from './servicePage';
+import siteNavigation from './siteNavigation';
 
 export const schemaTypes = [
   // Core speaking content
@@ -31,6 +34,13 @@ export const schemaTypes = [
   // Impact metrics
   impactCategory,
   impactMetric,
+
+  // Services
+  serviceOffer,
+  servicePage,
+
+  // Site config
+  siteNavigation,
 
   // Pages & profile
   page,
