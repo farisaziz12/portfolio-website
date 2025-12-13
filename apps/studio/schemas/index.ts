@@ -14,6 +14,7 @@ import impactMetric from './impactMetric';
 import serviceOffer from './serviceOffer';
 import servicePage from './servicePage';
 import siteNavigation from './siteNavigation';
+import siteSettings from './siteSettings';
 
 export const schemaTypes = [
   // Core speaking content
@@ -41,6 +42,7 @@ export const schemaTypes = [
 
   // Site config
   siteNavigation,
+  siteSettings,
 
   // Pages & profile
   page,

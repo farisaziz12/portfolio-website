@@ -1,4 +1,12 @@
 ---
+interface SocialLinks {
+  twitter?: string;
+  twitterUrl?: string;
+  linkedin?: string;
+  github?: string;
+  youtube?: string;
+}
+
 interface Props {
   title: string;
   description?: string;
@@ -6,6 +14,12 @@ interface Props {
   article?: boolean;
   pathname?: string;
   publishedTime?: string;
+  siteName?: string;
+  siteUrl?: string;
+  twitterHandle?: string;
+  personName?: string;
+  jobTitle?: string;
+  socialLinks?: SocialLinks;
 }
 
 const {
@@ -15,12 +29,26 @@ const {
   article = false,
   pathname = '',
   publishedTime,
+  siteName = 'Faris Aziz',
+  siteUrl: propSiteUrl,
+  twitterHandle = 'farisaziz12',
+  personName = 'Faris Aziz',
+  jobTitle = 'Staff Software Engineer',
+  socialLinks,
 } = Astro.props;
 
-const siteUrl = import.meta.env.SITE || 'https://faziz-dev.com';
+const siteUrl = propSiteUrl || import.meta.env.SITE || 'https://faziz-dev.com';
 const canonicalUrl = new URL(pathname, siteUrl).href;
 const imageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).href;
-const fullTitle = title.includes('Faris Aziz') ? title : `${title} | Faris Aziz`;
+const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+
+// Build sameAs array for JSON-LD from social links
+const sameAs = [
+  socialLinks?.linkedin || 'https://linkedin.com/in/farisaziz12',
+  socialLinks?.github || 'https://github.com/farisaziz12',
+  socialLinks?.twitterUrl || 'https://twitter.com/farisaziz12',
+  socialLinks?.youtube,
+].filter(Boolean);
 ---
 
 <!-- Primary Meta Tags -->
@@ -35,12 +63,12 @@ const fullTitle = title.includes('Faris Aziz') ? title : `${title} | Faris Aziz`
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={imageUrl} />
-<meta property="og:site_name" content="Faris Aziz" />
+<meta property="og:site_name" content={siteName} />
 {publishedTime && <meta property="article:published_time" content={publishedTime} />}
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:creator" content="@farisaziz12" />
+<meta name="twitter:creator" content={`@${twitterHandle}`} />
 <meta name="twitter:url" content={canonicalUrl} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
@@ -56,14 +84,10 @@ const fullTitle = title.includes('Faris Aziz') ? title : `${title} | Faris Aziz`
     image: imageUrl,
     author: {
       '@type': 'Person',
-      name: 'Faris Aziz',
+      name: personName,
       url: siteUrl,
-      jobTitle: 'Staff Software Engineer',
-      sameAs: [
-        'https://linkedin.com/in/farisaziz12',
-        'https://github.com/farisaziz12',
-        'https://twitter.com/farisaziz12',
-      ],
+      jobTitle: jobTitle,
+      sameAs: sameAs,
     },
     description,
     url: canonicalUrl,

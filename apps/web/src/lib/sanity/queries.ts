@@ -885,3 +885,21 @@ export const servicePageQuery = groq`
     }
   }
 `;
+
+// Site Settings (singleton)
+export const siteSettingsQuery = groq`
+  *[_type == "siteSettings"][0] {
+    siteTitle,
+    tagline,
+    siteUrl,
+    metaTitle,
+    metaDescription,
+    defaultMetaDescription,
+    keywords,
+    ogImage,
+    twitterHandle,
+    linkedinUrl,
+    githubUrl,
+    youtubeUrl
+  }
+`;

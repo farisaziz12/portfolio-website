@@ -4,7 +4,24 @@ import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import SEO from '../components/shared/SEO.astro';
 import PostHog from '../components/posthog.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { siteSettingsQuery } from '../lib/sanity/queries';
 import '../styles/global.css';
+
+interface SiteSettings {
+  siteTitle?: string;
+  tagline?: string;
+  siteUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  defaultMetaDescription?: string;
+  keywords?: string[];
+  ogImage?: any;
+  twitterHandle?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  youtubeUrl?: string;
+}
 
 interface Props {
   title: string;
@@ -15,10 +32,24 @@ interface Props {
   publishedTime?: string;
 }
 
+// Fetch global site settings from Sanity
+const siteSettings = await sanityFetch<SiteSettings | null>(siteSettingsQuery).catch(() => null);
+
+// Fallback defaults if Sanity settings aren't configured
+const defaultDescription = siteSettings?.metaDescription || siteSettings?.defaultMetaDescription || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Zurich.';
+const defaultImage = siteSettings?.ogImage
+  ? urlFor(siteSettings.ogImage).width(1200).height(630).url()
+  : '/og-default.jpg';
+const siteName = siteSettings?.siteTitle || 'Faris Aziz';
+const siteUrl = siteSettings?.siteUrl?.trim() || 'https://faziz-dev.com';
+const twitterHandle = siteSettings?.twitterHandle || 'farisaziz12';
+const personName = siteSettings?.siteTitle || 'Faris Aziz';
+const jobTitle = siteSettings?.tagline || 'Staff Software Engineer';
+
 const {
   title,
-  description = 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Zurich.',
-  image,
+  description = defaultDescription,
+  image = defaultImage,
   article = false,
   pathname = '',
   publishedTime,
@@ -47,6 +78,17 @@ const {
       article={article}
       pathname={pathname}
       publishedTime={publishedTime}
+      siteName={siteName}
+      siteUrl={siteUrl}
+      twitterHandle={twitterHandle}
+      personName={personName}
+      jobTitle={jobTitle}
+      socialLinks={{
+        linkedin: siteSettings?.linkedinUrl,
+        github: siteSettings?.githubUrl,
+        youtube: siteSettings?.youtubeUrl,
+        twitterUrl: siteSettings?.twitterHandle ? `https://twitter.com/${siteSettings.twitterHandle}` : undefined,
+      }}
     />
 
     <ViewTransitions />
