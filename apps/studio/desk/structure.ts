@@ -250,6 +250,30 @@ export const deskStructure = (S: StructureBuilder) =>
 
       S.divider(),
 
+      // SEO Landing Pages
+      S.listItem()
+        .title('SEO Pages')
+        .child(
+          S.list()
+            .title('SEO Landing Pages')
+            .items([
+              S.listItem()
+                .title('Speaker Topics')
+                .schemaType('speakerTopicPage')
+                .child(S.documentTypeList('speakerTopicPage').title('Speaker Topic Pages')),
+              S.listItem()
+                .title('Consulting Services')
+                .schemaType('consultingServicePage')
+                .child(S.documentTypeList('consultingServicePage').title('Consulting Service Pages')),
+              S.listItem()
+                .title('Mentorship Services')
+                .schemaType('mentorshipServicePage')
+                .child(S.documentTypeList('mentorshipServicePage').title('Mentorship Service Pages')),
+            ])
+        ),
+
+      S.divider(),
+
       // Site Settings
       S.listItem()
         .title('Site Settings')
@@ -257,6 +281,16 @@ export const deskStructure = (S: StructureBuilder) =>
           S.list()
             .title('Site Settings')
             .items([
+              // Global Settings (singleton)
+              S.listItem()
+                .title('Global Settings')
+                .id('siteSettings')
+                .child(
+                  S.document()
+                    .schemaType('siteSettings')
+                    .documentId('siteSettings')
+                    .title('Global Settings')
+                ),
               S.listItem()
                 .title('Navigation')
                 .schemaType('siteNavigation')
