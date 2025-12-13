@@ -2,6 +2,7 @@
 /**
  * CountUp - Animated number counter
  * Inspired by ReactBits CountUp component
+ * Supports decimal numbers
  */
 interface Props {
   end: number;
@@ -10,6 +11,7 @@ interface Props {
   delay?: number;
   suffix?: string;
   prefix?: string;
+  decimals?: number;
 }
 
 const {
@@ -18,8 +20,12 @@ const {
   duration = 2,
   delay = 0,
   suffix = '',
-  prefix = ''
+  prefix = '',
+  decimals,
 } = Astro.props;
+
+// Auto-detect decimals if not specified
+const decimalPlaces = decimals !== undefined ? decimals : (end % 1 !== 0 ? (end.toString().split('.')[1]?.length || 0) : 0);
 ---
 
 <span
@@ -28,6 +34,7 @@ const {
   data-value={end}
   data-duration={duration}
   data-delay={delay}
+  data-decimals={decimalPlaces}
 >
   {prefix}<span class="count-up__number">0</span>{suffix}
 </span>
@@ -52,25 +59,32 @@ const {
     const numberEl = element.querySelector('.count-up__number');
     if (!numberEl) return;
 
-    const targetValue = parseInt(element.dataset.value || '0', 10);
+    const targetValue = parseFloat(element.dataset.value || '0');
     const duration = parseFloat(element.dataset.duration || '2') * 1000;
     const delay = parseFloat(element.dataset.delay || '0') * 1000;
+    const decimals = parseInt(element.dataset.decimals || '0', 10);
 
     let startTime: number | null = null;
-    let currentValue = 0;
+
+    const formatNumber = (value: number): string => {
+      if (decimals > 0) {
+        return value.toFixed(decimals);
+      }
+      return Math.floor(value).toLocaleString();
+    };
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      currentValue = Math.floor(easeOutExpo(progress) * targetValue);
-      numberEl.textContent = currentValue.toLocaleString();
+      const currentValue = easeOutExpo(progress) * targetValue;
+      numberEl.textContent = formatNumber(currentValue);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        numberEl.textContent = targetValue.toLocaleString();
+        numberEl.textContent = formatNumber(targetValue);
       }
     };
 

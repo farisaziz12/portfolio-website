@@ -1,0 +1,188 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ImpactSection from '../components/impact/ImpactSection.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import Aurora from '../components/animations/Aurora.astro';
+import Magnetic from '../components/animations/Magnetic.astro';
+---
+
+<BaseLayout
+  title="Impact by the Numbers | Faris Aziz"
+  description="Measurable results from community building, engineering leadership, and public speaking. Real numbers, real impact."
+>
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden">
+    <Aurora class="opacity-30" colors={['#10b981', '#6366f1', '#8b5cf6']} speed="slow" blur={100} />
+
+    <div class="container relative z-10 pt-24 pb-12 md:pt-32 md:pb-16">
+      <div class="max-w-3xl mx-auto text-center">
+        <!-- Terminal intro -->
+        <ScrollReveal animation="fade-up">
+          <div class="terminal max-w-xs mx-auto mb-8">
+            <div class="terminal__header">
+              <div class="terminal__dots">
+                <div class="terminal__dot terminal__dot--red"></div>
+                <div class="terminal__dot terminal__dot--yellow"></div>
+                <div class="terminal__dot terminal__dot--green"></div>
+              </div>
+              <span class="terminal__title">metrics.sh</span>
+            </div>
+            <div class="terminal__body">
+              <span class="terminal__prompt">$</span>
+              <span class="terminal__command"> show --impact --all</span>
+              <div class="terminal__output">Loading results...</div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h1 class="text-4xl md:text-6xl font-display font-bold text-ink mb-6">
+            Impact by the
+            <span class="bg-gradient-to-r from-emerald-500 via-accent to-violet-500 bg-clip-text text-transparent">
+              Numbers
+            </span>
+          </h1>
+        </ScrollReveal>
+
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-xl text-ink-muted max-w-2xl mx-auto">
+            Real results from years of community building, engineering leadership, and public speaking.
+            Every number backed by data.
+          </p>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full Impact Section -->
+  <ImpactSection variant="full" showSponsors={true} />
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-accent to-violet-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+    <Aurora class="opacity-20" colors={['#ffffff', '#e0e7ff', '#c7d2fe']} speed="slow" blur={120} />
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <ScrollReveal animation="fade-up">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Ready to create impact together?
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+            Let's build something
+            <span class="block">meaningful</span>
+          </h2>
+        </ScrollReveal>
+
+        <ScrollReveal animation="blur" delay={0.2}>
+          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+            Whether you need a speaker for your conference, a community leader for your meetup,
+            or technical expertise for your team, let's discuss how I can contribute.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Magnetic strength={0.15} radius={100}>
+              <a
+                href="/invite"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-emerald-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+              >
+                Invite me to speak
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.15} radius={100}>
+              <a
+                href="/about"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+              >
+                Learn more about me
+              </a>
+            </Magnetic>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Terminal styling (reusing from other pages) */
+  .terminal {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.75rem;
+    overflow: hidden;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+    font-size: 0.875rem;
+  }
+
+  .terminal__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgb(var(--surface-overlay));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+
+  .terminal__dots {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  .terminal__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+  }
+
+  .terminal__dot--red {
+    background: #ff5f56;
+  }
+
+  .terminal__dot--yellow {
+    background: #ffbd2e;
+  }
+
+  .terminal__dot--green {
+    background: #27ca40;
+  }
+
+  .terminal__title {
+    color: rgb(var(--ink-faint));
+    font-size: 0.75rem;
+  }
+
+  .terminal__body {
+    padding: 1rem;
+  }
+
+  .terminal__prompt {
+    color: rgb(16 185 129);
+  }
+
+  .terminal__command {
+    color: rgb(var(--ink));
+  }
+
+  .terminal__output {
+    color: rgb(var(--ink-muted));
+    margin-top: 0.5rem;
+  }
+
+  .grid-pattern {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+</style>

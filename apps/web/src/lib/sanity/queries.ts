@@ -573,3 +573,120 @@ export const speakingStatsQuery = groq`{
   "talks": count(*[_type == "talk"]),
   "workshops": count(*[_type == "workshop"])
 }`;
+
+// Impact Metrics
+export const featuredImpactMetricsQuery = groq`
+  *[_type == "impactMetric" && featured == true && metricType != "sponsor"] | order(order asc)[0...6] {
+    _id,
+    label,
+    "category": category->{
+      _id,
+      title,
+      "slug": slug.current,
+      icon,
+      color
+    },
+    metricType,
+    value,
+    prefix,
+    suffix,
+    unit,
+    timeWindow,
+    previousValue,
+    highlightColor,
+    sourceNote,
+    sourceUrl
+  }
+`;
+
+export const allImpactMetricsQuery = groq`{
+  "categories": *[_type == "impactCategory"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    icon,
+    color,
+    description,
+    "metrics": *[_type == "impactMetric" && metricType != "sponsor" && references(^._id)] | order(order asc) {
+      _id,
+      label,
+      metricType,
+      value,
+      prefix,
+      suffix,
+      unit,
+      timeWindow,
+      previousValue,
+      featured,
+      highlightColor,
+      sourceNote,
+      sourceUrl,
+      lastUpdated,
+      proofItems[] {
+        type,
+        title,
+        description,
+        image,
+        url,
+        "testimonial": testimonialRef->{
+          _id,
+          quote,
+          author,
+          role,
+          company
+        }
+      }
+    }
+  },
+  "sponsors": *[_type == "impactMetric" && metricType == "sponsor"] | order(order asc) {
+    _id,
+    label,
+    sponsorLogo,
+    sponsorName,
+    sponsorUrl,
+    "category": category->{
+      title,
+      icon
+    }
+  }
+}`;
+
+export const impactMetricsByCategoryQuery = groq`
+  *[_type == "impactMetric" && metricType != "sponsor" && category->slug.current == $categorySlug] | order(order asc) {
+    _id,
+    label,
+    "category": category->{
+      _id,
+      title,
+      "slug": slug.current,
+      icon,
+      color
+    },
+    metricType,
+    value,
+    prefix,
+    suffix,
+    unit,
+    timeWindow,
+    previousValue,
+    featured,
+    highlightColor,
+    sourceNote,
+    sourceUrl,
+    lastUpdated,
+    proofItems[] {
+      type,
+      title,
+      description,
+      image,
+      url,
+      "testimonial": testimonialRef->{
+        _id,
+        quote,
+        author,
+        role,
+        company
+      }
+    }
+  }
+`;

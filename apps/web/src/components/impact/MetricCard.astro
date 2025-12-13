@@ -1,0 +1,341 @@
+---
+/**
+ * MetricCard - Individual metric card for grids
+ * Smaller than hero cards, used in category grids
+ */
+import CountUp from '../animations/CountUp.astro';
+
+interface Category {
+  _id: string;
+  title: string;
+  slug: string;
+  icon?: string;
+  color?: string;
+}
+
+interface ProofItem {
+  type: string;
+  title?: string;
+  description?: string;
+  image?: any;
+  url?: string;
+  testimonial?: {
+    quote: string;
+    author: string;
+    role?: string;
+    company?: string;
+  };
+}
+
+interface Metric {
+  _id: string;
+  label: string;
+  category?: Category;
+  metricType: string;
+  value?: number;
+  prefix?: string;
+  suffix?: string;
+  unit?: string;
+  timeWindow?: string;
+  previousValue?: number;
+  highlightColor?: string;
+  sourceNote?: string;
+  sourceUrl?: string;
+  lastUpdated?: string;
+  proofItems?: ProofItem[];
+}
+
+interface Props {
+  metric: Metric;
+  showCategory?: boolean;
+  class?: string;
+}
+
+const { metric, showCategory = false, class: className = '' } = Astro.props;
+
+// Helper to calculate growth percentage
+function calculateGrowth(current?: number, previous?: number): number | null {
+  if (!current || !previous || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+// Get solid color from category or highlight color
+function getColorClass(category?: Category, highlightColor?: string): string {
+  // Map category colors to solid text colors
+  const categoryColorMap: Record<string, string> = {
+    'from-violet-500 to-purple-600': 'text-violet-500',
+    'from-emerald-500 to-teal-600': 'text-emerald-500',
+    'from-amber-500 to-orange-600': 'text-amber-500',
+    'from-pink-500 to-rose-600': 'text-pink-500',
+    'from-blue-500 to-indigo-600': 'text-blue-500',
+    'from-accent to-accent-dark': 'text-indigo-500',
+  };
+
+  if (category?.color && categoryColorMap[category.color]) {
+    return categoryColorMap[category.color];
+  }
+
+  const colors: Record<string, string> = {
+    accent: 'text-indigo-500',
+    violet: 'text-violet-500',
+    pink: 'text-pink-500',
+    emerald: 'text-emerald-500',
+    amber: 'text-amber-500',
+  };
+  return colors[highlightColor || 'accent'] || colors.accent;
+}
+
+const growth = calculateGrowth(metric.value, metric.previousValue);
+const colorClass = getColorClass(metric.category, metric.highlightColor);
+const hasProof = metric.proofItems && metric.proofItems.length > 0;
+---
+
+<div class:list={['metric-card', className]} data-metric-card>
+  <div class="metric-card__border"></div>
+
+  <div class="metric-card__inner">
+    {/* Category badge (optional) */}
+    {showCategory && metric.category && (
+      <div class="metric-card__category">
+        {metric.category.icon && (
+          <span class="metric-card__category-icon">{metric.category.icon}</span>
+        )}
+        <span>{metric.category.title}</span>
+      </div>
+    )}
+
+    {/* Value */}
+    <div class="metric-card__value-wrapper">
+      <span class={`metric-card__value ${colorClass}`}>
+        {metric.prefix && <span class="metric-card__prefix">{metric.prefix}</span>}
+        <CountUp
+          end={metric.value || 0}
+          duration={2}
+          delay={0.3}
+          class="metric-card__number"
+        />
+        {metric.suffix && <span class="metric-card__suffix">{metric.suffix}</span>}
+      </span>
+    </div>
+
+    {/* Label */}
+    <div class="metric-card__label">{metric.label}</div>
+
+    {/* Meta row: unit, time, growth */}
+    <div class="metric-card__meta">
+      {metric.unit && (
+        <span class="metric-card__unit">{metric.unit}</span>
+      )}
+      {metric.timeWindow && (
+        <span class="metric-card__time">{metric.timeWindow}</span>
+      )}
+      {growth !== null && (
+        <span class={`metric-card__growth ${growth >= 0 ? 'metric-card__growth--positive' : 'metric-card__growth--negative'}`}>
+          {growth >= 0 ? '+' : ''}{growth}%
+        </span>
+      )}
+    </div>
+
+    {/* Source + Proof */}
+    {(metric.sourceNote || hasProof) && (
+      <div class="metric-card__footer">
+        {metric.sourceNote && (
+          <span class="metric-card__source">
+            {metric.sourceUrl ? (
+              <a href={metric.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {metric.sourceNote}
+              </a>
+            ) : (
+              metric.sourceNote
+            )}
+          </span>
+        )}
+        {hasProof && (
+          <button
+            class="metric-card__proof-btn"
+            type="button"
+            aria-label={`View proof for ${metric.label}`}
+            data-proof-trigger={metric._id}
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Proof</span>
+          </button>
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .metric-card {
+    position: relative;
+    border-radius: 0.75rem;
+    cursor: default;
+    transition: transform 0.3s ease;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .metric-card__border {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    padding: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .metric-card:hover .metric-card__border {
+    opacity: 1;
+  }
+
+  .metric-card__inner {
+    position: relative;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .metric-card:hover .metric-card__inner {
+    background: rgb(var(--surface-overlay));
+    border-color: rgb(var(--edge-strong));
+    box-shadow: 0 8px 30px -10px rgb(var(--accent) / 0.1);
+  }
+
+  .metric-card__category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(var(--ink-faint));
+  }
+
+  .metric-card__category-icon {
+    font-size: 0.7rem;
+  }
+
+  .metric-card__value-wrapper {
+    margin: 0.25rem 0;
+  }
+
+  .metric-card__value {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .metric-card__prefix,
+  .metric-card__suffix {
+    font-size: 0.65em;
+  }
+
+  .metric-card__number {
+    display: inline;
+  }
+
+  .metric-card__label {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    line-height: 1.3;
+  }
+
+  .metric-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .metric-card__unit,
+  .metric-card__time {
+    color: rgb(var(--ink-faint));
+  }
+
+  .metric-card__growth {
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    font-weight: 600;
+  }
+
+  .metric-card__growth--positive {
+    background: rgb(16 185 129 / 0.15);
+    color: rgb(16 185 129);
+  }
+
+  .metric-card__growth--negative {
+    background: rgb(239 68 68 / 0.15);
+    color: rgb(239 68 68);
+  }
+
+  .metric-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgb(var(--edge));
+  }
+
+  .metric-card__source {
+    font-size: 0.65rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .metric-card__source a {
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+
+  .metric-card__source a:hover {
+    color: rgb(var(--accent));
+  }
+
+  .metric-card__proof-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: rgb(var(--accent) / 0.1);
+    border: 1px solid rgb(var(--accent) / 0.2);
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: rgb(var(--accent));
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .metric-card__proof-btn:hover {
+    background: rgb(var(--accent) / 0.2);
+    border-color: rgb(var(--accent) / 0.4);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .metric-card:hover {
+      transform: none;
+    }
+  }
+</style>

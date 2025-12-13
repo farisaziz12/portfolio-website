@@ -1,0 +1,320 @@
+---
+/**
+ * ImpactHero - Featured hero metrics display
+ * Shows 3-6 large animated metrics for maximum impact
+ */
+import CountUp from '../animations/CountUp.astro';
+import SpotlightCard from '../animations/SpotlightCard.astro';
+import ScrollReveal from '../animations/ScrollReveal.astro';
+
+interface Category {
+  _id: string;
+  title: string;
+  slug: string;
+  icon?: string;
+  color?: string;
+}
+
+interface Metric {
+  _id: string;
+  label: string;
+  category?: Category;
+  metricType: string;
+  value?: number;
+  prefix?: string;
+  suffix?: string;
+  unit?: string;
+  timeWindow?: string;
+  previousValue?: number;
+  highlightColor?: string;
+  sourceNote?: string;
+  sourceUrl?: string;
+}
+
+interface Props {
+  metrics: Metric[];
+  class?: string;
+}
+
+const { metrics, class: className = '' } = Astro.props;
+
+// Helper to calculate growth percentage
+function calculateGrowth(current?: number, previous?: number): number | null {
+  if (!current || !previous || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+// Helper to get highlight color class - solid colors for better visibility
+function getHighlightColor(color?: string): string {
+  const colors: Record<string, string> = {
+    accent: 'text-indigo-500',
+    violet: 'text-violet-500',
+    pink: 'text-pink-500',
+    emerald: 'text-emerald-500',
+    amber: 'text-amber-500',
+  };
+  return colors[color || 'accent'] || colors.accent;
+}
+
+// Helper to get spotlight colors based on highlight
+function getSpotlightColors(color?: string): { spotlight: string; border: string } {
+  const colors: Record<string, { spotlight: string; border: string }> = {
+    accent: { spotlight: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.5)' },
+    violet: { spotlight: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.5)' },
+    pink: { spotlight: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.5)' },
+    emerald: { spotlight: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.5)' },
+    amber: { spotlight: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.5)' },
+  };
+  return colors[color || 'accent'] || colors.accent;
+}
+---
+
+<div class:list={['impact-hero', className]}>
+  <div class="impact-hero__grid">
+    {metrics.map((metric, index) => {
+      const growth = calculateGrowth(metric.value, metric.previousValue);
+      const highlightGradient = getHighlightColor(metric.highlightColor);
+      const spotlightColors = getSpotlightColors(metric.highlightColor);
+
+      return (
+        <ScrollReveal animation="fade-up" delay={index * 0.1}>
+          <SpotlightCard
+            class="impact-hero__card"
+            spotlightColor={spotlightColors.spotlight}
+            borderColor={spotlightColors.border}
+          >
+            <div class="impact-hero__card-inner">
+              {/* Category badge */}
+              <div class="impact-hero__category">
+                {metric.category?.icon && (
+                  <span class="impact-hero__category-icon">{metric.category.icon}</span>
+                )}
+                <span class="impact-hero__category-label">{metric.category?.title}</span>
+              </div>
+
+              {/* Main value */}
+              <div class="impact-hero__value-wrapper">
+                <span class={`impact-hero__value ${highlightGradient}`}>
+                  {metric.prefix && <span class="impact-hero__prefix">{metric.prefix}</span>}
+                  <CountUp
+                    end={metric.value || 0}
+                    duration={2}
+                    delay={0.5 + index * 0.2}
+                    class="impact-hero__number"
+                  />
+                  {metric.suffix && <span class="impact-hero__suffix">{metric.suffix}</span>}
+                </span>
+              </div>
+
+              {/* Label and unit */}
+              <div class="impact-hero__label-row">
+                <span class="impact-hero__label">{metric.label}</span>
+                {metric.unit && (
+                  <span class="impact-hero__unit">{metric.unit}</span>
+                )}
+              </div>
+
+              {/* Growth chip + time window */}
+              <div class="impact-hero__meta">
+                {growth !== null && (
+                  <span class={`impact-hero__growth ${growth >= 0 ? 'impact-hero__growth--positive' : 'impact-hero__growth--negative'}`}>
+                    {growth >= 0 ? '+' : ''}{growth}%
+                    <svg class="w-3 h-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d={growth >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M19 14l-7 7m0 0l-7-7m7 7V3'}
+                      />
+                    </svg>
+                  </span>
+                )}
+                {metric.timeWindow && (
+                  <span class="impact-hero__time">{metric.timeWindow}</span>
+                )}
+              </div>
+
+              {/* Source note */}
+              {metric.sourceNote && (
+                <div class="impact-hero__source">
+                  {metric.sourceUrl ? (
+                    <a
+                      href={metric.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="impact-hero__source-link"
+                    >
+                      {metric.sourceNote}
+                      <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <span>{metric.sourceNote}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </SpotlightCard>
+        </ScrollReveal>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .impact-hero__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    .impact-hero__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .impact-hero__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .impact-hero__card {
+    height: 100%;
+    min-height: 280px;
+  }
+
+  .impact-hero__card-inner {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 280px;
+  }
+
+  .impact-hero__category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 9999px;
+    width: fit-content;
+  }
+
+  .impact-hero__category-icon {
+    font-size: 0.875rem;
+  }
+
+  .impact-hero__category-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(var(--ink-muted));
+  }
+
+  .impact-hero__value-wrapper {
+    margin: 0.75rem 0;
+  }
+
+  .impact-hero__value {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  @media (max-width: 768px) {
+    .impact-hero__value {
+      font-size: 3rem;
+    }
+  }
+
+  .impact-hero__prefix,
+  .impact-hero__suffix {
+    font-size: 0.6em;
+  }
+
+  .impact-hero__number {
+    display: inline;
+  }
+
+  .impact-hero__label-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .impact-hero__label {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .impact-hero__unit {
+    font-size: 0.875rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .impact-hero__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .impact-hero__growth {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .impact-hero__growth--positive {
+    background: rgb(16 185 129 / 0.15);
+    color: rgb(16 185 129);
+  }
+
+  .impact-hero__growth--negative {
+    background: rgb(239 68 68 / 0.15);
+    color: rgb(239 68 68);
+  }
+
+  .impact-hero__time {
+    font-size: 0.8rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .impact-hero__source {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgb(var(--edge));
+    font-size: 0.75rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .impact-hero__source-link {
+    display: inline-flex;
+    align-items: center;
+    color: rgb(var(--ink-muted));
+    transition: color 0.2s ease;
+  }
+
+  .impact-hero__source-link:hover {
+    color: rgb(var(--accent));
+  }
+</style>

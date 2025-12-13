@@ -151,6 +151,57 @@ export const deskStructure = (S: StructureBuilder) =>
 
       S.divider(),
 
+      // Impact Metrics
+      S.listItem()
+        .title('Impact')
+        .child(
+          S.list()
+            .title('Impact Metrics')
+            .items([
+              S.listItem()
+                .title('Categories')
+                .schemaType('impactCategory')
+                .child(
+                  S.documentTypeList('impactCategory')
+                    .title('Impact Categories')
+                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                ),
+              S.listItem()
+                .title('Metrics')
+                .schemaType('impactMetric')
+                .child(
+                  S.list()
+                    .title('Impact Metrics')
+                    .items([
+                      S.listItem()
+                        .title('All Metrics')
+                        .child(
+                          S.documentTypeList('impactMetric')
+                            .title('All Metrics')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Featured Metrics')
+                        .child(
+                          S.documentList()
+                            .title('Featured Metrics')
+                            .filter('_type == "impactMetric" && featured == true')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Sponsors')
+                        .child(
+                          S.documentList()
+                            .title('Sponsors')
+                            .filter('_type == "impactMetric" && metricType == "sponsor"')
+                        ),
+                    ])
+                ),
+            ])
+        ),
+
+      S.divider(),
+
       // Pages
       S.listItem()
         .title('Pages')

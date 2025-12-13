@@ -9,6 +9,8 @@ import company from './company';
 import externalPost from './externalPost';
 import page from './page';
 import speakerProfile from './speakerProfile';
+import impactCategory from './impactCategory';
+import impactMetric from './impactMetric';
 
 export const schemaTypes = [
   // Core speaking content
@@ -25,6 +27,10 @@ export const schemaTypes = [
   testimonial,
   socialPost,
   externalPost,
+
+  // Impact metrics
+  impactCategory,
+  impactMetric,
 
   // Pages & profile
   page,

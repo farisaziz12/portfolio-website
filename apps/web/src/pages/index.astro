@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SocialWall from '../components/social/SocialWall.astro';
+import ImpactSection from '../components/impact/ImpactSection.astro';
 // Animation components
 import Aurora from '../components/animations/Aurora.astro';
 import CountUp from '../components/animations/CountUp.astro';
@@ -930,6 +931,9 @@ const topics = [
     document.addEventListener('DOMContentLoaded', initTopicCards);
     document.addEventListener('astro:after-swap', initTopicCards);
   </script>
+
+  <!-- Impact by the Numbers -->
+  <ImpactSection variant="homepage" />
 
   <!-- What People Say - Social Proof Section -->
   {(socialPosts.length > 0 || testimonials.length > 0) && (
