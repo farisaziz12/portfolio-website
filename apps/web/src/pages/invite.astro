@@ -4,7 +4,6 @@ import Aurora from '../components/animations/Aurora.astro';
 import CountUp from '../components/animations/CountUp.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import SpotlightCard from '../components/animations/SpotlightCard.astro';
-import Magnetic from '../components/animations/Magnetic.astro';
 import TiltCard from '../components/animations/TiltCard.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import {
@@ -231,20 +230,16 @@ const bios = [
         <!-- CTAs -->
         <div class="flex flex-wrap items-center gap-4">
           {contactEmail && (
-            <Magnetic strength={0.2} radius={150}>
-              <a href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`} class="btn-primary text-lg px-8 py-4 group glow">
-                Get in touch
-                <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </a>
-            </Magnetic>
-          )}
-          <Magnetic strength={0.2} radius={150}>
-            <a href="/speaking" class="btn-secondary text-lg px-8 py-4">
-              View past events
+            <a href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`} class="btn-primary text-lg px-8 py-4 group glow">
+              Get in touch
+              <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
             </a>
-          </Magnetic>
+          )}
+          <a href="/speaking" class="btn-secondary text-lg px-8 py-4">
+            View past events
+          </a>
         </div>
       </div>
     </div>
@@ -646,14 +641,12 @@ const bios = [
               <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Ready to Deliver</p>
               <h2 class="text-3xl md:text-4xl font-display font-bold text-ink">Available Talks</h2>
             </div>
-            <Magnetic strength={0.15}>
-              <a href="/talks" class="btn-secondary group">
-                View all talks
-                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-            </Magnetic>
+            <a href="/talks" class="btn-secondary group">
+              View all talks
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
           </div>
         </ScrollReveal>
 
@@ -768,25 +761,21 @@ const bios = [
 
           <ScrollReveal animation="fade-up" delay={0.3}>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <Magnetic strength={0.15} radius={100}>
-                <a
-                  href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`}
-                  class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-                >
-                  Send an inquiry
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </a>
-              </Magnetic>
-              <Magnetic strength={0.15} radius={100}>
-                <a
-                  href="/speaking"
-                  class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-                >
-                  View past events
-                </a>
-              </Magnetic>
+              <a
+                href={`mailto:${contactEmail}?subject=Speaking%20Inquiry`}
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+              >
+                Send an inquiry
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </a>
+              <a
+                href="/speaking"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+              >
+                View past events
+              </a>
             </div>
           </ScrollReveal>
         </div>

@@ -6,7 +6,6 @@
 import ImpactHero from './ImpactHero.astro';
 import MetricCard from './MetricCard.astro';
 import ScrollReveal from '../animations/ScrollReveal.astro';
-import Magnetic from '../animations/Magnetic.astro';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import {
   featuredImpactMetricsQuery,
@@ -235,17 +234,15 @@ const sponsors = showSponsors ? allData.sponsors : [];
       {/* CTA (homepage only) */}
       {variant === 'homepage' && (
         <ScrollReveal animation="fade-up" delay={0.3} class="mt-10 text-center">
-          <Magnetic strength={0.2} radius={120}>
-            <a href="/impact" class="impact-cta group">
-              <span class="impact-cta__text">See full impact report</span>
-              <span class="impact-cta__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-              <span class="impact-cta__shine"></span>
-            </a>
-          </Magnetic>
+          <a href="/impact" class="impact-cta group">
+            <span class="impact-cta__text">See impact by the numbers</span>
+            <span class="impact-cta__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="impact-cta__shine"></span>
+          </a>
         </ScrollReveal>
       )}
     </div>

@@ -10,7 +10,6 @@ import BlurText from '../../components/animations/BlurText.astro';
 import Aurora from '../../components/animations/Aurora.astro';
 import CountUp from '../../components/animations/CountUp.astro';
 import ScrollReveal from '../../components/animations/ScrollReveal.astro';
-import Magnetic from '../../components/animations/Magnetic.astro';
 import SpotlightCard from '../../components/animations/SpotlightCard.astro';
 
 // Types
@@ -187,22 +186,18 @@ function getCountryFlag(countryName?: string): string {
         <!-- CTA Buttons -->
         <ScrollReveal animation="fade-up" delay={0.7}>
           <div class="flex flex-wrap gap-4">
-            <Magnetic strength={0.15} radius={100}>
-              <a href="/invite" class="events-cta-primary group">
-                <span class="events-cta__shine"></span>
-                <span class="relative z-10 flex items-center gap-2">
-                  Invite me to speak
-                  <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </span>
-              </a>
-            </Magnetic>
-            <Magnetic strength={0.1} radius={80}>
-              <a href="/talks" class="events-cta-secondary">
-                Browse talks
-              </a>
-            </Magnetic>
+            <a href="/invite" class="events-cta-primary group">
+              <span class="events-cta__shine"></span>
+              <span class="relative z-10 flex items-center gap-2">
+                Invite me to speak
+                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </span>
+            </a>
+            <a href="/talks" class="events-cta-secondary">
+              Browse talks
+            </a>
           </div>
         </ScrollReveal>
       </div>
@@ -415,20 +410,18 @@ function getCountryFlag(countryName?: string): string {
 
         <ScrollReveal animation="fade-up" delay={0.3}>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <Magnetic strength={0.2} radius={120}>
-              <a
-                href="/invite"
-                class="cta-button-white group"
-              >
-                <span class="cta-button__ripple"></span>
-                <span class="relative z-10 flex items-center gap-2">
-                  Invite me to speak
-                  <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </span>
-              </a>
-            </Magnetic>
+            <a
+              href="/invite"
+              class="cta-button-white group"
+            >
+              <span class="cta-button__ripple"></span>
+              <span class="relative z-10 flex items-center gap-2">
+                Invite me to speak
+                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </span>
+            </a>
             <a
               href="/talks"
               class="cta-button-ghost"
