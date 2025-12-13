@@ -1,0 +1,137 @@
+---
+import SpotlightCard from '../animations/SpotlightCard.astro';
+
+interface ServiceOffer {
+  _id: string;
+  title: string;
+  slug: string;
+  serviceType: 'consulting' | 'mentorship';
+  shortDescription: string;
+  bestFor?: string;
+  outcomes?: string[];
+  engagementFormat?: string;
+  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
+  price?: number;
+  priceCurrency?: string;
+  priceUnit?: string;
+  bookingUrl: string;
+  featured?: boolean;
+}
+
+interface Props {
+  offer: ServiceOffer;
+  variant?: 'default' | 'featured';
+}
+
+const { offer, variant = 'default' } = Astro.props;
+
+const isFeatured = variant === 'featured' || offer.featured;
+const isConsulting = offer.serviceType === 'consulting';
+
+// Determine spotlight colors based on service type
+const spotlightColor = isConsulting ? 'rgba(99, 102, 241, 0.15)' : 'rgba(236, 72, 153, 0.15)';
+const borderColor = isConsulting ? 'rgba(99, 102, 241, 0.5)' : 'rgba(236, 72, 153, 0.5)';
+const accentClass = isConsulting ? 'text-accent' : 'text-pink-500';
+const bgAccentClass = isConsulting ? 'bg-accent' : 'bg-pink-500';
+
+// Format price display
+function formatPrice(offer: ServiceOffer) {
+  if (offer.pricingType === 'custom') return 'Custom';
+  if (!offer.price) return 'Contact';
+
+  const currency = offer.priceCurrency || 'USD';
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+  });
+
+  const formatted = formatter.format(offer.price);
+  const unit = offer.priceUnit ? `/${offer.priceUnit}` : '';
+  return `${formatted}${unit}`;
+}
+---
+
+<SpotlightCard
+  class={`h-full ${isFeatured ? 'ring-2 ring-accent/30' : ''}`}
+  spotlightColor={spotlightColor}
+  borderColor={borderColor}
+>
+  <div class="p-6 md:p-8 h-full flex flex-col">
+    {/* Featured badge */}
+    {isFeatured && (
+      <div class="absolute top-4 right-4">
+        <span class={`px-3 py-1 text-xs font-medium ${bgAccentClass} text-white rounded-full`}>
+          Popular
+        </span>
+      </div>
+    )}
+
+    {/* Title & Description */}
+    <h3 class="font-display text-xl md:text-2xl font-bold text-ink mb-2">
+      {offer.title}
+    </h3>
+
+    {offer.bestFor && (
+      <p class={`text-sm ${accentClass} font-medium mb-4`}>
+        Best for: {offer.bestFor}
+      </p>
+    )}
+
+    <p class="text-ink-muted mb-6">
+      {offer.shortDescription}
+    </p>
+
+    {/* Outcomes */}
+    {offer.outcomes && offer.outcomes.length > 0 && (
+      <div class="mb-6 flex-grow">
+        <h4 class="text-sm font-semibold text-ink mb-3">What you'll get:</h4>
+        <ul class="space-y-2">
+          {offer.outcomes.map((outcome) => (
+            <li class="flex items-start gap-2 text-sm text-ink-muted">
+              <svg class={`w-5 h-5 ${accentClass} flex-shrink-0 mt-0.5`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{outcome}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Engagement Format */}
+    {offer.engagementFormat && (
+      <div class="mb-6 text-sm text-ink-muted">
+        <span class="font-medium text-ink">Format:</span> {offer.engagementFormat}
+      </div>
+    )}
+
+    {/* Price & CTA */}
+    <div class="pt-6 border-t border-edge mt-auto">
+      <div class="flex items-end justify-between mb-4">
+        <div>
+          <span class="text-sm text-ink-muted block mb-1">Starting at</span>
+          <span class="text-2xl md:text-3xl font-display font-bold text-ink">
+            {formatPrice(offer)}
+          </span>
+        </div>
+      </div>
+
+      <a
+        href={offer.bookingUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+          isFeatured
+            ? `${bgAccentClass} text-white`
+            : 'bg-surface-overlay text-ink border border-edge hover:border-accent/50'
+        }`}
+      >
+        Book now
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</SpotlightCard>

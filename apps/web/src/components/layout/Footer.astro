@@ -19,11 +19,23 @@ const socialLinks = [
   },
 ];
 
-const footerLinks = [
+const speakingLinks = [
   { label: 'Speaking', href: '/speaking' },
   { label: 'Talks', href: '/talks' },
   { label: 'Workshops', href: '/workshops' },
+  { label: 'Events', href: '/events' },
+];
+
+const servicesLinks = [
+  { label: 'Services', href: '/services' },
+  { label: 'Consulting', href: '/consulting' },
+  { label: 'Mentorship', href: '/mentorship' },
+];
+
+const footerLinks = [
+  { label: 'Blog', href: '/blog' },
   { label: 'Projects', href: '/projects' },
+  { label: 'Impact', href: '/impact' },
   { label: 'About', href: '/about' },
   { label: 'Media', href: '/media' },
 ];
@@ -69,7 +81,43 @@ const externalLinks = [
       <div class="flex flex-wrap gap-x-12 gap-y-6">
         <div>
           <h3 class="text-label-sm uppercase tracking-wider text-ink-faint mb-4">
-            Navigate
+            Speaking
+          </h3>
+          <ul class="space-y-3">
+            {speakingLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-body-sm text-ink-muted hover:text-ink transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-label-sm uppercase tracking-wider text-ink-faint mb-4">
+            Services
+          </h3>
+          <ul class="space-y-3">
+            {servicesLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-body-sm text-ink-muted hover:text-ink transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-label-sm uppercase tracking-wider text-ink-faint mb-4">
+            Explore
           </h3>
           <ul class="space-y-3">
             {footerLinks.map((link) => (

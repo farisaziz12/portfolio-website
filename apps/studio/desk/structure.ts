@@ -202,9 +202,69 @@ export const deskStructure = (S: StructureBuilder) =>
 
       S.divider(),
 
-      // Pages
+      // Services
       S.listItem()
-        .title('Pages')
-        .schemaType('page')
-        .child(S.documentTypeList('page').title('Pages')),
+        .title('Services')
+        .child(
+          S.list()
+            .title('Services')
+            .items([
+              S.listItem()
+                .title('Service Pages')
+                .schemaType('servicePage')
+                .child(S.documentTypeList('servicePage').title('Service Pages')),
+              S.listItem()
+                .title('Service Offers')
+                .schemaType('serviceOffer')
+                .child(
+                  S.list()
+                    .title('Service Offers')
+                    .items([
+                      S.listItem()
+                        .title('All Offers')
+                        .child(
+                          S.documentTypeList('serviceOffer')
+                            .title('All Offers')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Consulting Offers')
+                        .child(
+                          S.documentList()
+                            .title('Consulting Offers')
+                            .filter('_type == "serviceOffer" && serviceType == "consulting"')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Mentorship Offers')
+                        .child(
+                          S.documentList()
+                            .title('Mentorship Offers')
+                            .filter('_type == "serviceOffer" && serviceType == "mentorship"')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                    ])
+                ),
+            ])
+        ),
+
+      S.divider(),
+
+      // Site Settings
+      S.listItem()
+        .title('Site Settings')
+        .child(
+          S.list()
+            .title('Site Settings')
+            .items([
+              S.listItem()
+                .title('Navigation')
+                .schemaType('siteNavigation')
+                .child(S.documentTypeList('siteNavigation').title('Navigation')),
+              S.listItem()
+                .title('Pages')
+                .schemaType('page')
+                .child(S.documentTypeList('page').title('Pages')),
+            ])
+        ),
     ]);

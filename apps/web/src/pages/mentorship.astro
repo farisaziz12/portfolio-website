@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SpotlightCard from '../components/animations/SpotlightCard.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
+import SocialWall from '../components/social/SocialWall.astro';
+import { sanityFetch } from '../lib/sanity/client';
+import { mentorshipOffersQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
+
+interface ServiceOffer {
+  _id: string;
+  title: string;
+  slug: string;
+  serviceType: 'consulting' | 'mentorship';
+  shortDescription: string;
+  bestFor?: string;
+  outcomes?: string[];
+  engagementFormat?: string;
+  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
+  price?: number;
+  priceCurrency?: string;
+  priceUnit?: string;
+  bookingUrl: string;
+  featured?: boolean;
+  order?: number;
+}
+
+// Fetch mentorship offers from Sanity
+const offers = await sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []);
+
+interface SocialPost {
+  _id: string;
+  url: string;
+  platform: 'linkedin' | 'twitter';
+  author: string;
+  authorHandle?: string;
+  authorImage?: any;
+  authorRole?: string;
+  postImage?: any;
+  content: string;
+  tweetId?: string;
+  postDate?: string;
+}
+
+// Fetch social posts for the wall
+const socialPosts = await sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []);
+
+const topics = [
+  { icon: '🚀', title: 'Career Growth', items: ['Promotion strategies', 'Salary negotiation', 'Role transitions'] },
+  { icon: '💻', title: 'Technical Skills', items: ['React & Next.js mastery', 'System design', 'Code quality'] },
+  { icon: '🎤', title: 'Public Speaking', items: ['CFP writing', 'Talk preparation', 'Stage presence'] },
+  { icon: '🌍', title: 'Remote Work', items: ['Async communication', 'Work-life balance', 'Global opportunities'] },
+];
+---
+
+<BaseLayout
+  title="Mentorship | Faris Aziz"
+  description="1:1 mentorship for engineers who want to level up their careers. Career coaching, technical skills, and personal growth."
+  pathname="/mentorship"
+>
+  <!-- Hero Section -->
+  <section class="relative min-h-[60vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-28">
+      <div class="max-w-4xl">
+        <ScrollReveal>
+          <a href="/services" class="inline-flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-6 text-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to services
+          </a>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.1}>
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/10 rounded-full text-pink-500 text-sm font-medium mb-6">
+            <span class="text-xl">🧭</span>
+            Mentorship
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.2}>
+          <h1 class="hero-title mb-6">
+            <span class="block text-ink">Accelerate your</span>
+            <span class="block bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">growth.</span>
+          </h1>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.3}>
+          <p class="text-xl md:text-2xl text-ink-muted max-w-2xl mb-10">
+            Personalized guidance to help you navigate your engineering career, develop your skills, and achieve your goals.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.4}>
+          <div class="flex flex-wrap gap-4">
+            <a href="#offers" class="btn-primary text-lg px-8 py-4 group bg-pink-500 hover:bg-pink-600">
+              View programs
+              <svg class="w-5 h-5 ml-2 group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </a>
+            <a href="https://cal.com" target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4">
+              Book intro call
+            </a>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- What We Can Work On -->
+  <section class="section py-16 md:py-20 bg-surface-overlay/50">
+    <div class="container">
+      <div class="text-center mb-12">
+        <ScrollReveal>
+          <h2 class="heading-3 mb-4">What We Can Work On</h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-ink-muted max-w-2xl mx-auto">
+            Tailored guidance based on your goals and challenges
+          </p>
+        </ScrollReveal>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+        {topics.map((topic, index) => (
+          <ScrollReveal delay={0.05 * index}>
+            <div class="p-6 rounded-xl bg-surface border border-edge h-full">
+              <span class="text-3xl mb-4 block">{topic.icon}</span>
+              <h3 class="font-semibold text-ink mb-3">{topic.title}</h3>
+              <ul class="space-y-2">
+                {topic.items.map((item) => (
+                  <li class="text-sm text-ink-muted flex items-center gap-2">
+                    <span class="w-1 h-1 rounded-full bg-pink-500"></span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Offers Section -->
+  <section id="offers" class="section py-20 md:py-28">
+    <div class="container">
+      <div class="text-center mb-16">
+        <ScrollReveal>
+          <h2 class="heading-2 mb-4">Mentorship Programs</h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-ink-muted text-lg max-w-2xl mx-auto">
+            {offers.length > 0
+              ? 'Choose the level of support that fits your needs and budget'
+              : 'Let\'s discuss what kind of support would work best for you'}
+          </p>
+        </ScrollReveal>
+      </div>
+
+      {offers.length > 0 ? (
+        <>
+          <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {offers.map((offer, index) => (
+              <ScrollReveal delay={0.1 * index}>
+                <ServiceOfferCard offer={offer} />
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal delay={0.4}>
+            <div class="text-center mt-12">
+              <p class="text-ink-muted mb-4">Not sure which program is right for you?</p>
+              <a href="https://cal.com" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                Book a free intro call
+              </a>
+            </div>
+          </ScrollReveal>
+        </>
+      ) : (
+        <ScrollReveal delay={0.2}>
+          <div class="max-w-xl mx-auto text-center">
+            <div class="card p-10">
+              <div class="text-5xl mb-6">🗓️</div>
+              <h3 class="heading-3 mb-4">Book a Free Intro Call</h3>
+              <p class="text-ink-muted mb-8">
+                I'd love to learn about your goals and see how I can help. Book a free 20-minute call to discuss your situation.
+              </p>
+              <a
+                href="https://cal.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-primary text-lg px-8 py-4 inline-flex items-center gap-2"
+              >
+                Schedule a call
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </ScrollReveal>
+      )}
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  {socialPosts && socialPosts.length > 0 && (
+    <SocialWall posts={socialPosts} />
+  )}
+
+  <!-- My Approach -->
+  <section class="section py-20 md:py-28">
+    <div class="container">
+      <div class="max-w-4xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <ScrollReveal>
+              <h2 class="heading-2 mb-6">My Approach</h2>
+            </ScrollReveal>
+            <ScrollReveal delay={0.1}>
+              <div class="space-y-6 text-ink-muted">
+                <p>
+                  I believe mentorship should be practical, actionable, and tailored to you. No generic advice or cookie-cutter programs.
+                </p>
+                <p>
+                  Every session is focused on your specific challenges and goals. We'll work together to create a roadmap that makes sense for your situation.
+                </p>
+                <p>
+                  I've been where you are. I've navigated career transitions, learned new technologies, built a personal brand, and spoken at conferences worldwide. I'll share what I've learned along the way.
+                </p>
+              </div>
+            </ScrollReveal>
+          </div>
+
+          <ScrollReveal delay={0.2}>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-overlay border border-edge">
+                <span class="text-2xl">🎯</span>
+                <div>
+                  <h3 class="font-semibold text-ink mb-1">Goal-Focused</h3>
+                  <p class="text-sm text-ink-muted">Every conversation ties back to your objectives</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-overlay border border-edge">
+                <span class="text-2xl">💪</span>
+                <div>
+                  <h3 class="font-semibold text-ink mb-1">Accountability</h3>
+                  <p class="text-sm text-ink-muted">I'll hold you to your commitments and celebrate wins</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-overlay border border-edge">
+                <span class="text-2xl">🔒</span>
+                <div>
+                  <h3 class="font-semibold text-ink mb-1">Confidential</h3>
+                  <p class="text-sm text-ink-muted">A safe space to discuss challenges openly</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-overlay border border-edge">
+                <span class="text-2xl">🤝</span>
+                <div>
+                  <h3 class="font-semibold text-ink mb-1">No BS</h3>
+                  <p class="text-sm text-ink-muted">Honest feedback, even when it's uncomfortable</p>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section py-20 md:py-28 bg-surface-overlay/50">
+    <div class="container">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-16">
+          <ScrollReveal>
+            <h2 class="heading-2 mb-4">Common Questions</h2>
+          </ScrollReveal>
+        </div>
+
+        <div class="space-y-4">
+          <ScrollReveal>
+            <details class="group card">
+              <summary class="flex items-center justify-between cursor-pointer p-6 font-medium text-ink">
+                What's the difference between a single session and ongoing mentorship?
+                <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="px-6 pb-6 text-ink-muted">
+                Single sessions are great for specific questions or one-time advice. Ongoing mentorship provides continuity, accountability, and deeper support for sustained growth over time.
+              </div>
+            </details>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.1}>
+            <details class="group card">
+              <summary class="flex items-center justify-between cursor-pointer p-6 font-medium text-ink">
+                How do I know if I'm ready for mentorship?
+                <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="px-6 pb-6 text-ink-muted">
+                If you're motivated to grow, open to feedback, and willing to put in the work, you're ready. Mentorship works best when you come with clear goals and a genuine desire to improve.
+              </div>
+            </details>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.2}>
+            <details class="group card">
+              <summary class="flex items-center justify-between cursor-pointer p-6 font-medium text-ink">
+                What if I need to cancel or reschedule?
+                <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="px-6 pb-6 text-ink-muted">
+                Life happens! You can reschedule with 24 hours notice. For ongoing programs, unused sessions roll over to the next month.
+              </div>
+            </details>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.3}>
+            <details class="group card">
+              <summary class="flex items-center justify-between cursor-pointer p-6 font-medium text-ink">
+                Do you offer team or group mentorship?
+                <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="px-6 pb-6 text-ink-muted">
+                Currently I focus on 1:1 mentorship for the deepest impact. For team training or workshops, check out my consulting services.
+              </div>
+            </details>
+          </ScrollReveal>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-pink-500 via-violet-600 to-purple-700"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <ScrollReveal>
+          <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-6">
+            Ready to accelerate your growth?
+          </h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+            Let's chat about your goals and see if we're a good fit to work together.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.2}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://cal.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-pink-600 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+            >
+              Book free intro call
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </a>
+            <a
+              href="/consulting"
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+            >
+              Or explore consulting
+            </a>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

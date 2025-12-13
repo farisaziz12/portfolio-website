@@ -1593,7 +1593,7 @@
   .hero-title {
     @apply font-display font-bold;
     @apply text-5xl md:text-6xl lg:text-7xl xl:text-8xl;
-    @apply tracking-tight leading-[0.9];
+    @apply tracking-tight leading-[1.1];
   }
 
   .hero-title--gradient {

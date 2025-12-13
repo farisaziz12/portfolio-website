@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from '../islands/ThemeToggle';
+import MobileMenu from './MobileMenu.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { upcomingEventsQuery } from '../../lib/sanity/queries';
 
@@ -16,18 +17,64 @@ interface UpcomingEvent {
   };
 }
 
+interface NavItem {
+  label: string;
+  href: string;
+  isExternal?: boolean;
+  hasDropdown?: boolean;
+  dropdownItems?: {
+    label: string;
+    href: string;
+    description?: string;
+    icon?: string;
+    isExternal?: boolean;
+  }[];
+}
+
 const pathname = Astro.url.pathname;
 
-const navLinks = [
-  { href: '/speaking', label: 'Speaking' },
-  { href: '/talks', label: 'Talks' },
-  { href: '/workshops', label: 'Workshops' },
-  { href: '/about', label: 'About' },
+// Navigation structure with dropdowns
+const navItems: NavItem[] = [
+  {
+    label: 'Speaking',
+    href: '/speaking',
+    hasDropdown: true,
+    dropdownItems: [
+      { label: 'Overview', href: '/speaking', icon: '🎤', description: 'Speaking experience & topics' },
+      { label: 'Talks', href: '/talks', icon: '💬', description: 'Conference presentations' },
+      { label: 'Workshops', href: '/workshops', icon: '🛠️', description: 'Hands-on training sessions' },
+      { label: 'Events', href: '/events', icon: '📅', description: 'Upcoming & past events' },
+    ],
+  },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Impact', href: '/impact' },
+  {
+    label: 'Services',
+    href: '/services',
+    hasDropdown: true,
+    dropdownItems: [
+      { label: 'Overview', href: '/services', icon: '✨', description: 'How I can help' },
+      { label: 'Consulting', href: '/consulting', icon: '💼', description: 'Technical strategy & architecture' },
+      { label: 'Mentorship', href: '/mentorship', icon: '🧭', description: '1:1 career & technical guidance' },
+    ],
+  },
+  { label: 'About', href: '/about' },
 ];
+
+const ctaButton = {
+  label: 'Work with me',
+  href: '/services',
+};
 
 function isActive(href: string) {
   if (href === '/') return pathname === '/';
   return pathname.startsWith(href);
+}
+
+function isDropdownActive(item: NavItem) {
+  if (!item.hasDropdown || !item.dropdownItems) return false;
+  return item.dropdownItems.some(sub => isActive(sub.href));
 }
 
 // Fetch next upcoming event
@@ -69,23 +116,66 @@ function formatEventDate(dateStr: string) {
       </div>
 
       <!-- Desktop Navigation -->
-      <div class="hidden md:flex items-center gap-8">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class="nav-link"
-            aria-current={isActive(link.href) ? 'page' : undefined}
-          >
-            {link.label}
-          </a>
+      <div class="hidden md:flex items-center gap-1">
+        {navItems.map((item) => (
+          item.hasDropdown ? (
+            <div class="nav-dropdown-container relative">
+              <button
+                type="button"
+                class:list={[
+                  'nav-link nav-dropdown-trigger flex items-center gap-1',
+                  { 'is-active': isActive(item.href) || isDropdownActive(item) }
+                ]}
+                aria-expanded="false"
+                aria-haspopup="true"
+              >
+                {item.label}
+                <svg class="nav-dropdown-chevron w-3.5 h-3.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div class="nav-dropdown" role="menu">
+                <div class="nav-dropdown-content">
+                  {item.dropdownItems?.map((subItem) => (
+                    <a
+                      href={subItem.href}
+                      class:list={['nav-dropdown-item', { 'is-active': isActive(subItem.href) }]}
+                      role="menuitem"
+                      target={subItem.isExternal ? '_blank' : undefined}
+                      rel={subItem.isExternal ? 'noopener noreferrer' : undefined}
+                    >
+                      {subItem.icon && <span class="nav-dropdown-icon">{subItem.icon}</span>}
+                      <div class="nav-dropdown-text">
+                        <span class="nav-dropdown-label">{subItem.label}</span>
+                        {subItem.description && (
+                          <span class="nav-dropdown-description">{subItem.description}</span>
+                        )}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <a
+              href={item.href}
+              class:list={['nav-link', { 'is-active': isActive(item.href) }]}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              target={item.isExternal ? '_blank' : undefined}
+              rel={item.isExternal ? 'noopener noreferrer' : undefined}
+            >
+              {item.label}
+            </a>
+          )
         ))}
 
-        <div class="w-px h-5 bg-edge" aria-hidden="true"></div>
+        <div class="w-px h-5 bg-edge mx-2" aria-hidden="true"></div>
 
         <ThemeToggle client:load />
 
-        <a href="/invite" class="btn-primary">
-          Invite me
+        <a href={ctaButton.href} class="btn-primary ml-2">
+          {ctaButton.label}
         </a>
       </div>
 
@@ -98,7 +188,7 @@ function formatEventDate(dateStr: string) {
           class="btn-ghost p-2"
           aria-label="Open menu"
           aria-expanded="false"
-          aria-controls="mobile-menu"
+          aria-controls="mobile-menu-overlay"
           id="mobile-menu-button"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -107,85 +197,172 @@ function formatEventDate(dateStr: string) {
         </button>
       </div>
     </div>
-
-    <!-- Mobile Navigation -->
-    <div
-      id="mobile-menu"
-      class="hidden md:hidden pb-4"
-      role="navigation"
-      aria-label="Mobile navigation"
-    >
-      <div class="flex flex-col gap-1 pt-2">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class="px-3 py-2.5 rounded-md text-body font-medium text-ink-muted hover:text-ink hover:bg-surface-overlay transition-colors"
-            aria-current={isActive(link.href) ? 'page' : undefined}
-          >
-            {link.label}
-          </a>
-        ))}
-
-        <div class="my-2 h-px bg-edge" aria-hidden="true"></div>
-
-        <a
-          href="/invite"
-          class="px-3 py-2.5 rounded-md text-body font-medium text-accent hover:bg-accent-muted transition-colors"
-        >
-          Invite me to speak
-        </a>
-      </div>
-    </div>
   </nav>
 </header>
 
+<!-- Mobile Menu Overlay -->
+<MobileMenu navItems={navItems} ctaButton={ctaButton} />
+
+<style>
+  /* Navigation link base styles */
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    transition: all 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: rgb(var(--ink));
+    background: rgb(var(--surface-overlay));
+  }
+
+  .nav-link.is-active {
+    color: rgb(var(--accent));
+  }
+
+  /* Dropdown container */
+  .nav-dropdown-container {
+    position: relative;
+  }
+
+  /* Dropdown menu */
+  .nav-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-top: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+  .nav-dropdown-container:hover .nav-dropdown,
+  .nav-dropdown-container:focus-within .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-dropdown-container:hover .nav-dropdown-chevron,
+  .nav-dropdown-container:focus-within .nav-dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-dropdown-content {
+    min-width: 240px;
+    padding: 0.5rem;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.75rem;
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  .dark .nav-dropdown-content {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.3),
+      0 4px 6px -4px rgb(0 0 0 / 0.2);
+  }
+
+  /* Dropdown item */
+  .nav-dropdown-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+  }
+
+  .nav-dropdown-item:hover {
+    background: rgb(var(--surface-overlay));
+  }
+
+  .nav-dropdown-item.is-active {
+    background: rgb(var(--accent) / 0.1);
+  }
+
+  .nav-dropdown-icon {
+    flex-shrink: 0;
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .nav-dropdown-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .nav-dropdown-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(var(--ink));
+  }
+
+  .nav-dropdown-item.is-active .nav-dropdown-label {
+    color: rgb(var(--accent));
+  }
+
+  .nav-dropdown-description {
+    font-size: 0.75rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.4;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .nav-dropdown,
+    .nav-dropdown-chevron,
+    .nav-link,
+    .nav-dropdown-item {
+      transition: none;
+    }
+  }
+</style>
+
 <script>
-  function setupMobileMenu() {
-    const button = document.getElementById('mobile-menu-button');
-    const menu = document.getElementById('mobile-menu');
+  function setupDropdowns() {
+    const dropdownContainers = document.querySelectorAll('.nav-dropdown-container');
 
-    if (!button || !menu) return;
+    dropdownContainers.forEach((container) => {
+      const trigger = container.querySelector('.nav-dropdown-trigger');
+      const dropdown = container.querySelector('.nav-dropdown');
 
-    button.addEventListener('click', () => {
-      const isExpanded = button.getAttribute('aria-expanded') === 'true';
-      button.setAttribute('aria-expanded', String(!isExpanded));
-      menu.classList.toggle('hidden');
+      if (!trigger || !dropdown) return;
 
-      // Update icon
-      const svg = button.querySelector('svg');
-      if (svg) {
-        svg.innerHTML = isExpanded
-          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />'
-          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
-      }
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!button.contains(e.target as Node) && !menu.contains(e.target as Node)) {
-        button.setAttribute('aria-expanded', 'false');
-        menu.classList.add('hidden');
-
-        const svg = button.querySelector('svg');
-        if (svg) {
-          svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
+      // Handle keyboard navigation
+      trigger.addEventListener('keydown', (e) => {
+        const event = e as KeyboardEvent;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+          trigger.setAttribute('aria-expanded', String(!isExpanded));
         }
-      }
-    });
+        if (event.key === 'Escape') {
+          trigger.setAttribute('aria-expanded', 'false');
+          (trigger as HTMLElement).focus();
+        }
+      });
 
-    // Close menu on escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
-        button.setAttribute('aria-expanded', 'false');
-        menu.classList.add('hidden');
-        button.focus();
-      }
+      // Close on click outside
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target as Node)) {
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
     });
   }
 
   // Run on initial load
-  setupMobileMenu();
+  setupDropdowns();
 
   // Re-run after View Transitions
-  document.addEventListener('astro:after-swap', setupMobileMenu);
+  document.addEventListener('astro:after-swap', setupDropdowns);
 </script>

@@ -690,3 +690,198 @@ export const impactMetricsByCategoryQuery = groq`
     }
   }
 `;
+
+// Site Navigation
+export const siteNavigationQuery = groq`
+  *[_type == "siteNavigation" && identifier == $identifier][0] {
+    _id,
+    title,
+    identifier,
+    items[] {
+      label,
+      href,
+      isExternal,
+      hasDropdown,
+      dropdownItems[] {
+        label,
+        href,
+        description,
+        icon,
+        isExternal
+      },
+      highlight
+    },
+    ctaButton {
+      label,
+      href,
+      isExternal
+    }
+  }
+`;
+
+// Service Offers
+export const allServiceOffersQuery = groq`
+  *[_type == "serviceOffer"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    serviceType,
+    shortDescription,
+    bestFor,
+    outcomes,
+    engagementFormat,
+    showPricing,
+    priceFrom,
+    priceCurrency,
+    priceUnit,
+    bookingUrl,
+    bookingLabel,
+    proofLinks[] {
+      label,
+      url,
+      type
+    },
+    featured,
+    order
+  }
+`;
+
+export const consultingOffersQuery = groq`
+  *[_type == "serviceOffer" && serviceType == "consulting"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    serviceType,
+    shortDescription,
+    bestFor,
+    outcomes,
+    engagementFormat,
+    showPricing,
+    priceFrom,
+    priceCurrency,
+    priceUnit,
+    bookingUrl,
+    bookingLabel,
+    proofLinks[] {
+      label,
+      url,
+      type
+    },
+    featured,
+    order
+  }
+`;
+
+export const mentorshipOffersQuery = groq`
+  *[_type == "serviceOffer" && serviceType == "mentorship"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    serviceType,
+    shortDescription,
+    bestFor,
+    outcomes,
+    engagementFormat,
+    showPricing,
+    priceFrom,
+    priceCurrency,
+    priceUnit,
+    bookingUrl,
+    bookingLabel,
+    proofLinks[] {
+      label,
+      url,
+      type
+    },
+    featured,
+    order
+  }
+`;
+
+export const featuredServiceOffersQuery = groq`
+  *[_type == "serviceOffer" && featured == true] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    serviceType,
+    shortDescription,
+    bestFor,
+    outcomes,
+    engagementFormat,
+    showPricing,
+    priceFrom,
+    priceCurrency,
+    priceUnit,
+    bookingUrl,
+    bookingLabel,
+    proofLinks[] {
+      label,
+      url,
+      type
+    },
+    featured,
+    order
+  }
+`;
+
+// Service Pages
+export const servicePageQuery = groq`
+  *[_type == "servicePage" && pageType == $pageType][0] {
+    _id,
+    pageType,
+    heroTagline,
+    heroTitle,
+    heroSubtitle,
+    heroBullets,
+    primaryCtaLabel,
+    primaryCtaUrl,
+    secondaryCtaLabel,
+    secondaryCtaUrl,
+    consultingCard {
+      title,
+      description,
+      forWhom,
+      icon
+    },
+    mentorshipCard {
+      title,
+      description,
+      forWhom,
+      icon
+    },
+    howItWorks[] {
+      step,
+      title,
+      description
+    },
+    faq[] {
+      question,
+      answer
+    },
+    "featuredOffers": featuredOffers[]-> {
+      _id,
+      title,
+      "slug": slug.current,
+      serviceType,
+      shortDescription,
+      bestFor,
+      outcomes,
+      engagementFormat,
+      showPricing,
+      priceFrom,
+      priceCurrency,
+      priceUnit,
+      bookingUrl,
+      bookingLabel,
+      proofLinks[] {
+        label,
+        url,
+        type
+      }
+    },
+    seo {
+      metaTitle,
+      metaDescription
+    }
+  }
+`;
