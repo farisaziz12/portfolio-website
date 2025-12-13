@@ -3,6 +3,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { workshopBySlugQuery, allWorkshopsQuery } from '../../lib/sanity/queries';
 import { formatDate, getCountryFlag } from 'shared/utils';
+import { PortableText } from 'astro-portabletext';
+
+interface AgendaItem {
+  _key?: string;
+  title?: string;
+  topic?: string;
+  duration?: string;
+  description?: any[];
+}
+
+interface WorkshopEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  date: string;
+  conference: string;
+  location?: {
+    city?: string;
+    country?: string;
+  };
+}
 
 interface Workshop {
   _id: string;
@@ -15,22 +36,9 @@ interface Workshop {
   prerequisites?: string[];
   outcomes?: string[];
   isBookable?: boolean;
-  agenda?: {
-    title: string;
-    description?: string;
-    duration?: string;
-  }[];
-  events?: {
-    _id: string;
-    title: string;
-    slug: string;
-    date: string;
-    conference: string;
-    location?: {
-      city?: string;
-      country?: string;
-    };
-  }[];
+  agenda?: AgendaItem[];
+  upcomingEvents?: WorkshopEvent[];
+  pastEvents?: WorkshopEvent[];
 }
 
 export async function getStaticPaths() {
@@ -155,10 +163,10 @@ const levelColors: Record<string, string> = {
             <div class="text-ink-muted text-sm uppercase tracking-widest mt-1">Level</div>
           </div>
         )}
-        {workshop.events && workshop.events.length > 0 && (
+        {((workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0)) > 0 && (
           <div class="bento__item flex flex-col items-center justify-center py-8">
             <div class="text-4xl mb-3">🎯</div>
-            <div class="text-2xl font-display font-bold text-accent">{workshop.events.length}</div>
+            <div class="text-2xl font-display font-bold text-accent">{(workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0)}</div>
             <div class="text-ink-muted text-sm uppercase tracking-widest mt-1">Sessions</div>
           </div>
         )}
@@ -223,36 +231,58 @@ const levelColors: Record<string, string> = {
             </p>
           </div>
 
-          <div class="space-y-4">
-            {workshop.agenda.map((item: any, index: number) => (
-              <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden">
-                <div class="flex items-stretch">
-                  <!-- Number Block -->
-                  <div class="flex-shrink-0 w-20 bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                    <span class="text-3xl font-display font-bold text-white">{String(index + 1).padStart(2, '0')}</span>
-                  </div>
-
-                  <!-- Content -->
-                  <div class="flex-grow p-6">
-                    <div class="flex flex-wrap items-center gap-3 mb-2">
-                      <h3 class="font-display font-bold text-xl text-white">
-                        {item.title}
-                      </h3>
-                      {item.duration && (
-                        <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/70 rounded">
-                          {item.duration}
-                        </span>
-                      )}
+          <div class="agenda-accordion space-y-3">
+            {workshop.agenda.map((item: AgendaItem, index: number) => {
+              const itemTitle = item.title || item.topic || 'Untitled';
+              const hasDescription = item.description && item.description.length > 0;
+              return (
+                <div class="agenda-item" data-has-content={hasDescription ? 'true' : 'false'}>
+                  <button
+                    class="agenda-item__header"
+                    type="button"
+                    aria-expanded="false"
+                    disabled={!hasDescription}
+                  >
+                    {/* Number Block */}
+                    <div class="agenda-item__number">
+                      <span>{String(index + 1).padStart(2, '0')}</span>
                     </div>
-                    {item.description && (
-                      <p class="text-slate-400 leading-relaxed">
-                        {item.description}
-                      </p>
+
+                    {/* Content */}
+                    <div class="agenda-item__title-area">
+                      <h3 class="agenda-item__title">
+                        {itemTitle}
+                      </h3>
+                    </div>
+
+                    {/* Duration */}
+                    {item.duration && (
+                      <span class="agenda-item__duration">
+                        {item.duration}
+                      </span>
                     )}
-                  </div>
+
+                    {/* Expand Icon */}
+                    {hasDescription && (
+                      <div class="agenda-item__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Expandable Content */}
+                  {hasDescription && item.description && (
+                    <div class="agenda-item__content">
+                      <div class="agenda-item__content-inner">
+                        <PortableText value={item.description} />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -317,8 +347,76 @@ const levelColors: Record<string, string> = {
     </section>
   )}
 
+  <!-- Upcoming Sessions -->
+  {workshop.upcomingEvents && workshop.upcomingEvents.length > 0 && (
+    <section class="section py-16 md:py-20">
+      <div class="container">
+        <div class="max-w-4xl mx-auto">
+          <div class="flex items-center gap-4 mb-10">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="heading-2 mb-0">Upcoming Sessions</h2>
+              <p class="text-ink-muted">Catch this workshop at these events</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            {workshop.upcomingEvents.map((event: WorkshopEvent) => (
+              <a
+                href={`/events/${event.slug}`}
+                class="group block bg-surface-raised rounded-2xl border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-300 overflow-hidden"
+              >
+                <div class="flex flex-col md:flex-row">
+                  <!-- Date Block -->
+                  <div class="flex-shrink-0 md:w-28 bg-gradient-to-br from-emerald-500 to-teal-500 p-4 md:p-6 flex md:flex-col items-center justify-center text-white gap-2 md:gap-0">
+                    <div class="text-sm font-medium uppercase tracking-wider opacity-80">
+                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                    </div>
+                    <div class="text-3xl md:text-4xl font-display font-bold">
+                      {new Date(event.date).getDate()}
+                    </div>
+                    <div class="text-sm opacity-80">
+                      {new Date(event.date).getFullYear()}
+                    </div>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="flex-grow p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <h3 class="font-display font-bold text-lg text-ink group-hover:text-accent transition-colors">
+                          {event.conference}
+                        </h3>
+                        <span class="px-2 py-0.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-full">Upcoming</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-ink-muted">
+                        <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
+                        <span>{event.location?.city}, {event.location?.country}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-ink-faint group-hover:text-accent transition-colors">
+                      <span class="text-sm">View details</span>
+                      <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- Past Sessions -->
-  {workshop.events && workshop.events.length > 0 && (
+  {workshop.pastEvents && workshop.pastEvents.length > 0 && (
     <section class="section py-16 md:py-20">
       <div class="container">
         <div class="max-w-4xl mx-auto">
@@ -335,7 +433,7 @@ const levelColors: Record<string, string> = {
           </div>
 
           <div class="space-y-4">
-            {workshop.events.map((event: any) => (
+            {workshop.pastEvents.map((event: WorkshopEvent) => (
               <a
                 href={`/events/${event.slug}`}
                 class="group block bg-surface-raised rounded-2xl border border-edge hover:border-accent/50 transition-all duration-300 overflow-hidden"
@@ -361,7 +459,7 @@ const levelColors: Record<string, string> = {
                         {event.conference}
                       </h3>
                       <div class="flex items-center gap-2 text-ink-muted">
-                        <span class="text-xl">{getCountryFlag(event.location?.country)}</span>
+                        <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
                         <span>{event.location?.city}, {event.location?.country}</span>
                       </div>
                     </div>
@@ -422,3 +520,284 @@ const levelColors: Record<string, string> = {
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  /* Agenda Accordion */
+  .agenda-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .agenda-item {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .agenda-item.expanded {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+
+  .agenda-item__header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .agenda-item__header:disabled {
+    cursor: default;
+  }
+
+  .agenda-item__number {
+    flex-shrink: 0;
+    width: 4.5rem;
+    min-height: 5rem;
+    background: linear-gradient(135deg, #10b981, #14b8a6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .agenda-item__number span {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  .agenda-item__title-area {
+    flex: 1;
+    padding: 1.25rem 1rem;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .agenda-item__title {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .agenda-item__duration {
+    flex-shrink: 0;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 0.375rem;
+    white-space: nowrap;
+    margin-right: 1rem;
+  }
+
+  .agenda-item__icon {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    transition: transform 0.3s ease, background 0.2s;
+  }
+
+  .agenda-item__icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s;
+  }
+
+  .agenda-item.expanded .agenda-item__icon {
+    transform: rotate(180deg);
+    background: rgba(16, 185, 129, 0.2);
+  }
+
+  .agenda-item.expanded .agenda-item__icon svg {
+    color: #10b981;
+  }
+
+  .agenda-item__content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+
+  .agenda-item.expanded .agenda-item__content {
+    grid-template-rows: 1fr;
+  }
+
+  .agenda-item__content-inner {
+    overflow: hidden;
+  }
+
+  .agenda-item__content-inner > :global(:first-child) {
+    margin-left: calc(4.5rem);
+    margin-right: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(16, 185, 129, 0.05);
+    border-left: 3px solid rgba(16, 185, 129, 0.4);
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin-bottom: 1.25rem;
+  }
+
+  .agenda-item__content-inner :global(p) {
+    margin: 0 0 0.75rem 0;
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 0.9375rem;
+  }
+
+  .agenda-item__content-inner :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .agenda-item__content-inner :global(ul),
+  .agenda-item__content-inner :global(ol) {
+    margin: 0.5rem 0 0.75rem 0;
+    padding-left: 1.25rem;
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 0.9375rem;
+  }
+
+  .agenda-item__content-inner :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .agenda-item__content-inner :global(li:last-child) {
+    margin-bottom: 0;
+  }
+
+  .agenda-item__content-inner :global(strong) {
+    color: white;
+    font-weight: 600;
+  }
+
+  .agenda-item__content-inner :global(em) {
+    font-style: italic;
+    color: #94a3b8;
+  }
+
+  .agenda-item__content-inner :global(code) {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: #67e8f9;
+  }
+
+  .agenda-item__content-inner :global(a) {
+    color: #34d399;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(52, 211, 153, 0.3);
+    transition: border-color 0.15s;
+  }
+
+  .agenda-item__content-inner :global(a:hover) {
+    border-color: #34d399;
+  }
+
+  .agenda-item__content-inner :global(h4) {
+    color: white;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0 0 0.625rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  @media (max-width: 640px) {
+    .agenda-item__number {
+      width: 3.5rem;
+      min-height: 4rem;
+    }
+
+    .agenda-item__number span {
+      font-size: 1.25rem;
+    }
+
+    .agenda-item__title-area {
+      padding: 1rem 0.75rem;
+    }
+
+    .agenda-item__title {
+      font-size: 1rem;
+    }
+
+    .agenda-item__icon {
+      width: 2rem;
+      height: 2rem;
+      margin-right: 0.75rem;
+    }
+
+    .agenda-item__icon svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .agenda-item__content-inner > :global(:first-child) {
+      margin-left: calc(3.5rem);
+      margin-right: 0.75rem;
+      padding: 1rem;
+    }
+
+    .agenda-item__content-inner :global(p),
+    .agenda-item__content-inner :global(ul),
+    .agenda-item__content-inner :global(ol) {
+      font-size: 0.875rem;
+    }
+  }
+</style>
+
+<script>
+  function initAgendaAccordion() {
+    const agendaItems = document.querySelectorAll('.agenda-item[data-has-content="true"]');
+
+    agendaItems.forEach(item => {
+      const header = item.querySelector('.agenda-item__header');
+      if (!header) return;
+
+      header.addEventListener('click', () => {
+        const isExpanded = item.classList.contains('expanded');
+        const button = header as HTMLButtonElement;
+
+        // Close all other items
+        agendaItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('expanded')) {
+            otherItem.classList.remove('expanded');
+            const otherButton = otherItem.querySelector('.agenda-item__header') as HTMLButtonElement;
+            if (otherButton) {
+              otherButton.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+
+        // Toggle current item
+        item.classList.toggle('expanded', !isExpanded);
+        button.setAttribute('aria-expanded', (!isExpanded).toString());
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initAgendaAccordion);
+  document.addEventListener('astro:after-swap', initAgendaAccordion);
+</script>

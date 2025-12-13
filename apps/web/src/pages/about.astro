@@ -15,29 +15,115 @@ interface Company {
   highlight?: string;
 }
 
-interface PageContent {
-  title?: string;
-  content?: any;
+interface Badge {
+  icon: string;
+  label: string;
 }
 
-const [companies, _pageContent] = await Promise.all([
+interface Activity {
+  _key: string;
+  title: string;
+  description: string;
+  icon: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
+interface Milestone {
+  _key: string;
+  title: string;
+  description: string;
+  emoji: string;
+  fullWidth?: boolean;
+}
+
+interface SkillCategory {
+  _key: string;
+  category: string;
+  icon: string;
+  items: string[];
+}
+
+interface PageContent {
+  title?: string;
+  subtitle?: string;
+  content?: any;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+  };
+  aboutHero?: {
+    greeting?: string;
+    name?: string;
+    role?: string;
+    location?: string;
+    bio?: string;
+    specialties?: string[];
+    badges?: Badge[];
+    linkedinUrl?: string;
+  };
+  aboutWhatIDo?: {
+    title?: string;
+    subtitle?: string;
+    activities?: Activity[];
+  };
+  aboutJourney?: {
+    title?: string;
+    subtitle?: string;
+    milestones?: Milestone[];
+  };
+  aboutSkills?: {
+    title?: string;
+    subtitle?: string;
+    categories?: SkillCategory[];
+  };
+  aboutCta?: {
+    statusText?: string;
+    title?: string;
+    description?: string;
+    primaryCtaText?: string;
+    primaryCtaUrl?: string;
+    secondaryCtaText?: string;
+    secondaryCtaUrl?: string;
+  };
+}
+
+const [companies, pageContent] = await Promise.all([
   sanityFetch<Company[]>(companiesQuery).catch(() => []),
   sanityFetch<PageContent | null>(pageQuery, { identifier: 'about' }).catch(() => null),
 ]);
 
-const skills = [
-  { category: 'Frontend', items: ['React', 'Next.js', 'TypeScript', 'Tailwind'], icon: '⚛️' },
-  { category: 'Backend', items: ['Node.js', 'GraphQL', 'REST APIs', 'PostgreSQL'], icon: '🔧' },
-  { category: 'Payments', items: ['Stripe', 'Adyen', 'Payment Orchestration'], icon: '💳' },
-  { category: 'Testing', items: ['Playwright', 'Vitest', 'Jest', 'Cypress'], icon: '🧪' },
-  { category: 'Tools', items: ['Git', 'Docker', 'CI/CD', 'Vercel'], icon: '🛠️' },
-  { category: 'Design', items: ['Figma', 'Storybook', 'Design Systems'], icon: '🎨' },
+// Destructure with fallbacks
+const hero = pageContent?.aboutHero;
+const whatIDo = pageContent?.aboutWhatIDo;
+const journey = pageContent?.aboutJourney;
+const skillsSection = pageContent?.aboutSkills;
+const cta = pageContent?.aboutCta;
+const seo = pageContent?.seo;
+
+// Fallback skills if not in CMS
+const skills = skillsSection?.categories || [
+  { _key: '1', category: 'Frontend', items: ['React', 'Next.js', 'TypeScript', 'Tailwind'], icon: '⚛️' },
+  { _key: '2', category: 'Backend', items: ['Node.js', 'GraphQL', 'REST APIs', 'PostgreSQL'], icon: '🔧' },
+  { _key: '3', category: 'Payments', items: ['Stripe', 'Adyen', 'Payment Orchestration'], icon: '💳' },
+  { _key: '4', category: 'Testing', items: ['Playwright', 'Vitest', 'Jest', 'Cypress'], icon: '🧪' },
+  { _key: '5', category: 'Tools', items: ['Git', 'Docker', 'CI/CD', 'Vercel'], icon: '🛠️' },
+  { _key: '6', category: 'Design', items: ['Figma', 'Storybook', 'Design Systems'], icon: '🎨' },
 ];
+
+// Icon mapping for activities
+const iconMap: Record<string, string> = {
+  code: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />',
+  microphone: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />',
+  users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />',
+  book: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />',
+  desktop: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />',
+};
 ---
 
 <BaseLayout
-  title="About | Faris Aziz"
-  description="Learn about Faris Aziz - Staff Software Engineer, Conference Speaker, and ZurichJS Founder based in Zurich, Switzerland."
+  title={seo?.metaTitle || "About | Faris Aziz"}
+  description={seo?.metaDescription || "Learn about Faris Aziz - Staff Software Engineer, Conference Speaker, and ZurichJS Founder based in Zurich, Switzerland."}
   pathname="/about"
 >
   <!-- Hero Section -->
@@ -66,37 +152,45 @@ const skills = [
 
         <!-- Big Bold Title -->
         <h1 class="hero-title mb-8">
-          <span class="block text-ink">Hey, I'm</span>
-          <span class="block hero-title--gradient">Faris</span>
+          <span class="block text-ink">{hero?.greeting || "Hey, I'm"}</span>
+          <span class="block hero-title--gradient">{hero?.name || "Faris"}</span>
         </h1>
 
         <p class="text-lead max-w-2xl mb-8">
-          Staff Software Engineer based in <span class="text-accent font-medium">Zurich, Switzerland</span>.
-          I specialize in frontend development, with deep expertise in
-          <span class="text-accent font-medium">React</span>,
-          <span class="text-accent font-medium">Next.js</span>, and
-          <span class="text-accent font-medium">payment systems</span>.
+          {hero?.role || "Staff Software Engineer"} based in <span class="text-accent font-medium">{hero?.location || "Zurich, Switzerland"}</span>.
+          {hero?.bio || "I specialize in frontend development, with deep expertise in React, Next.js, and payment systems."}
         </p>
 
         <!-- Topic Pills -->
-        <div class="flex flex-wrap gap-3 mb-12">
-          <div class="topic-badge">
-            <span class="topic-badge__icon">⚛️</span>
-            <span class="topic-badge__name">react</span>
+        {(hero?.badges && hero.badges.length > 0) ? (
+          <div class="flex flex-wrap gap-3 mb-12">
+            {hero.badges.map((badge) => (
+              <div class="topic-badge">
+                <span class="topic-badge__icon">{badge.icon}</span>
+                <span class="topic-badge__name">{badge.label}</span>
+              </div>
+            ))}
           </div>
-          <div class="topic-badge">
-            <span class="topic-badge__icon">▲</span>
-            <span class="topic-badge__name">nextjs</span>
+        ) : (
+          <div class="flex flex-wrap gap-3 mb-12">
+            <div class="topic-badge">
+              <span class="topic-badge__icon">⚛️</span>
+              <span class="topic-badge__name">react</span>
+            </div>
+            <div class="topic-badge">
+              <span class="topic-badge__icon">▲</span>
+              <span class="topic-badge__name">nextjs</span>
+            </div>
+            <div class="topic-badge">
+              <span class="topic-badge__icon">💳</span>
+              <span class="topic-badge__name">payments</span>
+            </div>
+            <div class="topic-badge">
+              <span class="topic-badge__icon">🎤</span>
+              <span class="topic-badge__name">speaker</span>
+            </div>
           </div>
-          <div class="topic-badge">
-            <span class="topic-badge__icon">💳</span>
-            <span class="topic-badge__name">payments</span>
-          </div>
-          <div class="topic-badge">
-            <span class="topic-badge__icon">🎤</span>
-            <span class="topic-badge__name">speaker</span>
-          </div>
-        </div>
+        )}
 
         <!-- CTA Buttons -->
         <div class="flex flex-wrap gap-4">
@@ -107,7 +201,7 @@ const skills = [
             </svg>
           </a>
           <a
-            href="https://linkedin.com/in/farisaziz12"
+            href={hero?.linkedinUrl || "https://linkedin.com/in/farisaziz12"}
             target="_blank"
             rel="noopener noreferrer"
             class="btn-secondary text-lg px-8 py-4"
@@ -126,70 +220,97 @@ const skills = [
     <div class="container relative z-10">
       <div class="text-center mb-16">
         <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">
-          What I <span class="text-gradient">Do</span>
+          {whatIDo?.title ? (
+            <Fragment set:html={whatIDo.title.replace(/\*([^*]+)\*/g, '<span class="text-gradient">$1</span>')} />
+          ) : (
+            <>What I <span class="text-gradient">Do</span></>
+          )}
         </h2>
         <p class="text-slate-400 text-lg max-w-xl mx-auto">
-          Building software, sharing knowledge, growing communities
+          {whatIDo?.subtitle || "Building software, sharing knowledge, growing communities"}
         </p>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-        <!-- Featured - Engineering -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-accent/20 to-violet-500/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center mb-6">
-            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-          </div>
-          <h3 class="font-display font-bold text-2xl text-white mb-3">Engineering</h3>
-          <p class="text-slate-300 mb-4">Building scalable frontend architectures, payment integrations, and developer tools at fintech companies.</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">react</span>
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">payments</span>
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">fintech</span>
-          </div>
+      {(whatIDo?.activities && whatIDo.activities.length > 0) ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          {whatIDo.activities.map((activity) => (
+            <div class={`${activity.featured ? 'lg:col-span-2 bg-gradient-to-br from-accent/20 to-violet-500/20' : 'bg-white/5'} backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300`}>
+              <div class={`${activity.featured ? 'w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-violet-500' : 'w-12 h-12 rounded-xl bg-white/10'} flex items-center justify-center mb-6`}>
+                <svg class={`${activity.featured ? 'w-7 h-7' : 'w-6 h-6'} text-white`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <Fragment set:html={iconMap[activity.icon] || iconMap.code} />
+                </svg>
+              </div>
+              <h3 class={`font-display font-bold ${activity.featured ? 'text-2xl mb-3' : 'text-xl mb-2'} text-white`}>{activity.title}</h3>
+              <p class={`${activity.featured ? 'text-slate-300 mb-4' : 'text-slate-400 text-sm'}`}>{activity.description}</p>
+              {activity.featured && activity.tags && activity.tags.length > 0 && (
+                <div class="flex flex-wrap gap-2">
+                  {activity.tags.map((tag) => (
+                    <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
+      ) : (
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          <!-- Featured - Engineering -->
+          <div class="lg:col-span-2 bg-gradient-to-br from-accent/20 to-violet-500/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center mb-6">
+              <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-white mb-3">Engineering</h3>
+            <p class="text-slate-300 mb-4">Building scalable frontend architectures, payment integrations, and developer tools at fintech companies.</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">react</span>
+              <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">payments</span>
+              <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">fintech</span>
+            </div>
+          </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Speaking</h3>
+            <p class="text-slate-400 text-sm">Conferences and meetups worldwide about React, performance, and payments.</p>
           </div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Speaking</h3>
-          <p class="text-slate-400 text-sm">Conferences and meetups worldwide about React, performance, and payments.</p>
-        </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Community</h3>
+            <p class="text-slate-400 text-sm">Founded ZurichJS to bring together JavaScript enthusiasts in Switzerland.</p>
           </div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Community</h3>
-          <p class="text-slate-400 text-sm">Founded ZurichJS to bring together JavaScript enthusiasts in Switzerland.</p>
-        </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Mentorship</h3>
+            <p class="text-slate-400 text-sm">Helping developers grow through 1:1 mentorship on MentorCruise.</p>
           </div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Mentorship</h3>
-          <p class="text-slate-400 text-sm">Helping developers grow through 1:1 mentorship on MentorCruise.</p>
-        </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Workshops</h3>
+            <p class="text-slate-400 text-sm">Hands-on training sessions for teams and conferences.</p>
           </div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Workshops</h3>
-          <p class="text-slate-400 text-sm">Hands-on training sessions for teams and conferences.</p>
         </div>
-      </div>
+      )}
     </div>
   </section>
 
@@ -198,41 +319,55 @@ const skills = [
     <div class="container">
       <div class="max-w-4xl mx-auto">
         <div class="text-center mb-12">
-          <h2 class="heading-2 mb-4">My Journey</h2>
-          <p class="text-ink-muted text-lg">From CrossFit instructor to Staff Engineer</p>
+          <h2 class="heading-2 mb-4">{journey?.title || "My Journey"}</h2>
+          <p class="text-ink-muted text-lg">{journey?.subtitle || "From CrossFit instructor to Staff Engineer"}</p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="card p-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center mb-6">
-              <span class="text-2xl">🏋️</span>
-            </div>
-            <h3 class="font-display font-bold text-xl text-ink mb-4">The Beginning</h3>
-            <p class="text-ink-muted leading-relaxed">
-              My path to software engineering wasn't traditional. I started as a CrossFit instructor before discovering my passion for coding through a bootcamp.
-            </p>
+        {(journey?.milestones && journey.milestones.length > 0) ? (
+          <div class="grid md:grid-cols-2 gap-6">
+            {journey.milestones.map((milestone, index) => (
+              <div class={`${milestone.fullWidth ? 'md:col-span-2' : ''} card p-8 ${milestone.fullWidth ? 'border-accent/20' : ''}`}>
+                <div class={`w-12 h-12 rounded-2xl bg-gradient-to-br ${index === 0 ? 'from-violet-500 to-purple-500' : index === 1 ? 'from-accent to-blue-500' : 'from-emerald-500 to-teal-500'} flex items-center justify-center mb-6`}>
+                  <span class="text-2xl">{milestone.emoji}</span>
+                </div>
+                <h3 class="font-display font-bold text-xl text-ink mb-4">{milestone.title}</h3>
+                <p class="text-ink-muted leading-relaxed">{milestone.description}</p>
+              </div>
+            ))}
           </div>
+        ) : (
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="card p-8">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center mb-6">
+                <span class="text-2xl">🏋️</span>
+              </div>
+              <h3 class="font-display font-bold text-xl text-ink mb-4">The Beginning</h3>
+              <p class="text-ink-muted leading-relaxed">
+                My path to software engineering wasn't traditional. I started as a CrossFit instructor before discovering my passion for coding through a bootcamp.
+              </p>
+            </div>
 
-          <div class="card p-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center mb-6">
-              <span class="text-2xl">🚀</span>
+            <div class="card p-8">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center mb-6">
+                <span class="text-2xl">🚀</span>
+              </div>
+              <h3 class="font-display font-bold text-xl text-ink mb-4">Career Growth</h3>
+              <p class="text-ink-muted leading-relaxed">
+                I've worked at companies across Connected TV, fitness tech, SaaS, and fintech, eventually rising to Staff Engineer and Engineering Manager roles.
+              </p>
             </div>
-            <h3 class="font-display font-bold text-xl text-ink mb-4">Career Growth</h3>
-            <p class="text-ink-muted leading-relaxed">
-              I've worked at companies across Connected TV, fitness tech, SaaS, and fintech, eventually rising to Staff Engineer and Engineering Manager roles.
-            </p>
-          </div>
 
-          <div class="md:col-span-2 card p-8 border-accent/20">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6">
-              <span class="text-2xl">💡</span>
+            <div class="md:col-span-2 card p-8 border-accent/20">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6">
+                <span class="text-2xl">💡</span>
+              </div>
+              <h3 class="font-display font-bold text-xl text-ink mb-4">Today</h3>
+              <p class="text-ink-muted leading-relaxed">
+                I focus on helping developers build better software through speaking, teaching, and open source contributions. I'm particularly passionate about making complex topics like payment systems and performance optimization accessible to everyone.
+              </p>
             </div>
-            <h3 class="font-display font-bold text-xl text-ink mb-4">Today</h3>
-            <p class="text-ink-muted leading-relaxed">
-              I focus on helping developers build better software through speaking, teaching, and open source contributions. I'm particularly passionate about making complex topics like payment systems and performance optimization accessible to everyone.
-            </p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   </section>
@@ -252,11 +387,11 @@ const skills = [
               class="bg-surface-raised rounded-2xl border border-edge p-6 flex gap-6 hover:border-accent/30 transition-all duration-300"
             >
               {company.logo && (
-                <div class="flex-shrink-0 w-16 h-16 bg-surface-overlay rounded-xl flex items-center justify-center overflow-hidden border border-edge">
+                <div class="flex-shrink-0 w-14 h-14 bg-surface-overlay rounded-xl overflow-hidden border border-edge">
                   <img
-                    src={urlFor(company.logo).width(64).height(64).fit('max').url()}
+                    src={urlFor(company.logo).width(200).height(200).url()}
                     alt={company.name}
-                    class="max-w-full max-h-full object-contain"
+                    class="w-full h-full object-cover rounded-xl"
                   />
                 </div>
               )}
@@ -289,9 +424,9 @@ const skills = [
   <section class="section py-20 md:py-28">
     <div class="container">
       <div class="text-center mb-16">
-        <h2 class="heading-2 mb-4">Technical Skills</h2>
+        <h2 class="heading-2 mb-4">{skillsSection?.title || "Technical Skills"}</h2>
         <p class="text-ink-muted text-lg max-w-xl mx-auto">
-          Technologies and tools I work with daily
+          {skillsSection?.subtitle || "Technologies and tools I work with daily"}
         </p>
       </div>
 
@@ -332,33 +467,33 @@ const skills = [
       <div class="max-w-4xl mx-auto text-center">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Open for opportunities
+          {cta?.statusText || "Open for opportunities"}
         </div>
 
         <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-          Let's Connect
+          {cta?.title || "Let's Connect"}
         </h2>
         <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-          Whether you want to collaborate on a project, have me speak at your event, or just chat about tech — I'd love to hear from you.
+          {cta?.description || "Whether you want to collaborate on a project, have me speak at your event, or just chat about tech — I'd love to hear from you."}
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="/invite"
+            href={cta?.primaryCtaUrl || "/invite"}
             class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
           >
-            Invite me to speak
+            {cta?.primaryCtaText || "Invite me to speak"}
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </a>
           <a
-            href="https://linkedin.com/in/farisaziz12"
+            href={cta?.secondaryCtaUrl || "https://linkedin.com/in/farisaziz12"}
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
           >
-            Connect on LinkedIn
+            {cta?.secondaryCtaText || "Connect on LinkedIn"}
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>

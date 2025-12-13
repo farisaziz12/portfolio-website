@@ -22,6 +22,15 @@ const articles = posts.filter((p) => p.type === 'article');
 const podcasts = posts.filter((p) => p.type === 'podcast');
 const interviews = posts.filter((p) => p.type === 'interview');
 const other = posts.filter((p) => !['article', 'podcast', 'interview'].includes(p.type));
+
+const contentTypes = [
+  { icon: '📝', name: 'Articles', code: 'articles', count: articles.length },
+  { icon: '🎙️', name: 'Podcasts', code: 'podcasts', count: podcasts.length },
+  { icon: '💬', name: 'Interviews', code: 'interviews', count: interviews.length },
+  { icon: '🔗', name: 'Other', code: 'other', count: other.length },
+].filter(t => t.count > 0);
+
+const totalPosts = posts.length;
 ---
 
 <BaseLayout
@@ -29,157 +38,289 @@ const other = posts.filter((p) => !['article', 'podcast', 'interview'].includes(
   description="Articles, podcasts, and external content by Faris Aziz on React, Next.js, payments, and software development."
   pathname="/blog"
 >
-  <section class="section">
-    <div class="container">
-      <div class="max-w-4xl">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6" transition:name="page-title">
-          Blog & Content
+  <!-- Hero Section -->
+  <section class="relative min-h-[60vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-5xl">
+        <!-- Terminal-style intro -->
+        <div class="terminal max-w-md mb-8 animate-fade-in">
+          <div class="terminal__header">
+            <div class="terminal__dots">
+              <div class="terminal__dot terminal__dot--red"></div>
+              <div class="terminal__dot terminal__dot--yellow"></div>
+              <div class="terminal__dot terminal__dot--green"></div>
+            </div>
+            <span class="terminal__title">content.sh</span>
+          </div>
+          <div class="terminal__body">
+            <span class="terminal__prompt">$</span>
+            <span class="terminal__command"> ls ~/content</span>
+            <div class="terminal__output">{totalPosts} items found</div>
+          </div>
+        </div>
+
+        <!-- Big Bold Title -->
+        <h1 class="hero-title mb-8">
+          <span class="block text-ink">Writing &</span>
+          <span class="block hero-title--gradient">Content</span>
         </h1>
-        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
-          Articles, podcast appearances, and other content I've created or contributed to.
+
+        <p class="text-lead max-w-2xl mb-8">
+          Articles, podcast appearances, interviews, and other content I've created or contributed to across the web.
         </p>
+
+        <!-- Content Type Pills -->
+        {contentTypes.length > 0 && (
+          <div class="flex flex-wrap gap-3 mb-12">
+            {contentTypes.map((type) => (
+              <a href={`#${type.code}`} class="topic-badge group">
+                <span class="topic-badge__icon">{type.icon}</span>
+                <span class="topic-badge__name">{type.code}</span>
+                <span class="ml-1 text-xs text-ink-faint group-hover:text-accent transition-colors">({type.count})</span>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap gap-4">
+          <a href="https://twitter.com/FarisAziz12" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4 group glow">
+            Follow on X
+            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4">
+            Connect on LinkedIn
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
   {posts.length > 0 ? (
     <>
-      <!-- Articles -->
+      <!-- Articles Section -->
       {articles.length > 0 && (
-        <section class="section bg-gray-50 dark:bg-gray-800/50">
+        <section id="articles" class="section py-16 md:py-20">
           <div class="container">
-            <h2 class="section-title">Articles</h2>
-            <p class="section-subtitle">Written content and tutorials</p>
+            <div class="max-w-6xl mx-auto">
+              <!-- Section Header -->
+              <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-display font-bold text-ink">Articles</h2>
+                  <p class="text-sm text-ink-muted">{articles.length} {articles.length === 1 ? 'article' : 'articles'}</p>
+                </div>
+              </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-              {articles.map((post: any) => (
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-hover overflow-hidden group"
-                >
-                  {post.image && (
-                    <div class="aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                      <img
-                        src={urlFor(post.image).width(400).height(225).url()}
-                        alt={post.title}
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {articles.map((post) => (
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group relative bg-surface-raised rounded-xl border border-edge overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/5"
+                  >
+                    <!-- Cover Image -->
+                    <div class="aspect-[16/9] bg-gradient-to-br from-emerald-500/10 to-teal-500/10 overflow-hidden relative">
+                      {post.image ? (
+                        <img
+                          src={urlFor(post.image).width(400).height(225).url()}
+                          alt={post.title}
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-emerald-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                      <!-- Type badge -->
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-emerald-500 text-white rounded-full shadow">
+                          Article
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  <div class="p-6">
-                    {post.source && (
-                      <span class="badge-gray text-xs mb-3">{post.source}</span>
-                    )}
-                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                      {post.title}
-                    </h3>
-                    {post.excerpt && (
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                        {post.excerpt}
-                      </p>
-                    )}
-                    {post.publishedAt && (
-                      <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
-                      </p>
-                    )}
-                  </div>
-                </a>
-              ))}
+                    <div class="p-4">
+                      {post.source && (
+                        <span class="text-xs text-ink-faint mb-2 block">{post.source}</span>
+                      )}
+                      <h3 class="font-display font-semibold text-ink text-sm mb-2 group-hover:text-emerald-500 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      {post.publishedAt && (
+                        <p class="text-xs text-ink-faint">
+                          {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      <!-- Podcasts -->
+      <!-- Podcasts Section -->
       {podcasts.length > 0 && (
-        <section class="section">
-          <div class="container">
-            <h2 class="section-title">Podcast Appearances</h2>
-            <p class="section-subtitle">Episodes I've been a guest on</p>
+        <section id="podcasts" class="section-dark py-16 md:py-20 relative overflow-hidden">
+          <div class="absolute inset-0 dot-pattern opacity-20"></div>
 
-            <div class="grid gap-4 max-w-4xl">
-              {podcasts.map((post: any) => (
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-hover p-6 flex flex-col md:flex-row gap-4 items-start"
-                >
-                  {post.image && (
-                    <div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                      <img
-                        src={urlFor(post.image).width(80).height(80).url()}
-                        alt={post.title}
-                        class="w-full h-full object-cover"
-                      />
+          <div class="container relative z-10">
+            <div class="max-w-6xl mx-auto">
+              <!-- Section Header -->
+              <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-display font-bold text-white">Podcast Appearances</h2>
+                  <p class="text-sm text-slate-400">{podcasts.length} {podcasts.length === 1 ? 'episode' : 'episodes'}</p>
+                </div>
+              </div>
+
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {podcasts.map((post) => (
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group relative bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-violet-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/10"
+                  >
+                    <!-- Cover Image -->
+                    <div class="aspect-[16/9] bg-gradient-to-br from-violet-500/20 to-purple-500/20 overflow-hidden relative">
+                      {post.image ? (
+                        <img
+                          src={urlFor(post.image).width(400).height(225).url()}
+                          alt={post.title}
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-violet-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                      <!-- Type badge -->
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-violet-500 text-white rounded-full shadow">
+                          Podcast
+                        </span>
+                      </div>
+                      <!-- Play button overlay -->
+                      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                        <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                          <svg class="w-5 h-5 text-violet-600 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div class="flex-grow">
-                    {post.source && (
-                      <span class="badge-purple text-xs mb-2">{post.source}</span>
-                    )}
-                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
-                      {post.title}
-                    </h3>
-                    {post.excerpt && (
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-                        {post.excerpt}
-                      </p>
-                    )}
-                    {post.publishedAt && (
-                      <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(post.publishedAt, { month: 'long', year: 'numeric' })}
-                      </p>
-                    )}
-                  </div>
-                  <div class="flex-shrink-0 text-blue-600 dark:text-blue-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </div>
-                </a>
-              ))}
+                    <!-- Content -->
+                    <div class="p-4">
+                      {post.source && (
+                        <span class="text-xs text-violet-300 mb-2 block">{post.source}</span>
+                      )}
+                      <h3 class="font-display font-semibold text-white text-sm mb-2 group-hover:text-violet-300 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      {post.publishedAt && (
+                        <p class="text-xs text-slate-500">
+                          {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      <!-- Interviews -->
+      <!-- Interviews Section -->
       {interviews.length > 0 && (
-        <section class="section bg-gray-50 dark:bg-gray-800/50">
+        <section id="interviews" class="section py-16 md:py-20">
           <div class="container">
-            <h2 class="section-title">Interviews</h2>
-            <p class="section-subtitle">Conversations and features</p>
+            <div class="max-w-6xl mx-auto">
+              <!-- Section Header -->
+              <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-display font-bold text-ink">Interviews</h2>
+                  <p class="text-sm text-ink-muted">{interviews.length} {interviews.length === 1 ? 'interview' : 'interviews'}</p>
+                </div>
+              </div>
 
-            <div class="grid md:grid-cols-2 gap-6 max-w-4xl">
-              {interviews.map((post: any) => (
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-hover p-6 group"
-                >
-                  {post.source && (
-                    <span class="badge-blue text-xs mb-3">{post.source}</span>
-                  )}
-                  <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {post.title}
-                  </h3>
-                  {post.excerpt && (
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                  )}
-                  {post.publishedAt && (
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      {formatDate(post.publishedAt, { month: 'long', year: 'numeric' })}
-                    </p>
-                  )}
-                </a>
-              ))}
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {interviews.map((post) => (
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group relative bg-surface-raised rounded-xl border border-edge overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5"
+                  >
+                    <!-- Cover area -->
+                    <div class="aspect-[16/9] bg-gradient-to-br from-blue-500/10 to-cyan-500/10 relative">
+                      {post.image ? (
+                        <img
+                          src={urlFor(post.image).width(400).height(225).url()}
+                          alt={post.title}
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-blue-500 text-white rounded-full shadow">
+                          Interview
+                        </span>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      {post.source && (
+                        <span class="text-xs text-ink-faint mb-2 block">{post.source}</span>
+                      )}
+                      <h3 class="font-display font-semibold text-ink text-sm mb-2 group-hover:text-blue-500 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      {post.publishedAt && (
+                        <p class="text-xs text-ink-faint">
+                          {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -187,62 +328,79 @@ const other = posts.filter((p) => !['article', 'podcast', 'interview'].includes(
 
       <!-- Other Content -->
       {other.length > 0 && (
-        <section class="section">
+        <section id="other" class="section-subtle py-16 md:py-20">
           <div class="container">
-            <h2 class="section-title">More Content</h2>
+            <div class="max-w-6xl mx-auto">
+              <!-- Section Header -->
+              <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-display font-bold text-ink">More Content</h2>
+                  <p class="text-sm text-ink-muted">{other.length} {other.length === 1 ? 'item' : 'items'}</p>
+                </div>
+              </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-              {other.map((post: any) => (
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-hover p-6 group"
-                >
-                  <div class="flex items-center gap-2 mb-3">
-                    {post.type && (
-                      <span class="badge-gray text-xs">{post.type}</span>
-                    )}
-                    {post.source && (
-                      <span class="text-xs text-gray-500 dark:text-gray-400">{post.source}</span>
-                    )}
-                  </div>
-                  <h3 class="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {post.title}
-                  </h3>
-                  {post.publishedAt && (
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
-                    </p>
-                  )}
-                </a>
-              ))}
+              <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {other.map((post) => (
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group bg-surface-raised rounded-xl border border-edge p-4 hover:border-accent/50 transition-all duration-300"
+                  >
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="px-2 py-0.5 text-xs font-medium bg-slate-500/10 text-slate-600 dark:text-slate-400 rounded">
+                        {post.type || 'Other'}
+                      </span>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink text-sm mb-2 group-hover:text-accent transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <div class="flex items-center justify-between">
+                      {post.publishedAt && (
+                        <p class="text-xs text-ink-faint">
+                          {formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                      {post.source && (
+                        <span class="text-xs text-ink-faint">{post.source}</span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       )}
     </>
   ) : (
-    <section class="section">
+    <section class="section py-20 md:py-28">
       <div class="container">
         <div class="card p-12 text-center max-w-2xl mx-auto">
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            Blog posts and external content will appear here once added to Sanity.
+          <div class="text-6xl mb-6">📝</div>
+          <h3 class="heading-3 mb-4">Content Coming Soon</h3>
+          <p class="text-ink-muted mb-8">
+            Blog posts and external content will appear here once added.
           </p>
           <div class="flex flex-wrap justify-center gap-4">
             <a
               href="https://twitter.com/FarisAziz12"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
+              class="btn-primary"
             >
-              Follow on Twitter
+              Follow on X
             </a>
             <a
               href="https://linkedin.com/in/farisaziz12"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
+              class="btn-secondary"
             >
               Connect on LinkedIn
             </a>
@@ -252,18 +410,43 @@ const other = posts.filter((p) => !['article', 'podcast', 'interview'].includes(
     </section>
   )}
 
-  <!-- CTA -->
-  <section class="section bg-blue-600 dark:bg-blue-700">
-    <div class="container text-center">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
-        Want me on your podcast?
-      </h2>
-      <p class="text-blue-100 mb-8 max-w-2xl mx-auto">
-        I love discussing React, payments, developer experience, and career growth. Let's have a conversation.
-      </p>
-      <a href="/invite" class="btn bg-white text-blue-600 hover:bg-blue-50">
-        Get in touch
-      </a>
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Available for podcasts & interviews
+        </div>
+
+        <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+          Want me on your podcast?
+        </h2>
+        <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
+          I love discussing React, payments, developer experience, and career growth. Let's have a conversation.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/invite"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+          >
+            Get in touch
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <a
+            href="/speaking"
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
+          >
+            View speaking page
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>

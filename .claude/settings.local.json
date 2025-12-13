@@ -19,7 +19,8 @@
       "Bash(pnpm tsc:*)",
       "Bash(npx tsc:*)",
       "Bash(cat:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(npx astro check)"
     ]
   }
 }

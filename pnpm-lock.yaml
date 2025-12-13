@@ -91,6 +91,9 @@ importers:
       astro:
         specifier: ^5.1.1
         version: 5.16.5(@types/node@25.0.0)(jiti@1.21.7)(rollup@4.53.3)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+      astro-portabletext:
+        specifier: ^0.12.0
+        version: 0.12.0(astro@5.16.5(@types/node@25.0.0)(jiti@1.21.7)(rollup@4.53.3)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2))
       groq:
         specifier: ^3.67.0
         version: 3.99.0
@@ -1960,9 +1963,17 @@ packages:
     resolution: {integrity: sha512-m3v2WwKQTNNk5BFZlUuPuCW0Zi6iDSpwrium4Ej5L2FHDXhFuwAyEMPXDrvwPvqjES/oJzcwmdKLMhYa44T9BQ==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+  '@portabletext/toolkit@4.0.0':
+    resolution: {integrity: sha512-Jj/QIy3vzZCNcxiUGM7KjGhUhyVjch+9pOzotWRARPNe07R6nbF/cRsKL70q5Xizf+6PVtFYwks4CSXKInC+wg==}
+    engines: {node: '>=20.19 <22 || >=22.12'}
+
   '@portabletext/types@2.0.15':
     resolution: {integrity: sha512-2e6i2gSQsrA/5OL5Gm4/9bxB9MNO73Fa47zj+0mT93xkoQUCGCWX5fZh1YBJ86hszaRYlqvqG08oULxvvPPp/Q==}
     engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
+
+  '@portabletext/types@3.0.1':
+    resolution: {integrity: sha512-Axessc2mZ6tjbD2qIZdTZIEfBtzJBe/1pzKF372cUar6ccUCfgXU4vaKgIbqB33mB6rI75omx9rrm+SgR4rIAA==}
+    engines: {node: '>=20.19 <22 || >=22.12'}
 
   '@rexxars/react-json-inspector@9.0.1':
     resolution: {integrity: sha512-4uZ4RnrVoOGOShIKKcPoF+qhwDCZJsPPqyoEoW/8HRdzNknN9Q2yhlbEgTX1lMZunF1fv7iHzAs+n1vgIgfg/g==}
@@ -2679,6 +2690,12 @@ packages:
   arrify@2.0.1:
     resolution: {integrity: sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==}
     engines: {node: '>=8'}
+
+  astro-portabletext@0.12.0:
+    resolution: {integrity: sha512-pm1yyNwHHWVFsFj6pDSeAlPBA48Mk99SnB38K1Zu7xdMB2+SDA3XdT+N2qGwD0tJuf7ZI1gpsr/RBZEL1eZshQ==}
+    engines: {node: '>=20.19 <22 || >=22.12'}
+    peerDependencies:
+      astro: '>=4.6.0'
 
   astro@5.16.5:
     resolution: {integrity: sha512-QeuM4xzTR0QuXFDNlGVW0BW7rcquKFIkylaPeM4ufii0/RRiPTYtwxDYVZ3KfiMRuuc+nbLD0214kMKTvz/yvQ==}
@@ -8499,7 +8516,13 @@ snapshots:
     dependencies:
       '@portabletext/types': 2.0.15
 
+  '@portabletext/toolkit@4.0.0':
+    dependencies:
+      '@portabletext/types': 3.0.1
+
   '@portabletext/types@2.0.15': {}
+
+  '@portabletext/types@3.0.1': {}
 
   '@rexxars/react-json-inspector@9.0.1(react@19.2.2)':
     dependencies:
@@ -9483,6 +9506,12 @@ snapshots:
   arrify@1.0.1: {}
 
   arrify@2.0.1: {}
+
+  astro-portabletext@0.12.0(astro@5.16.5(@types/node@25.0.0)(jiti@1.21.7)(rollup@4.53.3)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)):
+    dependencies:
+      '@portabletext/toolkit': 4.0.0
+      '@portabletext/types': 3.0.1
+      astro: 5.16.5(@types/node@25.0.0)(jiti@1.21.7)(rollup@4.53.3)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
 
   astro@5.16.5(@types/node@25.0.0)(jiti@1.21.7)(rollup@4.53.3)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2):
     dependencies:

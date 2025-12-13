@@ -45,13 +45,47 @@ export default defineType({
         {
           type: 'object',
           fields: [
-            { name: 'topic', title: 'Topic', type: 'string' },
-            { name: 'duration', title: 'Duration', type: 'string' },
+            { name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() },
+            { name: 'duration', title: 'Duration', type: 'string', description: 'e.g., "30 min", "1 hour"' },
+            {
+              name: 'description',
+              title: 'Description',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    { title: 'Normal', value: 'normal' },
+                    { title: 'H4', value: 'h4' },
+                  ],
+                  lists: [
+                    { title: 'Bullet', value: 'bullet' },
+                    { title: 'Number', value: 'number' },
+                  ],
+                  marks: {
+                    decorators: [
+                      { title: 'Bold', value: 'strong' },
+                      { title: 'Italic', value: 'em' },
+                      { title: 'Code', value: 'code' },
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: 'Link',
+                        fields: [{ name: 'href', type: 'url', title: 'URL' }],
+                      },
+                    ],
+                  },
+                },
+              ],
+              description: 'Detailed description of this agenda item (shown when expanded)',
+            },
           ],
           preview: {
-            select: { topic: 'topic', duration: 'duration' },
-            prepare({ topic, duration }) {
-              return { title: topic, subtitle: duration };
+            select: { title: 'title', duration: 'duration' },
+            prepare({ title, duration }) {
+              return { title: title || 'Untitled', subtitle: duration };
             },
           },
         },

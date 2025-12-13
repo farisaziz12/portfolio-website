@@ -89,6 +89,13 @@ export const eventBySlugQuery = groq`
   }
 `;
 
+// All talk slugs (for static path generation)
+export const allTalkSlugsQuery = groq`
+  *[_type == "talk" && defined(slug.current)] {
+    "slug": slug.current
+  }
+`;
+
 // Talks - only bookable current versions (or standalone talks)
 export const allTalksQuery = groq`
   *[_type == "talk" && isBookable == true && (isCurrentVersion == true || !defined(parentTalk))] | order(title asc) {
@@ -225,8 +232,32 @@ export const allWorkshopsQuery = groq`
 
 export const workshopBySlugQuery = groq`
   *[_type == "workshop" && slug.current == $slug][0] {
-    ...,
-    "events": *[_type == "event" && type == "workshop" && title match ^.title] | order(date desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    duration,
+    level,
+    technologies,
+    prerequisites,
+    outcomes,
+    isBookable,
+    agenda[] {
+      _key,
+      title,
+      "topic": title,
+      duration,
+      description
+    },
+    "upcomingEvents": *[_type == "event" && type == "workshop" && references(^._id) && date >= now()] | order(date asc) {
+      _id,
+      title,
+      "slug": slug.current,
+      date,
+      conference,
+      location
+    },
+    "pastEvents": *[_type == "event" && type == "workshop" && references(^._id) && date < now()] | order(date desc) {
       _id,
       title,
       "slug": slug.current,
@@ -324,28 +355,35 @@ export const featuredMediaQuery = groq`
 
 // Testimonials
 export const allTestimonialsQuery = groq`
-  *[_type == "testimonial"] | order(_createdAt desc) {
+  *[_type == "testimonial"] | order(date desc, _createdAt desc) {
     _id,
+    type,
     quote,
     author,
     role,
     company,
     image,
+    rating,
     source,
     context,
+    date,
     featured
   }
 `;
 
 export const featuredTestimonialsQuery = groq`
-  *[_type == "testimonial" && featured == true] | order(_createdAt desc)[0...6] {
+  *[_type == "testimonial" && featured == true] | order(date desc, _createdAt desc)[0...6] {
     _id,
+    type,
     quote,
     author,
     role,
     company,
     image,
-    context
+    rating,
+    source,
+    context,
+    date
   }
 `;
 
@@ -402,6 +440,40 @@ export const featuredSocialPostsQuery = groq`
   }
 `;
 
+// Social posts for a specific talk (including all versions in the talk family)
+export const socialPostsForTalkQuery = groq`
+  *[_type == "socialPost" && defined(relatedTalk._ref) && (
+    relatedTalk._ref == $talkId ||
+    relatedTalk._ref in *[_type == "talk" && parentTalk._ref == $talkId]._id ||
+    relatedTalk._ref == *[_type == "talk" && _id == $talkId][0].parentTalk._ref
+  )] | order(postDate desc) {
+    _id,
+    url,
+    platform,
+    author,
+    authorHandle,
+    authorImage,
+    authorRole,
+    content,
+    postDate
+  }
+`;
+
+// Social posts for a specific event
+export const socialPostsForEventQuery = groq`
+  *[_type == "socialPost" && defined(relatedEvent._ref) && relatedEvent._ref == $eventId] | order(postDate desc) {
+    _id,
+    url,
+    platform,
+    author,
+    authorHandle,
+    authorImage,
+    authorRole,
+    content,
+    postDate
+  }
+`;
+
 // External Posts
 export const externalPostsQuery = groq`
   *[_type == "externalPost"] | order(publishedAt desc) {
@@ -419,7 +491,69 @@ export const externalPostsQuery = groq`
 // Pages
 export const pageQuery = groq`
   *[_type == "page" && identifier == $identifier][0] {
-    ...
+    _id,
+    identifier,
+    title,
+    subtitle,
+    content,
+    heroImage,
+    seo,
+    // About page specific fields
+    aboutHero {
+      greeting,
+      name,
+      role,
+      location,
+      bio,
+      specialties,
+      badges[] {
+        icon,
+        label
+      },
+      linkedinUrl
+    },
+    aboutWhatIDo {
+      title,
+      subtitle,
+      activities[] {
+        _key,
+        title,
+        description,
+        icon,
+        tags,
+        featured
+      }
+    },
+    aboutJourney {
+      title,
+      subtitle,
+      milestones[] {
+        _key,
+        title,
+        description,
+        emoji,
+        fullWidth
+      }
+    },
+    aboutSkills {
+      title,
+      subtitle,
+      categories[] {
+        _key,
+        category,
+        icon,
+        items
+      }
+    },
+    aboutCta {
+      statusText,
+      title,
+      description,
+      primaryCtaText,
+      primaryCtaUrl,
+      secondaryCtaText,
+      secondaryCtaUrl
+    }
   }
 `;
 
