@@ -8,7 +8,7 @@ import EventsFilter from '../../components/islands/EventsFilter';
 import SplitText from '../../components/animations/SplitText.astro';
 import BlurText from '../../components/animations/BlurText.astro';
 import Aurora from '../../components/animations/Aurora.astro';
-import CountUp from '../../components/animations/CountUp.astro';
+import CountUp from '../../components/islands/CountUp';
 import ScrollReveal from '../../components/animations/ScrollReveal.astro';
 import SpotlightCard from '../../components/animations/SpotlightCard.astro';
 
@@ -213,13 +213,13 @@ function getCountryFlag(countryName?: string): string {
               <div class="grid grid-cols-2 gap-6">
                 <div class="text-center">
                   <div class="text-3xl font-display font-bold text-accent">
-                    <CountUp end={events.length} duration={2} delay={1} />+
+                    <CountUp client:load end={events.length} duration={2} delay={1} suffix="+" />
                   </div>
                   <div class="text-xs text-ink-faint uppercase tracking-wider">Events</div>
                 </div>
                 <div class="text-center">
                   <div class="text-3xl font-display font-bold text-violet-500">
-                    <CountUp end={uniqueCountries.length} duration={2} delay={1.2} />+
+                    <CountUp client:load end={uniqueCountries.length} duration={2} delay={1.2} suffix="+" />
                   </div>
                   <div class="text-xs text-ink-faint uppercase tracking-wider">Countries</div>
                 </div>
@@ -251,7 +251,7 @@ function getCountryFlag(countryName?: string): string {
                   </div>
                 </div>
                 <div class="stat-card__value text-accent">
-                  <CountUp end={events.length} duration={2.5} delay={0.3} />+
+                  <CountUp client:load end={events.length} duration={2.5} delay={0.3} suffix="+" />
                 </div>
                 <div class="stat-card__label">Total Events</div>
               </div>
@@ -270,7 +270,7 @@ function getCountryFlag(countryName?: string): string {
                   </div>
                 </div>
                 <div class="stat-card__value text-violet-500">
-                  <CountUp end={uniqueCountries.length} duration={2.5} delay={0.4} />+
+                  <CountUp client:load end={uniqueCountries.length} duration={2.5} delay={0.4} suffix="+" />
                 </div>
                 <div class="stat-card__label">Countries</div>
               </div>
@@ -290,7 +290,7 @@ function getCountryFlag(countryName?: string): string {
                   </div>
                 </div>
                 <div class="stat-card__value text-pink-500">
-                  <CountUp end={uniqueCities.length} duration={2.5} delay={0.5} />+
+                  <CountUp client:load end={uniqueCities.length} duration={2.5} delay={0.5} suffix="+" />
                 </div>
                 <div class="stat-card__label">Cities</div>
               </div>
@@ -309,7 +309,7 @@ function getCountryFlag(countryName?: string): string {
                   </div>
                 </div>
                 <div class="stat-card__value text-emerald-500">
-                  <CountUp end={videosCount} duration={2.5} delay={0.6} />
+                  <CountUp client:load end={videosCount} duration={2.5} delay={0.6} />
                 </div>
                 <div class="stat-card__label">Videos</div>
               </div>
