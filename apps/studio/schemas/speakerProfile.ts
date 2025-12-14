@@ -123,7 +123,7 @@ export default defineType({
       name: 'travelBase',
       title: 'Travel Base',
       type: 'string',
-      initialValue: 'Zurich, Switzerland',
+      initialValue: 'Geneva, Switzerland',
     }),
     defineField({
       name: 'socialLinks',

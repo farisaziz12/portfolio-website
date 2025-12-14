@@ -36,7 +36,7 @@ interface Props {
 const siteSettings = await sanityFetch<SiteSettings | null>(siteSettingsQuery).catch(() => null);
 
 // Fallback defaults if Sanity settings aren't configured
-const defaultDescription = siteSettings?.metaDescription || siteSettings?.defaultMetaDescription || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Zurich.';
+const defaultDescription = siteSettings?.metaDescription || siteSettings?.defaultMetaDescription || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Geneva.';
 const defaultImage = siteSettings?.ogImage
   ? urlFor(siteSettings.ogImage).width(1200).height(630).url()
   : '/og-default.jpg';
