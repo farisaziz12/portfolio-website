@@ -500,7 +500,7 @@ function LinkedInRec({ testimonial, imageUrl, index }: { testimonial: Testimonia
         </div>
       )}
 
-      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-4">
+      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-4 whitespace-pre-line">
         "{testimonial.quote}"
       </blockquote>
 
@@ -705,7 +705,7 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
         )}
       </div>
 
-      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-5">
+      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-5 whitespace-pre-line">
         "{testimonial.quote}"
       </blockquote>
 

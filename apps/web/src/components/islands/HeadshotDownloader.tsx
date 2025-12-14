@@ -18,10 +18,9 @@ export default function HeadshotDownloader({
 }: HeadshotDownloaderProps) {
   const [downloading, setDownloading] = useState<string | null>(null);
 
-  // Get high-res for mobile (Large)
   const highRes = resolutions.find(r => r.name === 'Large') || resolutions[resolutions.length - 1];
 
-  const handleDownload = async (res: ResolutionOption) => {
+  const handleDesktopDownload = async (res: ResolutionOption) => {
     setDownloading(res.name);
 
     try {
@@ -45,29 +44,18 @@ export default function HeadshotDownloader({
 
   return (
     <>
-      {/* Mobile: Single high-res download */}
-      <button
-        onClick={() => handleDownload(highRes)}
-        disabled={downloading === highRes.name}
-        className="flex md:hidden items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-lg active:opacity-90 transition-opacity disabled:opacity-70"
+      {/* Mobile: Open high-res in new tab */}
+      <a
+        href={highRes.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex md:hidden items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-lg active:opacity-90"
       >
-        {downloading === highRes.name ? (
-          <>
-            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-            </svg>
-            Saving...
-          </>
-        ) : (
-          <>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            Save Photo
-          </>
-        )}
-      </button>
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Save Photo
+      </a>
 
       {/* Desktop: Size options */}
       <div className="hidden md:flex items-center justify-between gap-2">
@@ -81,7 +69,7 @@ export default function HeadshotDownloader({
           {resolutions.map((res) => (
             <button
               key={res.name}
-              onClick={() => handleDownload(res)}
+              onClick={() => handleDesktopDownload(res)}
               title={res.tooltip}
               className={`
                 w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg border transition-all
