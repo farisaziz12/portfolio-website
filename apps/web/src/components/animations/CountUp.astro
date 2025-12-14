@@ -45,20 +45,21 @@ const decimalPlaces = decimals !== undefined ? decimals : (end % 1 !== 0 ? (end.
 
 <script>
   // Simple self-initializing script for CountUp elements
-  const elements = document.querySelectorAll('.count-up[data-count-end]');
+  const elements = document.querySelectorAll<HTMLElement>('.count-up[data-count-end]');
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting && !entry.target.dataset.animated) {
-        animateElement(entry.target as HTMLElement);
-        entry.target.dataset.animated = 'true';
-        observer.unobserve(entry.target);
+      const target = entry.target as HTMLElement;
+      if (entry.isIntersecting && !target.dataset.animated) {
+        animateElement(target);
+        target.dataset.animated = 'true';
+        observer.unobserve(target);
       }
     });
   }, { threshold: 0.1 });
 
   function animateElement(el: HTMLElement) {
-    const valueEl = el.querySelector('.count-value');
+    const valueEl = el.querySelector('.count-value') as HTMLElement | null;
     if (!valueEl) return;
 
     const end = parseFloat(el.dataset.countEnd || '0');
@@ -74,9 +75,11 @@ const decimalPlaces = decimals !== undefined ? decimals : (end % 1 !== 0 ? (end.
       const eased = 1 - Math.pow(2, -10 * progress);
       const value = eased * end;
 
-      valueEl.textContent = decimals > 0
-        ? value.toFixed(decimals)
-        : Math.floor(value).toLocaleString();
+      if (valueEl) {
+        valueEl.textContent = decimals > 0
+          ? value.toFixed(decimals)
+          : Math.floor(value).toLocaleString();
+      }
 
       if (progress < 1) {
         requestAnimationFrame(step);
