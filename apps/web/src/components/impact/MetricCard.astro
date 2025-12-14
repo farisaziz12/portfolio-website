@@ -3,7 +3,7 @@
  * MetricCard - Individual metric card for grids
  * Smaller than hero cards, used in category grids
  */
-import CountUp from '../animations/CountUp.astro';
+import CountUp from '../islands/CountUp';
 
 interface Category {
   _id: string;
@@ -109,10 +109,11 @@ const hasProof = metric.proofItems && metric.proofItems.length > 0;
       <span class={`metric-card__value ${colorClass}`}>
         {metric.prefix && <span class="metric-card__prefix">{metric.prefix}</span>}
         <CountUp
+          client:visible
           end={metric.value || 0}
           duration={2}
           delay={0.3}
-          class="metric-card__number"
+          className="metric-card__number"
         />
         {metric.suffix && <span class="metric-card__suffix">{metric.suffix}</span>}
       </span>

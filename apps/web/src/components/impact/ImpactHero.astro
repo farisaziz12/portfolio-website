@@ -4,7 +4,7 @@
  * Shows 3-6 large animated metrics for maximum impact
  * Updated to use impactMetricV2 schema
  */
-import CountUp from '../animations/CountUp.astro';
+import CountUp from '../islands/CountUp';
 import SpotlightCard from '../animations/SpotlightCard.astro';
 import ScrollReveal from '../animations/ScrollReveal.astro';
 
@@ -133,10 +133,11 @@ function getSpotlightColors(color?: string): { spotlight: string; border: string
                   <span class={`impact-hero__value ${highlightGradient}`}>
                     {displayPrefix && <span class="impact-hero__prefix">{displayPrefix}</span>}
                     <CountUp
+                      client:visible
                       end={formatted.display}
                       duration={2}
                       delay={0.5 + index * 0.2}
-                      class="impact-hero__number"
+                      className="impact-hero__number"
                     />
                     {formatted.suffix && <span class="impact-hero__suffix">{formatted.suffix}</span>}
                   </span>

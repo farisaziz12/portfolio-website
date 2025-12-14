@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Aurora from '../components/animations/Aurora.astro';
-import CountUp from '../components/animations/CountUp.astro';
+import CountUp from '../components/islands/CountUp';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import SpotlightCard from '../components/animations/SpotlightCard.astro';
 import TiltCard from '../components/animations/TiltCard.astro';
@@ -230,15 +230,15 @@ const bios = [
         {stats && (
           <div class="flex flex-wrap gap-6 mb-10">
             <div class="flex items-center gap-2">
-              <CountUp end={stats.totalEvents} class="text-3xl font-display font-bold text-accent" suffix="+" delay={0.8} duration={2} />
+              <CountUp client:visible end={stats.totalEvents} className="text-3xl font-display font-bold text-accent" suffix="+" delay={0.8} duration={2} />
               <span class="text-ink-muted text-sm uppercase tracking-wider">Events</span>
             </div>
             <div class="flex items-center gap-2">
-              <CountUp end={stats.countries} class="text-3xl font-display font-bold text-violet-500" suffix="+" delay={1} duration={2} />
+              <CountUp client:visible end={stats.countries} className="text-3xl font-display font-bold text-violet-500" suffix="+" delay={1} duration={2} />
               <span class="text-ink-muted text-sm uppercase tracking-wider">Countries</span>
             </div>
             <div class="flex items-center gap-2">
-              <CountUp end={stats.cities} class="text-3xl font-display font-bold text-pink-500" suffix="+" delay={1.2} duration={2} />
+              <CountUp client:visible end={stats.cities} className="text-3xl font-display font-bold text-pink-500" suffix="+" delay={1.2} duration={2} />
               <span class="text-ink-muted text-sm uppercase tracking-wider">Cities</span>
             </div>
           </div>
