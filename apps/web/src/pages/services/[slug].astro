@@ -1,0 +1,431 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ScrollReveal from '../../components/animations/ScrollReveal.astro';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import {
+  allServiceLandingPagesQuery,
+  serviceLandingPageBySlugQuery,
+} from '../../lib/sanity/queries';
+
+// Types
+interface ServiceLandingPage {
+  _id: string;
+  title: string;
+  slug: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string[];
+  ogImage?: any;
+  heroTagline?: string;
+  heroHeadline: string;
+  heroSubheadline?: string;
+  heroPrimaryCta?: { text: string; url: string };
+  heroSecondaryCta?: { text: string; url: string };
+  problemTitle?: string;
+  painPoints?: Array<{ _key: string; title: string; description: string }>;
+  expertiseTitle?: string;
+  expertiseAreas?: Array<{ _key: string; title: string; description: string; icon?: string }>;
+  servicesTitle?: string;
+  serviceOfferings?: Array<{
+    _key: string;
+    name: string;
+    bestFor?: string;
+    includes?: string[];
+    outcome?: string;
+    highlightColor?: string;
+  }>;
+  audienceTitle?: string;
+  personas?: Array<{ _key: string; title: string; description: string; icon?: string }>;
+  proofTitle?: string;
+  stats?: Array<{ _key: string; value: string; label: string }>;
+  testimonials?: Array<{
+    _id: string;
+    quote: string;
+    author: string;
+    role?: string;
+    company?: string;
+    avatar?: any;
+  }>;
+  faqTitle?: string;
+  faqs?: Array<{ _key: string; question: string; answer: string }>;
+  ctaHeadline?: string;
+  ctaSubheadline?: string;
+  ctaButtonText?: string;
+  ctaButtonUrl?: string;
+  ctaSecondaryText?: string;
+}
+
+// Generate static paths
+export async function getStaticPaths() {
+  const pages = await sanityFetch<Array<{ slug: string }>>(allServiceLandingPagesQuery);
+  return pages.map((page) => ({
+    params: { slug: page.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const page = await sanityFetch<ServiceLandingPage>(serviceLandingPageBySlugQuery, { slug });
+
+if (!page) {
+  return Astro.redirect('/404');
+}
+
+// Color classes for service cards
+const colorClasses: Record<string, { bg: string; border: string; text: string }> = {
+  indigo: { bg: 'from-indigo-500/20 to-indigo-600/10', border: 'border-indigo-500/30', text: 'text-indigo-400' },
+  violet: { bg: 'from-violet-500/20 to-violet-600/10', border: 'border-violet-500/30', text: 'text-violet-400' },
+  pink: { bg: 'from-pink-500/20 to-pink-600/10', border: 'border-pink-500/30', text: 'text-pink-400' },
+  emerald: { bg: 'from-emerald-500/20 to-emerald-600/10', border: 'border-emerald-500/30', text: 'text-emerald-400' },
+};
+---
+
+<BaseLayout
+  title={page.seoTitle || page.heroHeadline}
+  description={page.seoDescription || page.heroSubheadline}
+  pathname={`/services/${page.slug}`}
+  image={page.ogImage ? urlFor(page.ogImage).width(1200).height(630).url() : undefined}
+>
+  <!-- Hero Section -->
+  <section class="relative min-h-[70vh] flex items-center overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-50"></div>
+    <div class="absolute inset-0 gradient-mesh"></div>
+
+    <div class="container relative z-10 py-20 md:py-32">
+      <div class="max-w-4xl">
+        {page.heroTagline && (
+          <ScrollReveal animation="fade-up">
+            <p class="text-accent font-mono text-sm tracking-wider uppercase mb-4">
+              {page.heroTagline}
+            </p>
+          </ScrollReveal>
+        )}
+
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-ink leading-tight mb-6">
+            {page.heroHeadline}
+          </h1>
+        </ScrollReveal>
+
+        {page.heroSubheadline && (
+          <ScrollReveal animation="fade-up" delay={0.2}>
+            <p class="text-lead max-w-3xl mb-10">
+              {page.heroSubheadline}
+            </p>
+          </ScrollReveal>
+        )}
+
+        <ScrollReveal animation="fade-up" delay={0.3}>
+          <div class="flex flex-wrap gap-4">
+            {page.heroPrimaryCta && (
+              <a href={page.heroPrimaryCta.url} class="btn-primary text-lg px-8 py-4 group glow">
+                {page.heroPrimaryCta.text}
+                <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            )}
+            {page.heroSecondaryCta && (
+              <a href={page.heroSecondaryCta.url} class="btn-secondary text-lg px-8 py-4">
+                {page.heroSecondaryCta.text}
+              </a>
+            )}
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  {page.painPoints && page.painPoints.length > 0 && (
+    <section class="section-subtle py-20 md:py-28">
+      <div class="container">
+        <div class="max-w-4xl mx-auto">
+          {page.problemTitle && (
+            <ScrollReveal animation="fade-up">
+              <h2 class="heading-2 text-center mb-12">{page.problemTitle}</h2>
+            </ScrollReveal>
+          )}
+
+          <div class="space-y-6">
+            {page.painPoints.map((point, index) => (
+              <ScrollReveal animation="fade-up" delay={index * 0.1}>
+                <div class="card p-8 border-l-4 border-l-red-500/50">
+                  <h3 class="font-display font-bold text-xl text-ink mb-3">{point.title}</h3>
+                  <p class="text-ink-muted leading-relaxed">{point.description}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Expertise Section -->
+  {page.expertiseAreas && page.expertiseAreas.length > 0 && (
+    <section class="section py-20 md:py-28">
+      <div class="container">
+        <div class="text-center mb-16">
+          {page.expertiseTitle && (
+            <ScrollReveal animation="fade-up">
+              <h2 class="heading-2 mb-4">{page.expertiseTitle}</h2>
+            </ScrollReveal>
+          )}
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {page.expertiseAreas.map((area, index) => (
+            <ScrollReveal animation="fade-up" delay={index * 0.1}>
+              <div class="card p-8 h-full hover:border-accent/30 transition-all duration-300">
+                {area.icon && (
+                  <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-violet-500/20 flex items-center justify-center mb-6">
+                    <span class="text-2xl">{area.icon}</span>
+                  </div>
+                )}
+                <h3 class="font-display font-bold text-lg text-ink mb-3">{area.title}</h3>
+                <p class="text-ink-muted text-sm leading-relaxed">{area.description}</p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Services Section -->
+  {page.serviceOfferings && page.serviceOfferings.length > 0 && (
+    <section class="section-dark py-20 md:py-28 relative overflow-hidden">
+      <div class="absolute inset-0 dot-pattern opacity-20"></div>
+
+      <div class="container relative z-10">
+        <div class="text-center mb-16">
+          {page.servicesTitle && (
+            <ScrollReveal animation="fade-up">
+              <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">
+                {page.servicesTitle}
+              </h2>
+            </ScrollReveal>
+          )}
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {page.serviceOfferings.map((service, index) => {
+            const colors = colorClasses[service.highlightColor || 'indigo'];
+            return (
+              <ScrollReveal animation="fade-up" delay={index * 0.1}>
+                <div class={`bg-gradient-to-br ${colors.bg} backdrop-blur-sm rounded-2xl p-8 border ${colors.border} h-full`}>
+                  <h3 class="font-display font-bold text-xl text-white mb-2">{service.name}</h3>
+                  {service.bestFor && (
+                    <p class={`text-sm ${colors.text} mb-4`}>Best for: {service.bestFor}</p>
+                  )}
+                  {service.includes && service.includes.length > 0 && (
+                    <ul class="space-y-2 mb-6">
+                      {service.includes.map((item) => (
+                        <li class="flex items-start gap-2 text-slate-300 text-sm">
+                          <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {service.outcome && (
+                    <div class="pt-4 border-t border-white/10">
+                      <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Outcome</p>
+                      <p class="text-white font-medium">{service.outcome}</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollReveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Audience Section -->
+  {page.personas && page.personas.length > 0 && (
+    <section class="section py-20 md:py-28">
+      <div class="container">
+        <div class="text-center mb-16">
+          {page.audienceTitle && (
+            <ScrollReveal animation="fade-up">
+              <h2 class="heading-2 mb-4">{page.audienceTitle}</h2>
+            </ScrollReveal>
+          )}
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {page.personas.map((persona, index) => (
+            <ScrollReveal animation="fade-up" delay={index * 0.1}>
+              <div class="card p-8">
+                <div class="flex items-center gap-4 mb-4">
+                  {persona.icon && <span class="text-3xl">{persona.icon}</span>}
+                  <h3 class="font-display font-bold text-lg text-ink">{persona.title}</h3>
+                </div>
+                <p class="text-ink-muted leading-relaxed">{persona.description}</p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Social Proof Section -->
+  {(page.stats && page.stats.length > 0) && (
+    <section class="section-subtle py-20 md:py-28">
+      <div class="container">
+        <div class="text-center mb-16">
+          {page.proofTitle && (
+            <ScrollReveal animation="fade-up">
+              <h2 class="heading-2 mb-4">{page.proofTitle}</h2>
+            </ScrollReveal>
+          )}
+        </div>
+
+        {page.stats && page.stats.length > 0 && (
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
+            {page.stats.map((stat, index) => (
+              <ScrollReveal animation="fade-up" delay={index * 0.1}>
+                <div class="text-center">
+                  <p class="text-3xl md:text-4xl font-display font-bold text-accent mb-2">{stat.value}</p>
+                  <p class="text-ink-muted text-sm">{stat.label}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+
+        {page.testimonials && page.testimonials.length > 0 && (
+          <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {page.testimonials.map((testimonial, index) => (
+              <ScrollReveal animation="fade-up" delay={index * 0.1}>
+                <div class="card p-8">
+                  <blockquote class="text-ink-muted italic mb-6">"{testimonial.quote}"</blockquote>
+                  <div class="flex items-center gap-4">
+                    {testimonial.avatar && (
+                      <img
+                        src={urlFor(testimonial.avatar).width(80).height(80).url()}
+                        alt={testimonial.author}
+                        class="w-12 h-12 rounded-full object-cover"
+                      />
+                    )}
+                    <div>
+                      <p class="font-semibold text-ink">{testimonial.author}</p>
+                      {(testimonial.role || testimonial.company) && (
+                        <p class="text-ink-muted text-sm">
+                          {testimonial.role}{testimonial.role && testimonial.company && ' at '}{testimonial.company}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- FAQ Section -->
+  {page.faqs && page.faqs.length > 0 && (
+    <section class="section py-20 md:py-28">
+      <div class="container">
+        <div class="max-w-3xl mx-auto">
+          <div class="text-center mb-12">
+            {page.faqTitle && (
+              <ScrollReveal animation="fade-up">
+                <h2 class="heading-2 mb-4">{page.faqTitle || 'Frequently Asked Questions'}</h2>
+              </ScrollReveal>
+            )}
+          </div>
+
+          <div class="space-y-4">
+            {page.faqs.map((faq, index) => (
+              <ScrollReveal animation="fade-up" delay={index * 0.05}>
+                <details class="group card">
+                  <summary class="flex justify-between items-center cursor-pointer p-6 font-display font-semibold text-ink">
+                    {faq.question}
+                    <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div class="px-6 pb-6 text-ink-muted leading-relaxed">
+                    {faq.answer}
+                  </div>
+                </details>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
+    <div class="absolute inset-0 grid-pattern opacity-10"></div>
+
+    <div class="container relative z-10 py-24 md:py-32">
+      <div class="max-w-3xl mx-auto text-center">
+        {page.ctaHeadline && (
+          <ScrollReveal animation="fade-up">
+            <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-6">
+              {page.ctaHeadline}
+            </h2>
+          </ScrollReveal>
+        )}
+
+        {page.ctaSubheadline && (
+          <ScrollReveal animation="fade-up" delay={0.1}>
+            <p class="text-white/80 text-xl mb-10">
+              {page.ctaSubheadline}
+            </p>
+          </ScrollReveal>
+        )}
+
+        <ScrollReveal animation="fade-up" delay={0.2}>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            {page.ctaButtonUrl && (
+              <a
+                href={page.ctaButtonUrl}
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
+              >
+                {page.ctaButtonText || 'Get Started'}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            )}
+          </div>
+        </ScrollReveal>
+
+        {page.ctaSecondaryText && (
+          <ScrollReveal animation="fade-up" delay={0.3}>
+            <p class="text-white/60 mt-6">{page.ctaSecondaryText}</p>
+          </ScrollReveal>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": page.heroHeadline,
+    "description": page.seoDescription || page.heroSubheadline,
+    "provider": {
+      "@type": "Person",
+      "name": "Faris Aziz",
+      "url": "https://farisaziz.com"
+    },
+    "areaServed": "Worldwide",
+    "url": `https://farisaziz.com/services/${page.slug}`
+  })} />
+</BaseLayout>

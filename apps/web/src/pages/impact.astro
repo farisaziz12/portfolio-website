@@ -1,17 +1,78 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ImpactSection from '../components/impact/ImpactSection.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import Aurora from '../components/animations/Aurora.astro';
+import ImpactExplorer from '../components/islands/ImpactExplorer';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { impactPageQuery, allImpactMetricsV2Query } from '../lib/sanity/queries';
+import type { ImpactPageSettings, ImpactMetricV2, ImpactDomain, ImpactLens } from '../types/impact';
+
+// Fetch page settings and metrics
+const pageSettings = await sanityFetch<ImpactPageSettings | null>(impactPageQuery).catch(
+  () => null
+);
+const allMetrics = await sanityFetch<ImpactMetricV2[]>(allImpactMetricsV2Query).catch(() => []);
+
+// Pre-process image URLs for proof items (since urlFor can't run in React)
+const imageUrls: Record<string, string> = {};
+allMetrics.forEach((metric) => {
+  if (metric.proofBlock?.items) {
+    metric.proofBlock.items.forEach((item, idx) => {
+      if (item.image?.asset) {
+        const key = `${metric._id}-proof-${idx}`;
+        imageUrls[key] = urlFor(item.image).width(400).url();
+      }
+    });
+  }
+});
+
+// Default values
+const heroHeadline = pageSettings?.heroHeadline || 'Impact by the Numbers';
+const heroSubheadline =
+  pageSettings?.heroSubheadline ||
+  'Real results from community building, engineering leadership, and public speaking. Every number backed by data.';
+const heroTagline = pageSettings?.heroTagline || 'Measurable Results';
+const defaultDomain: ImpactDomain = pageSettings?.defaultDomain || 'all';
+const defaultLens: ImpactLens = pageSettings?.defaultLens || 'outcomes';
+const highlightStrip = pageSettings?.highlightStripMetrics || [];
+
+// SEO
+const seoTitle = pageSettings?.seoTitle || `${heroHeadline} | Faris Aziz`;
+const seoDescription =
+  pageSettings?.seoDescription ||
+  'Measurable results from community building, engineering leadership, and public speaking. Real numbers, real impact.';
+
+// JSON-LD structured data
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: heroHeadline,
+  description: heroSubheadline,
+  numberOfItems: allMetrics.length,
+  itemListElement: allMetrics.slice(0, 10).map((metric, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'CreativeWork',
+      name: `${metric.headlineNumber} ${metric.label}`,
+      description: metric.contextNote || metric.story,
+    },
+  })),
+};
 ---
 
-<BaseLayout
-  title="Impact by the Numbers | Faris Aziz"
-  description="Measurable results from community building, engineering leadership, and public speaking. Real numbers, real impact."
->
+<BaseLayout title={seoTitle} description={seoDescription}>
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <!-- Hero Section -->
   <section class="relative overflow-hidden">
-    <Aurora class="opacity-30" colors={['#10b981', '#6366f1', '#8b5cf6']} speed="slow" blur={100} />
+    <Aurora
+      class="opacity-30"
+      colors={['#10b981', '#6366f1', '#8b5cf6']}
+      speed="slow"
+      blur={100}
+    />
 
     <div class="container relative z-10 pt-24 pb-12 md:pt-32 md:pb-16">
       <div class="max-w-3xl mx-auto text-center">
@@ -24,48 +85,76 @@ import Aurora from '../components/animations/Aurora.astro';
                 <div class="terminal__dot terminal__dot--yellow"></div>
                 <div class="terminal__dot terminal__dot--green"></div>
               </div>
-              <span class="terminal__title">metrics.sh</span>
+              <span class="terminal__title">impact.sh</span>
             </div>
             <div class="terminal__body">
               <span class="terminal__prompt">$</span>
-              <span class="terminal__command"> show --impact --all</span>
-              <div class="terminal__output">Loading results...</div>
+              <span class="terminal__command"> show --impact --interactive</span>
+              <div class="terminal__output">Loading explorer...</div>
             </div>
           </div>
         </ScrollReveal>
 
+        <ScrollReveal animation="fade-up" delay={0.05}>
+          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">
+            {heroTagline}
+          </p>
+        </ScrollReveal>
+
         <ScrollReveal animation="fade-up" delay={0.1}>
           <h1 class="text-4xl md:text-6xl font-display font-bold text-ink mb-6">
-            Impact by the
-            <span class="bg-gradient-to-r from-emerald-500 via-accent to-violet-500 bg-clip-text text-transparent">
-              Numbers
+            {heroHeadline.split(' ').slice(0, -1).join(' ')}
+            <span
+              class="bg-gradient-to-r from-emerald-500 via-accent to-violet-500 bg-clip-text text-transparent"
+            >
+              {' '}{heroHeadline.split(' ').slice(-1)[0]}
             </span>
           </h1>
         </ScrollReveal>
 
         <ScrollReveal animation="blur" delay={0.2}>
           <p class="text-xl text-ink-muted max-w-2xl mx-auto">
-            Real results from years of community building, engineering leadership, and public speaking.
-            Every number backed by data.
+            {heroSubheadline}
           </p>
         </ScrollReveal>
       </div>
     </div>
   </section>
 
-  <!-- Full Impact Section -->
-  <ImpactSection variant="full" showSponsors={true} />
+  <!-- Interactive Impact Explorer -->
+  <section class="relative py-12 md:py-16">
+    <div class="container">
+      <ImpactExplorer
+        client:load
+        metrics={allMetrics}
+        highlightStrip={highlightStrip}
+        defaultDomain={defaultDomain}
+        defaultLens={defaultLens}
+        imageUrls={imageUrls}
+      />
+    </div>
+  </section>
 
   <!-- CTA Section -->
   <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-accent to-violet-600"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-accent to-violet-600"
+    >
+    </div>
     <div class="absolute inset-0 grid-pattern opacity-10"></div>
-    <Aurora class="opacity-20" colors={['#ffffff', '#e0e7ff', '#c7d2fe']} speed="slow" blur={120} />
+    <Aurora
+      class="opacity-20"
+      colors={['#ffffff', '#e0e7ff', '#c7d2fe']}
+      speed="slow"
+      blur={120}
+    />
 
     <div class="container relative z-10 py-24 md:py-32">
       <div class="max-w-4xl mx-auto text-center">
         <ScrollReveal animation="fade-up">
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
+          <div
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8"
+          >
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             Ready to create impact together?
           </div>
@@ -80,8 +169,8 @@ import Aurora from '../components/animations/Aurora.astro';
 
         <ScrollReveal animation="blur" delay={0.2}>
           <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-            Whether you need a speaker for your conference, a community leader for your meetup,
-            or technical expertise for your team, let's discuss how I can contribute.
+            Whether you need a speaker for your conference, a community leader for your meetup, or
+            technical expertise for your team, let's discuss how I can contribute.
           </p>
         </ScrollReveal>
 
@@ -93,24 +182,48 @@ import Aurora from '../components/animations/Aurora.astro';
             >
               Invite me to speak
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                ></path>
               </svg>
             </a>
             <a
-              href="/about"
+              href="/services"
               class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
             >
-              Learn more about me
+              Explore services
             </a>
           </div>
         </ScrollReveal>
+
+        <!-- Internal Links for SEO -->
+        <div class="mt-16 pt-8 border-t border-white/20">
+          <p class="text-white/60 text-sm mb-4">Explore more</p>
+          <div class="flex flex-wrap justify-center gap-4 text-sm">
+            <a href="/speaking" class="text-white/80 hover:text-white transition-colors">
+              Speaking →
+            </a>
+            <a href="/consulting" class="text-white/80 hover:text-white transition-colors">
+              Consulting →
+            </a>
+            <a href="/mentorship" class="text-white/80 hover:text-white transition-colors">
+              Mentorship →
+            </a>
+            <a href="/about" class="text-white/80 hover:text-white transition-colors">
+              About →
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* Terminal styling (reusing from other pages) */
+  /* Terminal styling */
   .terminal {
     background: rgb(var(--surface));
     border: 1px solid rgb(var(--edge));
@@ -175,9 +288,15 @@ import Aurora from '../components/animations/Aurora.astro';
   }
 
   .grid-pattern {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
     background-size: 60px 60px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse {
+      animation: none;
+    }
   }
 </style>

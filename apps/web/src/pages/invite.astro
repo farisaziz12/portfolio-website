@@ -5,6 +5,7 @@ import CountUp from '../components/animations/CountUp.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import SpotlightCard from '../components/animations/SpotlightCard.astro';
 import TiltCard from '../components/animations/TiltCard.astro';
+import HeadshotDownloader from '../components/islands/HeadshotDownloader';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import {
   speakerProfileQuery,
@@ -110,6 +111,22 @@ const headshotResolutions = [
   { name: 'Large', width: 1200, label: 'L', tooltip: 'Large (1200px) - Print & high-res' },
   { name: 'Original', width: 0, label: 'XL', tooltip: 'Original - Full resolution' },
 ];
+
+// Pre-generate URLs for all headshots and resolutions (for React component)
+const headshotData = downloadableHeadshots.map((headshot: Headshot, index: number) => ({
+  index,
+  style: headshot.style || 'headshot',
+  previewUrl: urlFor(headshot).width(400).height(400).url(),
+  resolutions: headshotResolutions.map((res) => ({
+    name: res.name,
+    label: res.label,
+    tooltip: res.tooltip,
+    url: res.width > 0
+      ? urlFor(headshot).width(res.width).format('jpg').quality(95).url()
+      : urlFor(headshot).format('jpg').url(),
+    filename: `faris-aziz-${headshot.style || 'headshot'}-${res.name.toLowerCase()}.jpg`,
+  })),
+}));
 
 // Topic colors for visual variety
 const topicColors = [
@@ -414,13 +431,13 @@ const bios = [
         </ScrollReveal>
 
         <div class="headshot-gallery">
-          {downloadableHeadshots.map((headshot: Headshot, index: number) => (
-            <ScrollReveal animation="fade-up" delay={0.1 + index * 0.1}>
-              <div class="headshot-card" data-headshot-index={index} data-full-url={urlFor(headshot).width(1600).format('jpg').quality(95).url()}>
+          {headshotData.map((data: any) => (
+            <ScrollReveal animation="fade-up" delay={0.1 + data.index * 0.1}>
+              <div class="headshot-card" data-headshot-index={data.index} data-full-url={urlFor(downloadableHeadshots[data.index]).width(1600).format('jpg').quality(95).url()}>
                 <button class="headshot-card__image" aria-label="View full size">
                   <img
-                    src={urlFor(headshot).width(400).height(400).url()}
-                    alt={headshot.alt || 'Speaker headshot'}
+                    src={data.previewUrl}
+                    alt={downloadableHeadshots[data.index].alt || 'Speaker headshot'}
                     loading="lazy"
                   />
                   <div class="headshot-card__overlay">
@@ -434,47 +451,16 @@ const bios = [
                 <div class="headshot-card__info">
                   <div class="headshot-card__meta">
                     <span class="headshot-card__style">
-                      {headshot.style ? styleLabels[headshot.style] || headshot.style : 'Portrait'}
+                      {styleLabels[data.style] || data.style}
                     </span>
                   </div>
 
-                  {/* Mobile: Single prominent download button */}
-                  <button
-                    class="headshot-card__download-mobile download-btn-mobile"
-                    data-url={urlFor(headshot).width(1200).format('jpg').quality(95).url()}
-                    data-filename={`faris-aziz-${headshot.style || 'headshot'}-large.jpg`}
-                    aria-label="Download high-resolution image"
-                  >
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                    </svg>
-                    <span>Download</span>
-                  </button>
-
-                  {/* Desktop: Size options */}
-                  <div class="headshot-card__download-desktop">
-                    <span class="headshot-card__download-label">
-                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                      </svg>
-                      Size
-                    </span>
-                    <div class="headshot-card__downloads">
-                      {headshotResolutions.map((res) => (
-                        <button
-                          class="download-btn"
-                          title={res.tooltip}
-                          data-url={res.width > 0
-                            ? urlFor(headshot).width(res.width).format('jpg').quality(95).url()
-                            : urlFor(headshot).format('jpg').url()
-                          }
-                          data-filename={`faris-aziz-${headshot.style || 'headshot'}-${res.name.toLowerCase()}.jpg`}
-                        >
-                          {res.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {/* React Island for mobile-optimized downloads */}
+                  <HeadshotDownloader
+                    client:load
+                    resolutions={data.resolutions}
+                    previewUrl={data.previewUrl}
+                  />
                 </div>
               </div>
             </ScrollReveal>
@@ -1138,91 +1124,6 @@ const bios = [
     color: rgb(var(--ink));
   }
 
-  /* Mobile Download Button - prominent, easy to tap */
-  .headshot-card__download-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    min-height: 3rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: white;
-    background: linear-gradient(135deg, rgb(var(--accent)), rgb(139 92 246));
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 0.5rem;
-  }
-
-  .headshot-card__download-mobile:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgb(var(--accent) / 0.3);
-  }
-
-  .headshot-card__download-mobile:active {
-    transform: translateY(0);
-  }
-
-  /* Desktop Download Section */
-  .headshot-card__download-desktop {
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  @media (min-width: 640px) {
-    .headshot-card__download-mobile {
-      display: none;
-    }
-
-    .headshot-card__download-desktop {
-      display: flex;
-    }
-  }
-
-  .headshot-card__download-label {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.6875rem;
-    color: rgb(var(--ink-faint));
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
-  .headshot-card__downloads {
-    display: flex;
-    gap: 0.25rem;
-  }
-
-  /* Download Button */
-  .download-btn {
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: rgb(var(--ink-muted));
-    background: rgb(var(--surface-overlay));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .download-btn:hover {
-    color: rgb(var(--accent));
-    border-color: rgb(var(--accent) / 0.5);
-    background: rgb(var(--accent) / 0.1);
-  }
-
   /* Lightbox */
   .lightbox {
     position: fixed;
@@ -1390,24 +1291,6 @@ const bios = [
 </style>
 
 <script>
-  // Download file helper
-  async function downloadFile(url: string, filename: string) {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      window.open(url, '_blank');
-    }
-  }
-
   // Lightbox state
   let currentImageIndex = 0;
   let headshotUrls: string[] = [];
@@ -1489,45 +1372,6 @@ const bios = [
               span.textContent = original;
               btn.classList.remove('!text-emerald-500', '!border-emerald-500/50');
             }, 1500);
-          }
-        }
-      });
-    });
-
-    // Download buttons (desktop size options)
-    document.querySelectorAll('.download-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const url = btn.getAttribute('data-url');
-        const filename = btn.getAttribute('data-filename');
-        if (url && filename) {
-          const original = btn.textContent;
-          btn.textContent = '...';
-          await downloadFile(url, filename);
-          btn.textContent = '✓';
-          setTimeout(() => {
-            btn.textContent = original;
-          }, 1500);
-        }
-      });
-    });
-
-    // Mobile download buttons
-    document.querySelectorAll('.download-btn-mobile').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const url = btn.getAttribute('data-url');
-        const filename = btn.getAttribute('data-filename');
-        if (url && filename) {
-          const span = btn.querySelector('span');
-          if (span) span.textContent = 'Downloading...';
-          await downloadFile(url, filename);
-          if (span) {
-            span.textContent = 'Done!';
-            setTimeout(() => {
-              span.textContent = 'Download';
-            }, 2000);
           }
         }
       });

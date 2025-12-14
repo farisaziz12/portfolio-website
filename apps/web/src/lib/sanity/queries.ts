@@ -396,6 +396,7 @@ export const allSocialPostsQuery = groq`
     author,
     authorHandle,
     authorImage,
+    authorRole,
     content,
     postDate,
     context,
@@ -901,5 +902,289 @@ export const siteSettingsQuery = groq`
     linkedinUrl,
     githubUrl,
     youtubeUrl
+  }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Impact Explorer Queries (V2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Impact Page Settings (singleton)
+export const impactPageQuery = groq`
+  *[_type == "impactPage"][0] {
+    heroHeadline,
+    heroSubheadline,
+    heroTagline,
+    defaultDomain,
+    defaultLens,
+    "highlightStripMetrics": highlightStripMetrics[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      domain,
+      headlineNumber,
+      unit,
+      prefix,
+      label,
+      highlightColor
+    },
+    seoTitle,
+    seoDescription
+  }
+`;
+
+// All Impact Metrics V2 with full lens content
+export const allImpactMetricsV2Query = groq`
+  *[_type == "impactMetricV2"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    domain,
+    headlineNumber,
+    unit,
+    prefix,
+    label,
+    timeWindow,
+    delta,
+    contextNote,
+    confidenceSource,
+    outcomesBlock {
+      headline,
+      body
+    },
+    howBlock {
+      headline,
+      body
+    },
+    proofBlock {
+      headline,
+      items[] {
+        type,
+        label,
+        url,
+        image,
+        quote,
+        quoteAuthor,
+        sourceNote,
+        tag
+      }
+    },
+    story,
+    actionLinks[] {
+      type,
+      label,
+      url
+    },
+    featured,
+    highlightStrip,
+    order,
+    highlightColor
+  }
+`;
+
+// Impact Metrics V2 by domain
+export const impactMetricsV2ByDomainQuery = groq`
+  *[_type == "impactMetricV2" && domain == $domain] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    domain,
+    headlineNumber,
+    unit,
+    prefix,
+    label,
+    timeWindow,
+    delta,
+    contextNote,
+    confidenceSource,
+    outcomesBlock {
+      headline,
+      body
+    },
+    howBlock {
+      headline,
+      body
+    },
+    proofBlock {
+      headline,
+      items[] {
+        type,
+        label,
+        url,
+        image,
+        quote,
+        quoteAuthor,
+        sourceNote,
+        tag
+      }
+    },
+    story,
+    actionLinks[] {
+      type,
+      label,
+      url
+    },
+    featured,
+    highlightStrip,
+    order,
+    highlightColor
+  }
+`;
+
+// Featured Impact Metrics V2 (for hero section)
+export const featuredImpactMetricsV2Query = groq`
+  *[_type == "impactMetricV2" && featured == true] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    domain,
+    headlineNumber,
+    unit,
+    prefix,
+    label,
+    timeWindow,
+    delta,
+    contextNote,
+    highlightColor
+  }
+`;
+
+// Single Impact Metric V2 by slug (for deep linking)
+export const impactMetricV2BySlugQuery = groq`
+  *[_type == "impactMetricV2" && slug.current == $slug][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    domain,
+    headlineNumber,
+    unit,
+    prefix,
+    label,
+    timeWindow,
+    delta,
+    contextNote,
+    confidenceSource,
+    outcomesBlock {
+      headline,
+      body
+    },
+    howBlock {
+      headline,
+      body
+    },
+    proofBlock {
+      headline,
+      items[] {
+        type,
+        label,
+        url,
+        image,
+        quote,
+        quoteAuthor,
+        sourceNote,
+        tag
+      }
+    },
+    story,
+    actionLinks[] {
+      type,
+      label,
+      url
+    },
+    featured,
+    highlightStrip,
+    order,
+    highlightColor
+  }
+`;
+
+// ============================================================================
+// SERVICE LANDING PAGES
+// ============================================================================
+
+// All published service landing pages (for getStaticPaths)
+export const allServiceLandingPagesQuery = groq`
+  *[_type == "serviceLandingPage" && published == true] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current
+  }
+`;
+
+// Single service landing page by slug
+export const serviceLandingPageBySlugQuery = groq`
+  *[_type == "serviceLandingPage" && slug.current == $slug && published == true][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    ogImage,
+    heroTagline,
+    heroHeadline,
+    heroSubheadline,
+    heroPrimaryCta {
+      text,
+      url
+    },
+    heroSecondaryCta {
+      text,
+      url
+    },
+    problemTitle,
+    painPoints[] {
+      _key,
+      title,
+      description
+    },
+    expertiseTitle,
+    expertiseAreas[] {
+      _key,
+      title,
+      description,
+      icon
+    },
+    servicesTitle,
+    serviceOfferings[] {
+      _key,
+      name,
+      bestFor,
+      includes,
+      outcome,
+      highlightColor
+    },
+    audienceTitle,
+    personas[] {
+      _key,
+      title,
+      description,
+      icon
+    },
+    proofTitle,
+    stats[] {
+      _key,
+      value,
+      label
+    },
+    testimonials[]-> {
+      _id,
+      quote,
+      author,
+      role,
+      company,
+      avatar
+    },
+    faqTitle,
+    faqs[] {
+      _key,
+      question,
+      answer
+    },
+    ctaHeadline,
+    ctaSubheadline,
+    ctaButtonText,
+    ctaButtonUrl,
+    ctaSecondaryText
   }
 `;

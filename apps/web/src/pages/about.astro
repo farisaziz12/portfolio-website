@@ -48,6 +48,7 @@ interface PageContent {
   title?: string;
   subtitle?: string;
   content?: any;
+  heroImage?: any;
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -95,6 +96,7 @@ const [companies, pageContent] = await Promise.all([
 
 // Destructure with fallbacks
 const hero = pageContent?.aboutHero;
+const heroImage = pageContent?.heroImage;
 const whatIDo = pageContent?.aboutWhatIDo;
 const journey = pageContent?.aboutJourney;
 const skillsSection = pageContent?.aboutSkills;
@@ -132,23 +134,43 @@ const iconMap: Record<string, string> = {
     <div class="absolute inset-0 gradient-mesh"></div>
 
     <div class="container relative z-10 py-20 md:py-32">
-      <div class="max-w-5xl">
-        <!-- Terminal intro -->
-        <div class="terminal max-w-md mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
+      <div class={`grid ${heroImage ? 'lg:grid-cols-2' : ''} gap-12 items-center`}>
+
+      <!-- Hero Image - Mobile (shown first on mobile when image exists) -->
+      {heroImage && (
+        <div class="lg:hidden flex justify-center mb-8">
+          <div class="relative max-w-xs">
+            <div class="absolute -inset-4 bg-gradient-to-r from-accent/30 via-violet-500/30 to-pink-500/30 rounded-3xl blur-2xl opacity-60"></div>
+            <div class="relative rounded-2xl overflow-hidden border border-edge shadow-2xl">
+              <img
+                src={urlFor(heroImage).width(400).height(500).url()}
+                alt={hero?.name || "Faris Aziz"}
+                class="w-full h-auto object-cover"
+              />
             </div>
-            <span class="terminal__title">about.sh</span>
-          </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> cat ~/bio.md</span>
-            <div class="terminal__output">Loading profile...</div>
           </div>
         </div>
+      )}
+
+      <div class={heroImage ? 'max-w-2xl' : 'max-w-5xl'}>
+        <!-- Terminal intro - only show if no hero image -->
+        {!heroImage && (
+          <div class="terminal max-w-md mb-8 animate-fade-in">
+            <div class="terminal__header">
+              <div class="terminal__dots">
+                <div class="terminal__dot terminal__dot--red"></div>
+                <div class="terminal__dot terminal__dot--yellow"></div>
+                <div class="terminal__dot terminal__dot--green"></div>
+              </div>
+              <span class="terminal__title">about.sh</span>
+            </div>
+            <div class="terminal__body">
+              <span class="terminal__prompt">$</span>
+              <span class="terminal__command"> cat ~/bio.md</span>
+              <div class="terminal__output">Loading profile...</div>
+            </div>
+          </div>
+        )}
 
         <!-- Big Bold Title -->
         <h1 class="hero-title mb-8">
@@ -209,6 +231,23 @@ const iconMap: Record<string, string> = {
             Connect on LinkedIn
           </a>
         </div>
+      </div>
+
+      <!-- Hero Image - Desktop (right column) -->
+      {heroImage && (
+        <div class="hidden lg:block relative order-last">
+          <div class="relative">
+            <div class="absolute -inset-4 bg-gradient-to-r from-accent/30 via-violet-500/30 to-pink-500/30 rounded-3xl blur-2xl opacity-60"></div>
+            <div class="relative rounded-2xl overflow-hidden border border-edge shadow-2xl">
+              <img
+                src={urlFor(heroImage).width(600).height(700).url()}
+                alt={hero?.name || "Faris Aziz"}
+                class="w-full h-auto object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   </section>

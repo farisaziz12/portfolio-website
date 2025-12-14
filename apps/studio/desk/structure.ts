@@ -156,19 +156,23 @@ export const deskStructure = (S: StructureBuilder) =>
         .title('Impact')
         .child(
           S.list()
-            .title('Impact Metrics')
+            .title('Impact')
             .items([
+              // Impact Page Settings (singleton)
               S.listItem()
-                .title('Categories')
-                .schemaType('impactCategory')
+                .title('Page Settings')
+                .id('impactPage')
                 .child(
-                  S.documentTypeList('impactCategory')
-                    .title('Impact Categories')
-                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                  S.document()
+                    .schemaType('impactPage')
+                    .documentId('impactPage')
+                    .title('Impact Page Settings')
                 ),
+              S.divider(),
+              // Enhanced Metrics (V2)
               S.listItem()
-                .title('Metrics')
-                .schemaType('impactMetric')
+                .title('Impact Metrics (Enhanced)')
+                .schemaType('impactMetricV2')
                 .child(
                   S.list()
                     .title('Impact Metrics')
@@ -176,16 +180,90 @@ export const deskStructure = (S: StructureBuilder) =>
                       S.listItem()
                         .title('All Metrics')
                         .child(
-                          S.documentTypeList('impactMetric')
+                          S.documentTypeList('impactMetricV2')
                             .title('All Metrics')
                             .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('By Domain')
+                        .child(
+                          S.list()
+                            .title('By Domain')
+                            .items([
+                              S.listItem()
+                                .title('Community')
+                                .child(
+                                  S.documentList()
+                                    .title('Community Metrics')
+                                    .filter('_type == "impactMetricV2" && domain == "community"')
+                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                                ),
+                              S.listItem()
+                                .title('Product / Monetization')
+                                .child(
+                                  S.documentList()
+                                    .title('Product Metrics')
+                                    .filter('_type == "impactMetricV2" && domain == "product"')
+                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                                ),
+                              S.listItem()
+                                .title('Engineering Leadership')
+                                .child(
+                                  S.documentList()
+                                    .title('Leadership Metrics')
+                                    .filter('_type == "impactMetricV2" && domain == "leadership"')
+                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                                ),
+                              S.listItem()
+                                .title('Speaking')
+                                .child(
+                                  S.documentList()
+                                    .title('Speaking Metrics')
+                                    .filter('_type == "impactMetricV2" && domain == "speaking"')
+                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                                ),
+                            ])
                         ),
                       S.listItem()
                         .title('Featured Metrics')
                         .child(
                           S.documentList()
                             .title('Featured Metrics')
-                            .filter('_type == "impactMetric" && featured == true')
+                            .filter('_type == "impactMetricV2" && featured == true')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Highlight Strip')
+                        .child(
+                          S.documentList()
+                            .title('Highlight Strip Metrics')
+                            .filter('_type == "impactMetricV2" && highlightStrip == true')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                    ])
+                ),
+              S.divider(),
+              // Legacy metrics (original schema)
+              S.listItem()
+                .title('Legacy Metrics')
+                .child(
+                  S.list()
+                    .title('Legacy Impact Metrics')
+                    .items([
+                      S.listItem()
+                        .title('Categories')
+                        .schemaType('impactCategory')
+                        .child(
+                          S.documentTypeList('impactCategory')
+                            .title('Impact Categories')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Metrics')
+                        .schemaType('impactMetric')
+                        .child(
+                          S.documentTypeList('impactMetric')
+                            .title('Legacy Metrics')
                             .defaultOrdering([{ field: 'order', direction: 'asc' }])
                         ),
                       S.listItem()
@@ -209,6 +287,38 @@ export const deskStructure = (S: StructureBuilder) =>
           S.list()
             .title('Services')
             .items([
+              S.listItem()
+                .title('Landing Pages (SEO)')
+                .schemaType('serviceLandingPage')
+                .child(
+                  S.list()
+                    .title('Service Landing Pages')
+                    .items([
+                      S.listItem()
+                        .title('All Landing Pages')
+                        .child(
+                          S.documentTypeList('serviceLandingPage')
+                            .title('All Landing Pages')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Published')
+                        .child(
+                          S.documentList()
+                            .title('Published Landing Pages')
+                            .filter('_type == "serviceLandingPage" && published == true')
+                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
+                        ),
+                      S.listItem()
+                        .title('Drafts')
+                        .child(
+                          S.documentList()
+                            .title('Draft Landing Pages')
+                            .filter('_type == "serviceLandingPage" && published != true')
+                        ),
+                    ])
+                ),
+              S.divider(),
               S.listItem()
                 .title('Service Pages')
                 .schemaType('servicePage')
@@ -245,30 +355,6 @@ export const deskStructure = (S: StructureBuilder) =>
                         ),
                     ])
                 ),
-            ])
-        ),
-
-      S.divider(),
-
-      // SEO Landing Pages
-      S.listItem()
-        .title('SEO Pages')
-        .child(
-          S.list()
-            .title('SEO Landing Pages')
-            .items([
-              S.listItem()
-                .title('Speaker Topics')
-                .schemaType('speakerTopicPage')
-                .child(S.documentTypeList('speakerTopicPage').title('Speaker Topic Pages')),
-              S.listItem()
-                .title('Consulting Services')
-                .schemaType('consultingServicePage')
-                .child(S.documentTypeList('consultingServicePage').title('Consulting Service Pages')),
-              S.listItem()
-                .title('Mentorship Services')
-                .schemaType('mentorshipServicePage')
-                .child(S.documentTypeList('mentorshipServicePage').title('Mentorship Service Pages')),
             ])
         ),
 

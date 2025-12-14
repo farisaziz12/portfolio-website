@@ -4,34 +4,28 @@ import SpotlightCard from '../components/animations/SpotlightCard.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import ImpactHero from '../components/impact/ImpactHero.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { featuredImpactMetricsQuery } from '../lib/sanity/queries';
+import { featuredImpactMetricsV2Query } from '../lib/sanity/queries';
 
-interface ImpactCategory {
+// V2 Impact Metric type
+interface ImpactMetricV2 {
   _id: string;
   title: string;
   slug: string;
-  icon?: string;
-  color?: string;
-}
-
-interface ImpactMetric {
-  _id: string;
-  label: string;
-  category?: ImpactCategory;
-  metricType: string;
-  value?: number;
+  domain: 'community' | 'product' | 'leadership' | 'speaking';
+  headlineNumber: number;
+  unit?: 'number' | 'k' | 'm' | 'percent' | 'x' | 'chf' | 'eur' | 'usd' | 'rating';
   prefix?: string;
-  suffix?: string;
-  unit?: string;
+  label: string;
   timeWindow?: string;
-  previousValue?: number;
-  highlightColor?: string;
-  sourceNote?: string;
-  sourceUrl?: string;
+  delta?: string;
+  contextNote?: string;
+  confidenceSource?: string;
+  highlightColor?: 'indigo' | 'violet' | 'emerald' | 'amber' | 'pink' | 'blue';
+  featured?: boolean;
 }
 
-// Fetch featured impact metrics for social proof
-const impactMetrics = await sanityFetch<ImpactMetric[]>(featuredImpactMetricsQuery).catch(() => []);
+// Fetch featured V2 impact metrics for social proof
+const impactMetrics = await sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []);
 
 const howItWorks = [
   {
