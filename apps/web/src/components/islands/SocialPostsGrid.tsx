@@ -14,14 +14,15 @@ export default function SocialPostsGrid({
   const displayPosts = posts.slice(0, maxPosts);
 
   return (
-    <div className="grid md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {displayPosts.map((post, index) => (
-        <SocialPostCard
-          key={post._id}
-          post={post}
-          imageUrl={imageUrls[post._id]}
-          index={index}
-        />
+        <div key={post._id} className="min-w-0">
+          <SocialPostCard
+            post={post}
+            imageUrl={imageUrls[post._id]}
+            index={index}
+          />
+        </div>
       ))}
     </div>
   );

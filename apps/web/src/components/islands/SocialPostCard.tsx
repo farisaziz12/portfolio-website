@@ -38,7 +38,7 @@ export function SocialPostCard({
     >
       <div
         className={`
-          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1
+          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden
           ${isTwitter
             ? 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
             : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-blue-500/10'

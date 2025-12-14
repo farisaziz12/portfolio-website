@@ -131,6 +131,7 @@ const currentVersion = talk.otherVersions?.find((v: any) => v.isCurrentVersion);
 const displayEvents = hasVersions ? (talk.allFamilyEvents || []) : (talk.events || []);
 const eventCount = displayEvents.length;
 const hasVideo = displayEvents.some((e: any) => e.links?.videoUrl);
+const latestRecording = displayEvents.find((e: any) => e.links?.videoUrl);
 
 // Group events by version for timeline display
 const eventsByVersion = hasVersions ? displayEvents.reduce((acc: any, event: any) => {
@@ -286,20 +287,42 @@ const sortedVersions = eventsByVersion
           <span class="block text-ink">{talk.title}</span>
         </h1>
 
-        <!-- Abstract - smaller on mobile -->
+        <!-- Abstract -->
         {talk.abstract && (
-          <p class="text-base md:text-lg lg:text-xl text-ink-muted max-w-3xl mb-6 md:mb-10 leading-relaxed">
+          <p class="text-sm md:text-base text-ink-muted max-w-3xl mb-6 md:mb-8 leading-relaxed whitespace-pre-line">
             {talk.abstract}
           </p>
         )}
 
+        <!-- Latest Recording Link -->
+        {latestRecording && (
+          <a
+            href={latestRecording.links.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 mb-6 md:mb-8 px-4 py-2 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg text-accent text-sm font-medium transition-colors"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+            </svg>
+            Watch latest recording
+            <span class="text-ink-muted text-xs">({latestRecording.conference})</span>
+          </a>
+        )}
+
         <!-- CTA Buttons - stack on mobile -->
         <div class="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
-          <a href="/invite" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group glow justify-center">
-            Book this talk
-            <svg class="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          <a href={`mailto:hello@farisaziz.com?subject=${encodeURIComponent(`Speaking Inquiry: ${talk.title}`)}&body=${encodeURIComponent(`Hi Faris,\n\nI'm interested in having you deliver "${talk.title}" at our event.\n\nEvent details:\n- Event name: \n- Date: \n- Location: \n- Expected audience size: \n- Format (in-person/virtual): \n\nLooking forward to hearing from you!\n\nBest regards,`)}`} class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group glow justify-center">
+            <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
+            Book this talk
+          </a>
+          <a href="/invite" class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group justify-center">
+            <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Speaker kit
           </a>
           {talk.assets?.slidesUrl && (
             <a href={talk.assets.slidesUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 group justify-center">
@@ -332,20 +355,22 @@ const sortedVersions = eventsByVersion
           <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Min</div>
         </div>
         <div class="bento__item flex flex-col items-center justify-center py-3 md:py-6 px-2">
-          <div class="text-xl md:text-3xl mb-1 md:mb-2">🎯</div>
-          <div class="text-lg md:text-2xl font-display font-bold text-accent">{eventCount}</div>
-          <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Times</div>
+          <div class="text-xl md:text-3xl mb-1 md:mb-2">{eventCount === 0 ? '✨' : '🎯'}</div>
+          <div class="text-lg md:text-2xl font-display font-bold text-accent">{eventCount === 0 ? 'New' : eventCount}</div>
+          <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">{eventCount === 0 ? 'Talk' : 'Times'}</div>
         </div>
         <div class="bento__item flex flex-col items-center justify-center py-3 md:py-6 px-2">
           <div class="text-xl md:text-3xl mb-1 md:mb-2">🏷️</div>
           <div class="text-lg md:text-2xl font-display font-bold text-violet-500">{talk.topics?.length || 0}</div>
           <div class="text-ink-muted text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Topics</div>
         </div>
-        <div class="bento__item bento__item--featured flex flex-col items-center justify-center py-3 md:py-6 px-2">
-          <div class="text-xl md:text-3xl mb-1 md:mb-2">{hasVideo ? '📹' : '✨'}</div>
-          <div class="text-lg md:text-2xl font-display font-bold text-white">{hasVideo ? 'Yes' : 'Live'}</div>
-          <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">{hasVideo ? 'Video' : 'Only'}</div>
-        </div>
+        {hasVideo && (
+          <div class="bento__item bento__item--featured flex flex-col items-center justify-center py-3 md:py-6 px-2">
+            <div class="text-xl md:text-3xl mb-1 md:mb-2">📹</div>
+            <div class="text-lg md:text-2xl font-display font-bold text-white">Yes</div>
+            <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider md:tracking-widest">Video</div>
+          </div>
+        )}
       </div>
     </div>
   </section>
@@ -606,29 +631,25 @@ const sortedVersions = eventsByVersion
 
                 {/* CTA Button */}
                 <a
-                  href="/invite"
+                  href={`mailto:hello@farisaziz.com?subject=${encodeURIComponent(`Speaking Inquiry: ${talk.title}`)}&body=${encodeURIComponent(`Hi Faris,\n\nI'm interested in having you deliver "${talk.title}" at our event.\n\nEvent details:\n- Event name: \n- Date: \n- Location: \n- Expected audience size: \n- Format (in-person/virtual): \n\nLooking forward to hearing from you!\n\nBest regards,`)}`}
                   class="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-white text-violet-700 font-bold text-base rounded-xl hover:bg-white/95 active:scale-[0.98] transition-all shadow-lg"
                 >
                   <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Invite me to speak
+                  Book this talk
                 </a>
 
                 {/* Secondary action */}
-                {talk.assets?.slidesUrl && (
-                  <a
-                    href={talk.assets.slidesUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex items-center justify-center gap-2 w-full mt-3 px-4 py-2.5 text-white/90 text-sm font-medium hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Preview slides
-                  </a>
-                )}
+                <a
+                  href="/invite"
+                  class="flex items-center justify-center gap-2 w-full mt-3 px-4 py-2.5 text-white/90 text-sm font-medium hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Speaker kit
+                </a>
               </div>
             </div>
 
@@ -799,15 +820,15 @@ const sortedVersions = eventsByVersion
 
       <div class="container relative z-10 px-4 md:px-6">
         <div class="max-w-5xl mx-auto">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+            <div class="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+              <svg class="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <div>
-              <h2 class="text-xl md:text-2xl font-display font-bold text-white">What People Are Saying</h2>
-              <p class="text-slate-400 text-sm">Feedback specifically about "{talk.title}"</p>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg md:text-2xl font-display font-bold text-white">What People Are Saying</h2>
+              <p class="text-slate-400 text-xs md:text-sm">Feedback about "{talk.title}"</p>
             </div>
           </div>
 
@@ -854,19 +875,19 @@ const sortedVersions = eventsByVersion
 
         <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4 sm:px-0">
           <a
-            href="/invite"
+            href={`mailto:hello@farisaziz.com?subject=${encodeURIComponent(`Speaking Inquiry: ${talk.title}`)}&body=${encodeURIComponent(`Hi Faris,\n\nI'm interested in having you deliver "${talk.title}" at our event.\n\nEvent details:\n- Event name: \n- Date: \n- Location: \n- Expected audience size: \n- Format (in-person/virtual): \n\nLooking forward to hearing from you!\n\nBest regards,`)}`}
             class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-violet-700 font-bold text-base md:text-lg rounded-xl hover:bg-white/90 transition-all duration-200 active:scale-95 shadow-xl"
           >
-            Book this talk
             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
+            Book this talk
           </a>
           <a
-            href="/talks"
+            href="/invite"
             class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white/10 text-white font-semibold text-base md:text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
           >
-            Browse other talks
+            Speaker kit
           </a>
         </div>
       </div>

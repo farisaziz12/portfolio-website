@@ -79,13 +79,19 @@ export default function TalksFilter({ talks }: TalksFilterProps) {
 
   const currentSort = sortOptions.find((opt) => opt.value === sortMode);
 
-  // Extract all unique topics
+  // Extract most popular topics (capped at 8)
   const allTopics = useMemo(() => {
-    const topics = new Set<string>();
+    const topicCounts = new Map<string, number>();
     talks.forEach((talk) => {
-      talk.topics?.forEach((topic) => topics.add(topic));
+      talk.topics?.forEach((topic) => {
+        topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
+      });
     });
-    return Array.from(topics).sort();
+    // Sort by count (descending), then alphabetically for ties
+    return Array.from(topicCounts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 8)
+      .map(([topic]) => topic);
   }, [talks]);
 
   // Filter and sort talks
