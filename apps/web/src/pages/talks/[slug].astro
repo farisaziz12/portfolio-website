@@ -295,7 +295,7 @@ const sortedVersions = eventsByVersion
         )}
 
         <!-- Latest Recording Link -->
-        {latestRecording && (
+        {latestRecording?.links?.videoUrl && (
           <a
             href={latestRecording.links.videoUrl}
             target="_blank"
