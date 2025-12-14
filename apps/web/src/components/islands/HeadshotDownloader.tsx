@@ -20,6 +20,11 @@ export default function HeadshotDownloader({
 
   const highRes = resolutions.find(r => r.name === 'Large') || resolutions[resolutions.length - 1];
 
+  const handleMobileOpen = () => {
+    // Direct navigation works better on iOS Safari than target="_blank"
+    window.location.href = highRes.url;
+  };
+
   const handleDesktopDownload = async (res: ResolutionOption) => {
     setDownloading(res.name);
 
@@ -36,7 +41,7 @@ export default function HeadshotDownloader({
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch {
-      window.open(res.url, '_blank');
+      window.location.href = res.url;
     }
 
     setTimeout(() => setDownloading(null), 1500);
@@ -44,18 +49,17 @@ export default function HeadshotDownloader({
 
   return (
     <>
-      {/* Mobile: Open high-res in new tab */}
-      <a
-        href={highRes.url}
-        target="_blank"
-        rel="noopener noreferrer"
+      {/* Mobile: Button that opens image directly */}
+      <button
+        type="button"
+        onClick={handleMobileOpen}
         className="flex md:hidden items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-lg active:opacity-90"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
         </svg>
         Save Photo
-      </a>
+      </button>
 
       {/* Desktop: Size options */}
       <div className="hidden md:flex items-center justify-between gap-2">
