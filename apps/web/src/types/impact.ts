@@ -151,6 +151,7 @@ export interface DomainConfig {
 export interface LensConfig {
   id: ImpactLens;
   label: string;
+  shortLabel: string;
   description: string;
 }
 
@@ -172,9 +173,9 @@ export const DOMAIN_CONFIG: DomainConfig[] = [
 ];
 
 export const LENS_CONFIG: LensConfig[] = [
-  { id: 'outcomes', label: 'Show me outcomes', description: 'What changed, why it mattered' },
-  { id: 'how', label: 'Show me how', description: 'What I did, approach, constraints' },
-  { id: 'proof', label: 'Show me proof', description: 'Links, screenshots, artifacts' },
+  { id: 'outcomes', label: 'Outcomes', shortLabel: 'Outcomes', description: 'What changed, why it mattered' },
+  { id: 'how', label: 'How', shortLabel: 'How', description: 'What I did, approach, constraints' },
+  { id: 'proof', label: 'Proof', shortLabel: 'Proof', description: 'Links, screenshots, artifacts' },
 ];
 
 // Helper function to format metric number
