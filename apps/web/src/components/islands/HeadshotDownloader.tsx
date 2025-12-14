@@ -17,17 +17,12 @@ export default function HeadshotDownloader({
   resolutions,
 }: HeadshotDownloaderProps) {
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [mobileDownloading, setMobileDownloading] = useState(false);
 
-  // Get high-res for mobile (Large or Original)
+  // Get high-res for mobile (Large)
   const highRes = resolutions.find(r => r.name === 'Large') || resolutions[resolutions.length - 1];
 
-  const handleDownload = async (res: ResolutionOption, isMobile = false) => {
-    if (isMobile) {
-      setMobileDownloading(true);
-    } else {
-      setDownloading(res.name);
-    }
+  const handleDownload = async (res: ResolutionOption) => {
+    setDownloading(res.name);
 
     try {
       const response = await fetch(res.url);
@@ -42,25 +37,21 @@ export default function HeadshotDownloader({
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch {
-      // Fallback: open in new tab
       window.open(res.url, '_blank');
     }
 
-    setTimeout(() => {
-      setDownloading(null);
-      setMobileDownloading(false);
-    }, 1500);
+    setTimeout(() => setDownloading(null), 1500);
   };
 
   return (
     <>
-      {/* Mobile: Simple save button */}
+      {/* Mobile: Single high-res download */}
       <button
-        onClick={() => handleDownload(highRes, true)}
-        disabled={mobileDownloading}
+        onClick={() => handleDownload(highRes)}
+        disabled={downloading === highRes.name}
         className="flex md:hidden items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-lg active:opacity-90 transition-opacity disabled:opacity-70"
       >
-        {mobileDownloading ? (
+        {downloading === highRes.name ? (
           <>
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -78,7 +69,7 @@ export default function HeadshotDownloader({
         )}
       </button>
 
-      {/* Desktop: Inline size buttons */}
+      {/* Desktop: Size options */}
       <div className="hidden md:flex items-center justify-between gap-2">
         <span className="flex items-center gap-1 text-xs text-slate-500 uppercase tracking-wide">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
