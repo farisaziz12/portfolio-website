@@ -231,7 +231,7 @@ export default function AppreciationFilter({
           </p>
 
           {/* Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
             {filteredPosts.map((post, index) => (
               <PostCard
                 key={post._id}
@@ -540,12 +540,12 @@ function PostCard({
 
   return (
     <div
-      className="animate-fadeIn min-w-0"
+      className="animate-fadeIn min-w-0 h-full"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div
         className={`
-          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden
+          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col
           ${isTwitter
             ? 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
             : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-blue-500/10'
@@ -608,7 +608,7 @@ function PostCard({
 
         {/* Content */}
         <p className={`
-          text-sm leading-relaxed mb-3 whitespace-pre-line
+          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow
           ${isTwitter ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}
           ${isExpanded ? '' : 'line-clamp-4'}
         `}>
@@ -616,7 +616,7 @@ function PostCard({
         </p>
 
         {/* Footer */}
-        <div className={`flex items-center justify-between pt-3 border-t ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
+        <div className={`flex items-center justify-between pt-3 border-t mt-auto ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
           {showExpandButton ? (
             <button
               type="button"
@@ -635,14 +635,10 @@ function PostCard({
             href={post.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs"
+            className={`flex items-center gap-1 text-xs font-medium ${isTwitter ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
           >
-            {post.postDate && (
-              <span className={isTwitter ? 'text-slate-500' : 'text-slate-400 dark:text-slate-500'}>
-                {new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            )}
-            <svg className={`w-3.5 h-3.5 ${isTwitter ? 'text-slate-500' : 'text-slate-400'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            View on {isTwitter ? 'X' : 'LinkedIn'}
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M7 17L17 7M17 7H7M17 7V17" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </a>

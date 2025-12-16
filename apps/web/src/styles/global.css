@@ -8,14 +8,14 @@
 
 @layer base {
   :root {
-    /* Light mode - crisp, clean, easy on eyes */
+    /* Light mode - crisp, clean, WCAG AA compliant */
     --surface: 255 255 255;         /* Pure white */
     --surface-raised: 250 250 250;  /* Slightly off for cards */
-    --surface-overlay: 245 245 245; /* Subtle hover states */
+    --surface-overlay: 243 244 246; /* Gray-100 - subtle hover states */
 
     --ink: 15 23 42;               /* Slate-900 - rich dark */
-    --ink-muted: 71 85 105;        /* Slate-500 - readable secondary */
-    --ink-faint: 148 163 184;      /* Slate-400 - metadata */
+    --ink-muted: 51 65 85;         /* Slate-700 - readable secondary (7.5:1 contrast) */
+    --ink-faint: 100 116 139;      /* Slate-500 - metadata (4.6:1 contrast) */
 
     /* Electric blue - professional, modern (excellent contrast 4.5:1+) */
     --accent: 37 99 235;           /* Blue-600 - vibrant, trustworthy */
@@ -1519,8 +1519,9 @@
   }
 
   .bento__item--featured {
-    @apply bg-gradient-to-br from-accent/10 to-violet-500/10;
-    @apply border-accent/30;
+    @apply bg-gradient-to-br from-accent to-violet-600;
+    @apply border-accent/50;
+    @apply text-white;
   }
 
   .bento__item--dark {

@@ -229,6 +229,33 @@ export default function ImpactExplorer({
 
       {/* Controls Row */}
       <div className="mb-8 space-y-4">
+        {/* Search */}
+        <div className="flex justify-center">
+          <div className="relative w-full sm:w-80">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              ref={searchInputRef}
+              type="search"
+              placeholder="Search metrics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-edge rounded-xl text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {/* Domain Tabs */}
         <div
           className="flex flex-wrap justify-center gap-2"
@@ -258,31 +285,28 @@ export default function ImpactExplorer({
           ))}
         </div>
 
-        {/* Search */}
-        <div className="flex justify-center">
-          <div className="relative w-full sm:w-72">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              ref={searchInputRef}
-              type="search"
-              placeholder="Search metrics..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-surface border border-edge rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            />
+        {/* Quick Guide */}
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span className="font-medium text-ink">Outcomes</span>
+              <span className="text-ink-muted">= what changed</span>
+            </div>
+            <span className="text-ink-faint">·</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <span className="font-medium text-ink">How</span>
+              <span className="text-ink-muted">= approach</span>
+            </div>
+            <span className="text-ink-faint">·</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span className="font-medium text-ink">Proof</span>
+              <span className="text-ink-muted">= evidence</span>
+            </div>
           </div>
+          <p className="text-center text-xs text-ink-faint mt-2">Click any metric, then switch views</p>
         </div>
       </div>
 
@@ -316,38 +340,20 @@ export default function ImpactExplorer({
                     </div>
                   </div>
 
-                  {/* Featured in this domain */}
-                  {featured.length > 0 && (
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {featured.map((metric) => (
-                        <MetricCard
-                          key={metric._id}
-                          metric={metric}
-                          lens={lens}
-                          isExpanded={expandedMetric === metric.slug}
-                          onToggle={() => handleMetricToggle(metric.slug)}
-                          imageUrls={imageUrls}
-                          isFeatured
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Regular in this domain */}
-                  {regular.length > 0 && (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {regular.map((metric) => (
-                        <MetricCard
-                          key={metric._id}
-                          metric={metric}
-                          lens={lens}
-                          isExpanded={expandedMetric === metric.slug}
-                          onToggle={() => handleMetricToggle(metric.slug)}
-                          imageUrls={imageUrls}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {/* All metrics - featured first, then regular */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                    {[...featured, ...regular].map((metric) => (
+                      <MetricCard
+                        key={metric._id}
+                        metric={metric}
+                        lens={lens}
+                        isExpanded={expandedMetric === metric.slug}
+                        onToggle={() => handleMetricToggle(metric.slug)}
+                        imageUrls={imageUrls}
+                        isFeatured={metric.featured}
+                      />
+                    ))}
+                  </div>
                 </section>
               );
             })}
@@ -356,49 +362,20 @@ export default function ImpactExplorer({
 
         {/* Single Domain View */}
         {domain !== 'all' && (
-          <>
-            {/* Featured Metrics (Hero) */}
-            {featuredMetrics.length > 0 && (
-              <div className="grid md:grid-cols-2 gap-6">
-                {featuredMetrics.map((metric) => (
-                  <MetricCard
-                    key={metric._id}
-                    metric={metric}
-                    lens={lens}
-                    isExpanded={expandedMetric === metric.slug}
-                    onToggle={() => handleMetricToggle(metric.slug)}
-                    imageUrls={imageUrls}
-                    isFeatured
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Regular Metrics */}
-            {regularMetrics.length > 0 && (
-              <>
-                {featuredMetrics.length > 0 && (
-                  <div className="border-t border-edge pt-8">
-                    <h3 className="text-sm font-medium text-ink-muted uppercase tracking-wider mb-4">
-                      More {DOMAIN_CONFIG.find((d) => d.id === domain)?.label} Metrics
-                    </h3>
-                  </div>
-                )}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {regularMetrics.map((metric) => (
-                    <MetricCard
-                      key={metric._id}
-                      metric={metric}
-                      lens={lens}
-                      isExpanded={expandedMetric === metric.slug}
-                      onToggle={() => handleMetricToggle(metric.slug)}
-                      imageUrls={imageUrls}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+            {/* Featured metrics first, then regular - all same size */}
+            {[...featuredMetrics, ...regularMetrics].map((metric) => (
+              <MetricCard
+                key={metric._id}
+                metric={metric}
+                lens={lens}
+                isExpanded={expandedMetric === metric.slug}
+                onToggle={() => handleMetricToggle(metric.slug)}
+                imageUrls={imageUrls}
+                isFeatured={metric.featured}
+              />
+            ))}
+          </div>
         )}
 
         {/* Empty State */}
@@ -488,11 +465,13 @@ function MetricCard({
     <div
       id={`metric-${metric.slug}`}
       ref={cardRef}
-      className={`group relative bg-surface border rounded-xl transition-all duration-300 ${
+      className={`group relative bg-surface border rounded-xl transition-all duration-300 flex flex-col ${
         isExpanded
           ? `${colors.border} shadow-lg ring-2 ring-offset-2 ${colors.text.replace('text-', 'ring-')}`
-          : 'border-edge hover:border-edge-strong hover:shadow-md'
-      } ${isFeatured ? 'md:col-span-1' : ''}`}
+          : isFeatured
+            ? 'border-amber-300 dark:border-amber-700 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md'
+            : 'border-edge hover:border-edge-strong hover:shadow-md'
+      }`}
     >
       {/* Card Header (always visible) */}
       <button
@@ -500,15 +479,15 @@ function MetricCard({
         onKeyDown={handleKeyDown}
         aria-expanded={isExpanded}
         aria-controls={`metric-content-${metric.slug}`}
-        className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-xl"
+        className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-xl min-h-[140px] flex flex-col"
       >
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 flex-grow">
           {/* Number + Label */}
           <div className="flex-1 min-w-0">
             <div className={`text-3xl md:text-4xl font-display font-bold ${colors.text}`}>
               {formatMetricNumber(metric.headlineNumber, metric.unit, metric.prefix)}
             </div>
-            <div className="text-sm font-medium text-ink mt-1 line-clamp-4">{metric.label}</div>
+            <div className="text-sm font-medium text-ink mt-1 line-clamp-2">{metric.label}</div>
 
             {/* Time window + Delta */}
             <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -547,9 +526,9 @@ function MetricCard({
         </div>
 
         {/* Context note (always visible) */}
-        {metric.contextNote && (
-          <p className="text-xs text-ink-muted mt-3 line-clamp-4">{metric.contextNote}</p>
-        )}
+        <p className="text-xs text-ink-muted mt-auto pt-2 line-clamp-2 min-h-[2.5rem]">
+          {metric.contextNote || '\u00A0'}
+        </p>
       </button>
 
       {/* Expanded Content */}
@@ -563,7 +542,7 @@ function MetricCard({
         <div className="px-4 pb-4 border-t border-edge pt-4 space-y-4">
           {/* Card-level Lens Toggle - Mobile Optimized */}
           <div
-            className="flex w-full rounded-lg bg-surface-overlay border border-edge p-1 gap-1"
+            className="flex w-full rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1"
             role="radiogroup"
             aria-label="Switch view"
           >
@@ -578,8 +557,8 @@ function MetricCard({
                 }}
                 className={`flex-1 px-3 py-2.5 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ${
                   localLens === l.id
-                    ? `${colors.bg} ${colors.text} shadow-sm`
-                    : 'text-ink-muted hover:text-ink hover:bg-surface'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-600'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
                 }`}
               >
                 {l.label}

@@ -33,12 +33,12 @@ export function SocialPostCard({
 
   return (
     <div
-      className="animate-fadeIn"
+      className="animate-fadeIn h-full"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div
         className={`
-          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden
+          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col
           ${isTwitter
             ? 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
             : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-blue-500/10'
@@ -86,7 +86,7 @@ export function SocialPostCard({
               </p>
             )}
             {post.postDate && (
-              <p className={`text-xs ${isTwitter ? 'text-slate-500' : 'text-slate-400 dark:text-slate-500'}`}>
+              <p className={`text-xs ${isTwitter ? 'text-slate-500' : 'text-slate-500 dark:text-slate-400'}`}>
                 {new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             )}
@@ -106,7 +106,7 @@ export function SocialPostCard({
 
         {/* Content */}
         <p className={`
-          text-sm leading-relaxed mb-3 whitespace-pre-line
+          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow
           ${isTwitter ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}
           ${isExpanded ? '' : 'line-clamp-4'}
         `}>
@@ -114,7 +114,7 @@ export function SocialPostCard({
         </p>
 
         {/* Footer */}
-        <div className={`flex items-center justify-between pt-3 border-t ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
+        <div className={`flex items-center justify-between pt-3 border-t mt-auto ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
           {showExpandButton ? (
             <button
               type="button"

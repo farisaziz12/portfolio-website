@@ -80,7 +80,7 @@ function TestimonialCard({
 }) {
   return (
     <div
-      className="animate-fadeIn bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-300 dark:hover:border-indigo-600 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200"
+      className="animate-fadeIn h-full bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-300 dark:hover:border-indigo-600 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       {/* Quote icon */}
@@ -91,12 +91,12 @@ function TestimonialCard({
       </div>
 
       {/* Quote */}
-      <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed mb-4 line-clamp-4">
+      <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed mb-4 line-clamp-4 flex-grow">
         "{testimonial.quote}"
       </p>
 
       {/* Author */}
-      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-700 mt-auto">
         {imageUrl ? (
           <img
             src={imageUrl}

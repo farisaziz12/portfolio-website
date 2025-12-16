@@ -298,7 +298,18 @@ export const featuredProjectsQuery = groq`
 
 export const projectBySlugQuery = groq`
   *[_type == "project" && slug.current == $slug][0] {
-    ...
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    category,
+    technologies,
+    image,
+    links,
+    featured,
+    role,
+    outcomes,
+    screenshots
   }
 `;
 
