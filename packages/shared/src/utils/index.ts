@@ -130,3 +130,19 @@ export function sortByDate<T extends { date: string }>(
     return direction === 'asc' ? dateA - dateB : dateB - dateA;
   });
 }
+
+/**
+ * Calculate estimated reading time from word count or text
+ * Assumes average reading speed of 200 words per minute
+ */
+export function calculateReadingTime(input: string | number): number {
+  const wordCount = typeof input === 'number' ? input : input.split(/\s+/).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
+/**
+ * Format reading time for display
+ */
+export function formatReadingTime(minutes: number): string {
+  return `${minutes} min read`;
+}

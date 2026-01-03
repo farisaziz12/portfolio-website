@@ -1,0 +1,37 @@
+---
+import type { Props as BaseProps, TypedObject } from 'astro-portabletext/types';
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
+import { urlFor } from '../../../lib/sanity/client';
+
+interface ImageBlock extends TypedObject {
+  _type: 'image';
+  asset?: SanityImageSource;
+  alt?: string;
+  caption?: string;
+}
+
+type Props = BaseProps<ImageBlock>;
+
+const { node } = Astro.props;
+
+if (!node.asset) {
+  return null;
+}
+
+const imageUrl = urlFor(node.asset).width(1200).auto('format').url();
+---
+{node.asset && (
+  <figure class="my-10">
+    <img
+      src={imageUrl}
+      alt={node.alt ?? ''}
+      class="w-full rounded-xl shadow-lg"
+      loading="lazy"
+    />
+    {node.caption && (
+      <figcaption class="mt-3 text-center text-sm text-ink-faint">
+        {node.caption}
+      </figcaption>
+    )}
+  </figure>
+)}

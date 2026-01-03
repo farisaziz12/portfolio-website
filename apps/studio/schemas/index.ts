@@ -7,6 +7,7 @@ import testimonial from './testimonial';
 import socialPost from './socialPost';
 import company from './company';
 import externalPost from './externalPost';
+import blogPost from './blogPost';
 import page from './page';
 import speakerProfile from './speakerProfile';
 import impactCategory from './impactCategory';
@@ -34,6 +35,9 @@ export const schemaTypes = [
   testimonial,
   socialPost,
   externalPost,
+
+  // Blog
+  blogPost,
 
   // Impact metrics
   impactCategory,

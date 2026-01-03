@@ -151,6 +151,42 @@ export const deskStructure = (S: StructureBuilder) =>
 
       S.divider(),
 
+      // Blog
+      S.listItem()
+        .title('Blog')
+        .schemaType('blogPost')
+        .child(
+          S.list()
+            .title('Blog Posts')
+            .items([
+              S.listItem()
+                .title('All Posts')
+                .child(
+                  S.documentTypeList('blogPost')
+                    .title('All Blog Posts')
+                    .defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])
+                ),
+              S.listItem()
+                .title('Featured Posts')
+                .child(
+                  S.documentList()
+                    .title('Featured Posts')
+                    .filter('_type == "blogPost" && featured == true')
+                    .defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])
+                ),
+              S.listItem()
+                .title('Drafts')
+                .child(
+                  S.documentList()
+                    .title('Draft Posts')
+                    .filter('_type == "blogPost" && published != true')
+                    .defaultOrdering([{ field: '_updatedAt', direction: 'desc' }])
+                ),
+            ])
+        ),
+
+      S.divider(),
+
       // Impact Metrics
       S.listItem()
         .title('Impact')

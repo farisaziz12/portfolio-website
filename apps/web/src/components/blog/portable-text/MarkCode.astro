@@ -1,0 +1,7 @@
+---
+import type { MarkProps } from 'astro-portabletext/types';
+
+type Props = MarkProps;
+const { node: _node } = Astro.props;
+---
+<code class="px-1.5 py-0.5 text-sm font-mono bg-surface-raised text-accent rounded"><slot /></code>

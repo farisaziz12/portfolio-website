@@ -1,0 +1,7 @@
+---
+import type { Props as $, Block } from 'astro-portabletext/types';
+type Props = $<Block>;
+---
+<blockquote class="border-l-4 border-accent pl-6 py-2 my-8 italic text-ink-muted bg-surface-raised/50 rounded-r-lg">
+  <slot />
+</blockquote>

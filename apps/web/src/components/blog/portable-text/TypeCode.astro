@@ -1,0 +1,58 @@
+---
+import type { Props as BaseProps, TypedObject } from 'astro-portabletext/types';
+
+interface CodeBlock extends TypedObject {
+  _type: 'code';
+  language?: string;
+  filename?: string;
+  code?: string;
+  highlightedLines?: string;
+}
+
+type Props = BaseProps<CodeBlock>;
+
+const { node } = Astro.props;
+const codeString = node.code ?? '';
+---
+<div class="my-8 group">
+  {node.filename && (
+    <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-t-lg border-b border-slate-700">
+      <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span class="text-sm text-slate-300 font-mono">{node.filename}</span>
+    </div>
+  )}
+  <div class={`relative ${node.filename ? 'rounded-b-lg' : 'rounded-lg'}`}>
+    <pre class={`overflow-x-auto p-4 bg-slate-900 text-slate-100 text-sm font-mono ${node.filename ? '' : 'rounded-lg'}`}><code class={`language-${node.language ?? 'text'}`}>{codeString}</code></pre>
+    <button
+      class="copy-code-btn absolute top-3 right-3 p-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+      data-code={codeString}
+      aria-label="Copy code"
+    >
+      <svg class="w-4 h-4 text-slate-300 copy-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      </svg>
+      <svg class="w-4 h-4 text-emerald-400 check-icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.copy-code-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-code') ?? '';
+      await navigator.clipboard.writeText(code);
+      const copyIcon = btn.querySelector('.copy-icon');
+      const checkIcon = btn.querySelector('.check-icon');
+      copyIcon?.classList.add('hidden');
+      checkIcon?.classList.remove('hidden');
+      setTimeout(() => {
+        copyIcon?.classList.remove('hidden');
+        checkIcon?.classList.add('hidden');
+      }, 2000);
+    });
+  });
+</script>

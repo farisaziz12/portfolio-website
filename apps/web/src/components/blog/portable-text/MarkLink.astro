@@ -1,0 +1,22 @@
+---
+import type { MarkProps } from 'astro-portabletext/types';
+
+interface LinkMarkDef extends Record<string, unknown> {
+  href?: string;
+  openInNewTab?: boolean;
+}
+
+type Props = MarkProps<LinkMarkDef>;
+
+const { node } = Astro.props;
+const href = node.markDef?.href ?? '#';
+const isExternal = node.markDef?.openInNewTab ?? true;
+---
+<a
+  href={href}
+  target={isExternal ? '_blank' : '_self'}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  class="text-accent hover:text-accent-hover underline underline-offset-2 transition-colors cursor-pointer"
+>
+  <slot />
+</a>

@@ -1,0 +1,108 @@
+---
+import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
+
+interface Props {
+  body: (PortableTextBlock | ArbitraryTypedObject)[];
+}
+
+interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
+const { body } = Astro.props;
+
+// Extract text from Portable Text children
+function getTextFromChildren(children: unknown[]): string {
+  return children
+    .map((child: unknown) => {
+      if (typeof child === 'string') return child;
+      if (child && typeof child === 'object' && 'text' in child) return (child as { text: string }).text;
+      return '';
+    })
+    .join('');
+}
+
+// Generate URL-friendly slug from text
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+// Extract headings from Portable Text body
+function extractHeadings(blocks: (PortableTextBlock | ArbitraryTypedObject)[]): TocItem[] {
+  const headings: TocItem[] = [];
+
+  for (const block of blocks) {
+    if (block._type === 'block' && 'style' in block) {
+      const style = block.style as string;
+      if (style === 'h2' || style === 'h3' || style === 'h4') {
+        const children = 'children' in block ? block.children : [];
+        const text = getTextFromChildren(children as unknown[]);
+        if (text) {
+          headings.push({
+            id: slugify(text),
+            text,
+            level: parseInt(style.charAt(1), 10),
+          });
+        }
+      }
+    }
+  }
+
+  return headings;
+}
+
+const headings = extractHeadings(body);
+const hasHeadings = headings.length > 0;
+---
+
+{hasHeadings && (
+  <nav class="mb-12 p-6 bg-surface-raised rounded-xl border border-edge">
+    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-edge">
+      <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+        <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      </div>
+      <h2 class="text-base font-semibold text-ink">In this article</h2>
+    </div>
+    <ul class="space-y-1">
+      {headings.map((heading, index) => {
+        const h2Index = headings.slice(0, index + 1).filter(h => h.level === 2).length;
+        return (
+          <li
+            class:list={[
+              'relative',
+              heading.level === 2 && 'mt-3 first:mt-0',
+              heading.level === 3 && 'ml-4 border-l-2 border-edge',
+              heading.level === 4 && 'ml-8 border-l-2 border-edge',
+            ]}
+          >
+            <a
+              href={`#${heading.id}`}
+              class:list={[
+                'block py-1.5 px-3 rounded-md hover:bg-accent/5 hover:text-accent transition-all cursor-pointer',
+                heading.level === 2 && 'text-ink font-medium',
+                heading.level === 3 && 'text-ink-muted text-sm',
+                heading.level === 4 && 'text-ink-faint text-sm',
+              ]}
+            >
+              {heading.level === 2 && (
+                <span class="inline-flex items-center justify-center w-5 h-5 mr-2 text-xs font-semibold bg-accent/10 text-accent rounded">
+                  {h2Index}
+                </span>
+              )}
+              {heading.text}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </nav>
+)}

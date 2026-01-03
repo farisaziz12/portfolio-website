@@ -1,0 +1,402 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PortableTextRenderer from '../../components/blog/PortableTextRenderer.astro';
+import TableOfContents from '../../components/blog/TableOfContents.astro';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import { allBlogPostSlugsQuery, blogPostBySlugQuery } from '../../lib/sanity/queries';
+import { formatDate, formatReadingTime } from 'shared/utils';
+import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
+
+export async function getStaticPaths() {
+  const slugs = await sanityFetch<{ slug: string }[]>(allBlogPostSlugsQuery).catch(() => []);
+  return slugs.map(({ slug }) => ({ params: { slug } }));
+}
+
+interface SanityImage {
+  asset?: SanityImageSource;
+  alt?: string;
+}
+
+interface RelatedPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImage?: SanityImage;
+  publishedAt: string;
+  category?: string;
+  estimatedReadingTime: number;
+}
+
+interface RelatedTalk {
+  _id: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+}
+
+interface BlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImage?: SanityImage;
+  body: (PortableTextBlock | ArbitraryTypedObject)[];
+  publishedAt: string;
+  updatedAt?: string;
+  tags?: string[];
+  category?: string;
+  relatedTalk?: RelatedTalk;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: SanityImage;
+  estimatedReadingTime: number;
+  wordCount: number;
+  relatedPosts?: RelatedPost[];
+}
+
+const { slug } = Astro.params;
+const post = await sanityFetch<BlogPost>(blogPostBySlugQuery, { slug });
+
+if (!post) {
+  return Astro.redirect('/blog');
+}
+
+const coverImageUrl = post.coverImage?.asset
+  ? urlFor(post.coverImage).width(1200).height(630).url()
+  : undefined;
+
+const ogImageUrl = post.ogImage
+  ? urlFor(post.ogImage).width(1200).height(630).url()
+  : coverImageUrl;
+
+const categoryLabels: Record<string, string> = {
+  tutorial: 'Tutorial',
+  guide: 'Guide',
+  review: 'Review',
+  retrospective: 'Retrospective',
+  'case-study': 'Case Study',
+  announcement: 'Announcement',
+  'deep-dive': 'Deep Dive',
+};
+---
+
+<BaseLayout
+  title={post.seoTitle || `${post.title} | Blog`}
+  description={post.seoDescription || post.excerpt}
+  image={ogImageUrl}
+  article={true}
+  pathname={`/blog/${post.slug}`}
+  publishedTime={post.publishedAt}
+>
+  <article class="relative">
+    <!-- Hero Section -->
+    <header class="relative py-16 md:py-24">
+      <div class="absolute inset-0 grid-pattern opacity-30"></div>
+      <div class="absolute inset-0 gradient-mesh"></div>
+
+      <div class="container relative z-10">
+        <div class="max-w-4xl mx-auto">
+          <!-- Back Link -->
+          <a
+            href="/blog"
+            class="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-accent transition-colors mb-8"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Blog
+          </a>
+
+          <!-- Category & Reading Time -->
+          <div class="flex flex-wrap items-center gap-3 mb-6">
+            {post.category && (
+              <span class="px-3 py-1 text-xs font-semibold bg-accent/10 text-accent rounded-full">
+                {categoryLabels[post.category] || post.category}
+              </span>
+            )}
+            <span class="flex items-center gap-1.5 text-sm text-ink-faint">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {formatReadingTime(post.estimatedReadingTime)}
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-ink mb-6 leading-tight">
+            {post.title}
+          </h1>
+
+          <!-- Excerpt -->
+          <p class="text-xl text-ink-muted mb-8 leading-relaxed">
+            {post.excerpt}
+          </p>
+
+          <!-- Meta Info -->
+          <div class="flex flex-wrap items-center gap-6 text-sm text-ink-muted">
+            <time datetime={post.publishedAt} class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {formatDate(post.publishedAt)}
+            </time>
+            {post.updatedAt && post.updatedAt !== post.publishedAt && (
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Updated {formatDate(post.updatedAt)}
+              </span>
+            )}
+          </div>
+
+          <!-- Tags -->
+          {post.tags && post.tags.length > 0 && (
+            <div class="flex flex-wrap gap-2 mt-6">
+              {post.tags.map((tag) => (
+                <span class="px-2.5 py-1 text-xs bg-surface-raised text-ink-muted rounded-md">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+
+    <!-- Cover Image -->
+    {post.coverImage?.asset && (
+      <div class="container mb-12">
+        <div class="max-w-5xl mx-auto">
+          <figure class="relative aspect-[2/1] rounded-2xl overflow-hidden shadow-2xl">
+            <img
+              src={urlFor(post.coverImage).width(1400).auto('format').url()}
+              alt={post.coverImage.alt || post.title}
+              class="w-full h-full object-cover"
+            />
+          </figure>
+        </div>
+      </div>
+    )}
+
+    <!-- Content -->
+    <div class="container py-8 md:py-12">
+      <div class="max-w-3xl mx-auto">
+        <TableOfContents body={post.body} />
+        <PortableTextRenderer value={post.body} />
+
+        <!-- Related Talk -->
+        {post.relatedTalk && (
+          <div class="mt-16 p-6 bg-surface-raised rounded-xl border border-edge">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-violet-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-ink-faint mb-1">This post is based on my talk</p>
+                <a
+                  href={`/talks/${post.relatedTalk.slug}`}
+                  class="text-lg font-display font-semibold text-ink hover:text-accent transition-colors"
+                >
+                  {post.relatedTalk.title}
+                </a>
+                {post.relatedTalk.abstract && (
+                  <p class="text-sm text-ink-muted mt-2 line-clamp-2">
+                    {post.relatedTalk.abstract}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <!-- Share & Actions -->
+        <div class="mt-16 pt-8 border-t border-edge">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-ink-faint mb-2">Share this post</p>
+              <div class="flex gap-3">
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://faziz-dev.com/blog/${post.slug}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="p-2 bg-surface-raised hover:bg-accent/10 text-ink-muted hover:text-accent rounded-lg transition-colors cursor-pointer"
+                  aria-label="Share on X"
+                >
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://faziz-dev.com/blog/${post.slug}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="p-2 bg-surface-raised hover:bg-accent/10 text-ink-muted hover:text-accent rounded-lg transition-colors cursor-pointer"
+                  aria-label="Share on LinkedIn"
+                >
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                </a>
+                <button
+                  id="copy-link"
+                  class="p-2 bg-surface-raised hover:bg-accent/10 text-ink-muted hover:text-accent rounded-lg transition-colors cursor-pointer"
+                  aria-label="Copy link"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <a
+              href="/blog"
+              class="btn-secondary"
+            >
+              More articles
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    {post.relatedPosts && post.relatedPosts.length > 0 && (
+      <section class="section-subtle py-16 md:py-20">
+        <div class="container">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-2xl font-display font-bold text-ink mb-8">Related Posts</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+              {post.relatedPosts.map((related) => (
+                <a
+                  href={`/blog/${related.slug}`}
+                  class="group bg-surface-raised rounded-xl border border-edge overflow-hidden hover:border-accent/50 transition-all duration-300"
+                >
+                  {related.coverImage && (
+                    <div class="aspect-[16/9] overflow-hidden">
+                      <img
+                        src={urlFor(related.coverImage).width(400).height(225).url()}
+                        alt={related.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <div class="p-4">
+                    {related.category && (
+                      <span class="text-xs text-accent mb-2 block">
+                        {categoryLabels[related.category] || related.category}
+                      </span>
+                    )}
+                    <h3 class="font-display font-semibold text-ink group-hover:text-accent transition-colors line-clamp-2 mb-2">
+                      {related.title}
+                    </h3>
+                    <div class="flex items-center justify-between text-xs text-ink-faint">
+                      <span>{formatDate(related.publishedAt, { month: 'short', year: 'numeric' })}</span>
+                      <span>{formatReadingTime(related.estimatedReadingTime)}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
+  </article>
+
+  <!-- PostHog Blog Read Tracking -->
+  <script define:vars={{ postId: post._id, postSlug: post.slug, postTitle: post.title, category: post.category, readingTime: post.estimatedReadingTime }}>
+    // Track page view with blog-specific properties
+    if (typeof posthog !== 'undefined') {
+      posthog.capture('blog_post_viewed', {
+        post_id: postId,
+        post_slug: postSlug,
+        post_title: postTitle,
+        category: category,
+        estimated_reading_time: readingTime,
+      });
+
+      // Track reading progress
+      let maxScroll = 0;
+      let readComplete = false;
+
+      function trackScrollProgress() {
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollProgress = Math.round((window.scrollY / scrollHeight) * 100);
+
+        if (scrollProgress > maxScroll) {
+          maxScroll = scrollProgress;
+
+          // Track at 25%, 50%, 75%, and 100%
+          if (maxScroll >= 25 && maxScroll < 50 && !window.tracked25) {
+            window.tracked25 = true;
+            posthog.capture('blog_post_progress', { post_slug: postSlug, progress: 25 });
+          } else if (maxScroll >= 50 && maxScroll < 75 && !window.tracked50) {
+            window.tracked50 = true;
+            posthog.capture('blog_post_progress', { post_slug: postSlug, progress: 50 });
+          } else if (maxScroll >= 75 && maxScroll < 100 && !window.tracked75) {
+            window.tracked75 = true;
+            posthog.capture('blog_post_progress', { post_slug: postSlug, progress: 75 });
+          } else if (maxScroll >= 95 && !readComplete) {
+            readComplete = true;
+            posthog.capture('blog_post_completed', {
+              post_id: postId,
+              post_slug: postSlug,
+              post_title: postTitle,
+              category: category,
+            });
+          }
+        }
+      }
+
+      // Throttled scroll handler
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            trackScrollProgress();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    }
+  </script>
+
+  <!-- Copy Link Script -->
+  <script>
+    const copyButton = document.getElementById('copy-link');
+    if (copyButton) {
+      copyButton.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(window.location.href);
+        copyButton.innerHTML = `
+          <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        `;
+        setTimeout(() => {
+          copyButton.innerHTML = `
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          `;
+        }, 2000);
+      });
+    }
+
+    // Copy heading link on click
+    document.querySelectorAll('.heading-link').forEach((link) => {
+      link.addEventListener('click', async (e) => {
+        const headingId = link.getAttribute('data-heading-id');
+        if (headingId) {
+          const url = `${window.location.origin}${window.location.pathname}#${headingId}`;
+          await navigator.clipboard.writeText(url);
+        }
+      });
+    });
+  </script>
+</BaseLayout>

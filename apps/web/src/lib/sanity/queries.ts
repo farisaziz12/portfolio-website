@@ -500,6 +500,146 @@ export const externalPostsQuery = groq`
   }
 `;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Blog Posts (Self-hosted)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// All published blog posts (for listing)
+export const allBlogPostsQuery = groq`
+  *[_type == "blogPost" && published == true] | order(publishedAt desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    "coverImage": coverImage {
+      asset->,
+      alt
+    },
+    publishedAt,
+    updatedAt,
+    tags,
+    category,
+    featured,
+    "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+  }
+`;
+
+// Featured blog posts
+export const featuredBlogPostsQuery = groq`
+  *[_type == "blogPost" && published == true && featured == true] | order(publishedAt desc)[0...3] {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    "coverImage": coverImage {
+      asset->,
+      alt
+    },
+    publishedAt,
+    tags,
+    category,
+    "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+  }
+`;
+
+// All blog post slugs (for static path generation)
+export const allBlogPostSlugsQuery = groq`
+  *[_type == "blogPost" && published == true] {
+    "slug": slug.current
+  }
+`;
+
+// Single blog post by slug (full content)
+export const blogPostBySlugQuery = groq`
+  *[_type == "blogPost" && slug.current == $slug && published == true][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    "coverImage": coverImage {
+      asset->,
+      alt
+    },
+    body[] {
+      ...,
+      _type == "image" => {
+        ...,
+        asset->
+      }
+    },
+    publishedAt,
+    updatedAt,
+    tags,
+    category,
+    "relatedTalk": relatedTalk->{
+      _id,
+      title,
+      "slug": slug.current,
+      abstract
+    },
+    seoTitle,
+    seoDescription,
+    "ogImage": ogImage {
+      asset->,
+      alt
+    },
+    "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200),
+    "wordCount": length(pt::text(body)) / 5,
+    "relatedPosts": *[_type == "blogPost" && published == true && slug.current != $slug && (
+      count((tags[])[@ in ^.tags[]]) > 0 ||
+      category == ^.category
+    )] | order(publishedAt desc)[0...3] {
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt,
+      "coverImage": coverImage {
+        asset->,
+        alt
+      },
+      publishedAt,
+      category,
+      "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+    }
+  }
+`;
+
+// Blog posts by category
+export const blogPostsByCategoryQuery = groq`
+  *[_type == "blogPost" && published == true && category == $category] | order(publishedAt desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    "coverImage": coverImage {
+      asset->,
+      alt
+    },
+    publishedAt,
+    tags,
+    category,
+    "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+  }
+`;
+
+// Blog posts by tag
+export const blogPostsByTagQuery = groq`
+  *[_type == "blogPost" && published == true && $tag in tags] | order(publishedAt desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    "coverImage": coverImage {
+      asset->,
+      alt
+    },
+    publishedAt,
+    tags,
+    category,
+    "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+  }
+`;
+
 // Pages
 export const pageQuery = groq`
   *[_type == "page" && identifier == $identifier][0] {

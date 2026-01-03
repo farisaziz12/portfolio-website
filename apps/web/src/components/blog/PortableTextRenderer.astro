@@ -1,0 +1,87 @@
+---
+import { PortableText } from 'astro-portabletext';
+import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
+import type { SomePortableTextComponents } from 'astro-portabletext/types';
+
+// Custom components
+import BlockH2 from './portable-text/BlockH2.astro';
+import BlockH3 from './portable-text/BlockH3.astro';
+import BlockH4 from './portable-text/BlockH4.astro';
+import BlockNormal from './portable-text/BlockNormal.astro';
+import BlockQuote from './portable-text/BlockQuote.astro';
+import MarkLink from './portable-text/MarkLink.astro';
+import MarkCode from './portable-text/MarkCode.astro';
+import TypeImage from './portable-text/TypeImage.astro';
+import TypeCode from './portable-text/TypeCode.astro';
+import TypeCallout from './portable-text/TypeCallout.astro';
+import TypeYouTube from './portable-text/TypeYouTube.astro';
+
+interface Props {
+  value: (PortableTextBlock | ArbitraryTypedObject)[];
+}
+
+const { value } = Astro.props;
+
+const components: SomePortableTextComponents = {
+  block: {
+    h2: BlockH2,
+    h3: BlockH3,
+    h4: BlockH4,
+    normal: BlockNormal,
+    blockquote: BlockQuote,
+  },
+  mark: {
+    link: MarkLink,
+    code: MarkCode,
+  },
+  type: {
+    image: TypeImage,
+    code: TypeCode,
+    callout: TypeCallout,
+    youtube: TypeYouTube,
+  },
+};
+---
+
+<div class="portable-text prose prose-lg dark:prose-invert max-w-none">
+  <PortableText value={value} components={components} />
+</div>
+
+<style>
+  .portable-text :global(h2) {
+    position: relative;
+  }
+
+  .portable-text :global(h2:hover::before),
+  .portable-text :global(h3:hover::before) {
+    content: '#';
+    position: absolute;
+    left: -1.5rem;
+    color: var(--color-accent);
+    opacity: 0.5;
+  }
+
+  .portable-text :global(strong) {
+    @apply font-semibold text-ink;
+  }
+
+  .portable-text :global(em) {
+    @apply italic;
+  }
+
+  .portable-text :global(ul) {
+    @apply list-disc pl-6 mb-6 space-y-2 text-ink-muted;
+  }
+
+  .portable-text :global(ol) {
+    @apply list-decimal pl-6 mb-6 space-y-2 text-ink-muted;
+  }
+
+  .portable-text :global(li) {
+    @apply pl-2;
+  }
+
+  .portable-text :global(a) {
+    @apply text-accent hover:text-accent-hover underline underline-offset-2 transition-colors;
+  }
+</style>
