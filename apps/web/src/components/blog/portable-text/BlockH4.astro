@@ -1,33 +1,13 @@
 ---
 import type { Props as $, Block } from 'astro-portabletext/types';
+import { generateHeadingIdFromBlock } from '../../../lib/portable-text-utils';
+
 type Props = $<Block>;
 
 const { node } = Astro.props;
-
-// Extract text from children and generate slug
-function getTextFromChildren(children: unknown[]): string {
-  return children
-    .map((child: unknown) => {
-      if (typeof child === 'string') return child;
-      if (child && typeof child === 'object' && 'text' in child) return (child as { text: string }).text;
-      return '';
-    })
-    .join('');
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
-
-const text = node.children ? getTextFromChildren(node.children as unknown[]) : '';
-const id = slugify(text);
+const id = generateHeadingIdFromBlock(node);
 ---
-<h4 id={id} class="text-xl font-display font-semibold mt-10 mb-3 scroll-mt-24">
+<h4 id={id} class="text-xl font-display font-semibold mt-10 mb-3">
   <a href={`#${id}`} class="heading-link !text-ink no-underline hover:!text-ink cursor-pointer" data-heading-id={id}>
     <span class="text-ink"><slot /></span>
   </a>

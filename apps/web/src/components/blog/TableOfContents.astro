@@ -1,69 +1,18 @@
 ---
 import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
+import { extractHeadings } from '../../lib/portable-text-utils';
 
 interface Props {
   body: (PortableTextBlock | ArbitraryTypedObject)[];
 }
 
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
-
 const { body } = Astro.props;
-
-// Extract text from Portable Text children
-function getTextFromChildren(children: unknown[]): string {
-  return children
-    .map((child: unknown) => {
-      if (typeof child === 'string') return child;
-      if (child && typeof child === 'object' && 'text' in child) return (child as { text: string }).text;
-      return '';
-    })
-    .join('');
-}
-
-// Generate URL-friendly slug from text
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
-
-// Extract headings from Portable Text body
-function extractHeadings(blocks: (PortableTextBlock | ArbitraryTypedObject)[]): TocItem[] {
-  const headings: TocItem[] = [];
-
-  for (const block of blocks) {
-    if (block._type === 'block' && 'style' in block) {
-      const style = block.style as string;
-      if (style === 'h2' || style === 'h3' || style === 'h4') {
-        const children = 'children' in block ? block.children : [];
-        const text = getTextFromChildren(children as unknown[]);
-        if (text) {
-          headings.push({
-            id: slugify(text),
-            text,
-            level: parseInt(style.charAt(1), 10),
-          });
-        }
-      }
-    }
-  }
-
-  return headings;
-}
-
 const headings = extractHeadings(body);
 const hasHeadings = headings.length > 0;
 ---
 
 {hasHeadings && (
-  <nav class="mb-12 p-6 bg-surface-raised rounded-xl border border-edge">
+  <nav class="mb-12 p-6 bg-surface-raised rounded-xl border border-edge" aria-label="Table of contents">
     <div class="flex items-center gap-3 mb-5 pb-4 border-b border-edge">
       <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
         <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,3 +55,4 @@ const hasHeadings = headings.length > 0;
     </ul>
   </nav>
 )}
+
