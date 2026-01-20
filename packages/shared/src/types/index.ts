@@ -7,7 +7,8 @@ export type EventType =
   | 'panel'
   | 'hosting'
   | 'judging'
-  | 'mentoring';
+  | 'mentoring'
+  | 'attending';
 
 export type MediaType = 'photo' | 'video' | 'press' | 'screenshot' | 'podcast';
 
@@ -71,6 +72,7 @@ export const NON_BOOKABLE_EVENT_TYPES: EventType[] = [
   'judging',
   'mentoring',
   'panel',
+  'attending',
 ];
 
 // Helper to check if an event type is bookable

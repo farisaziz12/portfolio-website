@@ -90,7 +90,7 @@ function getCountryFlag(countryName?: string): string {
 }
 
 type ViewMode = 'timeline' | 'compact';
-type FilterType = 'all' | 'conference' | 'workshop' | 'meetup' | 'podcast' | 'panel' | 'hosting' | 'other';
+type FilterType = 'all' | 'conference' | 'workshop' | 'meetup' | 'podcast' | 'panel' | 'hosting' | 'attending' | 'other';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -210,7 +210,7 @@ export default function EventsFilter({ events, upcomingOnly = false, pastOnly = 
     if (selectedType !== 'all') {
       if (selectedType === 'other') {
         result = result.filter(
-          (e) => !['conference', 'workshop', 'meetup', 'podcast', 'panel', 'hosting'].includes(e.type)
+          (e) => !['conference', 'workshop', 'meetup', 'podcast', 'panel', 'hosting', 'attending'].includes(e.type)
         );
       } else {
         result = result.filter((e) => e.type === selectedType);
@@ -326,6 +326,7 @@ export default function EventsFilter({ events, upcomingOnly = false, pastOnly = 
     podcast: 'Podcasts',
     panel: 'Panels',
     hosting: 'Hosting',
+    attending: 'Attending',
     other: 'Other',
   };
 
@@ -1569,6 +1570,11 @@ function EventRow({
           color: rgb(6 182 212);
         }
 
+        .event-row__type--attending {
+          background: rgb(168 85 247 / 0.1);
+          color: rgb(168 85 247);
+        }
+
         .event-row__badge {
           display: flex;
           align-items: center;
@@ -1796,6 +1802,11 @@ function EventCard({
         .event-card__type--podcast {
           background: rgb(244 63 94 / 0.1);
           color: rgb(244 63 94);
+        }
+
+        .event-card__type--attending {
+          background: rgb(168 85 247 / 0.1);
+          color: rgb(168 85 247);
         }
 
         .event-card__video-badge {

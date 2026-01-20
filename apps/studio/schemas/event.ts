@@ -33,6 +33,7 @@ export default defineType({
           { title: 'Hosting', value: 'hosting' },
           { title: 'Judging', value: 'judging' },
           { title: 'Mentoring', value: 'mentoring' },
+          { title: 'Attending', value: 'attending' },
         ],
       },
       validation: (Rule) => Rule.required(),
