@@ -35,42 +35,10 @@ interface EventsFilterProps {
   splitByTime?: boolean; // Show upcoming first, then past with divider
 }
 
-// Build a reverse lookup from country names to codes using the country-flag-emoji library
-const countryNameToCode: Record<string, string> = {};
-countryFlagEmoji.list.forEach((c: { code: string; name: string }) => {
-  countryNameToCode[c.name] = c.code;
-});
-
-// Add common aliases that might differ from the library's naming
-const countryAliases: Record<string, string> = {
-  'United Kingdom': 'GB',
-  'UK': 'GB',
-  'USA': 'US',
-  'United States of America': 'US',
-  'Online': '🌐',
-};
-
-// Get country code from name using library + aliases
-function getCountryCode(country: string): string {
-  return countryAliases[country] || countryNameToCode[country] || '';
-}
-
 function getCountryFlag(countryName?: string): string {
   if (!countryName) return '🌐';
-
-  const code = getCountryCode(countryName);
-  if (code === '🌐') return code;
-
-  if (code) {
-    // Convert country code to flag emoji
-    const codePoints = code
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-  }
-
-  return '🌐';
+  const country = countryFlagEmoji.list().find((c: { name: string }) => c.name === countryName);
+  return country?.emoji || '🌐';
 }
 
 type ViewMode = 'timeline' | 'compact';
