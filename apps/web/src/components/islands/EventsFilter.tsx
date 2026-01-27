@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import countryFlagEmoji from 'country-flag-emoji';
 
 interface Event {
   _id: string;
@@ -34,47 +35,30 @@ interface EventsFilterProps {
   splitByTime?: boolean; // Show upcoming first, then past with divider
 }
 
-// Country flag helper - inline since functions can't be passed from Astro
-const countryToCode: Record<string, string> = {
+// Build a reverse lookup from country names to codes using the country-flag-emoji library
+const countryNameToCode: Record<string, string> = {};
+countryFlagEmoji.list.forEach((c: { code: string; name: string }) => {
+  countryNameToCode[c.name] = c.code;
+});
+
+// Add common aliases that might differ from the library's naming
+const countryAliases: Record<string, string> = {
   'United Kingdom': 'GB',
-  'United States': 'US',
-  'Switzerland': 'CH',
-  'Greece': 'GR',
-  'Italy': 'IT',
-  'Germany': 'DE',
-  'Singapore': 'SG',
-  'Thailand': 'TH',
-  'Portugal': 'PT',
-  'Macedonia': 'MK',
-  'Spain': 'ES',
-  'France': 'FR',
-  'Netherlands': 'NL',
-  'Belgium': 'BE',
-  'Austria': 'AT',
-  'Poland': 'PL',
-  'Czech Republic': 'CZ',
-  'Sweden': 'SE',
-  'Norway': 'NO',
-  'Denmark': 'DK',
-  'Finland': 'FI',
-  'Ireland': 'IE',
-  'Australia': 'AU',
-  'Canada': 'CA',
-  'Japan': 'JP',
-  'South Korea': 'KR',
-  'India': 'IN',
-  'Brazil': 'BR',
-  'Mexico': 'MX',
-  'Argentina': 'AR',
-  'Israel': 'IL',
-  'UAE': 'AE',
+  'UK': 'GB',
+  'USA': 'US',
+  'United States of America': 'US',
   'Online': '🌐',
 };
+
+// Get country code from name using library + aliases
+function getCountryCode(country: string): string {
+  return countryAliases[country] || countryNameToCode[country] || '';
+}
 
 function getCountryFlag(countryName?: string): string {
   if (!countryName) return '🌐';
 
-  const code = countryToCode[countryName];
+  const code = getCountryCode(countryName);
   if (code === '🌐') return code;
 
   if (code) {
