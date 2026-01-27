@@ -6,11 +6,10 @@ declare module 'country-flag-emoji' {
     emoji: string;
   }
 
-  function get(code: string): CountryFlag | undefined;
-  function list(): CountryFlag[];
-
-  export default {
-    get,
-    list,
+  const countryFlagEmoji: {
+    get(code: string): CountryFlag | undefined;
+    list: CountryFlag[];
   };
+
+  export default countryFlagEmoji;
 }

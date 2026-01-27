@@ -37,7 +37,7 @@ interface EventsFilterProps {
 
 function getCountryFlag(countryName?: string): string {
   if (!countryName) return '🌐';
-  const country = countryFlagEmoji.list().find((c: { name: string }) => c.name === countryName);
+  const country = countryFlagEmoji.list.find((c: { name: string }) => c.name === countryName);
   return country?.emoji || '🌐';
 }
 
