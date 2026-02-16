@@ -18,6 +18,13 @@ interface NavItem {
   }[];
 }
 
+interface NextEvent {
+  title: string;
+  slug: string;
+  date: string;
+  type: string;
+}
+
 interface Props {
   navItems: NavItem[];
   ctaButton?: {
@@ -25,9 +32,10 @@ interface Props {
     href: string;
     isExternal?: boolean;
   };
+  nextEvent?: NextEvent;
 }
 
-const { navItems, ctaButton } = Astro.props;
+const { navItems, ctaButton, nextEvent } = Astro.props;
 const pathname = Astro.url.pathname;
 
 function isActive(href: string) {
@@ -61,6 +69,21 @@ function isActive(href: string) {
         </svg>
       </button>
     </div>
+
+    <!-- Next Event Banner -->
+    {nextEvent && (
+      <a
+        href={`/events/${nextEvent.slug}`}
+        class="mobile-menu-event"
+        data-menu-close
+      >
+        <span class="mobile-menu-event-dot"></span>
+        <span class="mobile-menu-event-label">Next:</span>
+        <span class="mobile-menu-event-title">{nextEvent.title}</span>
+        <span class="mobile-menu-event-sep">&middot;</span>
+        <span class="mobile-menu-event-date">{nextEvent.date}</span>
+      </a>
+    )}
 
     <!-- Navigation Links -->
     <nav class="mobile-menu-nav">
@@ -195,6 +218,63 @@ function isActive(href: string) {
     color: rgb(var(--ink));
   }
 
+  .mobile-menu-event {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0.75rem 1.5rem 0;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    background: rgb(var(--surface-overlay));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 0.5rem;
+    transition: border-color 0.2s ease;
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  .mobile-menu-event:hover {
+    border-color: rgb(var(--accent) / 0.5);
+  }
+
+  .mobile-menu-overlay.is-open .mobile-menu-event {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.2s ease;
+    transition-delay: 0.1s;
+  }
+
+  .mobile-menu-event-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+    background: rgb(var(--accent));
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .mobile-menu-event-label {
+    color: rgb(var(--ink-muted));
+  }
+
+  .mobile-menu-event-title {
+    font-weight: 500;
+    color: rgb(var(--ink));
+  }
+
+  .mobile-menu-event-sep {
+    color: rgb(var(--ink-faint));
+  }
+
+  .mobile-menu-event-date {
+    color: rgb(var(--ink-muted));
+  }
+
   .mobile-menu-nav {
     flex: 1;
     padding: 1.5rem;
@@ -315,14 +395,20 @@ function isActive(href: string) {
     .mobile-menu-backdrop,
     .mobile-menu-panel,
     .mobile-menu-item,
+    .mobile-menu-event,
     .mobile-menu-cta {
       transition: none;
     }
 
     .mobile-menu-overlay.is-open .mobile-menu-item,
+    .mobile-menu-overlay.is-open .mobile-menu-event,
     .mobile-menu-overlay.is-open .mobile-menu-cta {
       transition: none;
       transition-delay: 0s;
+    }
+
+    .mobile-menu-event-dot {
+      animation: none;
     }
   }
 </style>

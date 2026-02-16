@@ -108,7 +108,7 @@ function formatEventDate(dateStr: string) {
           >
             <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
             <span class="text-ink-muted">{nextEvent.type === 'meetup' ? 'Next' : 'Next'}:</span>
-            <span class="text-ink font-medium">{nextEvent.conference}</span>
+            <span class="text-ink font-medium">{nextEvent.title}</span>
             <span class="text-ink-faint">•</span>
             <span class="text-ink-muted">{formatEventDate(nextEvent.date)}</span>
           </a>
@@ -201,7 +201,7 @@ function formatEventDate(dateStr: string) {
 </header>
 
 <!-- Mobile Menu Overlay -->
-<MobileMenu navItems={navItems} ctaButton={ctaButton} />
+<MobileMenu navItems={navItems} ctaButton={ctaButton} nextEvent={nextEvent ? { title: nextEvent.title, slug: nextEvent.slug, date: formatEventDate(nextEvent.date), type: nextEvent.type } : undefined} />
 
 <style>
   /* Navigation link base styles */
