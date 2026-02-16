@@ -64,6 +64,7 @@ export function getCountryFlag(countryName: string): string {
     Thailand: 'TH',
     Portugal: 'PT',
     Macedonia: 'MK',
+    'Czech Republic': 'CZ',
     Online: '🌐',
   };
 
