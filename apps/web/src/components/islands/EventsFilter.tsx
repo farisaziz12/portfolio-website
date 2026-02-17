@@ -35,9 +35,14 @@ interface EventsFilterProps {
   splitByTime?: boolean; // Show upcoming first, then past with divider
 }
 
+const COUNTRY_NAME_ALIASES: Record<string, string> = {
+  'Czech Republic': 'Czechia',
+};
+
 function getCountryFlag(countryName?: string): string {
   if (!countryName) return '🌐';
-  const country = countryFlagEmoji.list.find((c: { name: string }) => c.name === countryName);
+  const lookupName = COUNTRY_NAME_ALIASES[countryName] || countryName;
+  const country = countryFlagEmoji.list.find((c: { name: string }) => c.name === lookupName);
   return country?.emoji || '🌐';
 }
 
