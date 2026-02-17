@@ -28,6 +28,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
   'Thailand': '🇹🇭',
   'Portugal': '🇵🇹',
   'Macedonia': '🇲🇰',
+  'Czech Republic': '🇨🇿',
   'Online': '🌐',
 };
 
