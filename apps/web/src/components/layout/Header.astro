@@ -92,10 +92,10 @@ function formatEventDate(dateStr: string) {
   <nav class="container" aria-label="Main navigation">
     <div class="flex items-center justify-between h-16">
       <!-- Logo / Name -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 min-w-0">
         <a
           href="/"
-          class="font-display font-semibold text-body-lg text-ink hover:text-accent transition-colors"
+          class="font-display font-semibold text-body-lg text-ink hover:text-accent transition-colors shrink-0"
         >
           Faris Aziz
         </a>
@@ -104,13 +104,13 @@ function formatEventDate(dateStr: string) {
         {nextEvent && (
           <a
             href={`/events/${nextEvent.slug}`}
-            class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs bg-surface-overlay rounded-full border border-edge hover:border-accent/50 transition-colors"
+            class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs bg-surface-overlay rounded-full border border-edge hover:border-accent/50 transition-colors min-w-0 max-w-xs"
           >
-            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-            <span class="text-ink-muted">{nextEvent.type === 'meetup' ? 'Next' : 'Next'}:</span>
-            <span class="text-ink font-medium">{nextEvent.title}</span>
-            <span class="text-ink-faint">•</span>
-            <span class="text-ink-muted">{formatEventDate(nextEvent.date)}</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0"></span>
+            <span class="text-ink-muted shrink-0">{nextEvent.type === 'meetup' ? 'Next' : 'Next'}:</span>
+            <span class="text-ink font-medium truncate">{nextEvent.title}</span>
+            <span class="text-ink-faint shrink-0">•</span>
+            <span class="text-ink-muted shrink-0">{formatEventDate(nextEvent.date)}</span>
           </a>
         )}
       </div>
