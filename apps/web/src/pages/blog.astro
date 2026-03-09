@@ -129,10 +129,10 @@ const categoryLabels: Record<string, string> = {
 
         <!-- CTA Buttons -->
         <div class="flex flex-wrap gap-4">
-          <a href="https://twitter.com/FarisAziz12" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4 group glow">
-            Follow on X
+          <a href="https://bsky.app/profile/farisaziz12.bsky.social" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4 group glow">
+            Follow on Bluesky
             <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.785 2.627 3.603 3.493 6.216 3.164-.037.008-2.74.429-4.296 2.376C1.076 17.636 2.679 19.483 4.378 20.328c3.736 1.857 6.965-.425 8.575-3.945.104-.228.19-.44.262-.627.07.188.157.4.261.627 1.61 3.52 4.839 5.802 8.576 3.945 1.698-.845 3.302-2.692 1.833-4.541-1.555-1.947-4.259-2.368-4.296-2.376 2.613.329 5.431-.537 6.216-3.164.245-.83.624-5.789.624-6.479 0-.688-.139-1.86-.902-2.203-.659-.3-1.664-.621-4.3 1.24C19.046 4.747 16.087 8.686 15 10.8h-3z"/>
             </svg>
           </a>
           <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4">
@@ -165,7 +165,7 @@ const categoryLabels: Record<string, string> = {
 
               <!-- Featured Posts -->
               {featuredBlogPosts.length > 0 && (
-                <div class="mb-8">
+                <div class="mb-8 space-y-6">
                   {featuredBlogPosts.map((post) => (
                     <a
                       href={`/blog/${post.slug}`}
@@ -565,12 +565,12 @@ const categoryLabels: Record<string, string> = {
           </p>
           <div class="flex flex-wrap justify-center gap-4">
             <a
-              href="https://twitter.com/FarisAziz12"
+              href="https://bsky.app/profile/farisaziz12.bsky.social"
               target="_blank"
               rel="noopener noreferrer"
               class="btn-primary"
             >
-              Follow on X
+              Follow on Bluesky
             </a>
             <a
               href="https://linkedin.com/in/farisaziz12"
