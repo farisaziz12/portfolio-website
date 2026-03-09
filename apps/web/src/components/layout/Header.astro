@@ -104,7 +104,7 @@ function formatEventDate(dateStr: string) {
         {nextEvent && (
           <a
             href={`/events/${nextEvent.slug}`}
-            class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs bg-surface-overlay rounded-full border border-edge hover:border-accent/50 transition-colors min-w-0 max-w-xs"
+            class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 text-xs bg-surface-overlay rounded-full border border-edge hover:border-accent/50 transition-colors min-w-0 max-w-[280px]"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0"></span>
             <span class="text-ink-muted shrink-0">{nextEvent.type === 'meetup' ? 'Next' : 'Next'}:</span>
@@ -174,7 +174,7 @@ function formatEventDate(dateStr: string) {
 
         <ThemeToggle client:load />
 
-        <a href={ctaButton.href} class="btn-primary ml-2">
+        <a href={ctaButton.href} class="btn-primary ml-2 whitespace-nowrap">
           {ctaButton.label}
         </a>
       </div>
