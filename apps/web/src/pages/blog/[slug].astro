@@ -170,11 +170,11 @@ const categoryLabels: Record<string, string> = {
     {post.coverImage?.asset && (
       <div class="container mb-12">
         <div class="max-w-5xl mx-auto">
-          <figure class="relative aspect-[2/1] rounded-2xl overflow-hidden shadow-2xl">
+          <figure class="relative rounded-2xl overflow-hidden shadow-2xl">
             <img
               src={urlFor(post.coverImage).width(1400).auto('format').url()}
               alt={post.coverImage.alt || post.title}
-              class="w-full h-full object-cover"
+              class="w-full h-auto"
             />
           </figure>
         </div>
