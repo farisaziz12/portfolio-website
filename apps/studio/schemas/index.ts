@@ -19,12 +19,14 @@ import servicePage from './servicePage';
 import serviceLandingPage from './serviceLandingPage';
 import siteNavigation from './siteNavigation';
 import siteSettings from './siteSettings';
+import workshopInstance from './workshopInstance';
 
 export const schemaTypes = [
   // Core speaking content
   talk,
   event,
   workshop,
+  workshopInstance,
 
   // Portfolio
   project,
