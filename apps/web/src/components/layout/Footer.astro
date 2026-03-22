@@ -1,4 +1,6 @@
 ---
+import GeneralSubscribe from '../islands/GeneralSubscribe';
+
 const currentYear = new Date().getFullYear();
 
 const socialLinks = [
@@ -173,6 +175,11 @@ const externalLinks = [
           </ul>
         </div>
       </div>
+    </div>
+
+    <!-- Subscribe -->
+    <div class="mt-10 pt-8 border-t border-edge max-w-md">
+      <GeneralSubscribe client:load compact />
     </div>
 
     <!-- Bottom bar -->

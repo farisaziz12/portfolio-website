@@ -8,7 +8,11 @@ export default defineConfig({
   site: 'https://faziz-dev.com',
   integrations: [
     tailwind(),
-    sitemap(),
+    sitemap({
+      filter: (page) =>
+        !page.includes('/workshops/attend/') &&
+        !page.includes('/admin'),
+    }),
     react(),
   ],
   vite: {
@@ -16,7 +20,7 @@ export default defineConfig({
       noExternal: ['shared'],
     },
   },
-  output: 'static',
+  output: 'hybrid',
   build: {
     inlineStylesheets: 'auto',
   },

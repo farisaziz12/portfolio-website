@@ -9,6 +9,7 @@ import EventCarousel from '../components/islands/EventCarousel';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import SpotlightCard from '../components/animations/SpotlightCard.astro';
 import TiltCard from '../components/animations/TiltCard.astro';
+import GeneralSubscribe from '../components/islands/GeneralSubscribe';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import {
   upcomingEventsQuery,
@@ -1068,6 +1069,15 @@ const topics = [
       </div>
     </section>
   )}
+
+  <!-- Subscribe Section -->
+  <section class="section py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-xl mx-auto">
+        <GeneralSubscribe client:load />
+      </div>
+    </div>
+  </section>
 
   <!-- CTA Section -->
   <section class="relative overflow-hidden">

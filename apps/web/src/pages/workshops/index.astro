@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopsQuery } from '../../lib/sanity/queries';
 
@@ -217,6 +218,15 @@ const bookableWorkshops = workshops.filter((w) => w.isBookable !== false);
           </a>
         </div>
       )}
+    </div>
+  </section>
+
+  <!-- Subscribe Section -->
+  <section class="section py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-xl mx-auto">
+        <GeneralSubscribe client:load />
+      </div>
     </div>
   </section>
 

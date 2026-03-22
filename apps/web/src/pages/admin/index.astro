@@ -1,0 +1,242 @@
+---
+export const prerender = false
+
+import { sanityFetch } from '../../lib/sanity/client';
+import { allWorkshopInstancesQuery } from '../../lib/sanity/queries';
+import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
+
+interface WorkshopInstanceRow {
+  _id: string;
+  title: string;
+  event: string;
+  token: string;
+  workshopDate: string;
+  accessDurationDays: number;
+  forceClose: boolean;
+  repoUrl: string;
+  overallFeedbackUrl?: string;
+  emailCaptureEnabled?: boolean;
+}
+
+const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
+
+// Handle POST (login)
+let authError = '';
+let isAuthenticated = false;
+
+const sessionCookie = Astro.cookies.get('admin_session')?.value;
+if (sessionCookie === 'valid') {
+  isAuthenticated = true;
+}
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const password = formData.get('password')?.toString() || '';
+
+  if (password === ADMIN_PASSWORD) {
+    Astro.cookies.set('admin_session', 'valid', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 28800, // 8 hours
+      path: '/',
+    });
+    isAuthenticated = true;
+  } else {
+    authError = 'Incorrect password';
+  }
+}
+
+let instances: WorkshopInstanceRow[] = [];
+if (isAuthenticated) {
+  instances = await sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []);
+}
+
+const statusConfig: Record<string, { label: string; badge: string }> = {
+  'open': { label: 'Open', badge: 'bg-emerald-900/30 text-emerald-400 border-emerald-800' },
+  'upcoming': { label: 'Upcoming', badge: 'bg-amber-900/30 text-amber-400 border-amber-800' },
+  'closed': { label: 'Closed', badge: 'bg-red-900/30 text-red-400 border-red-800' },
+  'force-closed': { label: 'Force Closed', badge: 'bg-red-900/30 text-red-400 border-red-800' },
+};
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin | Workshop Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem; }
+    .login-form {
+      max-width: 400px;
+      margin: 20vh auto;
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    .login-form h1 { text-align: center; font-size: 1.5rem; }
+    .login-form input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .login-form input:focus { outline: none; border-color: #3b82f6; }
+    .login-form button {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .login-form button:hover { background: #2563eb; }
+    .error { color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .card-title { font-size: 1.125rem; font-weight: 600; color: #f8fafc; }
+    .card-event { font-size: 0.875rem; color: #94a3b8; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      border: 1px solid;
+    }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+    .meta-item { font-size: 0.8125rem; }
+    .meta-label { color: #64748b; margin-bottom: 0.125rem; }
+    .meta-value { color: #cbd5e1; }
+    .meta-value a { color: #22d3ee; text-decoration: none; }
+    .meta-value a:hover { text-decoration: underline; }
+    .token-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #22d3ee;
+      cursor: pointer;
+      background: #0f172a;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #334155;
+      display: inline-block;
+    }
+    .token-link:hover { background: #1e293b; }
+  </style>
+</head>
+<body>
+  {!isAuthenticated ? (
+    <div class="login-form">
+      <h1>Admin Login</h1>
+      {authError && <p class="error">{authError}</p>}
+      <form method="POST">
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          autocomplete="current-password"
+          required
+        />
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+  ) : (
+    <div class="container">
+      <h1>Workshop Instances</h1>
+
+      {instances.length === 0 ? (
+        <p style="color: #94a3b8;">No workshop instances found.</p>
+      ) : (
+        instances.map((instance) => {
+          const status = getAccessStatus(instance);
+          const close = getCloseDate(instance);
+          const cfg = statusConfig[status];
+          const statusEmoji = status === 'open' ? '🟢' : status === 'upcoming' ? '⏳' : '🔴';
+
+          return (
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">{instance.title}</div>
+                  <div class="card-event">{instance.event}</div>
+                </div>
+                <span class={`badge ${cfg.badge}`}>
+                  <span>{statusEmoji}</span>
+                  {cfg.label}
+                </span>
+              </div>
+              <div class="meta">
+                <div class="meta-item">
+                  <div class="meta-label">Workshop Date</div>
+                  <div class="meta-value">{formatDate(instance.workshopDate)}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Close Date</div>
+                  <div class="meta-value">{formatDate(close.toISOString())}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Access Link</div>
+                  <div class="meta-value">
+                    <span
+                      class="token-link"
+                      onclick={`navigator.clipboard.writeText('https://faziz-dev.com/workshops/attend/${instance.token}');this.textContent='Copied!';setTimeout(()=>this.textContent='faziz-dev.com/workshops/attend/${instance.token}',2000)`}
+                    >
+                      faziz-dev.com/workshops/attend/{instance.token}
+                    </span>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Repo</div>
+                  <div class="meta-value">
+                    <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer">Open Repo</a>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Sanity</div>
+                  <div class="meta-value">
+                    <a href={`https://faziz-dev.com/studio/desk/workshopInstance;${instance._id}`} target="_blank" rel="noopener noreferrer">Edit in Sanity</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })
+      )}
+    </div>
+  )}
+</body>
+</html>

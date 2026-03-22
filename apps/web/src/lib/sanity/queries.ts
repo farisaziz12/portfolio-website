@@ -1339,3 +1339,41 @@ export const serviceLandingPageBySlugQuery = groq`
     ctaSecondaryText
   }
 `;
+
+// Workshop Instances
+export const workshopAttendQuery = groq`
+  *[_type == "workshopInstance" && token == $token][0] {
+    _id,
+    title,
+    event,
+    token,
+    workshopDate,
+    accessDurationDays,
+    forceClose,
+    repoUrl,
+    overallFeedbackUrl,
+    emailCaptureEnabled,
+    sections[] {
+      _key,
+      emoji,
+      title,
+      sectionFeedbackUrl,
+      content
+    }
+  }
+`;
+
+export const allWorkshopInstancesQuery = groq`
+  *[_type == "workshopInstance"] | order(workshopDate desc) {
+    _id,
+    title,
+    event,
+    token,
+    workshopDate,
+    accessDurationDays,
+    forceClose,
+    repoUrl,
+    overallFeedbackUrl,
+    emailCaptureEnabled
+  }
+`;
