@@ -9,14 +9,16 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@sanity/code-input": "^4.1.4",
     "@sanity/icons": "^3.5.2",
+    "@sanity/table": "^2.0.1",
     "@sanity/vision": "^3.67.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanity": "^3.67.0",
     "sanity-plugin-bulk-delete": "^1.1.1",
     "shared": "workspace:*",
-    "styled-components": "^6.1.13"
+    "styled-components": "^6.3.12"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

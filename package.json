@@ -23,6 +23,11 @@
     "prettier": "^3.4.2",
     "tsx": "^4.19.2"
   },
+  "pnpm": {
+    "overrides": {
+      "@codemirror/state": "6.5.2"
+    }
+  },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"

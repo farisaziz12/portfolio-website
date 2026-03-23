@@ -33,6 +33,14 @@ export const deskStructure = (S: StructureBuilder) =>
                 .schemaType('workshop')
                 .child(S.documentTypeList('workshop').title('Workshops')),
               S.listItem()
+                .title('Workshop Instances')
+                .schemaType('workshopInstance')
+                .child(
+                  S.documentTypeList('workshopInstance')
+                    .title('Workshop Instances')
+                    .defaultOrdering([{ field: 'workshopDate', direction: 'desc' }])
+                ),
+              S.listItem()
                 .title('Events')
                 .schemaType('event')
                 .child(

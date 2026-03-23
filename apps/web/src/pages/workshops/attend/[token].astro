@@ -1,0 +1,122 @@
+---
+export const prerender = false
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { sanityFetch } from '../../../lib/sanity/client';
+import { workshopAttendQuery } from '../../../lib/sanity/queries';
+import { getAccessStatus, getCloseDate } from '../../../lib/workshop-access';
+import WorkshopAttend from '../../../components/islands/WorkshopAttend';
+
+interface Section {
+  _key: string;
+  emoji?: string;
+  title: string;
+  sectionFeedbackUrl?: string;
+  content?: any[];
+}
+
+interface WorkshopInstanceData {
+  _id: string;
+  title: string;
+  event: string;
+  token: string;
+  workshopDate: string;
+  accessDurationDays: number;
+  forceClose: boolean;
+  repoUrl: string;
+  overallFeedbackUrl?: string;
+  emailCaptureEnabled?: boolean;
+  sections?: Section[];
+}
+
+const { token } = Astro.params;
+const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(() => null);
+
+if (!instance) {
+  return Astro.redirect('/404');
+}
+
+const status = getAccessStatus(instance);
+const closeDate = getCloseDate(instance);
+
+const formatDateLong = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+---
+
+<BaseLayout
+  title={`${instance.title} | Workshop`}
+  description={`Workshop materials for ${instance.title}`}
+  pathname={`/workshops/attend/${token}`}
+>
+  {status === 'upcoming' && (
+    <section class="min-h-[80vh] flex items-center">
+      <div class="container py-20 md:py-32">
+        <div class="max-w-3xl mx-auto text-center">
+          <div class="terminal max-w-lg mx-auto mb-8 animate-fade-in">
+            <div class="terminal__header">
+              <div class="terminal__dots">
+                <div class="terminal__dot terminal__dot--red"></div>
+                <div class="terminal__dot terminal__dot--yellow"></div>
+                <div class="terminal__dot terminal__dot--green"></div>
+              </div>
+              <span class="terminal__title">workshop.sh</span>
+            </div>
+            <div class="terminal__body">
+              <span class="terminal__prompt">$</span>
+              <span class="terminal__command"> npm run workshop --session="{instance.event}"</span>
+              <div class="terminal__output">Waiting for session to begin...</div>
+            </div>
+          </div>
+
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-ink mb-6">
+            {instance.title}
+          </h1>
+
+          <p class="text-lg text-ink-muted mb-8">
+            This session opens on <span class="font-semibold text-ink">{formatDateLong(instance.workshopDate)}</span>. Check back then.
+          </p>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {(status === 'closed' || status === 'force-closed') && (
+    <section class="min-h-[80vh] flex items-center">
+      <div class="container py-20 md:py-32">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-ink mb-6">
+            {instance.title}
+          </h1>
+
+          <p class="text-lg text-ink-muted mb-8">
+            This workshop session has ended. Materials are no longer available.
+          </p>
+
+          <a href="/workshops" class="btn-primary">
+            View workshops
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {status === 'open' && (
+    <WorkshopAttend
+      client:load
+      title={instance.title}
+      event={instance.event}
+      token={instance.token}
+      repoUrl={instance.repoUrl}
+      overallFeedbackUrl={instance.overallFeedbackUrl}
+      sections={instance.sections || []}
+      closeDateISO={closeDate.toISOString()}
+      sanityProjectId={import.meta.env.SANITY_STUDIO_PROJECT_ID || '94fb4yui'}
+      sanityDataset={import.meta.env.SANITY_STUDIO_DATASET || 'production'}
+    />
+  )}
+</BaseLayout>
