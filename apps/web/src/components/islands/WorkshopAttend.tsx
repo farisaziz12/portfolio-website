@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -79,7 +79,6 @@ interface WorkshopAttendProps {
   token: string;
   repoUrl: string;
   overallFeedbackUrl?: string;
-  emailCaptureEnabled?: boolean;
   sections: Section[];
   closeDateISO: string;
   sanityProjectId: string;
@@ -373,39 +372,38 @@ function ImageRenderer({ block, projectId, dataset }: { block: ImageBlock; proje
   );
 }
 
+const shikiImport = typeof window !== 'undefined' ? import('shiki') : null;
+
 function CodeBlockRenderer({ block }: { block: CodeBlock }) {
   const [copied, setCopied] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const code = block.code ?? '';
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    shikiImport?.then(async ({ codeToHtml }) => {
       try {
-        const { codeToHtml } = await import('shiki');
         const html = await codeToHtml(code, {
           lang: block.language || 'text',
           theme: 'github-dark',
         });
         if (!cancelled) setHighlightedHtml(html);
       } catch {
-        // Language not supported — fall back to plain text
-        try {
-          const { codeToHtml } = await import('shiki');
-          const html = await codeToHtml(code, { lang: 'text', theme: 'github-dark' });
-          if (!cancelled) setHighlightedHtml(html);
-        } catch {
-          // give up
-        }
+        const html = await codeToHtml(code, { lang: 'text', theme: 'github-dark' });
+        if (!cancelled) setHighlightedHtml(html);
       }
-    })();
+    }).catch(() => {});
     return () => { cancelled = true; };
   }, [code, block.language]);
+
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -837,6 +835,7 @@ export default function WorkshopAttend({
     const key = sections[index]?._key;
     if (key) {
       setVisited((prev) => {
+        if (prev.has(key)) return prev;
         const next = new Set(prev);
         next.add(key);
         localStorage.setItem(`workshop-visited-${token}`, JSON.stringify([...next]));
@@ -858,11 +857,11 @@ export default function WorkshopAttend({
     return <GateView event={event} token={token} onSuccess={setUser} />;
   }
 
-  const closeDate = new Date(closeDateISO).toLocaleDateString('en-US', {
+  const closeDate = useMemo(() => new Date(closeDateISO).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-  });
+  }), [closeDateISO]);
 
   // Section detail view
   if (activeSection !== null && sections[activeSection]) {
