@@ -10,6 +10,14 @@ export const client = createClient({
   token: import.meta.env.SANITY_API_TOKEN,
 });
 
+export const writeClient = createClient({
+  projectId: import.meta.env.SANITY_STUDIO_PROJECT_ID || '94fb4yui',
+  dataset: import.meta.env.SANITY_STUDIO_DATASET || 'production',
+  apiVersion: '2024-01-01',
+  useCdn: false,
+  token: import.meta.env.SANITY_API_TOKEN,
+});
+
 const builder = imageUrlBuilder(client);
 
 export function urlFor(source: SanityImageSource) {

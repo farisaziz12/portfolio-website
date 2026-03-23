@@ -4,6 +4,7 @@ import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { eventBySlugQuery, allEventsQuery, socialPostsForEventQuery } from '../../lib/sanity/queries';
 import { formatDate, getCountryFlag } from 'shared/utils';
 import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
+import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 
 interface EventDetail {
   _id: string;
@@ -469,6 +470,15 @@ function getTypeGradient(type: string) {
       </div>
     </section>
   )}
+
+  <!-- Subscribe -->
+  <section class="section py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-xl mx-auto">
+        <GeneralSubscribe client:load />
+      </div>
+    </div>
+  </section>
 
   <!-- CTA Section -->
   <section class="relative overflow-hidden">

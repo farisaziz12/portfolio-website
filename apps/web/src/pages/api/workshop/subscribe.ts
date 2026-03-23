@@ -4,6 +4,8 @@ import type { APIRoute } from 'astro'
 import { Resend } from 'resend'
 import { WorkshopWelcomeEmail } from '../../../emails/WorkshopWelcomeEmail'
 import { GeneralSubscribeConfirmEmail } from '../../../emails/GeneralSubscribeConfirmEmail'
+import { writeClient, sanityFetch } from '../../../lib/sanity/client'
+import { workshopInstanceIdByTokenQuery } from '../../../lib/sanity/queries'
 
 const AUDIENCE_ID = import.meta.env.RESEND_AUDIENCE_ID
 const apiKey = import.meta.env.RESEND_API_KEY
@@ -61,7 +63,23 @@ export const POST: APIRoute = async ({ request }) => {
       .catch((err) => console.error('Failed to send email:', err))
   }
 
-  await Promise.allSettled([contactPromise, emailPromise])
+  // Store attendee in Sanity (fire-and-forget)
+  let sanityPromise: Promise<void> = Promise.resolve()
+  if (source === 'workshop-attend' && instanceSlug) {
+    sanityPromise = sanityFetch<string | null>(workshopInstanceIdByTokenQuery, { token: instanceSlug })
+      .then((instanceId) => {
+        if (!instanceId) return
+        return writeClient
+          .patch(instanceId)
+          .inc({ subscriberCount: 1 })
+          .append('attendees', [{ name: name || '', email, subscribedAt: new Date().toISOString() }])
+          .commit()
+      })
+      .then(() => {})
+      .catch((err) => console.error('Failed to store attendee in Sanity:', err))
+  }
+
+  await Promise.allSettled([contactPromise, emailPromise, sanityPromise])
 
   return new Response(JSON.stringify({ success: true }), { status: 200 })
 }

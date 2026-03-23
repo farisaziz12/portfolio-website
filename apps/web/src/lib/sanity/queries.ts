@@ -1374,6 +1374,18 @@ export const allWorkshopInstancesQuery = groq`
     forceClose,
     repoUrl,
     overallFeedbackUrl,
-    emailCaptureEnabled
+    emailCaptureEnabled,
+    subscriberCount,
+    followUpSentAt
+  }
+`;
+
+export const workshopInstanceIdByTokenQuery = groq`
+  *[_type == "workshopInstance" && token.current == $token][0]._id
+`;
+
+export const workshopInstanceForFollowUpQuery = groq`
+  *[_type == "workshopInstance" && _id == $instanceId][0] {
+    _id, title, event, overallFeedbackUrl, attendees, followUpSentAt
   }
 `;

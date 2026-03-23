@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { sanityFetch } from '../lib/sanity/client';
 import { allEventsQuery } from '../lib/sanity/queries';
 import EventsFilter from '../components/islands/EventsFilter';
+import GeneralSubscribe from '../components/islands/GeneralSubscribe';
 
 interface SpeakingEvent {
   _id: string;
@@ -102,6 +103,15 @@ const topics = [
             Browse talks
           </a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subscribe -->
+  <section class="section py-16 md:py-20">
+    <div class="container">
+      <div class="max-w-xl mx-auto">
+        <GeneralSubscribe client:load />
       </div>
     </div>
   </section>

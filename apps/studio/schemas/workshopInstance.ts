@@ -94,6 +94,35 @@ export default defineType({
       description: 'Show the email opt-in form on the attend page'
     }),
     defineField({
+      name: 'subscriberCount',
+      title: 'Subscriber Count',
+      type: 'number',
+      initialValue: 0,
+      readOnly: true,
+      description: 'Auto-incremented when attendees submit the email gate'
+    }),
+    defineField({
+      name: 'attendees',
+      title: 'Attendees',
+      type: 'array',
+      hidden: true,
+      of: [{
+        type: 'object',
+        fields: [
+          { name: 'name', type: 'string', title: 'Name' },
+          { name: 'email', type: 'string', title: 'Email' },
+          { name: 'subscribedAt', type: 'datetime', title: 'Subscribed At' }
+        ]
+      }]
+    }),
+    defineField({
+      name: 'followUpSentAt',
+      title: 'Follow-up Sent At',
+      type: 'datetime',
+      readOnly: true,
+      description: 'Set automatically when follow-up emails are triggered from admin'
+    }),
+    defineField({
       name: 'sections',
       title: 'Workshop Sections',
       type: 'array',
