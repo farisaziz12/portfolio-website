@@ -90,6 +90,46 @@ interface UserInfo {
   email: string;
 }
 
+// ── Countdown Banner ─────────────────────────────────────────
+
+function CountdownBanner({ closeDateISO }: { closeDateISO: string }) {
+  const [remainingDays, setRemainingDays] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = () => {
+      const ms = new Date(closeDateISO).getTime() - Date.now();
+      setRemainingDays(ms > 0 ? ms / (1000 * 60 * 60 * 24) : 0);
+    };
+    update();
+    const id = setInterval(update, 60_000);
+    return () => clearInterval(id);
+  }, [closeDateISO]);
+
+  if (remainingDays === null || remainingDays <= 0) return null;
+
+  const days = Math.ceil(remainingDays);
+  const isUrgent = remainingDays < 1;
+  const isWarning = remainingDays <= 3;
+
+  const colors = isUrgent
+    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
+    : isWarning
+    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+    : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+
+  const message = isUrgent
+    ? 'Less than 24 hours remaining'
+    : isWarning
+    ? `${days} day${days === 1 ? '' : 's'} remaining — save your progress`
+    : `${days} day${days === 1 ? '' : 's'} remaining`;
+
+  return (
+    <div className={`mb-8 px-4 py-3 rounded-lg border text-sm font-medium text-center ${colors}`}>
+      {message}
+    </div>
+  );
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 
 function storageKey(token: string) {
@@ -884,6 +924,9 @@ export default function WorkshopAttend({
   // Schedule (root) view
   return (
     <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
+      <div className="max-w-3xl mx-auto">
+        <CountdownBanner closeDateISO={closeDateISO} />
+      </div>
       <ScheduleView
         userName={user.name.split(' ')[0]}
         title={title}
@@ -919,10 +962,6 @@ export default function WorkshopAttend({
         </div>
       )}
 
-      {/* Footer */}
-      <p className="text-xs text-[rgb(var(--ink-faint))] text-center mt-12">
-        Materials available until {closeDate}.
-      </p>
     </div>
   );
 }
