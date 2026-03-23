@@ -33,7 +33,37 @@ interface CodeBlock {
   code?: string;
 }
 
-type ContentBlock = PortableTextBlock | CodeBlock;
+interface ImageBlock {
+  _key: string;
+  _type: 'image';
+  alt?: string;
+  caption?: string;
+  asset?: {
+    _ref: string;
+    _type: 'reference';
+  };
+}
+
+type CalloutType = 'info' | 'warning' | 'success' | 'error' | 'tip';
+
+interface CalloutBlock {
+  _key: string;
+  _type: 'callout';
+  type?: CalloutType;
+  title?: string;
+  content?: string;
+}
+
+interface TableBlock {
+  _key: string;
+  _type: 'table';
+  rows?: {
+    _key: string;
+    cells: string[];
+  }[];
+}
+
+type ContentBlock = PortableTextBlock | CodeBlock | ImageBlock | CalloutBlock | TableBlock;
 
 interface Section {
   _key: string;
@@ -52,6 +82,8 @@ interface WorkshopAttendProps {
   emailCaptureEnabled?: boolean;
   sections: Section[];
   closeDateISO: string;
+  sanityProjectId: string;
+  sanityDataset: string;
 }
 
 interface UserInfo {
@@ -119,7 +151,7 @@ function renderSpan(child: PortableTextChild, markDefs?: PortableTextMarkDef[]) 
   return node;
 }
 
-function PortableTextContent({ blocks }: { blocks: ContentBlock[] }) {
+function PortableTextContent({ blocks, sanityProjectId, sanityDataset }: { blocks: ContentBlock[]; sanityProjectId: string; sanityDataset: string }) {
   if (!blocks || blocks.length === 0) return null;
 
   const elements: React.ReactNode[] = [];
@@ -152,6 +184,24 @@ function PortableTextContent({ blocks }: { blocks: ContentBlock[] }) {
     if (block._type === 'code') {
       flushList();
       elements.push(<CodeBlockRenderer key={block._key} block={block as CodeBlock} />);
+      continue;
+    }
+
+    if (block._type === 'image') {
+      flushList();
+      elements.push(<ImageRenderer key={block._key} block={block as ImageBlock} projectId={sanityProjectId} dataset={sanityDataset} />);
+      continue;
+    }
+
+    if (block._type === 'callout') {
+      flushList();
+      elements.push(<CalloutRenderer key={block._key} block={block as CalloutBlock} />);
+      continue;
+    }
+
+    if (block._type === 'table') {
+      flushList();
+      elements.push(<TableRenderer key={block._key} block={block as TableBlock} />);
       continue;
     }
 
@@ -206,6 +256,114 @@ function PortableTextContent({ blocks }: { blocks: ContentBlock[] }) {
 }
 
 // ── Code Block with Syntax Highlighting ────────────────────────
+
+function sanityImageUrl(ref: string, projectId: string, dataset: string, width = 1200) {
+  // _ref format: image-<id>-<dimensions>-<format>
+  const parts = ref.replace('image-', '').split('-');
+  const format = parts.pop();
+  const dimensions = parts.pop();
+  const id = parts.join('-');
+  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${dimensions}.${format}?w=${width}&fit=max&auto=format`;
+}
+
+const calloutColors: Record<CalloutType, string> = {
+  info: 'bg-blue-500/10 border-blue-500/30',
+  warning: 'bg-amber-500/10 border-amber-500/30',
+  success: 'bg-emerald-500/10 border-emerald-500/30',
+  error: 'bg-red-500/10 border-red-500/30',
+  tip: 'bg-violet-500/10 border-violet-500/30',
+};
+
+const calloutTextColors: Record<CalloutType, string> = {
+  info: 'text-blue-600 dark:text-blue-400',
+  warning: 'text-amber-600 dark:text-amber-400',
+  success: 'text-emerald-600 dark:text-emerald-400',
+  error: 'text-red-600 dark:text-red-400',
+  tip: 'text-violet-600 dark:text-violet-400',
+};
+
+const calloutIcons: Record<CalloutType, string> = {
+  info: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  warning: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+  success: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  error: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+  tip: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
+};
+
+function TableRenderer({ block }: { block: TableBlock }) {
+  if (!block.rows || block.rows.length === 0) return null;
+  const [header, ...body] = block.rows;
+
+  return (
+    <div className="my-6 overflow-x-auto rounded-lg border border-[rgb(var(--edge))]">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-[rgb(var(--surface-overlay))]">
+            {header.cells.map((cell, i) => (
+              <th key={i} className="px-4 py-3 text-left font-semibold text-[rgb(var(--ink))] border-b border-[rgb(var(--edge))]">
+                {cell}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {body.map((row) => (
+            <tr key={row._key} className="border-b border-[rgb(var(--edge))] last:border-0">
+              {row.cells.map((cell, i) => (
+                <td key={i} className="px-4 py-3 text-[rgb(var(--ink-muted))]">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CalloutRenderer({ block }: { block: CalloutBlock }) {
+  const t = block.type ?? 'info';
+  return (
+    <div className={`my-6 p-4 rounded-lg border ${calloutColors[t]}`}>
+      <div className="flex items-start gap-3">
+        <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${calloutTextColors[t]}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={calloutIcons[t]} />
+        </svg>
+        <div>
+          {block.title && (
+            <p className={`font-semibold mb-1 ${calloutTextColors[t]}`}>{block.title}</p>
+          )}
+          {block.content && (
+            <p className="text-sm text-[rgb(var(--ink-muted))]">{block.content}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImageRenderer({ block, projectId, dataset }: { block: ImageBlock; projectId: string; dataset: string }) {
+  if (!block.asset?._ref) return null;
+
+  const src = sanityImageUrl(block.asset._ref, projectId, dataset);
+
+  return (
+    <figure className="my-8">
+      <img
+        src={src}
+        alt={block.alt || ''}
+        loading="lazy"
+        className="rounded-lg w-full"
+      />
+      {block.caption && (
+        <figcaption className="mt-2 text-center text-sm text-[rgb(var(--ink-faint))]">
+          {block.caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
 
 function CodeBlockRenderer({ block }: { block: CodeBlock }) {
   const [copied, setCopied] = useState(false);
@@ -533,6 +691,8 @@ function SectionView({
   section,
   index,
   total,
+  sanityProjectId,
+  sanityDataset,
   onBack,
   onPrev,
   onNext,
@@ -540,6 +700,8 @@ function SectionView({
   section: Section;
   index: number;
   total: number;
+  sanityProjectId: string;
+  sanityDataset: string;
   onBack: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -577,7 +739,7 @@ function SectionView({
       {/* Content */}
       {section.content && section.content.length > 0 && (
         <div className="mb-12">
-          <PortableTextContent blocks={section.content} />
+          <PortableTextContent blocks={section.content} sanityProjectId={sanityProjectId} sanityDataset={sanityDataset} />
         </div>
       )}
 
@@ -638,6 +800,8 @@ export default function WorkshopAttend({
   overallFeedbackUrl,
   sections,
   closeDateISO,
+  sanityProjectId,
+  sanityDataset,
 }: WorkshopAttendProps) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -700,6 +864,8 @@ export default function WorkshopAttend({
           section={sections[activeSection]}
           index={activeSection}
           total={sections.length}
+          sanityProjectId={sanityProjectId}
+          sanityDataset={sanityDataset}
           onBack={goToSchedule}
           onPrev={() => openSection(activeSection - 1)}
           onNext={() => openSection(activeSection + 1)}

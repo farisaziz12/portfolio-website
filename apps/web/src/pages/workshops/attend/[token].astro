@@ -116,6 +116,8 @@ const formatDateLong = (dateStr: string) => {
       emailCaptureEnabled={instance.emailCaptureEnabled}
       sections={instance.sections || []}
       closeDateISO={closeDate.toISOString()}
+      sanityProjectId={import.meta.env.SANITY_STUDIO_PROJECT_ID || '94fb4yui'}
+      sanityDataset={import.meta.env.SANITY_STUDIO_DATASET || 'production'}
     />
   )}
 </BaseLayout>

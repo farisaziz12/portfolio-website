@@ -2,6 +2,7 @@ import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { visionTool } from '@sanity/vision';
 import { codeInput } from '@sanity/code-input';
+import { table } from '@sanity/table';
 import { BulkDelete } from 'sanity-plugin-bulk-delete';
 import { schemaTypes } from './schemas';
 import { deskStructure } from './desk/structure';
@@ -19,6 +20,7 @@ export default defineConfig({
     }),
     visionTool(),
     codeInput(),
+    table(),
     BulkDelete({
       schemaTypes: schemaTypes,
     }),

@@ -150,7 +150,67 @@ export default defineType({
                   }]
                 }
               },
-              { type: 'code' }
+              { type: 'code' },
+              { type: 'table' },
+              {
+                name: 'callout',
+                type: 'object',
+                title: 'Callout',
+                fields: [
+                  {
+                    name: 'type',
+                    type: 'string',
+                    title: 'Type',
+                    options: {
+                      list: [
+                        { title: 'Info', value: 'info' },
+                        { title: 'Warning', value: 'warning' },
+                        { title: 'Success', value: 'success' },
+                        { title: 'Error', value: 'error' },
+                        { title: 'Tip', value: 'tip' },
+                      ],
+                    },
+                    initialValue: 'info',
+                  },
+                  {
+                    name: 'title',
+                    type: 'string',
+                    title: 'Title',
+                  },
+                  {
+                    name: 'content',
+                    type: 'text',
+                    title: 'Content',
+                    rows: 3,
+                  },
+                ],
+                preview: {
+                  select: { type: 'type', title: 'title', content: 'content' },
+                  prepare({ type, title, content }: { type?: string; title?: string; content?: string }) {
+                    return {
+                      title: title || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Callout'),
+                      subtitle: content?.substring(0, 50),
+                    }
+                  },
+                },
+              },
+              {
+                type: 'image',
+                options: { hotspot: true },
+                fields: [
+                  {
+                    name: 'alt',
+                    title: 'Alt Text',
+                    type: 'string',
+                    description: 'Describe the image for accessibility',
+                  },
+                  {
+                    name: 'caption',
+                    title: 'Caption',
+                    type: 'string',
+                  },
+                ],
+              }
             ]
           }
         ],
