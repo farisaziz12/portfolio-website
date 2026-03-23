@@ -1,0 +1,39 @@
+name: Validate Studio & Web
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/studio/**'
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build Sanity Studio (validates schema)
+        run: pnpm --filter studio build
+        env:
+          SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_STUDIO_PROJECT_ID }}
+          SANITY_STUDIO_DATASET: production
+
+      - name: Typecheck web app
+        run: pnpm --filter web typecheck
+        env:
+          SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_STUDIO_PROJECT_ID }}
+          SANITY_STUDIO_DATASET: production
