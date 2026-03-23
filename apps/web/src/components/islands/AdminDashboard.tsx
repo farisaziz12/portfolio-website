@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -24,13 +24,28 @@ interface UpcomingEvent {
   date: string;
 }
 
+interface Subscriber {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  unsubscribed: boolean;
+  createdAt: string;
+}
+
+interface SubscriberData {
+  total: number;
+  active: number;
+  unsubscribed: number;
+  contacts: Subscriber[];
+}
+
 interface Props {
   instances: WorkshopInstance[];
   upcomingEvents: UpcomingEvent[];
-  totalSubscribers: number;
 }
 
-type Tab = 'workshops' | 'announce' | 'digest';
+type Tab = 'workshops' | 'subscribers' | 'announce' | 'digest';
 type StatusFilter = 'all' | 'open' | 'upcoming' | 'closed';
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -375,12 +390,172 @@ function DigestTab({ upcomingEventCount }: { upcomingEventCount: number }) {
   );
 }
 
+// ── Subscribers Tab ────────────────────────────────────────────
+
+function SubscribersTab() {
+  const [data, setData] = useState<SubscriberData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'unsubscribed'>('active');
+
+  useEffect(() => {
+    fetch('/api/admin/subscribers')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load');
+        return res.json();
+      })
+      .then(setData)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    const lowerSearch = search.toLowerCase();
+    return data.contacts.filter((c) => {
+      const matchesFilter =
+        filter === 'all' ||
+        (filter === 'active' ? !c.unsubscribed : c.unsubscribed);
+      const matchesSearch =
+        !lowerSearch ||
+        c.email.toLowerCase().includes(lowerSearch) ||
+        c.firstName.toLowerCase().includes(lowerSearch) ||
+        c.lastName.toLowerCase().includes(lowerSearch);
+      return matchesFilter && matchesSearch;
+    });
+  }, [data, filter, search]);
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-12 text-center">
+        <p className="text-[var(--color-ink-muted)]">Loading subscribers...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="rounded-2xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-12 text-center">
+        <p className="text-red-600 dark:text-red-400">{error || 'Failed to load subscribers'}</p>
+      </div>
+    );
+  }
+
+  const filters: { key: typeof filter; label: string; count: number }[] = [
+    { key: 'active', label: 'Active', count: data.active },
+    { key: 'unsubscribed', label: 'Unsubscribed', count: data.unsubscribed },
+    { key: 'all', label: 'All', count: data.total },
+  ];
+
+  return (
+    <div>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="rounded-xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-5 text-center">
+          <p className="text-2xl font-display font-bold text-[var(--color-ink)]">{data.active}</p>
+          <p className="text-xs text-[var(--color-ink-faint)] uppercase tracking-wider mt-1">Active</p>
+        </div>
+        <div className="rounded-xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-5 text-center">
+          <p className="text-2xl font-display font-bold text-[var(--color-ink)]">{data.unsubscribed}</p>
+          <p className="text-xs text-[var(--color-ink-faint)] uppercase tracking-wider mt-1">Unsubscribed</p>
+        </div>
+        <div className="rounded-xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-5 text-center">
+          <p className="text-2xl font-display font-bold text-[var(--color-ink)]">{data.total}</p>
+          <p className="text-xs text-[var(--color-ink-faint)] uppercase tracking-wider mt-1">Total</p>
+        </div>
+      </div>
+
+      {/* Filters + search */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex gap-1">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                filter === f.key
+                  ? 'bg-[var(--color-surface-overlay)] text-[var(--color-ink)]'
+                  : 'text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]'
+              }`}
+            >
+              {f.label} ({f.count})
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or email..."
+          className="ml-auto px-3 py-1.5 rounded-lg border border-[var(--color-edge)] bg-[var(--color-surface)] text-[var(--color-ink)] text-sm placeholder-[var(--color-ink-faint)] focus:outline-none focus:border-[var(--color-accent)] transition-colors w-64"
+        />
+      </div>
+
+      {/* Table */}
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] p-12 text-center">
+          <p className="text-[var(--color-ink-muted)]">No subscribers match your filters.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-[var(--color-edge)] bg-[var(--color-surface-raised)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--color-edge)]">
+                  <th className="text-left px-4 py-3 text-xs text-[var(--color-ink-faint)] uppercase tracking-wider font-medium">Email</th>
+                  <th className="text-left px-4 py-3 text-xs text-[var(--color-ink-faint)] uppercase tracking-wider font-medium">Name</th>
+                  <th className="text-left px-4 py-3 text-xs text-[var(--color-ink-faint)] uppercase tracking-wider font-medium">Subscribed</th>
+                  <th className="text-left px-4 py-3 text-xs text-[var(--color-ink-faint)] uppercase tracking-wider font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((contact) => (
+                  <tr key={contact.id} className="border-b border-[var(--color-edge)] last:border-0">
+                    <td className="px-4 py-3 font-mono text-xs text-[var(--color-ink)]">{contact.email}</td>
+                    <td className="px-4 py-3 text-[var(--color-ink-muted)]">
+                      {[contact.firstName, contact.lastName].filter(Boolean).join(' ') || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-[var(--color-ink-faint)]">
+                      {formatDate(contact.createdAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {contact.unsubscribed ? (
+                        <span className="text-xs text-red-600 dark:text-red-400">Unsubscribed</span>
+                      ) : (
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400">Active</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-3 border-t border-[var(--color-edge)] text-xs text-[var(--color-ink-faint)]">
+            Showing {filtered.length} of {data.total} contacts
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ───────────────────────────────────────────────────────
 
-export default function AdminDashboard({ instances, upcomingEvents, totalSubscribers }: Props) {
+export default function AdminDashboard({ instances, upcomingEvents }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('workshops');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+
+  // Fetch live subscriber count from Resend on mount
+  useEffect(() => {
+    fetch('/api/admin/subscribers')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (data) setSubscriberCount(data.active); })
+      .catch(() => {});
+  }, []);
 
   const counts = useMemo(() => ({
     all: instances.length,
@@ -405,6 +580,7 @@ export default function AdminDashboard({ instances, upcomingEvents, totalSubscri
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'workshops', label: 'Workshops' },
+    { key: 'subscribers', label: 'Subscribers' },
     { key: 'announce', label: 'Announce Event' },
     { key: 'digest', label: 'Send Digest' },
   ];
@@ -425,7 +601,7 @@ export default function AdminDashboard({ instances, upcomingEvents, totalSubscri
           <p className="text-[var(--color-ink-muted)]">Workshops, announcements, and subscriber engagement</p>
         </div>
         <div className="flex items-center gap-4 text-sm text-[var(--color-ink-faint)]">
-          <span>{pluralize(totalSubscribers, 'total subscriber')}</span>
+          <span>{subscriberCount !== null ? pluralize(subscriberCount, 'subscriber') : 'Loading...'}</span>
           <span>{pluralize(instances.length, 'instance')}</span>
         </div>
       </div>
@@ -494,6 +670,9 @@ export default function AdminDashboard({ instances, upcomingEvents, totalSubscri
           )}
         </div>
       )}
+
+      {/* Subscribers tab */}
+      {activeTab === 'subscribers' && <SubscribersTab />}
 
       {/* Announce tab */}
       {activeTab === 'announce' && <AnnounceTab events={upcomingEvents} />}

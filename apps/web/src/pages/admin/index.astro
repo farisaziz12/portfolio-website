@@ -38,7 +38,6 @@ if (Astro.request.method === 'POST') {
 // Fetch data and pre-compute status for the island
 let instances: any[] = [];
 let upcomingEvents: any[] = [];
-let totalSubscribers = 0;
 
 if (isAuthenticated) {
   const [rawInstances, rawEvents] = await Promise.all([
@@ -58,8 +57,6 @@ if (isAuthenticated) {
     conference: e.conference,
     date: e.date,
   }));
-
-  totalSubscribers = instances.reduce((sum, i) => sum + (i.subscriberCount || 0), 0);
 }
 ---
 
@@ -127,7 +124,6 @@ if (isAuthenticated) {
             client:load
             instances={instances}
             upcomingEvents={upcomingEvents}
-            totalSubscribers={totalSubscribers}
           />
         </div>
       </div>
