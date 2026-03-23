@@ -2,33 +2,10 @@
 export const prerender = false
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import AdminDashboard from '../../components/islands/AdminDashboard';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery, upcomingEventsQuery } from '../../lib/sanity/queries';
 import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
-
-interface WorkshopInstanceRow {
-  _id: string;
-  title: string;
-  event: string;
-  token: string;
-  workshopDate: string;
-  accessDurationDays: number;
-  forceClose: boolean;
-  repoUrl: string;
-  overallFeedbackUrl?: string;
-  emailCaptureEnabled?: boolean;
-  subscriberCount?: number;
-  followUpSentAt?: string;
-}
-
-interface UpcomingEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  conference: string;
-  date: string;
-  location?: { city?: string; country?: string };
-}
 
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 
@@ -58,34 +35,32 @@ if (Astro.request.method === 'POST') {
   }
 }
 
-let instances: WorkshopInstanceRow[] = [];
-let upcomingEvents: UpcomingEvent[] = [];
+// Fetch data and pre-compute status for the island
+let instances: any[] = [];
+let upcomingEvents: any[] = [];
+let totalSubscribers = 0;
+
 if (isAuthenticated) {
-  [instances, upcomingEvents] = await Promise.all([
-    sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []),
-    sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
+  const [rawInstances, rawEvents] = await Promise.all([
+    sanityFetch<any[]>(allWorkshopInstancesQuery).catch(() => []),
+    sanityFetch<any[]>(upcomingEventsQuery).catch(() => []),
   ]);
+
+  instances = rawInstances.map((i) => ({
+    ...i,
+    status: getAccessStatus(i),
+    closeDate: getCloseDate(i).toISOString(),
+  }));
+
+  upcomingEvents = rawEvents.map((e) => ({
+    _id: e._id,
+    title: e.title,
+    conference: e.conference,
+    date: e.date,
+  }));
+
+  totalSubscribers = instances.reduce((sum, i) => sum + (i.subscriberCount || 0), 0);
 }
-
-const openCount = instances.filter(i => getAccessStatus(i) === 'open').length;
-const upcomingCount = instances.filter(i => getAccessStatus(i) === 'upcoming').length;
-const closedCount = instances.filter(i => ['closed', 'force-closed'].includes(getAccessStatus(i))).length;
-const totalSubscribers = instances.reduce((sum, i) => sum + (i.subscriberCount || 0), 0);
-
-const statusConfig: Record<string, { label: string; classes: string }> = {
-  'open': { label: 'Open', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
-  'upcoming': { label: 'Upcoming', classes: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
-  'closed': { label: 'Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
-  'force-closed': { label: 'Force Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
-};
-
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
 ---
 
 <BaseLayout
@@ -148,366 +123,14 @@ const formatDate = (dateStr: string) => {
     <section class="py-16 md:py-24">
       <div class="container">
         <div class="max-w-5xl mx-auto">
-          <!-- Header -->
-          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-            <div>
-              <h1 class="heading-2 mb-2">Admin Dashboard</h1>
-              <p class="text-ink-muted">Workshops, announcements, and subscriber engagement</p>
-            </div>
-            <div class="flex items-center gap-4 text-sm text-ink-faint">
-              <span>{totalSubscribers} total subscriber{totalSubscribers !== 1 ? 's' : ''}</span>
-              <span>{instances.length} instance{instances.length !== 1 ? 's' : ''}</span>
-            </div>
-          </div>
-
-          <!-- Nav tabs -->
-          <div class="flex flex-wrap gap-2 mb-8 border-b border-edge pb-4" id="admin-nav">
-            <button data-tab="workshops" class="admin-tab admin-tab--active px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              Workshops
-            </button>
-            <button data-tab="announce" class="admin-tab px-4 py-2 rounded-lg text-sm font-medium text-ink-muted hover:text-ink transition-colors">
-              Announce Event
-            </button>
-            <button data-tab="digest" class="admin-tab px-4 py-2 rounded-lg text-sm font-medium text-ink-muted hover:text-ink transition-colors">
-              Send Digest
-            </button>
-          </div>
-
-          <!-- ═══════════ WORKSHOPS TAB ═══════════ -->
-          <div id="tab-workshops" class="admin-panel">
-            <!-- Filters -->
-            <div class="flex flex-wrap items-center gap-3 mb-6">
-              <div class="flex gap-1" id="filter-tabs">
-                <button data-filter="all" class="filter-tab filter-tab--active px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">All ({instances.length})</button>
-                <button data-filter="open" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium text-ink-muted hover:text-ink transition-colors">Open ({openCount})</button>
-                <button data-filter="upcoming" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium text-ink-muted hover:text-ink transition-colors">Upcoming ({upcomingCount})</button>
-                <button data-filter="closed" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium text-ink-muted hover:text-ink transition-colors">Closed ({closedCount})</button>
-              </div>
-              <input
-                type="text"
-                id="search-input"
-                placeholder="Search..."
-                class="ml-auto px-3 py-1.5 rounded-lg border border-edge bg-surface text-ink text-sm placeholder-ink-faint focus:outline-none focus:border-accent transition-colors w-48"
-              />
-            </div>
-
-            {instances.length === 0 ? (
-              <div class="card p-12 text-center">
-                <h3 class="heading-3 mb-4">No instances yet</h3>
-                <p class="text-ink-muted mb-6">Create a workshop instance in Sanity Studio to get started.</p>
-                <a href="https://faziz-dev.sanity.studio" target="_blank" rel="noopener noreferrer" class="btn-primary">
-                  Open Sanity Studio
-                </a>
-              </div>
-            ) : (
-              <div class="space-y-4" id="instance-list">
-                {instances.map((instance) => {
-                  const status = getAccessStatus(instance);
-                  const close = getCloseDate(instance);
-                  const cfg = statusConfig[status];
-                  const isClosed = status === 'closed' || status === 'force-closed';
-                  const hasSubscribers = (instance.subscriberCount || 0) > 0;
-                  const canSendFollowUp = isClosed && hasSubscribers && !instance.followUpSentAt;
-
-                  return (
-                    <div
-                      class="card overflow-hidden instance-card"
-                      data-status={status === 'force-closed' ? 'closed' : status}
-                      data-search={`${instance.title} ${instance.event}`.toLowerCase()}
-                    >
-                      <div class={`h-1 ${status === 'open' ? 'bg-emerald-500' : status === 'upcoming' ? 'bg-amber-500' : 'bg-red-500'}`}></div>
-
-                      <div class="p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                          <div>
-                            <h2 class="font-display font-semibold text-lg text-ink">{instance.title}</h2>
-                            <p class="text-sm text-ink-muted">{instance.event}</p>
-                          </div>
-                          <div class="flex items-center gap-2">
-                            {hasSubscribers && (
-                              <span class="tag bg-accent-muted text-accent border-transparent">
-                                {instance.subscriberCount} subscriber{(instance.subscriberCount || 0) !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                            <span class={`tag ${cfg.classes}`}>{cfg.label}</span>
-                          </div>
-                        </div>
-
-                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                          <div>
-                            <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Workshop Date</p>
-                            <p class="text-sm text-ink font-medium">{formatDate(instance.workshopDate)}</p>
-                          </div>
-                          <div>
-                            <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Close Date</p>
-                            <p class="text-sm text-ink font-medium">{formatDate(close.toISOString())}</p>
-                          </div>
-                          <div>
-                            <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Duration</p>
-                            <p class="text-sm text-ink font-medium">{instance.accessDurationDays} days</p>
-                          </div>
-                          <div>
-                            <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Follow-up</p>
-                            <p class="text-sm text-ink font-medium">
-                              {instance.followUpSentAt ? `Sent ${formatDate(instance.followUpSentAt)}` : 'Not sent'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div class="mb-6">
-                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-2">Access Link</p>
-                          <button
-                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-overlay border border-edge hover:border-edge-strong transition-colors font-mono text-xs text-accent cursor-pointer group"
-                            data-url={`https://faziz-dev.com/workshops/attend/${instance.token}`}
-                            onclick="navigator.clipboard.writeText(this.dataset.url);this.querySelector('.copy-label').textContent='Copied!';setTimeout(()=>this.querySelector('.copy-label').textContent='Click to copy',2000)"
-                          >
-                            <span>faziz-dev.com/workshops/attend/{instance.token}</span>
-                            <span class="copy-label text-ink-faint group-hover:text-ink-muted transition-colors">Click to copy</span>
-                          </button>
-                        </div>
-
-                        <div class="flex flex-wrap gap-3 pt-4 border-t border-edge">
-                          <a href={`/workshops/attend/${instance.token}`} target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
-                            Preview
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                          </a>
-                          <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
-                            Repo
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                          </a>
-                          <a href={`https://faziz-dev.sanity.studio/structure/speaking;workshopInstance;${instance._id}`} target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
-                            Edit in Sanity
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                          </a>
-                          {canSendFollowUp && (
-                            <button
-                              class="btn-ghost text-sm send-followup-btn"
-                              data-instance-id={instance._id}
-                              data-instance-title={instance.title}
-                              data-subscriber-count={instance.subscriberCount || 0}
-                            >
-                              Send Follow-up ({instance.subscriberCount})
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          <!-- ═══════════ ANNOUNCE TAB ═══════════ -->
-          <div id="tab-announce" class="admin-panel hidden">
-            <div class="card p-8 max-w-2xl">
-              <h2 class="heading-3 mb-2">Announce an Event</h2>
-              <p class="text-sm text-ink-muted mb-6">Send an email to all subscribers about an upcoming event.</p>
-
-              <form id="announce-form" class="space-y-4">
-                <div>
-                  <label class="block text-xs text-ink-faint uppercase tracking-wider mb-2">Event</label>
-                  <select id="announce-event" required class="w-full px-4 py-3 rounded-lg border border-edge bg-surface text-ink focus:outline-none focus:border-accent transition-colors">
-                    <option value="">Select an event...</option>
-                    {upcomingEvents.map((e) => (
-                      <option value={e._id}>{e.title} — {e.conference} ({formatDate(e.date)})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs text-ink-faint uppercase tracking-wider mb-2">Personal Note (optional)</label>
-                  <textarea
-                    id="announce-note"
-                    rows={3}
-                    placeholder="I'm excited to announce..."
-                    class="w-full px-4 py-3 rounded-lg border border-edge bg-surface text-ink placeholder-ink-faint focus:outline-none focus:border-accent transition-colors resize-none"
-                  ></textarea>
-                </div>
-                <button type="submit" id="announce-btn" class="btn-primary py-3 px-6">
-                  Send Announcement
-                </button>
-                <p id="announce-result" class="text-sm mt-2 hidden"></p>
-              </form>
-            </div>
-          </div>
-
-          <!-- ═══════════ DIGEST TAB ═══════════ -->
-          <div id="tab-digest" class="admin-panel hidden">
-            <div class="card p-8 max-w-2xl">
-              <h2 class="heading-3 mb-2">Send Digest</h2>
-              <p class="text-sm text-ink-muted mb-6">Send a roundup of upcoming events and recent blog posts to all subscribers.</p>
-
-              <form id="digest-form" class="space-y-4">
-                <div>
-                  <label class="block text-xs text-ink-faint uppercase tracking-wider mb-2">Intro Message (optional)</label>
-                  <textarea
-                    id="digest-intro"
-                    rows={3}
-                    placeholder="Here's what I've been up to..."
-                    class="w-full px-4 py-3 rounded-lg border border-edge bg-surface text-ink placeholder-ink-faint focus:outline-none focus:border-accent transition-colors resize-none"
-                  ></textarea>
-                </div>
-                <div class="p-4 rounded-lg bg-surface-overlay border border-edge">
-                  <p class="text-xs text-ink-faint uppercase tracking-wider mb-2">Auto-included content</p>
-                  <p class="text-sm text-ink-muted">
-                    {upcomingEvents.length} upcoming event{upcomingEvents.length !== 1 ? 's' : ''} + recent blog posts
-                  </p>
-                </div>
-                <button type="submit" id="digest-btn" class="btn-primary py-3 px-6">
-                  Send Digest
-                </button>
-                <p id="digest-result" class="text-sm mt-2 hidden"></p>
-              </form>
-            </div>
-          </div>
-
+          <AdminDashboard
+            client:load
+            instances={instances}
+            upcomingEvents={upcomingEvents}
+            totalSubscribers={totalSubscribers}
+          />
         </div>
       </div>
     </section>
-
-    <script>
-      // Tab navigation
-      document.querySelectorAll('#admin-nav .admin-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('admin-tab--active'));
-          btn.classList.add('admin-tab--active');
-          document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
-          const panel = document.getElementById('tab-' + btn.dataset.tab);
-          if (panel) panel.classList.remove('hidden');
-        });
-      });
-
-      // Instance filters
-      function filterInstances() {
-        const activeFilter = document.querySelector('.filter-tab--active')?.dataset.filter || 'all';
-        const search = (document.getElementById('search-input') as HTMLInputElement)?.value.toLowerCase() || '';
-        document.querySelectorAll('.instance-card').forEach((card: Element) => {
-          const el = card as HTMLElement;
-          const status = el.dataset.status || '';
-          const searchText = el.dataset.search || '';
-          const matchesFilter = activeFilter === 'all' || status === activeFilter;
-          const matchesSearch = !search || searchText.includes(search);
-          el.style.display = matchesFilter && matchesSearch ? '' : 'none';
-        });
-      }
-
-      document.querySelectorAll('#filter-tabs .filter-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('filter-tab--active'));
-          btn.classList.add('filter-tab--active');
-          filterInstances();
-        });
-      });
-
-      document.getElementById('search-input')?.addEventListener('input', filterInstances);
-
-      // Follow-up buttons
-      document.querySelectorAll('.send-followup-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const el = btn as HTMLButtonElement;
-          const title = el.dataset.instanceTitle;
-          const count = el.dataset.subscriberCount;
-          if (!confirm(`Send follow-up to ${count} subscriber(s) for "${title}"?`)) return;
-
-          el.disabled = true;
-          el.textContent = 'Sending...';
-
-          try {
-            const res = await fetch('/api/workshop/send-followup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ instanceId: el.dataset.instanceId }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-              el.textContent = `Sent to ${data.sent}`;
-            } else {
-              el.textContent = data.error || 'Failed';
-              el.disabled = false;
-            }
-          } catch {
-            el.textContent = 'Error';
-            el.disabled = false;
-          }
-        });
-      });
-
-      // Announcement form
-      document.getElementById('announce-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('announce-btn') as HTMLButtonElement;
-        const result = document.getElementById('announce-result')!;
-        const eventId = (document.getElementById('announce-event') as HTMLSelectElement).value;
-        const note = (document.getElementById('announce-note') as HTMLTextAreaElement).value;
-
-        if (!eventId) return;
-        btn.disabled = true;
-        btn.textContent = 'Sending...';
-        result.classList.add('hidden');
-
-        try {
-          const res = await fetch('/api/admin/send-announcement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventId, personalNote: note || undefined }),
-          });
-          const data = await res.json();
-          result.classList.remove('hidden');
-          if (res.ok) {
-            result.textContent = `Sent to ${data.sent} subscriber(s)`;
-            result.className = 'text-sm mt-2 text-emerald-600 dark:text-emerald-400';
-          } else {
-            result.textContent = data.error || 'Failed';
-            result.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
-          }
-        } catch {
-          result.classList.remove('hidden');
-          result.textContent = 'Network error';
-          result.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
-        }
-        btn.disabled = false;
-        btn.textContent = 'Send Announcement';
-      });
-
-      // Digest form
-      document.getElementById('digest-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('digest-btn') as HTMLButtonElement;
-        const result = document.getElementById('digest-result')!;
-        const intro = (document.getElementById('digest-intro') as HTMLTextAreaElement).value;
-
-        btn.disabled = true;
-        btn.textContent = 'Sending...';
-        result.classList.add('hidden');
-
-        try {
-          const res = await fetch('/api/admin/send-digest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ introText: intro || undefined }),
-          });
-          const data = await res.json();
-          result.classList.remove('hidden');
-          if (res.ok) {
-            result.textContent = `Sent to ${data.sent} subscriber(s)`;
-            result.className = 'text-sm mt-2 text-emerald-600 dark:text-emerald-400';
-          } else {
-            result.textContent = data.error || 'Failed';
-            result.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
-          }
-        } catch {
-          result.classList.remove('hidden');
-          result.textContent = 'Network error';
-          result.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
-        }
-        btn.disabled = false;
-        btn.textContent = 'Send Digest';
-      });
-    </script>
-
-    <style>
-      .admin-tab--active { background: var(--color-accent-muted); color: var(--color-accent); }
-      .filter-tab--active { background: var(--color-surface-overlay); color: var(--color-ink); }
-    </style>
   )}
 </BaseLayout>
