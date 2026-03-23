@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "astro",
   "buildCommand": "pnpm --filter web build",
-  "outputDirectory": "apps/web/dist",
+  "outputDirectory": "apps/web/.vercel/output",
   "installCommand": "pnpm install"
 }
