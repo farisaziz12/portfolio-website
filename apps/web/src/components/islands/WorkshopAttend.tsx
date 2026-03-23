@@ -51,7 +51,7 @@ interface CalloutBlock {
   _type: 'callout';
   type?: CalloutType;
   title?: string;
-  content?: string;
+  content?: PortableTextBlock[];
 }
 
 interface TableBlock {
@@ -334,8 +334,16 @@ function CalloutRenderer({ block }: { block: CalloutBlock }) {
           {block.title && (
             <p className={`font-semibold mb-1 ${calloutTextColors[t]}`}>{block.title}</p>
           )}
-          {block.content && (
-            <p className="text-sm text-[rgb(var(--ink-muted))]">{block.content}</p>
+          {block.content && block.content.length > 0 && (
+            <div className="text-sm text-[rgb(var(--ink-muted))] [&_a]:text-[rgb(var(--accent))] [&_a]:underline [&_a]:underline-offset-2 [&_p]:mb-1 [&_p:last-child]:mb-0">
+              {block.content.map((b) => (
+                <p key={b._key}>
+                  {b.children.map((child, i) => (
+                    <span key={child._key || i}>{renderSpan(child, b.markDefs)}</span>
+                  ))}
+                </p>
+              ))}
+            </div>
           )}
         </div>
       </div>

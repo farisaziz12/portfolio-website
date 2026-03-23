@@ -179,17 +179,35 @@ export default defineType({
                   },
                   {
                     name: 'content',
-                    type: 'text',
+                    type: 'array',
                     title: 'Content',
-                    rows: 3,
+                    of: [
+                      {
+                        type: 'block',
+                        styles: [{ title: 'Normal', value: 'normal' }],
+                        lists: [],
+                        marks: {
+                          decorators: [
+                            { title: 'Bold', value: 'strong' },
+                            { title: 'Italic', value: 'em' },
+                            { title: 'Code', value: 'code' },
+                          ],
+                          annotations: [{
+                            name: 'link',
+                            type: 'object',
+                            title: 'Link',
+                            fields: [{ name: 'href', type: 'url', title: 'URL' }]
+                          }]
+                        }
+                      }
+                    ],
                   },
                 ],
                 preview: {
-                  select: { type: 'type', title: 'title', content: 'content' },
-                  prepare({ type, title, content }: { type?: string; title?: string; content?: string }) {
+                  select: { type: 'type', title: 'title' },
+                  prepare({ type, title }: { type?: string; title?: string }) {
                     return {
                       title: title || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Callout'),
-                      subtitle: content?.substring(0, 50),
                     }
                   },
                 },
