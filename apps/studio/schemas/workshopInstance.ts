@@ -36,9 +36,21 @@ export default defineType({
     defineField({
       name: 'token',
       title: 'Access Token',
-      type: 'string',
-      description: 'Secret URL token. Format: [event-slug]-[year]-[random4chars] e.g. cityjs-london-2026-x7k2. This is the full URL key — keep it private. Students access via faziz-dev.com/workshops/attend/[token]',
-      validation: Rule => Rule.required().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, { name: 'kebab-case', invert: false })
+      type: 'slug',
+      description: 'Auto-generated from event name. Students access via faziz-dev.com/workshops/attend/[token]',
+      options: {
+        source: 'event',
+        maxLength: 96,
+        slugify: (input: string) => {
+          const slug = input
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+          const rand = Math.random().toString(36).substring(2, 6)
+          return `${slug}-${rand}`
+        },
+      },
+      validation: Rule => Rule.required()
     }),
     defineField({
       name: 'workshopDate',

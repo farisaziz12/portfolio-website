@@ -1,6 +1,7 @@
 ---
 export const prerender = false
 
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery } from '../../lib/sanity/queries';
 import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
@@ -20,7 +21,6 @@ interface WorkshopInstanceRow {
 
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 
-// Handle POST (login)
 let authError = '';
 let isAuthenticated = false;
 
@@ -33,17 +33,17 @@ if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   const password = formData.get('password')?.toString() || '';
 
-  if (password === ADMIN_PASSWORD) {
+  if (ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
     Astro.cookies.set('admin_session', 'valid', {
       httpOnly: true,
-      secure: true,
+      secure: import.meta.env.PROD,
       sameSite: 'strict',
-      maxAge: 28800, // 8 hours
+      maxAge: 28800,
       path: '/',
     });
     isAuthenticated = true;
   } else {
-    authError = 'Incorrect password';
+    authError = ADMIN_PASSWORD ? 'Incorrect password' : 'ADMIN_PASSWORD env var not set';
   }
 }
 
@@ -52,11 +52,11 @@ if (isAuthenticated) {
   instances = await sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []);
 }
 
-const statusConfig: Record<string, { label: string; badge: string }> = {
-  'open': { label: 'Open', badge: 'bg-emerald-900/30 text-emerald-400 border-emerald-800' },
-  'upcoming': { label: 'Upcoming', badge: 'bg-amber-900/30 text-amber-400 border-amber-800' },
-  'closed': { label: 'Closed', badge: 'bg-red-900/30 text-red-400 border-red-800' },
-  'force-closed': { label: 'Force Closed', badge: 'bg-red-900/30 text-red-400 border-red-800' },
+const statusConfig: Record<string, { label: string; classes: string }> = {
+  'open': { label: 'Open', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
+  'upcoming': { label: 'Upcoming', classes: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
+  'closed': { label: 'Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
+  'force-closed': { label: 'Force Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
 };
 
 const formatDate = (dateStr: string) => {
@@ -68,175 +68,190 @@ const formatDate = (dateStr: string) => {
 };
 ---
 
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Admin | Workshop Dashboard</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0a0a0a;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
-    h1 { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem; }
-    .login-form {
-      max-width: 400px;
-      margin: 20vh auto;
-      background: #1e293b;
-      padding: 2rem;
-      border-radius: 12px;
-      border: 1px solid #334155;
-    }
-    .login-form h1 { text-align: center; font-size: 1.5rem; }
-    .login-form input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-    .login-form input:focus { outline: none; border-color: #3b82f6; }
-    .login-form button {
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 8px;
-      border: none;
-      background: #3b82f6;
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .login-form button:hover { background: #2563eb; }
-    .error { color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .card-title { font-size: 1.125rem; font-weight: 600; color: #f8fafc; }
-    .card-event { font-size: 0.875rem; color: #94a3b8; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      border-radius: 9999px;
-      border: 1px solid;
-    }
-    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
-    .meta-item { font-size: 0.8125rem; }
-    .meta-label { color: #64748b; margin-bottom: 0.125rem; }
-    .meta-value { color: #cbd5e1; }
-    .meta-value a { color: #22d3ee; text-decoration: none; }
-    .meta-value a:hover { text-decoration: underline; }
-    .token-link {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #22d3ee;
-      cursor: pointer;
-      background: #0f172a;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      border: 1px solid #334155;
-      display: inline-block;
-    }
-    .token-link:hover { background: #1e293b; }
-  </style>
-</head>
-<body>
+<BaseLayout
+  title="Admin | Workshop Dashboard"
+  description="Workshop instance dashboard"
+  pathname="/admin"
+>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
   {!isAuthenticated ? (
-    <div class="login-form">
-      <h1>Admin Login</h1>
-      {authError && <p class="error">{authError}</p>}
-      <form method="POST">
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          required
-        />
-        <button type="submit">Sign In</button>
-      </form>
-    </div>
-  ) : (
-    <div class="container">
-      <h1>Workshop Instances</h1>
-
-      {instances.length === 0 ? (
-        <p style="color: #94a3b8;">No workshop instances found.</p>
-      ) : (
-        instances.map((instance) => {
-          const status = getAccessStatus(instance);
-          const close = getCloseDate(instance);
-          const cfg = statusConfig[status];
-          const statusEmoji = status === 'open' ? '🟢' : status === 'upcoming' ? '⏳' : '🔴';
-
-          return (
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">{instance.title}</div>
-                  <div class="card-event">{instance.event}</div>
-                </div>
-                <span class={`badge ${cfg.badge}`}>
-                  <span>{statusEmoji}</span>
-                  {cfg.label}
-                </span>
-              </div>
-              <div class="meta">
-                <div class="meta-item">
-                  <div class="meta-label">Workshop Date</div>
-                  <div class="meta-value">{formatDate(instance.workshopDate)}</div>
-                </div>
-                <div class="meta-item">
-                  <div class="meta-label">Close Date</div>
-                  <div class="meta-value">{formatDate(close.toISOString())}</div>
-                </div>
-                <div class="meta-item">
-                  <div class="meta-label">Access Link</div>
-                  <div class="meta-value">
-                    <span
-                      class="token-link"
-                      onclick={`navigator.clipboard.writeText('https://faziz-dev.com/workshops/attend/${instance.token}');this.textContent='Copied!';setTimeout(()=>this.textContent='faziz-dev.com/workshops/attend/${instance.token}',2000)`}
-                    >
-                      faziz-dev.com/workshops/attend/{instance.token}
-                    </span>
+    <section class="min-h-[80vh] flex items-center">
+      <div class="container">
+        <div class="max-w-sm mx-auto">
+          <div class="card p-8">
+            <div class="text-center mb-8">
+              <div class="terminal max-w-xs mx-auto mb-6">
+                <div class="terminal__header">
+                  <div class="terminal__dots">
+                    <div class="terminal__dot terminal__dot--red"></div>
+                    <div class="terminal__dot terminal__dot--yellow"></div>
+                    <div class="terminal__dot terminal__dot--green"></div>
                   </div>
+                  <span class="terminal__title">admin.sh</span>
                 </div>
-                <div class="meta-item">
-                  <div class="meta-label">Repo</div>
-                  <div class="meta-value">
-                    <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer">Open Repo</a>
-                  </div>
-                </div>
-                <div class="meta-item">
-                  <div class="meta-label">Sanity</div>
-                  <div class="meta-value">
-                    <a href={`https://faziz-dev.com/studio/desk/workshopInstance;${instance._id}`} target="_blank" rel="noopener noreferrer">Edit in Sanity</a>
-                  </div>
+                <div class="terminal__body">
+                  <span class="terminal__prompt">$</span>
+                  <span class="terminal__command"> sudo workshop-admin</span>
+                  <div class="terminal__output">Password required...</div>
                 </div>
               </div>
+              <h1 class="heading-3">Admin Login</h1>
             </div>
-          )
-        })
-      )}
-    </div>
+
+            {authError && (
+              <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <p class="text-sm text-red-700 dark:text-red-400 text-center">{authError}</p>
+              </div>
+            )}
+
+            <form method="POST" class="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  autocomplete="current-password"
+                  required
+                  class="w-full px-4 py-3 rounded-lg border border-edge bg-surface text-ink placeholder-ink-faint focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+              <button type="submit" class="btn-primary w-full py-3">
+                Sign In
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  ) : (
+    <section class="py-16 md:py-24">
+      <div class="container">
+        <div class="max-w-5xl mx-auto">
+          <!-- Header -->
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+              <h1 class="heading-2 mb-2">Workshop Instances</h1>
+              <p class="text-ink-muted">Manage and monitor workshop access</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-ink-faint">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              {instances.length} instance{instances.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+
+          {instances.length === 0 ? (
+            <div class="card p-12 text-center">
+              <h3 class="heading-3 mb-4">No instances yet</h3>
+              <p class="text-ink-muted mb-6">
+                Create a workshop instance in Sanity Studio to get started.
+              </p>
+              <a
+                href="https://faziz-dev.sanity.studio"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-primary"
+              >
+                Open Sanity Studio
+              </a>
+            </div>
+          ) : (
+            <div class="space-y-4">
+              {instances.map((instance) => {
+                const status = getAccessStatus(instance);
+                const close = getCloseDate(instance);
+                const cfg = statusConfig[status];
+
+                return (
+                  <div class="card overflow-hidden">
+                    <!-- Status bar -->
+                    <div class={`h-1 ${status === 'open' ? 'bg-emerald-500' : status === 'upcoming' ? 'bg-amber-500' : 'bg-red-500'}`}></div>
+
+                    <div class="p-6">
+                      <!-- Header -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                        <div>
+                          <h2 class="font-display font-semibold text-lg text-ink">{instance.title}</h2>
+                          <p class="text-sm text-ink-muted">{instance.event}</p>
+                        </div>
+                        <span class={`tag ${cfg.classes}`}>
+                          {cfg.label}
+                        </span>
+                      </div>
+
+                      <!-- Meta grid -->
+                      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div>
+                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Workshop Date</p>
+                          <p class="text-sm text-ink font-medium">{formatDate(instance.workshopDate)}</p>
+                        </div>
+                        <div>
+                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Close Date</p>
+                          <p class="text-sm text-ink font-medium">{formatDate(close.toISOString())}</p>
+                        </div>
+                        <div>
+                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Duration</p>
+                          <p class="text-sm text-ink font-medium">{instance.accessDurationDays} days</p>
+                        </div>
+                      </div>
+
+                      <!-- Access link -->
+                      <div class="mb-6">
+                        <p class="text-xs text-ink-faint uppercase tracking-wider mb-2">Access Link</p>
+                        <button
+                          class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-overlay border border-edge hover:border-edge-strong transition-colors font-mono text-xs text-accent cursor-pointer group"
+                          data-url={`https://faziz-dev.com/workshops/attend/${instance.token}`}
+                          onclick="navigator.clipboard.writeText(this.dataset.url);this.querySelector('.copy-label').textContent='Copied!';setTimeout(()=>this.querySelector('.copy-label').textContent='Click to copy',2000)"
+                        >
+                          <span>faziz-dev.com/workshops/attend/{instance.token}</span>
+                          <span class="copy-label text-ink-faint group-hover:text-ink-muted transition-colors">Click to copy</span>
+                        </button>
+                      </div>
+
+                      <!-- Actions -->
+                      <div class="flex flex-wrap gap-3 pt-4 border-t border-edge">
+                        <a
+                          href={`/workshops/attend/${instance.token}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn-ghost text-sm"
+                        >
+                          Preview
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                        <a
+                          href={instance.repoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn-ghost text-sm"
+                        >
+                          Repo
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                        <a
+                          href={`https://faziz-dev.sanity.studio/structure/workshopInstance;${instance._id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn-ghost text-sm"
+                        >
+                          Edit in Sanity
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   )}
-</body>
-</html>
+</BaseLayout>

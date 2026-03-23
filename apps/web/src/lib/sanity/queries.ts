@@ -1342,11 +1342,11 @@ export const serviceLandingPageBySlugQuery = groq`
 
 // Workshop Instances
 export const workshopAttendQuery = groq`
-  *[_type == "workshopInstance" && token == $token][0] {
+  *[_type == "workshopInstance" && token.current == $token][0] {
     _id,
     title,
     event,
-    token,
+    "token": token.current,
     workshopDate,
     accessDurationDays,
     forceClose,
@@ -1368,7 +1368,7 @@ export const allWorkshopInstancesQuery = groq`
     _id,
     title,
     event,
-    token,
+    "token": token.current,
     workshopDate,
     accessDurationDays,
     forceClose,
