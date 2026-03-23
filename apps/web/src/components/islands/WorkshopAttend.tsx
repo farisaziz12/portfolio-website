@@ -849,6 +849,12 @@ export default function WorkshopAttend({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const closeDate = useMemo(() => new Date(closeDateISO).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }), [closeDateISO]);
+
   // Loading state (SSR → hydration)
   if (!mounted) return null;
 
@@ -856,12 +862,6 @@ export default function WorkshopAttend({
   if (!user) {
     return <GateView event={event} token={token} onSuccess={setUser} />;
   }
-
-  const closeDate = useMemo(() => new Date(closeDateISO).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }), [closeDateISO]);
 
   // Section detail view
   if (activeSection !== null && sections[activeSection]) {
