@@ -20,7 +20,7 @@ export default defineConfig({
       noExternal: ['shared'],
     },
   },
-  output: 'hybrid',
+  output: 'static',
   build: {
     inlineStylesheets: 'auto',
   },
