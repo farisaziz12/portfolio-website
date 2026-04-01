@@ -21,6 +21,7 @@ export default defineConfig({
       noExternal: ['shared'],
     },
   },
+  output: 'static',
   adapter: vercel(),
   build: {
     inlineStylesheets: 'auto',
