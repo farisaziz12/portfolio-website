@@ -13,8 +13,11 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     if (!mounted) return;
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const root = document.documentElement;
+    root.classList.toggle('dark', theme === 'dark');
+    root.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
+    try { localStorage.setItem('faziz-theme', theme); } catch (_) {}
   }, [theme, mounted]);
 
   const toggleTheme = () => {

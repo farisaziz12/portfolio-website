@@ -1,0 +1,173 @@
+---
+import { HUB, citiesToMap, layoutLabels, groupByRegion } from '../../lib/reach-map-cities';
+
+interface Props {
+  cities: (string | undefined | null)[];
+}
+
+const { cities = [] } = Astro.props;
+const points = citiesToMap(cities);
+const labels = layoutLabels(points);
+const regionGroups = groupByRegion(points);
+
+function arcPath(tx: number, ty: number) {
+  const dx = tx - HUB.x;
+  const cx = HUB.x + dx * 0.5;
+  const lift = Math.min(240, Math.abs(dx) * 0.45 + 50);
+  const cy = Math.min(HUB.y, ty) - lift;
+  return `M${HUB.x},${HUB.y} Q${cx},${cy} ${tx},${ty}`;
+}
+
+function leaderPath(px: number, py: number, lx: number, ly: number, anchor: 'start' | 'middle' | 'end') {
+  let tx = lx;
+  if (anchor === 'start') tx = lx - 2;
+  else if (anchor === 'end') tx = lx + 2;
+  const ty = ly - 4;
+  return `M${px},${py} L${tx},${ty}`;
+}
+---
+
+<div class="reachmap wide ds-reveal">
+  <!-- Desktop / tablet: SVG map -->
+  <svg class="reachmap__svg" viewBox="0 0 1200 480" role="img" aria-label="Map of cities where Faris has spoken" preserveAspectRatio="xMidYMid meet">
+    <g class="reach-grid">
+      {[60, 120, 180, 240, 300, 360, 420].map((y) => (
+        <line x1="40" y1={y} x2="1160" y2={y} />
+      ))}
+      {[120, 240, 360, 480, 600, 720, 840, 960, 1080].map((x) => (
+        <line x1={x} y1="20" x2={x} y2="460" />
+      ))}
+    </g>
+
+    <g>
+      {points.map((p) => <path class="reach-arc" d={arcPath(p.x, p.y)} />)}
+    </g>
+
+    <g>
+      {labels.filter((l) => l.hasLeader && !l.isHub).map((l) => (
+        <path class="reach-leader" d={leaderPath(l.px, l.py, l.lx, l.ly, l.anchor)} />
+      ))}
+    </g>
+
+    <g>
+      {points.map((p) => <circle cx={p.x} cy={p.y} r="4.5" class="reach-pin" />)}
+      <circle cx={HUB.x} cy={HUB.y} r="11" class="reach-ping" opacity="0.7">
+        <animate attributeName="r" values="8;18;8" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.7;0;0.7" dur="3s" repeatCount="indefinite" />
+      </circle>
+      <circle cx={HUB.x} cy={HUB.y} r="6.5" class="reach-hub" />
+    </g>
+
+    <g>
+      {labels.map((l) => (
+        <text
+          class={l.isHub ? 'reach-label reach-label--hub' : 'reach-label'}
+          x={l.lx}
+          y={l.ly}
+          text-anchor={l.anchor}
+        >
+          {l.name}
+        </text>
+      ))}
+    </g>
+  </svg>
+
+  <!-- Mobile: structured city list grouped by region. Easier to read than tiny SVG labels. -->
+  <div class="reachmap__list" role="list" aria-label="Cities where Faris has spoken, grouped by region">
+    <div class="reachmap__hub">
+      <span class="ds-dot ds-dot--pulse"></span>
+      <span class="reachmap__hub-label">Hub</span>
+      <span class="reachmap__hub-name">Geneva</span>
+    </div>
+    {regionGroups.map((g) => (
+      <div class="reachmap__group" role="listitem">
+        <p class="reachmap__group-label">{g.label}</p>
+        <p class="reachmap__group-cities">
+          {g.cities.map((city, i) => (
+            <Fragment>
+              {i > 0 && <span class="reachmap__sep" aria-hidden="true">·</span>}
+              <span>{city}</span>
+            </Fragment>
+          ))}
+        </p>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .reachmap {
+    position: relative;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 20px;
+    background: rgb(var(--surface-1));
+    overflow: hidden;
+    padding: clamp(1rem, 2.5vw, 1.8rem);
+  }
+  .reachmap__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    min-height: 340px;
+  }
+  .reachmap :global(.reach-label) {
+    font-size: 12px;
+  }
+  .reachmap :global(.reach-label--hub) {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .reachmap :global(.reach-leader) {
+    fill: none;
+    stroke: rgb(var(--ink-faint));
+    stroke-width: 0.6;
+    opacity: 0.55;
+  }
+
+  /* Mobile fallback list: hidden on tablet+, shown on small screens */
+  .reachmap__list { display: none; }
+  .reachmap__hub {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--signal) / 0.4);
+    background: rgb(var(--signal) / 0.08);
+    color: rgb(var(--signal));
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+  }
+  .reachmap__hub-label { color: rgb(var(--ink-faint)); }
+  .reachmap__hub-name { color: rgb(var(--ink)); font-weight: 500; }
+  .reachmap__group {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .reachmap__group:last-child { border-bottom: 0; padding-bottom: 0; }
+  .reachmap__group-label {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--accent-bright));
+    margin-bottom: 0.4rem;
+  }
+  .reachmap__group-cities {
+    color: rgb(var(--ink));
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .reachmap__group-cities .reachmap__sep {
+    color: rgb(var(--ink-faint));
+    margin: 0 0.45rem;
+  }
+
+  @media (max-width: 720px) {
+    .reachmap__svg { display: none; }
+    .reachmap__list { display: block; }
+  }
+</style>

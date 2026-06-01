@@ -1,27 +1,32 @@
 ---
+// Home page is server-rendered + ISR-cached at the edge so the "Next up" event band
+// stays fresh without a redeploy. Revalidates every hour (configured in astro.config.mjs).
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SocialWall from '../components/social/SocialWall.astro';
-import ImpactSection from '../components/impact/ImpactSection.astro';
-// Animation components
-import Aurora from '../components/animations/Aurora.astro';
-import CountUp from '../components/islands/CountUp';
-import EventCarousel from '../components/islands/EventCarousel';
-import ScrollReveal from '../components/animations/ScrollReveal.astro';
-import SpotlightCard from '../components/animations/SpotlightCard.astro';
-import TiltCard from '../components/animations/TiltCard.astro';
+import Kicker from '../components/design/Kicker.astro';
+import Terminal from '../components/design/Terminal.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import IconChip from '../components/design/IconChip.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
+import AudienceRouter from '../components/home/AudienceRouter.astro';
+import FeaturedTalk from '../components/home/FeaturedTalk.astro';
+import ReachMap from '../components/home/ReachMap.astro';
 import GeneralSubscribe from '../components/islands/GeneralSubscribe';
+import SocialWallIsland from '../components/islands/SocialWallIsland';
+import { isRealConference } from '../lib/conferences';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import {
   upcomingEventsQuery,
-  featuredProjectsQuery,
   speakingStatsQuery,
   featuredMediaQuery,
-  featuredSocialPostsQuery,
   featuredTestimonialsQuery,
+  featuredSocialPostsQuery,
+  featuredTalkQuery,
+  reachMapDataQuery,
+  pastEventsQuery,
 } from '../lib/sanity/queries';
-import { formatDate, getCountryFlag } from 'shared/utils';
 
-// Types
 interface UpcomingEvent {
   _id: string;
   title: string;
@@ -29,23 +34,8 @@ interface UpcomingEvent {
   type: string;
   conference: string;
   date: string;
-  location?: {
-    city?: string;
-    country?: string;
-  };
+  location?: { city?: string; country?: string };
 }
-
-interface Project {
-  _id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  category?: string;
-  technologies?: string[];
-  image?: any;
-  links?: any;
-}
-
 interface SpeakingStats {
   totalEvents: number;
   upcomingEvents: number;
@@ -54,16 +44,8 @@ interface SpeakingStats {
   talks: number;
   workshops: number;
 }
-
-interface Media {
-  _id: string;
-  title?: string;
-  type?: string;
-  image?: any;
-  videoUrl?: string;
-  description?: string;
-}
-
+interface Media { _id: string; image?: any; description?: string }
+interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string; image?: any }
 interface SocialPost {
   _id: string;
   url: string;
@@ -71,6 +53,7 @@ interface SocialPost {
   author: string;
   authorHandle?: string;
   authorImage?: any;
+  authorRole?: string;
   postImage?: any;
   content: string;
   tweetId?: string;
@@ -78,134 +61,245 @@ interface SocialPost {
   relatedTalk?: { title: string; slug: string };
   relatedEvent?: { title: string; slug: string; conference: string };
 }
-
-interface Testimonial {
+interface FeaturedTalkData {
   _id: string;
-  quote: string;
-  author: string;
-  role?: string;
-  company?: string;
-  image?: any;
-  context?: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+  duration?: number;
+  viewCount?: number;
+  assets?: { videoUrl?: string; thumbnailImage?: any };
+  latestEvent?: { conference?: string; city?: string };
 }
+interface PastEvent { _id: string; conference?: string; featured?: boolean }
 
-// Fetch data from Sanity
-const [upcomingEvents, projects, stats, media, socialPosts, testimonials] = await Promise.all([
+const [upcomingEvents, stats, media, testimonials, socialPosts, featured, pastEvents, reachCities] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
-  sanityFetch<Project[]>(featuredProjectsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 60,
-    upcomingEvents: 15,
-    countries: 12,
-    cities: 25,
-    talks: 0,
-    workshops: 0,
+    totalEvents: 60, upcomingEvents: 15, countries: 12, cities: 25, talks: 0, workshops: 0,
   })),
   sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
-  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
   sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
+  sanityFetch<FeaturedTalkData | null>(featuredTalkQuery).catch(() => null),
+  sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
+  sanityFetch<string[]>(reachMapDataQuery).catch(() => []),
 ]);
 
-// Get next event if available
+// Pre-process image URLs for the social wall React island (urlFor can't run client-side).
+const socialPostImages: Record<string, string> = {};
+for (const p of socialPosts) {
+  if (p.authorImage) {
+    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
+  }
+}
+const testimonialImages: Record<string, string> = {};
+for (const t of testimonials) {
+  if (t.image) {
+    try { testimonialImages[t._id] = urlFor(t.image).width(48).height(48).url(); } catch {}
+  }
+}
+
+const normalizedSocialPosts = socialPosts.map((p) => ({
+  _id: p._id,
+  platform: p.platform,
+  author: p.author,
+  authorRole: p.authorRole,
+  authorHandle: p.authorHandle,
+  content: p.content,
+  url: p.url,
+  postDate: p.postDate,
+}));
+const normalizedTestimonials = testimonials.map((t) => ({
+  _id: t._id,
+  quote: t.quote,
+  author: t.author,
+  role: t.role,
+  company: t.company,
+}));
+const hasSocialContent = normalizedSocialPosts.length > 0 || normalizedTestimonials.length > 0;
+
 const nextEvent = upcomingEvents[0] || null;
 
-// Social links
-const socials = [
-  {
-    name: 'Bluesky',
-    href: 'https://bsky.app/profile/farisaziz12.bsky.social',
-    icon: 'M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026',
-  },
-  {
-    name: 'GitHub',
-    href: 'https://github.com/farisaziz12',
-    icon: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z',
-  },
-  {
-    name: 'LinkedIn',
-    href: 'https://linkedin.com/in/farisaziz12',
-    icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
-  },
-  {
-    name: 'X / Twitter',
-    href: 'https://twitter.com/FarisAziz12',
-    icon: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
-  },
-  {
-    name: 'YouTube',
-    href: 'https://www.youtube.com/@faziz-dev',
-    icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
-  },
-];
+// Logo wall — top conferences from past events.
+// Aggressive dedupe key: strip all non-alphanumeric chars so "ZurichJS" and "Zurich JS"
+// collapse to the same entry, but "ZurichJS Pro" stays distinct.
+// Track `featured` as a logical OR across the conference's events — if ANY event
+// for that conference was marked featured in Sanity, the conference earns a star.
+interface ConferenceAgg { display: string; count: number; featured: boolean }
+const conferenceCounts = new Map<string, ConferenceAgg>();
+for (const e of pastEvents) {
+  const raw = e.conference?.trim();
+  if (!isRealConference(raw)) continue;
+  const key = raw!.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (!key) continue;
+  const existing = conferenceCounts.get(key);
+  if (existing) {
+    existing.count += 1;
+    if (e.featured) existing.featured = true;
+  } else {
+    conferenceCounts.set(key, { display: raw!, count: 1, featured: !!e.featured });
+  }
+}
+const topConferences = Array.from(conferenceCounts.values())
+  // Featured first, then by frequency
+  .sort((a, b) => (Number(b.featured) - Number(a.featured)) || b.count - a.count)
+  .slice(0, 6);
 
-// Topics I speak about - enhanced with more details
-// Color palette unified: indigo → violet → pink → rose spectrum
+// Topic cards (line-icons, no emoji)
 const topics = [
   {
     title: 'React & Next.js',
-    description: 'Performance, architecture, and production patterns',
-    longDescription: 'Deep dives into state management at scale, hooks patterns, and building performant web applications.',
-    icon: '⚛️',
-    color: 'from-blue-500 to-indigo-600',
-    tags: ['Hooks', 'Performance', 'Architecture'],
+    desc: 'Performance, architecture, and production patterns at scale.',
+    icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
   },
   {
     title: 'Payments & Fintech',
-    description: 'Orchestration, resilience, and scaling globally',
-    longDescription: 'Building robust payment systems, handling failures gracefully, and scaling financial infrastructure.',
-    icon: '💳',
-    color: 'from-indigo-500 to-violet-600',
-    tags: ['Stripe', 'Resilience', 'Scale'],
+    desc: 'Orchestration, resilience, and scaling money globally.',
+    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   },
   {
     title: 'Developer Experience',
-    description: 'Tooling, productivity, and great workflows',
-    longDescription: 'Creating developer tools, improving team velocity, and building delightful development workflows.',
-    icon: '🛠️',
-    color: 'from-violet-500 to-purple-600',
-    tags: ['Tooling', 'DX', 'Productivity'],
+    desc: 'Tooling, productivity, and workflows engineers actually love.',
+    icon: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
   },
   {
     title: 'Career & Community',
-    description: 'Growth, speaking, and building communities',
-    longDescription: 'Navigating tech careers, public speaking tips, and fostering inclusive developer communities.',
-    icon: '🚀',
-    color: 'from-purple-500 to-pink-600',
-    tags: ['Speaking', 'Growth', 'Community'],
+    desc: 'Growth, public speaking, and building communities that last.',
+    icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
   },
 ];
+
+const socials = [
+  { name: 'GitHub', href: 'https://github.com/farisaziz12', path: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z' },
+  { name: 'LinkedIn', href: 'https://linkedin.com/in/farisaziz12', path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z' },
+  { name: 'X', href: 'https://twitter.com/FarisAziz12', path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z' },
+  { name: 'YouTube', href: 'https://www.youtube.com/@faziz-dev', path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' },
+  { name: 'Bluesky', href: 'https://bsky.app/profile/farisaziz.com', path: 'M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026' },
+];
+
+const formatEventDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return { day: d.getDate().toString(), month: d.toLocaleString('en-US', { month: 'short' }) };
+};
 ---
 
 <BaseLayout
   title="Faris Aziz — Staff Engineer & Conference Speaker"
-  description="Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. 60+ talks across 12 countries. Based in Zurich."
+  description={`Staff Software Engineer and Conference Speaker. ${stats.totalEvents} talks across ${stats.countries} countries. Based in Geneva.`}
+  pathname=""
 >
-  <!-- Hero Section with Split Image Mosaic -->
-  <section class="hero-split-mosaic relative">
-    <!-- Aurora Background -->
-    <Aurora class="opacity-30" colors={['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4']} speed="slow" blur={100} />
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Person',
+          '@id': 'https://faziz-dev.com/#faris',
+          name: 'Faris Aziz',
+          jobTitle: 'Staff Software Engineer & Conference Speaker',
+          url: 'https://faziz-dev.com',
+          address: { '@type': 'PostalAddress', addressLocality: 'Geneva', addressCountry: 'CH' },
+          knowsAbout: ['React', 'Next.js', 'Payment Systems', 'Frontend Architecture', 'Web Performance', 'Developer Experience'],
+          sameAs: [
+            'https://github.com/farisaziz12',
+            'https://linkedin.com/in/farisaziz12',
+            'https://twitter.com/FarisAziz12',
+            'https://www.youtube.com/@faziz-dev',
+            'https://bsky.app/profile/farisaziz.com',
+          ],
+        },
+        {
+          '@type': 'WebSite',
+          '@id': 'https://faziz-dev.com/#website',
+          url: 'https://faziz-dev.com',
+          name: 'Faris Aziz',
+          publisher: { '@id': 'https://faziz-dev.com/#faris' },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://faziz-dev.com' },
+            { '@type': 'ListItem', position: 2, name: 'Speaking', item: 'https://faziz-dev.com/speaking' },
+            { '@type': 'ListItem', position: 3, name: 'Services', item: 'https://faziz-dev.com/services' },
+          ],
+        },
+      ],
+    })} />
+  </Fragment>
 
-    <!-- Image Mosaic Side -->
+  <!-- HERO — split with full-width mosaic that takes the right column (lg+) and stacks full-width on mobile/tablet -->
+  <header class="hero-split-mosaic relative home-hero-v2">
+    <div class="hero-split-mosaic__content">
+      <div class="home-hero__content-inner">
+        <Terminal class="home-hero__terminal">
+          <div><span class="pr">$</span> <span class="cmd">whoami</span></div>
+          <div class="out">Staff Engineer & Speaker</div>
+        </Terminal>
+
+        <h1 class="home-hero__title">
+          <span class="ln">Faris</span>
+          <span class="ln accent-word">Aziz</span>
+        </h1>
+
+        <p class="home-hero__lead">
+          Staff Software Engineer and Conference Speaker. I help teams ship resilient frontend systems and payment integrations — then I go talk about how on stage.
+        </p>
+
+        <div class="home-hero__stats">
+          <div class="home-stat-inline">
+            <b class="cu" data-to={stats.totalEvents}>0</b>
+            <span>Events</span>
+          </div>
+          <div class="home-stat-inline">
+            <b class="cu" data-to={stats.countries}>0</b>
+            <span>Countries</span>
+          </div>
+          <div class="home-stat-inline">
+            <b class="cu" data-to={stats.cities}>0</b>
+            <span>Cities</span>
+          </div>
+        </div>
+
+        <div class="home-hero__socials">
+          {socials.map((s) => (
+            <a href={s.href} class="ds-social" target="_blank" rel="noopener noreferrer" aria-label={s.name}>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.path} /></svg>
+            </a>
+          ))}
+          <span class="home-hero__socials-label">Follow my journey</span>
+        </div>
+
+        <div class="home-hero__actions">
+          <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
+            Invite me to speak
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a href="/speaking" class="ds-btn ds-btn-secondary ds-btn-lg">View upcoming events</a>
+        </div>
+      </div>
+    </div>
+
     <div class="hero-split-mosaic__images">
       <div class="hero-mosaic-grid">
         {media.length > 0 ? (
           <>
-            <!-- Large featured image (2x2) -->
             <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large">
               {media[0]?.image && (
                 <img
                   src={urlFor(media[0].image).width(1200).height(1200).quality(90).url()}
-                  alt={media[0].description || "Speaking at conference"}
+                  alt={media[0].description || 'Speaking at conference'}
                   loading="eager"
                 />
               )}
             </div>
-            <!-- Row 1 -->
             <div class="hero-mosaic-grid__item">
               {media[1]?.image && (
                 <img
                   src={urlFor(media[1].image).width(600).height(600).quality(90).url()}
-                  alt={media[1].description || "Conference moment"}
+                  alt={media[1].description || 'Conference moment'}
                   loading="eager"
                 />
               )}
@@ -214,17 +308,16 @@ const topics = [
               {media[2]?.image && (
                 <img
                   src={urlFor(media[2].image).width(600).height(600).quality(90).url()}
-                  alt={media[2].description || "Workshop"}
+                  alt={media[2].description || 'Workshop'}
                   loading="eager"
                 />
               )}
             </div>
-            <!-- Row 2 -->
             <div class="hero-mosaic-grid__item">
               {media[3]?.image && (
                 <img
                   src={urlFor(media[3].image).width(600).height(600).quality(90).url()}
-                  alt={media[3].description || "Tech talk"}
+                  alt={media[3].description || 'Tech talk'}
                   loading="eager"
                 />
               )}
@@ -233,17 +326,16 @@ const topics = [
               {media[4]?.image && (
                 <img
                   src={urlFor(media[4].image).width(600).height(600).quality(90).url()}
-                  alt={media[4].description || "Speaking"}
+                  alt={media[4].description || 'Speaking'}
                   loading="lazy"
                 />
               )}
             </div>
-            <!-- Row 3 - wide + singles -->
             <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide">
               {media[5]?.image && (
                 <img
                   src={urlFor(media[5].image).width(1200).height(600).quality(90).url()}
-                  alt={media[5].description || "Conference"}
+                  alt={media[5].description || 'Conference'}
                   loading="lazy"
                 />
               )}
@@ -252,7 +344,7 @@ const topics = [
               {media[6]?.image && (
                 <img
                   src={urlFor(media[6].image).width(600).height(600).quality(90).url()}
-                  alt={media[6].description || "Event"}
+                  alt={media[6].description || 'Event'}
                   loading="lazy"
                 />
               )}
@@ -261,7 +353,7 @@ const topics = [
               {media[7]?.image && (
                 <img
                   src={urlFor(media[7].image).width(600).height(600).quality(90).url()}
-                  alt={media[7].description || "Presentation"}
+                  alt={media[7].description || 'Presentation'}
                   loading="lazy"
                 />
               )}
@@ -269,865 +361,775 @@ const topics = [
           </>
         ) : (
           <>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large bg-gradient-to-br from-accent/20 to-violet-500/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-violet-500/20 to-pink-500/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-pink-500/20 to-amber-500/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-amber-500/20 to-emerald-500/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-emerald-500/20 to-cyan-500/30"></div>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide bg-gradient-to-br from-cyan-500/20 to-accent/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-accent/20 to-violet-500/30"></div>
-            <div class="hero-mosaic-grid__item bg-gradient-to-br from-violet-500/20 to-pink-500/30"></div>
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large"></div>
+            <div class="hero-mosaic-grid__item"></div>
+            <div class="hero-mosaic-grid__item"></div>
+            <div class="hero-mosaic-grid__item"></div>
+            <div class="hero-mosaic-grid__item"></div>
+            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide"></div>
+            <div class="hero-mosaic-grid__item"></div>
+            <div class="hero-mosaic-grid__item"></div>
           </>
         )}
       </div>
     </div>
+  </header>
 
-    <!-- Content Side -->
-    <div class="hero-split-mosaic__content">
-      <div class="max-w-xl">
-        <!-- Terminal intro -->
-        <div class="terminal max-w-sm mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
+  {nextEvent && (
+    <section class="eventband">
+      <div class="container">
+        <div class="wide eventband__row">
+          <Kicker plain variant="signal">
+            <span class="ds-dot ds-dot--pulse"></span>Next up
+          </Kicker>
+          <div class="eventband__event">
+            <div class="eventband__date">
+              <b>{formatEventDate(nextEvent.date).day}</b>
+              <span>{formatEventDate(nextEvent.date).month}</span>
             </div>
-            <span class="terminal__title">faris.sh</span>
+            <div>
+              <div class="eventband__title">{nextEvent.title}</div>
+              <div class="eventband__meta">
+                {nextEvent.location?.city && `${nextEvent.location.city}${nextEvent.location.country ? ', ' + nextEvent.location.country : ''} · `}
+                {nextEvent.conference}
+              </div>
+            </div>
           </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> whoami</span>
-            <div class="terminal__output">Staff Engineer & Speaker</div>
-          </div>
-        </div>
-
-        <h1 class="hero-title mb-6">
-          <span class="block text-ink hero-animate" style="--delay: 0.1s">Faris</span>
-          <span class="block text-accent hero-animate" style="--delay: 0.2s">Aziz</span>
-        </h1>
-
-        <p class="text-lead max-w-lg mb-8 hero-animate" style="--delay: 0.3s">
-          Staff Software Engineer and Conference Speaker. I help teams ship resilient frontend systems and payment integrations.
-        </p>
-
-        <!-- Quick Stats inline -->
-        <div class="flex flex-wrap gap-6 mb-10">
-          <div class="flex items-center gap-2">
-            <CountUp client:load end={stats.totalEvents} className="text-3xl font-display font-bold text-accent" suffix="+" delay={0.8} duration={2} />
-            <span class="text-ink-muted text-sm uppercase tracking-wider">Events</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <CountUp client:load end={stats.countries} className="text-3xl font-display font-bold text-violet-500" suffix="+" delay={1} duration={2} />
-            <span class="text-ink-muted text-sm uppercase tracking-wider">Countries</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <CountUp client:load end={stats.cities} className="text-3xl font-display font-bold text-pink-500" suffix="+" delay={1.2} duration={2} />
-            <span class="text-ink-muted text-sm uppercase tracking-wider">Cities</span>
-          </div>
-        </div>
-
-        <!-- Social Links -->
-        <div class="flex items-center gap-6 mb-10">
-          <div class="social-bar">
-            {socials.map((social) => (
-              <a
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="social-link"
-                aria-label={`Follow on ${social.name}`}
-                title={social.name}
-              >
-                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d={social.icon} />
-                </svg>
-              </a>
-            ))}
-          </div>
-          <span class="text-body-sm text-ink-faint hidden sm:inline">Follow my journey</span>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-4">
-          <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
-            Invite me to speak
-            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          <a href="/speaking" class="ds-link">
+            All upcoming events
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </a>
-          <a href="/speaking" class="btn-secondary text-lg px-8 py-4">
-            View upcoming events
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Upcoming Events Carousel -->
-  {upcomingEvents.length > 0 && (
-    <section class="relative overflow-hidden bg-gradient-to-br from-accent/10 via-violet-500/10 to-pink-500/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-y border-edge">
-      <div class="container relative z-10 py-8 md:py-10">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center justify-between mb-5">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 dark:bg-white/10 rounded-full text-accent dark:text-white/90 text-xs font-medium">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Upcoming Events
-            </div>
-            <a href="/speaking" class="text-xs text-ink-muted hover:text-accent dark:text-white/50 dark:hover:text-white transition-colors flex items-center gap-1">
-              View all events
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-
-          <EventCarousel
-            client:load
-            events={upcomingEvents.slice(0, 3)}
-          />
         </div>
       </div>
     </section>
   )}
 
-  <!-- What I Speak About - Interactive Showcase -->
-  <section class="topics-section relative overflow-hidden">
-    {/* Animated background */}
-    <div class="topics-bg">
-      <div class="topics-grid-lines"></div>
-      <div class="topics-glow topics-glow--1"></div>
-      <div class="topics-glow topics-glow--2"></div>
-    </div>
-
-    <div class="container relative z-10 py-16 md:py-20">
-      {/* Header */}
-      <div class="text-center mb-12">
-        <ScrollReveal animation="fade-up">
-          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Topics & Expertise</p>
-        </ScrollReveal>
-        <ScrollReveal animation="fade-up" delay={0.1}>
-          <h2 class="text-3xl md:text-5xl font-display font-bold text-ink mb-4">
-            What I <span class="topics-title-highlight">Speak About</span>
-          </h2>
-        </ScrollReveal>
-        <ScrollReveal animation="blur" delay={0.2}>
-          <p class="text-ink-muted text-base md:text-lg max-w-xl mx-auto">
-            From technical deep-dives to career guidance, I bring real-world experience to every talk
-          </p>
-        </ScrollReveal>
+  <!-- AUDIENCE ROUTER -->
+  <section class="home-section home-section--router">
+    <div class="container">
+      <div class="home-section__head">
+        <h2 class="home-section__title-sm">What brings you here?</h2>
+        <span class="home-section__hint mono">Pick a path →</span>
       </div>
-
-      {/* Topics Grid - Compact 4 columns */}
-      <div class="topics-grid max-w-5xl mx-auto">
-        {topics.map((topic, index) => (
-          <div
-            class="topic-card"
-            style={`--index: ${index};`}
-            data-topic-card
-          >
-            {/* Gradient border on hover */}
-            <div class={`topic-card__border bg-gradient-to-br ${topic.color}`}></div>
-
-            {/* Card content */}
-            <div class="topic-card__inner">
-              {/* Icon and title row */}
-              <div class="topic-card__header">
-                <div class="topic-card__icon-wrapper">
-                  <div class={`topic-card__icon-bg bg-gradient-to-br ${topic.color}`}></div>
-                  <span class="topic-card__icon">{topic.icon}</span>
-                </div>
-                <h3 class="topic-card__title">{topic.title}</h3>
-              </div>
-
-              {/* Description */}
-              <p class="topic-card__description">{topic.description}</p>
-
-              {/* Hover overlay with long description */}
-              <div class="topic-card__overlay">
-                <p class="topic-card__long-desc">{topic.longDescription}</p>
-                <span class="topic-card__cta">View talks →</span>
-              </div>
-
-              {/* Particle effects */}
-              <div class="topic-card__particles">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* CTA */}
-      <ScrollReveal animation="fade-up" delay={0.3} class="mt-10 text-center">
-        <a href="/talks" class="topics-cta group">
-          <span class="topics-cta__text">Explore all talks</span>
-          <span class="topics-cta__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-          <span class="topics-cta__shine"></span>
-        </a>
-      </ScrollReveal>
+      <AudienceRouter />
     </div>
   </section>
 
-  <style>
-    /* Hero animation - CSS only for view transitions compatibility */
-    .hero-animate {
-      animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-      animation-delay: var(--delay, 0s);
-    }
-
-    @keyframes heroFadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .hero-animate {
-        animation: none;
-        opacity: 1;
-        transform: none;
-      }
-    }
-
-    .topics-section {
-      background: rgb(var(--surface-raised));
-      position: relative;
-    }
-
-    /* Add subtle top/bottom borders for section separation */
-    .topics-section::before,
-    .topics-section::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgb(var(--edge-strong)), transparent);
-    }
-
-    .topics-section::before { top: 0; }
-    .topics-section::after { bottom: 0; }
-
-    .topics-bg {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-    }
-
-    .topics-grid-lines {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgb(var(--accent) / 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(var(--accent) / 0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-    }
-
-    .topics-glow {
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.08;
-      animation: float-glow 20s ease-in-out infinite;
-    }
-
-    .topics-glow--1 {
-      top: -100px;
-      left: -100px;
-      background: rgb(var(--accent));
-    }
-
-    .topics-glow--2 {
-      bottom: -100px;
-      right: -100px;
-      background: rgb(168 85 247); /* violet-500 */
-      animation-delay: -10s;
-    }
-
-    @keyframes float-glow {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, 20px) scale(1.05); }
-      66% { transform: translate(-20px, 30px) scale(0.95); }
-    }
-
-    .topics-title-highlight {
-      background: linear-gradient(135deg, rgb(var(--accent)), rgb(168 85 247), rgb(236 72 153));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* Topics Grid - 4 equal columns */
-    .topics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-    }
-
-    @media (max-width: 1024px) {
-      .topics-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 640px) {
-      .topics-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Topic Card - Fixed height */
-    .topic-card {
-      position: relative;
-      border-radius: 1rem;
-      cursor: pointer;
-      height: 200px;
-    }
-
-    .topic-card__border {
-      position: absolute;
-      inset: 0;
-      border-radius: 1rem;
-      padding: 2px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-    }
-
-    .topic-card:hover .topic-card__border {
-      opacity: 1;
-    }
-
-    .topic-card__inner {
-      position: relative;
-      height: 100%;
-      background: rgb(var(--surface));
-      border: 1px solid rgb(var(--edge));
-      border-radius: 1rem;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .topic-card:hover .topic-card__inner {
-      background: rgb(var(--surface-overlay));
-      border-color: rgb(var(--edge-strong));
-      transform: translateY(-4px);
-      box-shadow: 0 10px 40px -10px rgb(var(--accent) / 0.15);
-    }
-
-    /* Header with icon and title */
-    .topic-card__header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .topic-card__icon-wrapper {
-      position: relative;
-      width: 44px;
-      height: 44px;
-      flex-shrink: 0;
-    }
-
-    .topic-card__icon-bg {
-      position: absolute;
-      inset: 0;
-      border-radius: 0.75rem;
-      opacity: 0.15;
-      transition: all 0.3s ease;
-    }
-
-    .topic-card:hover .topic-card__icon-bg {
-      opacity: 0.25;
-      transform: rotate(3deg) scale(1.05);
-    }
-
-    .topic-card__icon {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      transition: transform 0.3s ease;
-    }
-
-    .topic-card:hover .topic-card__icon {
-      transform: scale(1.1);
-    }
-
-    .topic-card__title {
-      font-family: var(--font-display);
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: rgb(var(--ink));
-      line-height: 1.2;
-    }
-
-    .topic-card__description {
-      color: rgb(var(--ink-muted));
-      font-size: 0.875rem;
-      line-height: 1.5;
-      margin-bottom: 0.75rem;
-      flex: 1;
-    }
-
-    .topic-card__tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-    }
-
-    .topic-card__tag {
-      padding: 0.2rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.65rem;
-      font-weight: 500;
-      color: white;
-      opacity: 0.85;
-    }
-
-    /* Hover overlay */
-    .topic-card__overlay {
-      position: absolute;
-      inset: 0;
-      background: rgb(var(--surface) / 0.97);
-      backdrop-filter: blur(8px);
-      border-radius: 1rem;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-
-    .topic-card:hover .topic-card__overlay {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .topic-card__long-desc {
-      color: rgb(var(--ink-muted));
-      font-size: 0.875rem;
-      line-height: 1.6;
-      margin-bottom: 1rem;
-    }
-
-    .topic-card__cta {
-      color: rgb(var(--accent));
-      font-size: 0.875rem;
-      font-weight: 600;
-      transition: color 0.2s ease;
-    }
-
-    .topic-card:hover .topic-card__cta {
-      color: rgb(var(--accent-hover));
-    }
-
-    /* Particles */
-    .topic-card__particles {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      border-radius: 1rem;
-    }
-
-    .topic-card__particles span {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-    }
-
-    .topic-card:hover .topic-card__particles span {
-      animation: particle-float 1.5s ease-out infinite;
-    }
-
-    .topic-card__particles span:nth-child(1) {
-      left: 20%;
-      bottom: 0;
-      color: rgb(var(--accent));
-    }
-
-    .topic-card__particles span:nth-child(2) {
-      left: 50%;
-      bottom: 0;
-      color: rgb(168 85 247); /* violet */
-      animation-delay: 0.2s;
-    }
-
-    .topic-card__particles span:nth-child(3) {
-      left: 80%;
-      bottom: 0;
-      color: rgb(236 72 153); /* pink */
-      animation-delay: 0.4s;
-    }
-
-    @keyframes particle-float {
-      0% {
-        transform: translateY(0) scale(0);
-        opacity: 0;
-      }
-      20% {
-        opacity: 0.8;
-        transform: translateY(-15px) scale(1);
-      }
-      100% {
-        transform: translateY(-60px) scale(0);
-        opacity: 0;
-      }
-    }
-
-    /* CTA Button */
-    .topics-cta {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      background: rgb(var(--accent-muted));
-      border: 1px solid rgb(var(--accent) / 0.3);
-      border-radius: 9999px;
-      color: rgb(var(--ink));
-      font-weight: 600;
-      font-size: 1rem;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .topics-cta:hover {
-      border-color: rgb(var(--accent) / 0.6);
-      background: rgb(var(--accent) / 0.15);
-      transform: translateY(-2px);
-      box-shadow: 0 15px 30px -8px rgb(var(--accent) / 0.2);
-    }
-
-    .topics-cta__text {
-      position: relative;
-      z-index: 1;
-    }
-
-    .topics-cta__icon {
-      position: relative;
-      z-index: 1;
-      width: 1.25rem;
-      height: 1.25rem;
-      transition: transform 0.3s ease;
-      color: rgb(var(--accent));
-    }
-
-    .topics-cta:hover .topics-cta__icon {
-      transform: translateX(3px);
-    }
-
-    .topics-cta__shine {
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgb(var(--accent) / 0.1), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .topics-cta:hover .topics-cta__shine {
-      left: 100%;
-    }
-
-    /* Reduce motion */
-    @media (prefers-reduced-motion: reduce) {
-      .topics-glow {
-        animation: none;
-      }
-      .topic-card__particles span {
-        animation: none;
-      }
-      .topic-card:hover .topic-card__inner {
-        transform: none;
-      }
-    }
-  </style>
-
-  <script>
-    function initTopicCards() {
-      const cards = document.querySelectorAll('[data-topic-card]');
-
-      cards.forEach(card => {
-        // Mouse move for spotlight effect
-        card.addEventListener('mousemove', (e) => {
-          const event = e as MouseEvent;
-          const rect = (card as HTMLElement).getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
-
-          (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
-          (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
-        });
-
-        // Click to navigate to talks
-        card.addEventListener('click', () => {
-          window.location.href = '/talks';
-        });
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', initTopicCards);
-    document.addEventListener('astro:after-swap', initTopicCards);
-  </script>
-
-  <!-- Impact by the Numbers -->
-  <ImpactSection variant="homepage" />
-
-  <!-- Work With Me - Services Section -->
-  <section class="section py-20 md:py-28 relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-surface-overlay/30 to-transparent"></div>
-
-    <div class="container relative z-10">
-      <div class="text-center mb-12">
-        <ScrollReveal animation="fade-up">
-          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Services</p>
-        </ScrollReveal>
-        <ScrollReveal animation="fade-up" delay={0.1}>
-          <h2 class="heading-2 mb-4">Work With Me</h2>
-        </ScrollReveal>
-        <ScrollReveal animation="blur" delay={0.2}>
-          <p class="text-ink-muted text-lg max-w-xl mx-auto">
-            Beyond speaking, I offer consulting and mentorship to help teams and individuals level up
-          </p>
-        </ScrollReveal>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        <!-- Consulting Card -->
-        <ScrollReveal animation="fade-up" delay={0.2}>
-          <a href="/consulting" class="group block h-full">
-            <SpotlightCard
-              class="h-full"
-              spotlightColor="rgba(99, 102, 241, 0.15)"
-              borderColor="rgba(99, 102, 241, 0.5)"
-            >
-              <div class="p-6 md:p-8 h-full flex flex-col">
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-2xl">
-                    💼
-                  </div>
-                  <h3 class="font-display text-xl font-bold text-ink group-hover:text-accent transition-colors">
-                    Consulting
-                  </h3>
-                </div>
-                <p class="text-ink-muted text-sm mb-4 flex-grow">
-                  Architecture reviews, technical strategy, and hands-on implementation for teams and startups.
-                </p>
-                <div class="flex flex-wrap gap-2 mb-4">
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Architecture</span>
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Strategy</span>
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Advisory</span>
-                </div>
-                <div class="flex items-center text-accent text-sm font-medium group-hover:gap-2 transition-all">
-                  <span>Learn more</span>
-                  <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-              </div>
-            </SpotlightCard>
-          </a>
-        </ScrollReveal>
-
-        <!-- Mentorship Card -->
-        <ScrollReveal animation="fade-up" delay={0.3}>
-          <a href="/mentorship" class="group block h-full">
-            <SpotlightCard
-              class="h-full"
-              spotlightColor="rgba(236, 72, 153, 0.15)"
-              borderColor="rgba(236, 72, 153, 0.5)"
-            >
-              <div class="p-6 md:p-8 h-full flex flex-col">
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-2xl">
-                    🧭
-                  </div>
-                  <h3 class="font-display text-xl font-bold text-ink group-hover:text-pink-500 transition-colors">
-                    Mentorship
-                  </h3>
-                </div>
-                <p class="text-ink-muted text-sm mb-4 flex-grow">
-                  1:1 coaching for engineers looking to grow their careers, skills, and confidence.
-                </p>
-                <div class="flex flex-wrap gap-2 mb-4">
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Career</span>
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Technical</span>
-                  <span class="px-2 py-1 text-xs bg-surface-overlay text-ink-muted rounded">Speaking</span>
-                </div>
-                <div class="flex items-center text-pink-500 text-sm font-medium group-hover:gap-2 transition-all">
-                  <span>Learn more</span>
-                  <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-              </div>
-            </SpotlightCard>
-          </a>
-        </ScrollReveal>
-      </div>
-
-      <ScrollReveal animation="fade-up" delay={0.4} class="mt-10 text-center">
-        <a href="/services" class="inline-flex items-center gap-2 text-ink-muted hover:text-ink font-medium transition-colors">
-          View all services
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </a>
-      </ScrollReveal>
-    </div>
-  </section>
-
-  <!-- What People Say - Social Proof Section -->
-  {(socialPosts.length > 0 || testimonials.length > 0) && (
-    <SocialWall posts={socialPosts} testimonials={testimonials} />
-  )}
-
-  <!-- Featured Projects (if available) -->
-  {projects.length > 0 && (
-    <section class="section py-20 md:py-28">
+  <!-- LOGO WALL -->
+  {topConferences.length > 0 && (
+    <section class="home-section-sm">
       <div class="container">
-        <ScrollReveal animation="fade-up">
-          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <h2 class="heading-2 mb-2">Projects</h2>
-              <p class="text-ink-muted text-lg">Things I've built and contributed to</p>
-            </div>
-            <a href="/projects" class="btn-secondary group">
-              View all
-              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          </div>
-        </ScrollReveal>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.slice(0, 3).map((project: any, index: number) => (
-            <ScrollReveal animation="fade-up" delay={index * 0.1}>
-              <SpotlightCard class="h-full">
-                <a href={`/projects/${project.slug}`} class="group block h-full rounded-2xl overflow-hidden">
-                  <!-- Gradient Top Bar -->
-                  <div class="h-1 bg-gradient-to-r from-accent via-violet-500 to-pink-500"></div>
-
-                  {project.image && (
-                    <div class="aspect-video bg-surface-overlay overflow-hidden">
-                      <img
-                        src={urlFor(project.image).width(1200).height(680).quality(90).url()}
-                        alt={project.title}
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                  <div class="p-6">
-                    <span class="px-2 py-1 text-xs font-mono bg-surface-overlay text-ink-faint rounded border border-edge">
-                      {project.category}
-                    </span>
-                    <h3 class="font-display font-semibold text-lg text-ink mt-3 group-hover:text-accent transition-colors">
-                      {project.title}
-                    </h3>
-                    <p class="text-ink-muted text-sm mt-2 line-clamp-2">
-                      {project.description}
-                    </p>
-                  </div>
-                </a>
-              </SpotlightCard>
-            </ScrollReveal>
+        <p class="home-logos__label">Trusted on stages at</p>
+        <div class="home-logos">
+          {topConferences.map((c) => (
+            <span class={c.featured ? 'home-logos__item home-logos__item--featured' : 'home-logos__item'}>
+              {c.featured && (
+                <svg class="home-logos__star" viewBox="0 0 24 24" fill="currentColor" aria-label="Featured event">
+                  <path d="M12 2l2.95 6.7L22 9.6l-5.2 4.9 1.3 7.1L12 18.2 5.9 21.6l1.3-7.1L2 9.6l7.05-.9z" />
+                </svg>
+              )}
+              <span>{c.display}</span>
+            </span>
           ))}
         </div>
+        {topConferences.some((c) => c.featured) && (
+          <p class="home-logos__legend">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2l2.95 6.7L22 9.6l-5.2 4.9 1.3 7.1L12 18.2 5.9 21.6l1.3-7.1L2 9.6l7.05-.9z" />
+            </svg>
+            <span>Featured event</span>
+          </p>
+        )}
       </div>
     </section>
   )}
 
-  <!-- Subscribe Section -->
-  <section class="section py-16 md:py-20">
+  <!-- FEATURED TALK -->
+  {featured && <FeaturedTalk talk={featured} />}
+
+  <!-- TOPICS -->
+  <section class="home-section home-section--alt">
     <div class="container">
-      <div class="max-w-xl mx-auto">
-        <GeneralSubscribe client:load />
+      <div class="home-section__heading">
+        <Kicker class="ds-reveal">Topics &amp; Expertise</Kicker>
+        <h2 class="home-h2 ds-reveal">What I <span class="mark">speak about</span></h2>
+        <p class="home-lead ds-reveal">From technical deep-dives to career guidance — real systems I've shipped, on stage.</p>
+      </div>
+      <div class="home-topics">
+        {topics.map((topic) => (
+          <a href="/talks" class="ds-card ds-card-interactive home-topic ds-reveal">
+            <IconChip>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={topic.icon} />
+            </IconChip>
+            <h3 class="home-topic__title">{topic.title}</h3>
+            <p class="home-topic__desc">{topic.desc}</p>
+          </a>
+        ))}
+      </div>
+      <div class="home-topics__cta">
+        <a href="/talks" class="ds-btn ds-btn-secondary">Explore all talks</a>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-    <Aurora class="opacity-20" colors={['#ffffff', '#e0e7ff', '#c7d2fe']} speed="slow" blur={120} />
+  <!-- GLOBAL REACH MAP -->
+  {reachCities.length > 0 && (
+    <section class="home-section">
+      <div class="container">
+        <div class="home-section__heading">
+          <Kicker class="ds-reveal">Global reach</Kicker>
+          <h2 class="home-h2 ds-reveal">Talks across <span class="mark">{stats.countries} countries</span></h2>
+          <p class="home-lead ds-reveal">From San Francisco to Singapore — {stats.totalEvents} events, {stats.cities} cities, all routed from a home base in Geneva.</p>
+        </div>
+        <ReachMap cities={reachCities} />
+      </div>
+    </section>
+  )}
 
-    <div class="container relative z-10 py-24 md:py-32">
-      <div class="max-w-4xl mx-auto text-center">
-        <ScrollReveal animation="fade-up">
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Available for opportunities
+  <!-- IMPACT STATS -->
+  <section class="home-section">
+    <div class="container">
+      <div class="home-section__heading">
+        <Kicker class="ds-reveal">Measurable results</Kicker>
+        <h2 class="home-h2 ds-reveal">Impact, in <span class="mark">plain numbers</span></h2>
+      </div>
+      <div class="wide home-impact ds-reveal">
+        <div class="home-impact__cell">
+          <span class="ds-tag">Community</span>
+          <div class="ds-stat__value"><span class="cu" data-to="425">0</span></div>
+          <div class="ds-stat__label">New members</div>
+          <p class="ds-stat__note">Added to ZurichJS during 2025.</p>
+        </div>
+        <div class="home-impact__cell">
+          <span class="ds-tag">Leadership</span>
+          <div class="ds-stat__value"><span class="cu" data-to="15">0</span></div>
+          <div class="ds-stat__label">Engineers led</div>
+          <p class="ds-stat__note">Cross-functional squad, 2022–2024.</p>
+        </div>
+        <div class="home-impact__cell">
+          <span class="ds-tag">Product</span>
+          <div class="ds-stat__value">
+            <span class="cu" data-to="3.5" data-dec="1">0</span><span class="home-impact__signal">×</span>
           </div>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.1}>
-          <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-            Let's work together
-          </h2>
-        </ScrollReveal>
-
-        <ScrollReveal animation="blur" delay={0.2}>
-          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-            I speak at conferences, run workshops, and offer technical advisory. Let's discuss how I can contribute to your event or team.
-          </p>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.3}>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/invite"
-              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-            >
-              Invite me to speak
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </a>
-            <a
-              href="https://mentorcruise.com/mentor/farisaziz/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-            >
-              Get mentorship
-            </a>
-          </div>
-        </ScrollReveal>
+          <div class="ds-stat__label">Revenue increase</div>
+          <p class="ds-stat__note">In APAC after launching Alipay.</p>
+        </div>
+      </div>
+      <div class="home-impact__cta">
+        <a href="/impact" class="ds-link">
+          See full impact metrics
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </a>
       </div>
     </div>
   </section>
+
+  <!-- SERVICES -->
+  <section class="home-section home-section--alt">
+    <div class="container">
+      <div class="home-section__heading">
+        <Kicker class="ds-reveal">Work with me</Kicker>
+        <h2 class="home-h2 ds-reveal">Two ways I can <span class="mark">help</span></h2>
+      </div>
+      <div class="home-services wide">
+        <a href="/consulting" class="ds-card ds-card-interactive home-service ds-reveal">
+          <IconChip>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </IconChip>
+          <h3 class="home-service__title">Consulting</h3>
+          <p class="home-service__body">Architecture reviews, technical strategy, and hands-on implementation for teams and startups.</p>
+          <ul class="home-service__list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Architecture reviews &amp; audits</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Performance optimization</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Team workshops &amp; enablement</li>
+          </ul>
+          <span class="ds-link home-service__link">
+            View consulting
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+        <a href="/mentorship" class="ds-card ds-card-interactive home-service ds-reveal">
+          <IconChip variant="signal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+          </IconChip>
+          <h3 class="home-service__title">Mentorship</h3>
+          <p class="home-service__body">1:1 coaching for engineers looking to grow their careers, skills, and confidence.</p>
+          <ul class="home-service__list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Career strategy &amp; navigation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Code &amp; portfolio reviews</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Async support via Slack</li>
+          </ul>
+          <span class="ds-link home-service__link">
+            View mentorship
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL VALIDATION — tweets, Bluesky, LinkedIn posts + testimonials interleaved -->
+  {hasSocialContent && (
+    <section class="home-section">
+      <div class="container">
+        <div class="home-section__heading">
+          <Kicker class="ds-reveal">From the community</Kicker>
+          <h2 class="home-h2 ds-reveal">What people <span class="mark">say</span></h2>
+          <p class="home-lead ds-reveal">Real reactions from conferences, meetups, and colleagues — pulled straight from the social feeds.</p>
+        </div>
+        <SocialWallIsland
+          client:load
+          posts={normalizedSocialPosts}
+          testimonials={normalizedTestimonials}
+          socialPostImages={socialPostImages}
+          testimonialImages={testimonialImages}
+        />
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="/appreciation" class="ds-link">
+            View all mentions
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CONTACT PANEL -->
+  <section class="home-section home-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel />
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="home-section-sm home-newsletter-wrap">
+    <div class="container wide home-newsletter">
+      <div>
+        <h3 class="home-newsletter__title">Follow my conference schedule</h3>
+        <p class="home-newsletter__body">Join engineers from across the community — one email when I publish or announce where I'm speaking next. No spam, unsubscribe anytime.</p>
+      </div>
+      <GeneralSubscribe client:load />
+    </div>
+  </section>
+
+  <script>
+    // Re-run on initial load AND on every Astro ViewTransitions swap, so that
+    // navigating back to / via in-app links re-fires the reveal + count-up.
+    function initHome() {
+      document.documentElement.classList.add('js');
+
+      // Reset prior state on swap-back so animations actually re-play
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
+        el.textContent = '0';
+      });
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+
+      const revealFailsafe = window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 700);
+
+      function countUp(el: HTMLElement) {
+        const to = parseFloat(el.dataset.to || '0');
+        const dec = parseInt(el.dataset.dec || '0', 10);
+        const dur = 1400;
+        const t0 = performance.now();
+        function tick(now: number) {
+          let p = Math.min(1, (now - t0) / dur);
+          p = 1 - Math.pow(1 - p, 3);
+          el.textContent = (to * p).toFixed(dec);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = to.toFixed(dec);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      const cuObs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            countUp(e.target as HTMLElement);
+            cuObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.4 });
+      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => cuObs.observe(el));
+
+      // Immediate fallback for stats that are above-the-fold and may have
+      // been considered "already visible" before the observer attached.
+      // Trigger them ~50ms after init so the animation still reads.
+      window.setTimeout(() => {
+        document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom > 0 && el.textContent === '0') {
+            cuObs.unobserve(el);
+            countUp(el);
+          }
+        });
+      }, 80);
+
+      const cuFailsafe = window.setTimeout(() => {
+        document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
+          if (el.textContent === '0') {
+            el.textContent = parseFloat(el.dataset.to || '0').toFixed(parseInt(el.dataset.dec || '0', 10));
+          }
+        });
+      }, 3000);
+
+      // Clean up timers if the page is swapped away again.
+      document.addEventListener('astro:before-swap', () => {
+        window.clearTimeout(revealFailsafe);
+        window.clearTimeout(cuFailsafe);
+      }, { once: true });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHome, { once: true });
+    } else {
+      initHome();
+    }
+    document.addEventListener('astro:after-swap', initHome);
+  </script>
 </BaseLayout>
+
+<style>
+  /* Hero v2 uses the existing .hero-split-mosaic layout
+     (stacked + full-width mosaic on mobile/tablet, 38/62 split on lg+). */
+  .home-hero-v2 { overflow: hidden; }
+  .home-hero__content-inner { max-width: 36rem; }
+  .home-hero__terminal {
+    max-width: 300px;
+    margin-bottom: clamp(5rem, 8vw, 7rem);
+  }
+  .home-hero__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    font-size: clamp(3.2rem, 7vw, 5.2rem);
+    color: rgb(var(--ink));
+    text-wrap: balance;
+  }
+  .home-hero__title .ln { display: block; }
+  .home-hero__lead {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    max-width: 46ch;
+    margin-top: 1.4rem;
+  }
+  .home-hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1.8rem;
+  }
+  .home-stat-inline {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+  }
+  .home-stat-inline b {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: 1.9rem;
+    color: rgb(var(--ink));
+    letter-spacing: -0.02em;
+  }
+  .home-stat-inline span {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .home-hero__socials {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.8rem;
+  }
+  .home-hero__socials-label {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-faint));
+    margin-left: 0.3rem;
+  }
+  .home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+
+  /* EVENT BAND */
+  .eventband {
+    border-top: 1px solid rgb(var(--edge));
+    border-bottom: 1px solid rgb(var(--edge));
+    background: rgb(var(--surface-1));
+  }
+  .eventband__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-block: 1.2rem;
+  }
+  .eventband__event {
+    display: flex;
+    gap: 1.4rem;
+    align-items: center;
+    flex: 1;
+    min-width: 260px;
+  }
+  .eventband__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    text-align: center;
+    flex-shrink: 0;
+    width: 54px;
+  }
+  .eventband__date b {
+    display: block;
+    font-size: 1.6rem;
+    color: rgb(var(--ink));
+    line-height: 1;
+    font-weight: 600;
+  }
+  .eventband__date span {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .eventband__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+  .eventband__meta {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* Section primitives */
+  .home-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
+  .home-section-sm { padding-block: clamp(2.5rem, 5vw, 4rem); }
+  .home-section--alt {
+    background: rgb(var(--surface-1));
+    border-top: 1px solid rgb(var(--edge));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .home-section--router {
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+  }
+  .home-section__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+  }
+  .home-section__title-sm {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(var(--ink));
+  }
+  .home-section__hint {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-faint));
+    white-space: nowrap;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  }
+  .home-section__heading {
+    text-align: center;
+    margin-bottom: 2.6rem;
+  }
+  .home-section__heading .kicker {
+    justify-content: center;
+  }
+  .home-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    text-wrap: balance;
+    margin-top: 1rem;
+  }
+  .home-lead {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    max-width: 52ch;
+    margin: 1rem auto 0;
+    text-wrap: pretty;
+  }
+
+  /* Logo wall */
+  .home-logos__label {
+    text-align: center;
+    margin-bottom: 1.6rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .home-logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.8rem, 5vw, 4rem);
+    flex-wrap: wrap;
+  }
+  .home-logos__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(var(--ink-muted));
+    letter-spacing: -0.01em;
+    opacity: 0.72;
+    transition: opacity 0.15s, color 0.15s;
+  }
+  /* Featured conferences read brighter and full-opacity, with an accent star */
+  .home-logos__item--featured {
+    color: rgb(var(--ink));
+    opacity: 1;
+  }
+  .home-logos__star {
+    width: 14px;
+    height: 14px;
+    color: rgb(var(--accent-bright));
+    flex-shrink: 0;
+  }
+  .home-logos__legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 1.4rem auto 0;
+    justify-content: center;
+    width: 100%;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .home-logos__legend svg {
+    width: 11px;
+    height: 11px;
+    color: rgb(var(--accent-bright));
+  }
+
+  /* Topics */
+  .home-topics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 1024px) {
+    .home-topics { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .home-topics { grid-template-columns: 1fr; }
+  }
+  .home-topic {
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    min-height: 172px;
+    color: inherit;
+  }
+  .home-topic__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: rgb(var(--ink));
+  }
+  .home-topic__desc {
+    color: rgb(var(--ink-muted));
+    font-size: 0.9rem;
+  }
+  .home-topics__cta {
+    text-align: center;
+    margin-top: 2.2rem;
+  }
+
+  /* Impact */
+  .home-impact {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgb(var(--edge));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  @media (max-width: 720px) {
+    .home-impact { grid-template-columns: 1fr; }
+  }
+  .home-impact__cell {
+    background: rgb(var(--surface-1));
+    padding: 2rem;
+  }
+  .home-impact__cell .ds-tag { margin-bottom: 1.2rem; }
+  .home-impact__signal { color: rgb(var(--signal)); }
+  .home-impact__cta {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  /* Services */
+  .home-services {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  @media (max-width: 760px) {
+    .home-services { grid-template-columns: 1fr; }
+  }
+  .home-service {
+    padding: clamp(1.5rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+  }
+  .home-service__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: rgb(var(--ink));
+    margin-top: 1rem;
+  }
+  .home-service__body {
+    font-size: 0.95rem;
+    color: rgb(var(--ink-muted));
+    margin-top: 0.4rem;
+  }
+  .home-service__list {
+    list-style: none;
+    padding: 0;
+    margin: 0.8rem 0 1.2rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .home-service__list li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    color: rgb(var(--ink-muted));
+  }
+  .home-service__list svg {
+    width: 18px;
+    height: 18px;
+    color: rgb(var(--signal));
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+  .home-service__link { margin-top: auto; }
+
+  /* Testimonials */
+  .home-quotes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+  @media (max-width: 900px) {
+    .home-quotes { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .home-quotes { grid-template-columns: 1fr; }
+  }
+  .home-quote {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .home-quote p {
+    font-size: 0.95rem;
+    color: rgb(var(--ink));
+    line-height: 1.6;
+  }
+  .home-quote__who {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: auto;
+    padding-top: 1.2rem;
+  }
+  .home-quote__who b {
+    font-size: 0.85rem;
+    color: rgb(var(--ink));
+  }
+  .home-quote__who span {
+    font-size: 0.78rem;
+    color: rgb(var(--ink-faint));
+  }
+  .home-quote__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.8rem;
+    color: rgb(var(--ink-muted));
+    flex-shrink: 0;
+  }
+
+  /* Contact panel */
+  .home-section--contact { padding-top: 0; }
+
+  /* Newsletter */
+  .home-newsletter-wrap {
+    border-top: 1px solid rgb(var(--edge));
+    background: rgb(var(--surface-1));
+  }
+  .home-newsletter {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .home-newsletter > div { max-width: 42ch; }
+  .home-newsletter__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: rgb(var(--ink));
+  }
+  .home-newsletter__body {
+    font-size: 0.95rem;
+    color: rgb(var(--ink-muted));
+    margin-top: 0.3rem;
+  }
+</style>

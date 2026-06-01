@@ -1,0 +1,18 @@
+---
+interface Props {
+  name?: string;
+  class?: string;
+}
+
+const { name = 'faris.sh', class: className = '' } = Astro.props;
+---
+
+<div class={`ds-terminal ${className}`}>
+  <div class="ds-terminal__bar">
+    <span class="ds-terminal__dots"><i></i><i></i><i></i></span>
+    <span class="ds-terminal__name">{name}</span>
+  </div>
+  <div class="ds-terminal__body">
+    <slot />
+  </div>
+</div>

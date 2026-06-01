@@ -1,23 +1,74 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import Terminal from '../components/design/Terminal.astro';
 ---
 
-<BaseLayout title="Page Not Found | Faris Aziz" description="The page you're looking for doesn't exist.">
-  <section class="section min-h-[60vh] flex items-center">
-    <div class="container text-center">
-      <h1 class="text-6xl md:text-8xl font-bold text-gray-200 dark:text-gray-800 mb-4">
-        404
+<BaseLayout title="Page not found · 404 | Faris Aziz" description="The page you're looking for doesn't exist.">
+  <section class="not-found">
+    <GridTexture />
+    <div class="container not-found__inner">
+      <Terminal name="error.sh" class="not-found__terminal">
+        <div><span class="pr">$</span> <span class="cmd">resolve --path requested</span></div>
+        <div class="out">→ 404 · Not found</div>
+      </Terminal>
+
+      <Kicker>Error · 404</Kicker>
+      <h1 class="not-found__title">
+        Wrong <span class="accent-word">turn</span>.
       </h1>
-      <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-        Page Not Found
-      </h2>
-      <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-        The page you're looking for doesn't exist or has been moved.
+      <p class="not-found__lead">
+        The page you're looking for doesn't exist, or moved somewhere else. Head home or check the talks — both work.
       </p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="/" class="btn-primary">Go Home</a>
-        <a href="/speaking" class="btn-secondary">View Speaking</a>
+      <div class="not-found__actions">
+        <a href="/" class="ds-btn ds-btn-primary ds-btn-lg">
+          Back home
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a href="/talks" class="ds-btn ds-btn-secondary ds-btn-lg">Browse talks</a>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .not-found {
+    position: relative;
+    overflow: hidden;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    padding-block: clamp(4rem, 9vw, 7rem);
+  }
+  .not-found__inner {
+    position: relative;
+    max-width: 640px;
+  }
+  .not-found__terminal { max-width: 320px; margin-bottom: 1.8rem; }
+  .not-found__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: rgb(var(--ink));
+    margin-top: 1.2rem;
+    text-wrap: balance;
+  }
+  .not-found__lead {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    max-width: 50ch;
+    margin-top: 1.4rem;
+  }
+  .not-found__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+</style>

@@ -21,7 +21,14 @@ export default defineConfig({
       noExternal: ['shared'],
     },
   },
-  adapter: vercel(),
+  // ISR globally: any route opted into server rendering (`export const prerender = false`)
+  // is cached at the edge and revalidated in the background after `expiration` seconds.
+  // Currently only `/` opts in for hourly refresh of the "Next up" event band.
+  adapter: vercel({
+    isr: {
+      expiration: 60 * 60, // 1 hour
+    },
+  }),
   build: {
     inlineStylesheets: 'auto',
   },

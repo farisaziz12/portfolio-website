@@ -1,302 +1,548 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ScrollReveal from '../components/animations/ScrollReveal.astro';
-import Aurora from '../components/animations/Aurora.astro';
-import ImpactExplorer from '../components/islands/ImpactExplorer';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { impactPageQuery, allImpactMetricsV2Query } from '../lib/sanity/queries';
-import type { ImpactPageSettings, ImpactMetricV2, ImpactDomain, ImpactLens } from '../types/impact';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
+import { sanityFetch } from '../lib/sanity/client';
+import {
+  impactPageQuery,
+  featuredImpactMetricsV2Query,
+  impactCaseStudiesQuery,
+  speakingStatsQuery,
+} from '../lib/sanity/queries';
+import { availabilityLabel } from '../lib/availability';
 
-// Fetch page settings and metrics
-const pageSettings = await sanityFetch<ImpactPageSettings | null>(impactPageQuery).catch(
-  () => null
-);
-const allMetrics = await sanityFetch<ImpactMetricV2[]>(allImpactMetricsV2Query).catch(() => []);
+interface ImpactPageSettings {
+  heroHeadline?: string;
+  heroSubheadline?: string;
+  heroTagline?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+}
 
-// Pre-process image URLs for proof items (since urlFor can't run in React)
-const imageUrls: Record<string, string> = {};
-allMetrics.forEach((metric) => {
-  if (metric.proofBlock?.items) {
-    metric.proofBlock.items.forEach((item, idx) => {
-      if (item.image?.asset) {
-        const key = `${metric._id}-proof-${idx}`;
-        imageUrls[key] = urlFor(item.image).width(400).url();
-      }
-    });
-  }
-});
+interface ImpactMetricV2 {
+  _id: string;
+  title: string;
+  domain: 'community' | 'product' | 'leadership' | 'speaking';
+  headlineNumber: number;
+  unit?: 'number' | 'k' | 'm' | 'percent' | 'x' | 'chf' | 'eur' | 'usd' | 'rating';
+  prefix?: string;
+  label: string;
+  contextNote?: string;
+}
 
-// Default values
-const heroHeadline = pageSettings?.heroHeadline || 'Impact by the Numbers';
+interface SpeakingStats {
+  totalEvents: number;
+  countries: number;
+  cities: number;
+  talks: number;
+}
+
+interface CaseStudyMetric {
+  _id: string;
+  title: string;
+  slug: string;
+  domain: 'community' | 'product' | 'leadership' | 'speaking';
+  headlineNumber: number;
+  unit?: 'number' | 'k' | 'm' | 'percent' | 'x' | 'chf' | 'eur' | 'usd' | 'rating';
+  prefix?: string;
+  label: string;
+  caseStudy?: {
+    title?: string;
+    description?: string;
+    context?: string;
+    approach?: string;
+    result?: string;
+  };
+}
+
+const [pageSettings, sanityMetrics, sanityCaseStudies, stats] = await Promise.all([
+  sanityFetch<ImpactPageSettings | null>(impactPageQuery).catch(() => null),
+  sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []),
+  sanityFetch<CaseStudyMetric[]>(impactCaseStudiesQuery).catch(() => []),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
+    totalEvents: 86, countries: 20, cities: 29, talks: 0,
+  })),
+]);
+
+const heroTagline = pageSettings?.heroTagline || 'Measurable results';
+const heroHeadlineParts = pageSettings?.heroHeadline?.split(' ') || [];
+// We render the design's headline by default; only swap if Sanity provides one.
+const useCmsHeadline = !!pageSettings?.heroHeadline;
 const heroSubheadline =
   pageSettings?.heroSubheadline ||
-  'Real results from community building, engineering leadership, and public speaking. Every number backed by data.';
-const heroTagline = pageSettings?.heroTagline || 'Measurable Results';
-const defaultDomain: ImpactDomain = pageSettings?.defaultDomain || 'all';
-const defaultLens: ImpactLens = pageSettings?.defaultLens || 'outcomes';
-const highlightStrip = pageSettings?.highlightStripMetrics || [];
+  "Anyone can list stats. These are the results I'm proud of — across community, leadership, and product — each with the context, the approach, and what actually moved.";
 
-// SEO
-const seoTitle = pageSettings?.seoTitle || `${heroHeadline} | Faris Aziz`;
+const seoTitle = pageSettings?.seoTitle || 'Impact — Measurable Results | Faris Aziz';
 const seoDescription =
   pageSettings?.seoDescription ||
-  'Measurable results from community building, engineering leadership, and public speaking. Real numbers, real impact.';
+  'The track record: community growth, engineering leadership, and product results — with the context and approach behind each number.';
 
-// JSON-LD structured data
+// ── Top stats: derive from speakingStats + Sanity metrics, fall back to hardcoded
+type TopStat = {
+  to: number;
+  decimals?: number;
+  suffix?: string;
+  label: string;
+  note: string;
+};
+
+const cmsByDomain = new Map<string, ImpactMetricV2>();
+for (const m of sanityMetrics) if (!cmsByDomain.has(m.domain)) cmsByDomain.set(m.domain, m);
+
+const community = cmsByDomain.get('community');
+const leadership = cmsByDomain.get('leadership');
+const product = cmsByDomain.get('product');
+
+const topStats: TopStat[] = [
+  {
+    to: stats.totalEvents || 86,
+    label: 'Talks given',
+    note: `Across ${stats.countries || 20} countries.`,
+  },
+  {
+    to: community?.headlineNumber ?? 425,
+    label: community?.label || 'Community members',
+    note: community?.contextNote || 'Grown at ZurichJS.',
+  },
+  {
+    to: leadership?.headlineNumber ?? 15,
+    label: leadership?.label || 'Engineers led',
+    note: leadership?.contextNote || 'Across two teams.',
+  },
+  {
+    to: product?.headlineNumber ?? 3.5,
+    decimals: product?.unit === 'x' ? 1 : (product?.headlineNumber && product.headlineNumber < 10 ? 1 : 0),
+    suffix: product?.unit === 'x' || !product ? '×' : product.unit === 'percent' ? '%' : '',
+    label: product?.label || 'Revenue impact',
+    note: product?.contextNote || 'APAC, post-launch.',
+  },
+];
+
+// ── Case studies. Prefer Sanity-driven content from impactMetricV2.caseStudy;
+// fall back to the curated 3-story design narrative if Sanity returns nothing.
+const domainLabels: Record<CaseStudyMetric['domain'], string> = {
+  community: 'Community',
+  product: 'Product',
+  leadership: 'Leadership',
+  speaking: 'Speaking',
+};
+
+interface RenderedCaseStudy {
+  big: string;
+  bigSuffix: string;
+  bigSuffixSignal: boolean;
+  tag: string;
+  title: string;
+  desc: string;
+  rows: { label: string; body: string }[];
+}
+
+function formatBig(metric: CaseStudyMetric): { big: string; suffix: string; signal: boolean } {
+  const n = metric.headlineNumber;
+  const decimals = Number.isInteger(n) || n >= 100 ? 0 : 1;
+  const big = `${metric.prefix || ''}${decimals === 0 ? Math.round(n).toString() : n.toFixed(decimals)}`;
+  let suffix = '';
+  let signal = false;
+  switch (metric.unit) {
+    case 'x': suffix = '×'; signal = true; break;
+    case 'percent': suffix = '%'; break;
+    case 'k': suffix = 'K'; break;
+    case 'm': suffix = 'M'; break;
+    case 'chf': case 'eur': case 'usd': /* prefix already added via metric.prefix if used */ break;
+    case 'rating': suffix = '/5'; break;
+    default: break;
+  }
+  return { big, suffix, signal };
+}
+
+const cmsCaseStudies: RenderedCaseStudy[] = sanityCaseStudies
+  .filter((m) => !!m.caseStudy?.title)
+  .map((m) => {
+    const { big, suffix, signal } = formatBig(m);
+    const rows: { label: string; body: string }[] = [];
+    if (m.caseStudy?.context) rows.push({ label: 'Context', body: m.caseStudy.context });
+    if (m.caseStudy?.approach) rows.push({ label: 'Approach', body: m.caseStudy.approach });
+    if (m.caseStudy?.result) rows.push({ label: 'Result', body: m.caseStudy.result });
+    return {
+      big,
+      bigSuffix: suffix,
+      bigSuffixSignal: signal,
+      tag: domainLabels[m.domain] || m.domain,
+      title: m.caseStudy!.title!,
+      desc: m.caseStudy?.description || '',
+      rows,
+    };
+  });
+
+const fallbackCaseStudies: RenderedCaseStudy[] = [
+  {
+    big: '3.5',
+    bigSuffix: '×',
+    bigSuffixSignal: true,
+    tag: 'Product',
+    title: 'Revenue growth in APAC after launching Alipay',
+    desc: "Local payment methods aren't a nice-to-have in Asia — they're the difference between converting and not. I led the frontend work to integrate Alipay and design a checkout that felt native to the region.",
+    rows: [
+      { label: 'Context', body: "Western-built checkout was underperforming in APAC; card-first flows didn't match local behavior." },
+      { label: 'Approach', body: 'Framework-agnostic payment orchestration, region-aware UX, and resilient fallbacks for flaky networks.' },
+      { label: 'Result', body: '3.5× revenue uplift in the region after introducing Alipay as a local method.' },
+    ],
+  },
+  {
+    big: '425',
+    bigSuffix: '',
+    bigSuffixSignal: false,
+    tag: 'Community',
+    title: 'Growing ZurichJS into a thriving community',
+    desc: 'Community is where I get to lift people up at scale. As an organizer of ZurichJS, I focused on making it a place engineers actually want to come back to.',
+    rows: [
+      { label: 'Context', body: 'A local meetup with potential but inconsistent momentum and turnout.' },
+      { label: 'Approach', body: 'Consistent cadence, strong speakers, hands-on workshops, and a genuinely welcoming room.' },
+      { label: 'Result', body: '425 new members added during 2025, with sold-out workshop days.' },
+    ],
+  },
+  {
+    big: '15',
+    bigSuffix: '',
+    bigSuffixSignal: false,
+    tag: 'Leadership',
+    title: 'Leading a cross-functional squad of 15',
+    desc: 'The best leadership keeps you close to the work. I led 15 engineers across frontend and backend — plus the skip-level management in between — without losing the plot technically.',
+    rows: [
+      { label: 'Context', body: 'Two teams shipping a shared product surface, with coordination overhead slowing delivery.' },
+      { label: 'Approach', body: 'Clear ownership, pragmatic architecture decisions, and mentoring engineers into more senior roles.' },
+      { label: 'Result', body: 'Faster, more predictable delivery — and several engineers leveled up along the way.' },
+    ],
+  },
+];
+
+const caseStudies: RenderedCaseStudy[] = cmsCaseStudies.length > 0 ? cmsCaseStudies : fallbackCaseStudies;
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: heroHeadline,
+  name: 'Faris Aziz — Impact',
   description: heroSubheadline,
-  numberOfItems: allMetrics.length,
-  itemListElement: allMetrics.slice(0, 10).map((metric, index) => ({
+  numberOfItems: caseStudies.length,
+  itemListElement: caseStudies.map((c, i) => ({
     '@type': 'ListItem',
-    position: index + 1,
+    position: i + 1,
     item: {
       '@type': 'CreativeWork',
-      name: `${metric.headlineNumber} ${metric.label}`,
-      description: metric.contextNote || metric.story,
+      name: c.title,
+      description: c.desc,
     },
   })),
 };
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription}>
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+<BaseLayout title={seoTitle} description={seoDescription} pathname="/impact">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
 
-  <!-- Hero Section -->
-  <section class="relative overflow-hidden">
-    <Aurora
-      class="opacity-30"
-      colors={['#10b981', '#6366f1', '#8b5cf6']}
-      speed="slow"
-      blur={100}
-    />
-
-    <div class="container relative z-10 pt-24 pb-12 md:pt-32 md:pb-16">
-      <div class="max-w-3xl mx-auto text-center">
-        <!-- Terminal intro -->
-        <ScrollReveal animation="fade-up">
-          <div class="terminal max-w-xs mx-auto mb-8">
-            <div class="terminal__header">
-              <div class="terminal__dots">
-                <div class="terminal__dot terminal__dot--red"></div>
-                <div class="terminal__dot terminal__dot--yellow"></div>
-                <div class="terminal__dot terminal__dot--green"></div>
-              </div>
-              <span class="terminal__title">impact.sh</span>
-            </div>
-            <div class="terminal__body">
-              <span class="terminal__prompt">$</span>
-              <span class="terminal__command"> show --impact --interactive</span>
-              <div class="terminal__output">Loading explorer...</div>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.05}>
-          <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">
-            {heroTagline}
-          </p>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.1}>
-          <h1 class="text-4xl md:text-6xl font-display font-bold text-ink mb-6">
-            {heroHeadline.split(' ').slice(0, -1).join(' ')}
-            <span
-              class="bg-gradient-to-r from-emerald-500 via-accent to-violet-500 bg-clip-text text-transparent"
-            >
-              {' '}{heroHeadline.split(' ').slice(-1)[0]}
-            </span>
-          </h1>
-        </ScrollReveal>
-
-        <ScrollReveal animation="blur" delay={0.2}>
-          <p class="text-xl text-ink-muted max-w-2xl mx-auto">
-            {heroSubheadline}
-          </p>
-        </ScrollReveal>
-      </div>
+  <!-- HERO -->
+  <header class="impact-hero">
+    <GridTexture />
+    <div class="container impact-hero__inner">
+      <nav class="impact-crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="impact-crumbs__sep">/</span>
+        <span class="impact-crumbs__cur">Impact</span>
+      </nav>
+      <Kicker>{heroTagline}</Kicker>
+      <h1 class="impact-hero__title">
+        {useCmsHeadline ? (
+          <>
+            {heroHeadlineParts.slice(0, -1).join(' ')}{' '}
+            <span class="accent-word">{heroHeadlineParts.slice(-1)[0]}</span>
+          </>
+        ) : (
+          <>The numbers, with the <span class="accent-word">story</span> behind them.</>
+        )}
+      </h1>
+      <p class="impact-hero__lead">{heroSubheadline}</p>
     </div>
-  </section>
+  </header>
 
-  <!-- Interactive Impact Explorer -->
-  <section class="relative py-12 md:py-16">
+  <!-- TOP STATS -->
+  <section class="impact-section">
     <div class="container">
-      <ImpactExplorer
-        client:load
-        metrics={allMetrics}
-        highlightStrip={highlightStrip}
-        defaultDomain={defaultDomain}
-        defaultLens={defaultLens}
-        imageUrls={imageUrls}
-      />
-    </div>
-  </section>
-
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div
-      class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-accent to-violet-600"
-    >
-    </div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-    <Aurora
-      class="opacity-20"
-      colors={['#ffffff', '#e0e7ff', '#c7d2fe']}
-      speed="slow"
-      blur={120}
-    />
-
-    <div class="container relative z-10 py-24 md:py-32">
-      <div class="max-w-4xl mx-auto text-center">
-        <ScrollReveal animation="fade-up">
-          <div
-            class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8"
-          >
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Ready to create impact together?
+      <div class="wide impact-stats ds-reveal">
+        {topStats.map((s) => (
+          <div class="impact-stats__cell">
+            <div class="ds-stat__value">
+              <span class="cu" data-to={s.to} data-dec={s.decimals || 0}>0</span>
+              {s.suffix && <span class={s.suffix === '×' ? 'impact-stats__suffix' : ''}>{s.suffix}</span>}
+            </div>
+            <div class="ds-stat__label">{s.label}</div>
+            <p class="ds-stat__note">{s.note}</p>
           </div>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.1}>
-          <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-            Let's build something
-            <span class="block">meaningful</span>
-          </h2>
-        </ScrollReveal>
-
-        <ScrollReveal animation="blur" delay={0.2}>
-          <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-            Whether you need a speaker for your conference, a community leader for your meetup, or
-            technical expertise for your team, let's discuss how I can contribute.
-          </p>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.3}>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/invite"
-              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-emerald-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-            >
-              Invite me to speak
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                ></path>
-              </svg>
-            </a>
-            <a
-              href="/services"
-              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-            >
-              Explore services
-            </a>
-          </div>
-        </ScrollReveal>
-
-        <!-- Internal Links for SEO -->
-        <div class="mt-16 pt-8 border-t border-white/20">
-          <p class="text-white/60 text-sm mb-4">Explore more</p>
-          <div class="flex flex-wrap justify-center gap-4 text-sm">
-            <a href="/speaking" class="text-white/80 hover:text-white transition-colors">
-              Speaking →
-            </a>
-            <a href="/consulting" class="text-white/80 hover:text-white transition-colors">
-              Consulting →
-            </a>
-            <a href="/mentorship" class="text-white/80 hover:text-white transition-colors">
-              Mentorship →
-            </a>
-            <a href="/about" class="text-white/80 hover:text-white transition-colors">
-              About →
-            </a>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </section>
+
+  <!-- CASE STUDIES -->
+  <section class="impact-section impact-section--alt">
+    <div class="container wide">
+      <div class="impact-section__head">
+        <Kicker class="ds-reveal">Case studies</Kicker>
+        <h2 class="impact-h2 ds-reveal">Three results, in depth</h2>
+      </div>
+
+      <div class="impact-cases">
+        {caseStudies.map((c) => (
+          <article class="impact-case ds-reveal">
+            <div class="impact-case__col">
+              <div class="impact-case__big">
+                {c.big}
+                {c.bigSuffix && (
+                  <span class={c.bigSuffixSignal ? 'impact-case__sig' : ''}>{c.bigSuffix}</span>
+                )}
+              </div>
+              <div class="impact-case__tag">{c.tag}</div>
+            </div>
+            <div class="impact-case__col">
+              <h3 class="impact-case__title">{c.title}</h3>
+              <p class="impact-case__desc">{c.desc}</p>
+              <dl class="impact-case__sub">
+                {c.rows.map((row) => (
+                  <div>
+                    <dt>{row.label}</dt>
+                    <dd>{row.body}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="impact-section">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status={availabilityLabel('Available')}
+          title="Want results like these for your team?"
+          body="Whether it's a payments problem, a performance ceiling, or a team that needs leveling up — let's talk."
+          primaryHref="/services"
+          primaryLabel="Explore services"
+          secondaryHref="/invite"
+          secondaryLabel="Invite me to speak"
+        />
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initImpact() {
+      document.documentElement.classList.add('js');
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => { el.textContent = '0'; });
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+
+      function countUp(el: HTMLElement) {
+        const to = parseFloat(el.dataset.to || '0');
+        const dec = parseInt(el.dataset.dec || '0', 10);
+        const t0 = performance.now();
+        function tick(now: number) {
+          let p = Math.min(1, (now - t0) / 1400);
+          p = 1 - Math.pow(1 - p, 3);
+          el.textContent = (to * p).toFixed(dec);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = to.toFixed(dec);
+        }
+        requestAnimationFrame(tick);
+      }
+      const cuObs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            countUp(e.target as HTMLElement);
+            cuObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.4 });
+      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => cuObs.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
+          if (el.textContent === '0') {
+            el.textContent = parseFloat(el.dataset.to || '0').toFixed(parseInt(el.dataset.dec || '0', 10));
+          }
+        });
+      }, 3000);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initImpact, { once: true });
+    } else {
+      initImpact();
+    }
+    document.addEventListener('astro:after-swap', initImpact);
+  </script>
 </BaseLayout>
 
 <style>
-  /* Terminal styling */
-  .terminal {
-    background: rgb(var(--surface));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 0.75rem;
+  .impact-hero {
+    position: relative;
     overflow: hidden;
-    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-    font-size: 0.875rem;
+    border-bottom: 1px solid rgb(var(--edge));
+    padding-block: clamp(2.5rem, 5vw, 4rem);
   }
-
-  .terminal__header {
+  .impact-hero__inner { position: relative; }
+  .impact-crumbs {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: rgb(var(--surface-overlay));
+    gap: 0.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.74rem;
+    color: rgb(var(--ink-faint));
+    letter-spacing: 0.04em;
+    margin-bottom: 1.6rem;
+  }
+  .impact-crumbs a {
+    color: rgb(var(--ink-faint));
+    transition: color 0.15s;
+  }
+  .impact-crumbs a:hover { color: rgb(var(--accent-bright)); }
+  .impact-crumbs__sep { opacity: 0.45; }
+  .impact-crumbs__cur { color: rgb(var(--ink-muted)); }
+
+  .impact-hero__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    color: rgb(var(--ink));
+    max-width: 16ch;
+    margin-top: 1.2rem;
+    text-wrap: balance;
+  }
+  .impact-hero__lead {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    max-width: 60ch;
+    margin-top: 1.5rem;
+  }
+
+  .impact-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
+  .impact-section--alt {
+    background: rgb(var(--surface-1));
+    border-top: 1px solid rgb(var(--edge));
     border-bottom: 1px solid rgb(var(--edge));
   }
-
-  .terminal__dots {
-    display: flex;
-    gap: 0.375rem;
-  }
-
-  .terminal__dot {
-    width: 0.625rem;
-    height: 0.625rem;
-    border-radius: 50%;
-  }
-
-  .terminal__dot--red {
-    background: #ff5f56;
-  }
-
-  .terminal__dot--yellow {
-    background: #ffbd2e;
-  }
-
-  .terminal__dot--green {
-    background: #27ca40;
-  }
-
-  .terminal__title {
-    color: rgb(var(--ink-faint));
-    font-size: 0.75rem;
-  }
-
-  .terminal__body {
-    padding: 1rem;
-  }
-
-  .terminal__prompt {
-    color: rgb(16 185 129);
-  }
-
-  .terminal__command {
+  .impact-section__head { margin-bottom: 1.4rem; }
+  .impact-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
     color: rgb(var(--ink));
+    margin-top: 1rem;
   }
 
-  .terminal__output {
+  /* Top stats */
+  .impact-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgb(var(--edge));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  @media (max-width: 760px) {
+    .impact-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 420px) {
+    .impact-stats { grid-template-columns: 1fr; }
+  }
+  .impact-stats__cell {
+    background: rgb(var(--surface-1));
+    padding: 1.8rem;
+  }
+  .impact-stats__suffix { color: rgb(var(--signal)); }
+
+  /* Cases */
+  .impact-cases { display: grid; }
+  .impact-case {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 2rem;
+    padding: 2.2rem 0;
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .impact-case:last-child { border-bottom: 0; }
+  @media (max-width: 680px) {
+    .impact-case { grid-template-columns: 1fr; gap: 1rem; }
+  }
+  .impact-case__big {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 5vw, 3.6rem);
+    line-height: 1;
+    color: rgb(var(--ink));
+    letter-spacing: -0.02em;
+  }
+  .impact-case__sig { color: rgb(var(--signal)); }
+  .impact-case__tag {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+    margin-top: 0.6rem;
+  }
+  .impact-case__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: rgb(var(--ink));
+    margin-bottom: 0.6rem;
+  }
+  .impact-case__desc {
     color: rgb(var(--ink-muted));
-    margin-top: 0.5rem;
+    line-height: 1.6;
   }
-
-  .grid-pattern {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 60px 60px;
+  .impact-case__sub {
+    display: grid;
+    gap: 1rem;
+    margin: 1.2rem 0 0;
   }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .animate-pulse {
-      animation: none;
-    }
+  .impact-case__sub > div {
+    padding-left: 1rem;
+    border-left: 2px solid rgb(var(--edge));
+  }
+  .impact-case__sub dt {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--accent-bright));
+    margin-bottom: 0.25rem;
+  }
+  .impact-case__sub dd {
+    margin: 0;
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+    line-height: 1.55;
   }
 </style>

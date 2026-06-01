@@ -1,9 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
+import ContactPanel from '../../components/design/ContactPanel.astro';
+import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
+import { bookingYears } from '../../lib/availability';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { eventBySlugQuery, allEventsQuery, socialPostsForEventQuery } from '../../lib/sanity/queries';
 import { formatDate, getCountryFlag } from 'shared/utils';
-import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
 
 interface EventDetail {
   _id: string;
@@ -14,498 +18,392 @@ interface EventDetail {
   date: string;
   endDate?: string;
   description?: string;
-  location?: {
-    city?: string;
-    country?: string;
-    isOnline?: boolean;
-    venue?: string;
-  };
-  links?: {
-    eventUrl?: string;
-    videoUrl?: string;
-    slidesUrl?: string;
-  };
-  talk?: {
-    _id: string;
-    title: string;
-    slug: string;
-    abstract?: string;
-    topics?: string[];
-    duration?: number;
-    takeaways?: string[];
-  };
-  workshop?: {
-    _id: string;
-    title: string;
-    slug: string;
-    description?: string;
-    duration?: string;
-    technologies?: string[];
-    level?: string;
-    prerequisites?: string[];
-    outcomes?: string[];
-  };
-  relatedMedia?: {
-    _id: string;
-    type: string;
-    image?: any;
-    videoUrl?: string;
-    description?: string;
-  }[];
+  location?: { city?: string; country?: string; isOnline?: boolean; venue?: string };
+  links?: { eventUrl?: string; videoUrl?: string; slidesUrl?: string };
+  talk?: { _id: string; title: string; slug: string; abstract?: string; topics?: string[]; duration?: number; takeaways?: string[] };
+  workshop?: { _id: string; title: string; slug: string; description?: string; duration?: string; technologies?: string[]; level?: string; prerequisites?: string[]; outcomes?: string[] };
+  relatedMedia?: { _id: string; type: string; image?: any; videoUrl?: string; description?: string }[];
   featured?: boolean;
 }
 
-interface EventListItem {
-  _id: string;
-  slug: string;
-}
+interface EventListItem { _id: string; slug: string }
 
 interface SocialPost {
-  _id: string;
-  url: string;
-  platform: 'twitter' | 'linkedin';
-  author: string;
-  authorHandle?: string;
-  authorImage?: any;
-  authorRole?: string;
-  content: string;
-  postDate?: string;
+  _id: string; url: string; platform: 'twitter' | 'linkedin';
+  author: string; authorHandle?: string; authorImage?: any;
+  authorRole?: string; content: string; postDate?: string;
 }
 
 export async function getStaticPaths() {
   const events = await sanityFetch<EventListItem[]>(allEventsQuery).catch(() => []);
-  return events.map((event) => ({
-    params: { slug: event.slug },
-  }));
+  return events.map((event) => ({ params: { slug: event.slug } }));
 }
 
 const { slug } = Astro.params;
 const event = await sanityFetch<EventDetail | null>(eventBySlugQuery, { slug }).catch(() => null);
+if (!event) return Astro.redirect('/404');
 
-if (!event) {
-  return Astro.redirect('/404');
-}
-
-// Fetch social posts related to this event
 const socialPosts = await sanityFetch<SocialPost[]>(socialPostsForEventQuery, { eventId: event._id }).catch(() => []);
 
-// Pre-process image URLs for the React component
 const socialPostImages: Record<string, string> = {};
-socialPosts.forEach((post: SocialPost) => {
+socialPosts.forEach((post) => {
   if (post.authorImage) {
-    socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url();
+    try { socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url(); } catch {}
   }
 });
-
-// Normalize social posts for the React component
-const normalizedSocialPosts = socialPosts.map((post: SocialPost) => ({
-  _id: post._id,
-  platform: post.platform,
-  author: post.author,
-  authorRole: post.authorRole,
-  authorHandle: post.authorHandle,
-  content: post.content,
-  url: post.url,
-  postDate: post.postDate,
+const normalizedSocialPosts = socialPosts.map((p) => ({
+  _id: p._id,
+  platform: p.platform,
+  author: p.author,
+  authorRole: p.authorRole,
+  authorHandle: p.authorHandle,
+  content: p.content,
+  url: p.url,
+  postDate: p.postDate,
 }));
 
 const isPast = new Date(event.date) < new Date();
-const hasVideo = event.links?.videoUrl;
-const hasSlides = event.links?.slidesUrl;
+const dateStr = formatDate(event.date, { month: 'long', day: 'numeric', year: 'numeric' });
+const isOnline = event.location?.isOnline;
+const locationStr = isOnline
+  ? 'Online'
+  : [event.location?.venue, event.location?.city, event.location?.country].filter(Boolean).join(' · ');
 
-function getTypeColor(type: string) {
-  switch (type) {
-    case 'conference': return 'bg-accent-muted text-accent border-accent/20';
-    case 'workshop': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-    case 'meetup': return 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800';
-    case 'podcast': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800';
-    default: return 'bg-surface-overlay text-ink-muted border-edge';
-  }
-}
+const typeLabel = event.type?.charAt(0).toUpperCase() + event.type?.slice(1);
 
-function getTypeGradient(type: string) {
-  switch (type) {
-    case 'conference': return 'from-accent via-violet-600 to-pink-600';
-    case 'workshop': return 'from-emerald-600 via-teal-600 to-cyan-600';
-    case 'meetup': return 'from-violet-600 via-purple-600 to-fuchsia-600';
-    case 'podcast': return 'from-rose-600 via-pink-600 to-orange-600';
-    default: return 'from-accent via-violet-600 to-pink-600';
-  }
-}
+const hasMedia = (event.relatedMedia?.length || 0) > 0;
 ---
 
 <BaseLayout
-  title={`${event.title} | ${event.conference} | Faris Aziz`}
-  description={event.description || `${event.title} at ${event.conference}`}
+  title={`${event.title} | ${event.conference || 'Event'} | Faris Aziz`}
+  description={event.description || `${event.title} — ${event.conference} · ${dateStr}`}
   pathname={`/events/${slug}`}
 >
-  <!-- Hero Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 grid-pattern opacity-50"></div>
-    <div class="absolute inset-0 bg-gradient-to-br from-accent/5 via-violet-500/5 to-pink-500/5"></div>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb">
+        <a href="/speaking">Speaking</a>
+        <span class="page-crumbs__sep">/</span>
+        <a href="/events">Events</a>
+        <span class="page-crumbs__sep">/</span>
+        <span class="page-crumbs__cur">{event.title.length > 26 ? event.title.slice(0, 24) + '…' : event.title}</span>
+      </nav>
 
-    <div class="container relative z-10 pt-20 md:pt-28 pb-16">
-      <div class="max-w-4xl">
-        <!-- Breadcrumb -->
-        <a href="/events" class="inline-flex items-center gap-2 text-ink-muted hover:text-accent mb-8 transition-colors">
-          <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-          All events
-        </a>
+      <div class="event-tags">
+        {typeLabel && <span class="ds-tag">{typeLabel}</span>}
+        {event.featured && <span class="ds-tag" style="color:rgb(var(--accent-bright));border-color:rgb(var(--accent) / 0.4);">Featured</span>}
+        {isPast && <span class="ds-tag">Past</span>}
+        {event.links?.videoUrl && <span class="ds-tag">Recording available</span>}
+      </div>
 
-        <!-- Terminal intro -->
-        <div class="terminal max-w-lg mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
-            </div>
-            <span class="terminal__title">event.sh</span>
-          </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> cat ./events/{slug}.json</span>
-            <div class="terminal__output">Loading event details...</div>
-          </div>
+      <h1 class="page-hero__title event-title">{event.title}</h1>
+      {event.conference && <p class="event-conference">{event.conference}</p>}
+
+      <div class="event-meta">
+        <div class="event-meta__row">
+          <span class="event-meta__label">When</span>
+          <span class="event-meta__value">{dateStr}{event.endDate && ` → ${formatDate(event.endDate, { month: 'short', day: 'numeric' })}`}</span>
         </div>
-
-        <!-- Tags -->
-        <div class="flex flex-wrap items-center gap-3 mb-6">
-          <span class={`tag ${getTypeColor(event.type)}`}>{event.type}</span>
-          {event.featured && (
-            <span class="tag bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800">
-              Featured
-            </span>
-          )}
-          {isPast && (
-            <span class="tag">Past Event</span>
-          )}
-          {hasVideo && (
-            <span class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-200 dark:border-emerald-800">
-              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-              Recording
-            </span>
-          )}
+        <div class="event-meta__row">
+          <span class="event-meta__label">Where</span>
+          <span class="event-meta__value">
+            {!isOnline && event.location?.country && (
+              <span class="event-meta__flag">{getCountryFlag(event.location.country)}</span>
+            )}
+            {locationStr || 'TBA'}
+          </span>
         </div>
+      </div>
 
-        <!-- Title -->
-        <h1 class="hero-title mb-4" transition:name="page-title">
-          <span class="block text-ink">{event.title}</span>
-        </h1>
+      {event.description && <p class="page-hero__lead">{event.description}</p>}
 
-        <!-- Conference Name -->
-        <p class="text-2xl md:text-3xl text-accent font-display font-medium mb-8">
-          {event.conference}
-        </p>
-
-        <!-- Meta Info -->
-        <div class="flex flex-wrap gap-6 mb-10">
-          <div class="flex items-center gap-3 text-ink-muted">
-            <div class="w-12 h-12 rounded-xl bg-surface-overlay border border-edge flex items-center justify-center">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <div class="font-medium text-ink">{formatDate(event.date)}</div>
-              {event.endDate && event.endDate !== event.date && (
-                <div class="text-sm">to {formatDate(event.endDate)}</div>
-              )}
-            </div>
-          </div>
-
-          <div class="flex items-center gap-3 text-ink-muted">
-            <div class="w-12 h-12 rounded-xl bg-surface-overlay border border-edge flex items-center justify-center">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <div class="font-medium text-ink flex items-center gap-2">
-                <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
-                {event.location?.city}
-              </div>
-              <div class="text-sm">{event.location?.country}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Description -->
-        {event.description && (
-          <p class="text-lead max-w-3xl mb-10">
-            {event.description}
-          </p>
+      <div class="page-hero__actions">
+        {event.links?.eventUrl && (
+          <a href={event.links.eventUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary">
+            Event page
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
         )}
-
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-4">
-          {event.links?.eventUrl && (
-            <a href={event.links.eventUrl} target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4 group glow">
-              <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Event website
-            </a>
-          )}
-          {event.links?.videoUrl && (
-            <a href={event.links.videoUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4 group">
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-              Watch recording
-            </a>
-          )}
-          {event.links?.slidesUrl && (
-            <a href={event.links.slidesUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary text-lg px-8 py-4 group">
-              <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              View slides
-            </a>
-          )}
-        </div>
+        {event.links?.videoUrl && (
+          <a href={event.links.videoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:1em;height:1em;" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+            Watch recording
+          </a>
+        )}
+        {event.links?.slidesUrl && (
+          <a href={event.links.slidesUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">Slides</a>
+        )}
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Talk Info -->
   {event.talk && (
-    <section class="section-subtle py-16 md:py-20">
+    <section class="page-section">
       <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">About the Talk</h2>
-              <p class="text-ink-muted">Details about the presentation</p>
-            </div>
+        <div class="page-section__head">
+          <div>
+            <Kicker>The talk</Kicker>
+            <h2 class="page-h2">{event.talk.title}</h2>
           </div>
-
-          <a href={`/talks/${event.talk.slug}`} class="group block bg-surface-raised rounded-2xl border border-edge hover:border-accent/50 transition-all duration-300 overflow-hidden">
-            <!-- Gradient Top Bar -->
-            <div class="h-1.5 bg-gradient-to-r from-accent via-violet-500 to-pink-500"></div>
-
-            <div class="p-8">
-              <div class="flex items-start justify-between gap-4 mb-4">
-                <h3 class="font-display font-bold text-xl md:text-2xl text-ink group-hover:text-accent transition-colors">
-                  {event.talk.title}
-                </h3>
-                <svg class="w-6 h-6 text-ink-faint group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-              {event.talk.abstract && (
-                <p class="text-ink-muted mb-6 line-clamp-3 leading-relaxed">
-                  {event.talk.abstract}
-                </p>
-              )}
-              {event.talk.topics && event.talk.topics.length > 0 && (
-                <div class="flex flex-wrap gap-2 mb-6">
-                  {event.talk.topics.slice(0, 5).map((topic: string) => (
-                    <div class="topic-badge">
-                      <span class="topic-badge__name">{topic}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <span class="text-accent font-medium text-sm inline-flex items-center gap-1">
-                View full talk details
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
+          <a href={`/talks/${event.talk.slug}`} class="ds-link">
+            Talk page
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </a>
         </div>
-      </div>
-    </section>
-  )}
-
-  <!-- Workshop Info -->
-  {event.workshop && (
-    <section class="section-subtle py-16 md:py-20">
-      <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">About the Workshop</h2>
-              <p class="text-ink-muted">Details about the hands-on session</p>
-            </div>
+        {event.talk.topics && event.talk.topics.length > 0 && (
+          <div class="event-tags" style="margin-bottom:1rem;">
+            {event.talk.topics.map((t) => <span class="ds-tag">{t}</span>)}
           </div>
-
-          <a href={`/workshops/${event.workshop.slug}`} class="group block bg-surface-raised rounded-2xl border border-edge hover:border-emerald-500/50 transition-all duration-300 overflow-hidden">
-            <!-- Gradient Top Bar -->
-            <div class="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
-
-            <div class="p-8">
-              <div class="flex items-start justify-between gap-4 mb-4">
-                <h3 class="font-display font-bold text-xl md:text-2xl text-ink group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                  {event.workshop.title}
-                </h3>
-                <svg class="w-6 h-6 text-ink-faint group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-              {event.workshop.description && (
-                <p class="text-ink-muted mb-6 line-clamp-3 leading-relaxed">
-                  {event.workshop.description}
-                </p>
-              )}
-              <span class="text-emerald-600 dark:text-emerald-400 font-medium text-sm inline-flex items-center gap-1">
-                View full workshop details
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- Related Media -->
-  {event.relatedMedia && event.relatedMedia.length > 0 && (
-    <section class="section py-16 md:py-20">
-      <div class="container">
-        <div class="max-w-5xl mx-auto">
-          <h2 class="heading-2 mb-8">Media from this Event</h2>
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {event.relatedMedia.map((item: any) => (
-              <div class="card overflow-hidden group">
-                {item.type === 'video' && item.videoUrl ? (
-                  <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" class="block aspect-video bg-surface-overlay relative">
-                    {item.image ? (
-                      <img
-                        src={urlFor(item.image).width(400).height(225).url()}
-                        alt={item.title}
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div class="w-full h-full flex items-center justify-center">
-                        <svg class="w-16 h-16 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  </a>
-                ) : item.image && (
-                  <div class="aspect-video bg-surface-overlay overflow-hidden">
-                    <img
-                      src={urlFor(item.image).width(400).height(225).url()}
-                      alt={item.title}
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                )}
-                <div class="p-4">
-                  <span class="tag text-xs mb-2">{item.type}</span>
-                  <p class="text-sm text-ink-muted">{item.title}</p>
-                </div>
-              </div>
+        )}
+        {event.talk.abstract && <p class="event-body">{event.talk.abstract}</p>}
+        {event.talk.takeaways && event.talk.takeaways.length > 0 && (
+          <ul class="event-list">
+            {event.talk.takeaways.map((t) => (
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{t}</span>
+              </li>
             ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )}
+
+  {event.workshop && (
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__head">
+          <div>
+            <Kicker>The workshop</Kicker>
+            <h2 class="page-h2">{event.workshop.title}</h2>
           </div>
+          <a href={`/workshops/${event.workshop.slug}`} class="ds-link">
+            Workshop page
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
+        </div>
+        <div class="event-tags" style="margin-bottom:1rem;">
+          {event.workshop.duration && <span class="ds-tag">{event.workshop.duration}</span>}
+          {event.workshop.level && <span class="ds-tag">{event.workshop.level}</span>}
+          {event.workshop.technologies?.slice(0, 4).map((t) => <span class="ds-tag">{t}</span>)}
+        </div>
+        {event.workshop.description && <p class="event-body">{event.workshop.description}</p>}
+        {event.workshop.outcomes && event.workshop.outcomes.length > 0 && (
+          <ul class="event-list">
+            {event.workshop.outcomes.map((o) => (
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{o}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )}
+
+  {hasMedia && (
+    <section class="page-section">
+      <div class="container">
+        <div class="page-section__head">
+          <Kicker>Captured</Kicker>
+          <h2 class="page-h2">From the event</h2>
+        </div>
+        <div class="page-grid-3">
+          {event.relatedMedia!.map((m) => (
+            <div class="ds-card event-media-card ds-reveal">
+              {m.image && (
+                <div class="event-media-card__media">
+                  <img src={urlFor(m.image).width(600).height(400).quality(90).url()} alt={m.description || event.title} loading="lazy" />
+                  {m.videoUrl && (
+                    <a class="event-media-card__play" href={m.videoUrl} target="_blank" rel="noopener noreferrer" aria-label="Play video">
+                      <span><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg></span>
+                    </a>
+                  )}
+                </div>
+              )}
+              {m.description && <p class="event-media-card__caption">{m.description}</p>}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   )}
 
-  <!-- Community Feedback Section -->
-  {socialPosts.length > 0 && (
-    <section class="section-dark py-16 md:py-20 relative overflow-hidden">
-      <div class="absolute inset-0 dot-pattern opacity-10"></div>
-
-      <div class="container relative z-10">
-        <div class="max-w-5xl mx-auto">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-xl md:text-2xl font-display font-bold text-white">What People Are Saying</h2>
-              <p class="text-slate-400 text-sm">Feedback specifically about {event.conference}</p>
-            </div>
-          </div>
-
-          <SocialPostsGrid
-            client:load
-            posts={normalizedSocialPosts}
-            imageUrls={socialPostImages}
-            maxPosts={4}
-          />
-
-          {socialPosts.length > 4 && (
-            <div class="text-center mt-8">
-              <a href="/appreciation" class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-                View all {socialPosts.length} mentions
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
-            </div>
-          )}
+  {normalizedSocialPosts.length > 0 && (
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__head">
+          <Kicker>From the audience</Kicker>
+          <h2 class="page-h2">What people said</h2>
+        </div>
+        <SocialPostsGrid client:visible posts={normalizedSocialPosts} imageUrls={socialPostImages} />
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="/appreciation" class="ds-link">
+            More community feedback
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
         </div>
       </div>
     </section>
   )}
 
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div class={`absolute inset-0 bg-gradient-to-br ${getTypeGradient(event.type)}`}></div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-
-    <div class="container relative z-10 py-20 md:py-24">
-      <div class="max-w-3xl mx-auto text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Accepting invitations
-        </div>
-
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-4">
-          Want me at your event?
-        </h2>
-        <p class="text-white/80 text-lg mb-8 max-w-xl mx-auto">
-          I'm available for conferences, meetups, podcasts, and workshops worldwide. Let's discuss how I can contribute to your event.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/invite"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-          >
-            Invite me to speak
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </a>
-          <a
-            href="/talks"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-          >
-            Browse my talks
-          </a>
-        </div>
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status={`Booking ${bookingYears()} dates`}
+          title={isPast ? 'Want me at your next event?' : 'Want me at your event?'}
+          body="Tell me about your audience and I'll adapt a talk or workshop to fit. I reply within two days."
+          primaryHref="/invite"
+          primaryLabel="Invite me"
+          secondaryHref="/events"
+          secondaryLabel="All events"
+        />
       </div>
     </div>
   </section>
+
+  <script>
+    function initPage() {
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage, { once: true });
+    } else { initPage(); }
+    document.addEventListener('astro:after-swap', initPage);
+  </script>
 </BaseLayout>
+
+<style>
+  .event-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .event-title { max-width: 22ch; }
+  .event-conference {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: rgb(var(--accent-bright));
+    margin-top: 0.6rem;
+  }
+  .event-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-top: 1.6rem;
+    max-width: 580px;
+  }
+  @media (max-width: 540px) {
+    .event-meta { grid-template-columns: 1fr; }
+  }
+  .event-meta__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .event-meta__label {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .event-meta__value {
+    color: rgb(var(--ink));
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .event-meta__flag { font-size: 1.1rem; }
+
+  .event-body {
+    color: rgb(var(--ink-muted));
+    line-height: 1.7;
+    margin-bottom: 1.4rem;
+    max-width: 70ch;
+  }
+  .event-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0 0;
+    display: grid;
+    gap: 0.8rem;
+    max-width: 70ch;
+  }
+  .event-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    color: rgb(var(--ink-muted));
+    line-height: 1.55;
+  }
+  .event-list svg {
+    width: 20px;
+    height: 20px;
+    color: rgb(var(--signal));
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .event-media-card {
+    overflow: hidden;
+    color: inherit;
+  }
+  .event-media-card__media {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    background: rgb(var(--surface-3));
+  }
+  .event-media-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .event-media-card__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .event-media-card__play span {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: rgba(10, 12, 16, 0.55);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .event-media-card__play svg {
+    width: 22px;
+    height: 22px;
+    color: #fff;
+    margin-left: 3px;
+  }
+  .event-media-card__caption {
+    padding: 0.9rem 1.1rem;
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.5;
+  }
+</style>

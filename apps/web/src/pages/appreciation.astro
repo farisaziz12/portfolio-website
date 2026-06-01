@@ -1,18 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
+import AppreciationFilter from '../components/islands/AppreciationFilter';
 import { client, urlFor } from '../lib/sanity/client';
 import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
-import AppreciationFilter from '../components/islands/AppreciationFilter';
 
-// Fetch all data
 const [socialPosts, testimonials] = await Promise.all([
   client.fetch(allSocialPostsQuery),
   client.fetch(allTestimonialsQuery),
 ]);
 
-// Get unique platforms
 const platforms = [...new Set(socialPosts.map((p: any) => p.platform))];
-
 const stats = {
   total: socialPosts.length + testimonials.length,
   posts: socialPosts.length,
@@ -20,100 +20,68 @@ const stats = {
   platforms: platforms.length,
 };
 
-// Pre-process image URLs for the React component
 const socialPostImages: Record<string, string> = {};
 socialPosts.forEach((post: any) => {
   if (post.authorImage) {
-    socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url();
+    try { socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url(); } catch {}
   }
 });
-
 const testimonialImages: Record<string, string> = {};
-testimonials.forEach((testimonial: any) => {
-  if (testimonial.image) {
-    testimonialImages[testimonial._id] = urlFor(testimonial.image).width(72).height(72).url();
+testimonials.forEach((t: any) => {
+  if (t.image) {
+    try { testimonialImages[t._id] = urlFor(t.image).width(72).height(72).url(); } catch {}
   }
 });
 ---
 
 <BaseLayout
-  title="Wall of Appreciation | Faris Aziz"
+  title="Wall of appreciation | Faris Aziz"
   description="Kind words, mentions, and testimonials from the community about my talks, work, and contributions."
   pathname="/appreciation"
 >
-  <!-- Hero Section -->
-  <section class="relative min-h-[60vh] flex items-center overflow-hidden">
-    <div class="absolute inset-0 grid-pattern opacity-50"></div>
-    <div class="absolute inset-0 gradient-mesh"></div>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>From the community</Kicker>
+      <h1 class="page-hero__title">
+        The wall of <span class="accent-word">kind words</span>.
+      </h1>
+      <p class="page-hero__lead">
+        Real feedback from conferences, colleagues, and the tech community. Every mention motivates me to keep sharing.
+      </p>
 
-    <div class="container relative z-10 py-20 md:py-28">
-      <div class="max-w-4xl">
-        <!-- Terminal intro -->
-        <div class="terminal max-w-md mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
-            </div>
-            <span class="terminal__title">appreciation.sh</span>
-          </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> cat community_feedback.md</span>
-            <div class="terminal__output">Loading {stats.total} kind words...</div>
-          </div>
+      <div class="page-hero__stats">
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.posts}</div>
+          <div class="ds-stat__label">Social posts</div>
         </div>
-
-        <h1 class="hero-title mb-6">
-          <span class="block text-ink">Wall of</span>
-          <span class="block hero-title--gradient">Appreciation</span>
-        </h1>
-
-        <p class="text-lead max-w-2xl mb-10">
-          Real feedback from conferences, colleagues, and the tech community.
-          Every mention motivates me to keep sharing knowledge.
-        </p>
-
-        <!-- Quick Stats -->
-        <div class="flex flex-wrap gap-8 mb-10">
-          <div class="stat-item">
-            <span class="stat-item__value text-accent">{stats.posts}</span>
-            <span class="stat-item__label">Social Posts</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__value text-violet-500">{stats.testimonials}</span>
-            <span class="stat-item__label">Testimonials</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__value text-pink-500">{stats.platforms}</span>
-            <span class="stat-item__label">Platforms</span>
-          </div>
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.testimonials}</div>
+          <div class="ds-stat__label">Testimonials</div>
         </div>
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.platforms}</div>
+          <div class="ds-stat__label">Platforms</div>
+        </div>
+      </div>
 
-        <!-- Jump Link -->
-        <a href="#content" class="btn-primary">
-          Explore Feedback
-          <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      <div class="page-hero__actions">
+        <a href="#content" class="ds-btn ds-btn-primary ds-btn-lg">
+          Explore feedback
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </a>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Tabbed Feedback Section -->
-  <section id="content" class="section py-16 md:py-24">
+  <section id="content" class="page-section">
     <div class="container">
-      <!-- Section Header -->
-      <div class="text-center mb-10">
-        <p class="text-accent font-mono text-sm tracking-wider uppercase mb-3">Community Feedback</p>
-        <h2 class="text-3xl md:text-4xl font-display font-bold text-ink">
-          What People <span class="text-gradient">Say</span>
-        </h2>
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Community feedback</Kicker>
+        <h2 class="page-h2 ds-reveal">What people <span class="mark">say</span></h2>
       </div>
-
-      <!-- React Island for Interactive Tabs & Filters -->
       <AppreciationFilter
         client:load
         socialPosts={socialPosts}
@@ -124,67 +92,38 @@ testimonials.forEach((testimonial: any) => {
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-
-    <div class="container relative z-10 py-20 md:py-28">
-      <div class="max-w-3xl mx-auto text-center">
-        <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-          Want to share your experience?
-        </h2>
-        <p class="text-white/80 text-lg mb-8">
-          If you've attended one of my talks or worked with me, I'd love to hear your feedback.
-        </p>
-        <div class="flex flex-wrap gap-4 justify-center">
-          <a
-            href="https://bsky.app/profile/farisaziz12.bsky.social"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:bg-white/90 transition-all"
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026"/>
-            </svg>
-            Tag me on Bluesky
-          </a>
-          <a
-            href="https://linkedin.com/in/farisaziz12"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/20 transition-all"
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-            Connect on LinkedIn
-          </a>
-        </div>
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status="Loved my work? Share it"
+          title="Want to share your experience?"
+          body="If you've attended one of my talks or worked with me, tag me on Bluesky or LinkedIn — I read every mention."
+          primaryHref="https://bsky.app/profile/farisaziz.com"
+          primaryLabel="Tag me on Bluesky"
+          secondaryHref="https://linkedin.com/in/farisaziz12"
+          secondaryLabel="Connect on LinkedIn"
+        />
       </div>
     </div>
   </section>
+
+  <script>
+    function initPage() {
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage, { once: true });
+    } else { initPage(); }
+    document.addEventListener('astro:after-swap', initPage);
+  </script>
 </BaseLayout>
-
-<style>
-  /* Hero Stats */
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .stat-item__value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    font-family: var(--font-display);
-    line-height: 1;
-  }
-
-  .stat-item__label {
-    font-size: 0.75rem;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 0.25rem;
-  }
-</style>
