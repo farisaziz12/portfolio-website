@@ -4,13 +4,20 @@ import type { APIRoute } from 'astro'
 import { Resend } from 'resend'
 import { InviteConfirmationEmail } from '../../emails/InviteConfirmationEmail'
 
-const apiKey = import.meta.env.RESEND_API_KEY
+// Read runtime env via process.env first, falling back to import.meta.env for local
+// `astro dev`. On Vercel, non-public vars referenced through import.meta.env get inlined
+// at build time and end up undefined at runtime — so process.env is the reliable source
+// for the deployed serverless functions. This is why form submissions were silently
+// hitting the "email-disabled" branch below instead of actually sending.
+const env = (key: string): string | undefined => process.env[key] ?? import.meta.env[key]
+
+const apiKey = env('RESEND_API_KEY')
 const resend = apiKey ? new Resend(apiKey) : null
 
 // Where speaking invitations land. Defaults to faris@zurichjs.com; INVITE_INBOX env
 // overrides for staging / preview environments.
-const INBOX = import.meta.env.INVITE_INBOX || 'faris@zurichjs.com'
-const FROM_EMAIL = import.meta.env.RESEND_FROM_EMAIL
+const INBOX = env('INVITE_INBOX') || 'faris@zurichjs.com'
+const FROM_EMAIL = env('RESEND_FROM_EMAIL')
 const FROM = FROM_EMAIL ? `Invite Form <${FROM_EMAIL}>` : null
 
 function esc(value: unknown): string {

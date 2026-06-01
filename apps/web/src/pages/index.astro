@@ -232,10 +232,12 @@ const formatEventDate = (dateStr: string) => {
   <header class="hero-split-mosaic relative home-hero-v2">
     <div class="hero-split-mosaic__content">
       <div class="home-hero__content-inner">
-        <Terminal class="home-hero__terminal">
-          <div><span class="pr">$</span> <span class="cmd">whoami</span></div>
-          <div class="out">Staff Engineer & Speaker</div>
-        </Terminal>
+        <div class="home-hero__terminal">
+          <Terminal>
+            <div><span class="pr">$</span> <span class="cmd">whoami</span></div>
+            <div class="out">Staff Engineer & Speaker</div>
+          </Terminal>
+        </div>
 
         <h1 class="home-hero__title">
           <span class="ln">Faris</span>
@@ -711,9 +713,14 @@ const formatEventDate = (dateStr: string) => {
      (stacked + full-width mosaic on mobile/tablet, 38/62 split on lg+). */
   .home-hero-v2 { overflow: hidden; }
   .home-hero__content-inner { max-width: 36rem; }
+  /* Wrapper around the <Terminal> island. The spacing + width live here (not as a
+     class on <Terminal>) because Astro scoped styles don't pierce component
+     boundaries — a class passed to the component would never match this rule. */
   .home-hero__terminal {
     max-width: 300px;
-    margin-bottom: clamp(5rem, 8vw, 7rem);
+    /* Smaller gap on phones so the terminal and title aren't crammed yet still
+       breathe; grows to fill the tall two-column hero on lg+ screens. */
+    margin-bottom: clamp(2.25rem, 8vw, 7rem);
   }
   .home-hero__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
