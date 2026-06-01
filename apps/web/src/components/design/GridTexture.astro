@@ -1,0 +1,9 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`grid-texture ${className}`} aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;"></div>

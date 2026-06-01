@@ -2,6 +2,9 @@
 export const prerender = false
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import Terminal from '../../components/design/Terminal.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery } from '../../lib/sanity/queries';
 import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
@@ -10,6 +13,7 @@ interface WorkshopInstanceRow {
   _id: string;
   title: string;
   event: string;
+  slug?: string;
   token: string;
   workshopDate: string;
   accessDurationDays: number;
@@ -17,9 +21,17 @@ interface WorkshopInstanceRow {
   repoUrl: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
+  resendAudienceId?: string;
+}
+
+interface AudienceContactCount {
+  audienceId: string;
+  count: number | null;
+  error?: string;
 }
 
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
+const RESEND_API_KEY = import.meta.env.RESEND_API_KEY;
 
 let authError = '';
 let isAuthenticated = false;
@@ -48,16 +60,46 @@ if (Astro.request.method === 'POST') {
 }
 
 let instances: WorkshopInstanceRow[] = [];
+const audienceCounts = new Map<string, AudienceContactCount>();
+
 if (isAuthenticated) {
   instances = await sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []);
-}
 
-const statusConfig: Record<string, { label: string; classes: string }> = {
-  'open': { label: 'Open', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
-  'upcoming': { label: 'Upcoming', classes: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
-  'closed': { label: 'Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
-  'force-closed': { label: 'Force Closed', classes: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
-};
+  // Best-effort fetch of subscriber counts from Resend per audience (with timeout).
+  if (RESEND_API_KEY) {
+    const uniqueAudienceIds = Array.from(
+      new Set(instances.map((i) => i.resendAudienceId).filter((id): id is string => !!id))
+    );
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
+      await Promise.all(
+        uniqueAudienceIds.map(async (audienceId) => {
+          try {
+            const res = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
+              headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+              signal: controller.signal,
+            });
+            if (!res.ok) {
+              audienceCounts.set(audienceId, { audienceId, count: null, error: `HTTP ${res.status}` });
+              return;
+            }
+            const json = (await res.json()) as { data?: unknown[] };
+            audienceCounts.set(audienceId, { audienceId, count: Array.isArray(json.data) ? json.data.length : null });
+          } catch (err) {
+            audienceCounts.set(audienceId, {
+              audienceId,
+              count: null,
+              error: err instanceof Error ? err.message : 'fetch failed',
+            });
+          }
+        })
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -66,192 +108,449 @@ const formatDate = (dateStr: string) => {
     year: 'numeric',
   });
 };
+
+const statusMeta: Record<string, { label: string; color: string }> = {
+  open: { label: 'Open', color: 'var(--signal)' },
+  upcoming: { label: 'Upcoming', color: 'var(--accent-bright)' },
+  closed: { label: 'Closed', color: 'var(--ink-faint)' },
+  'force-closed': { label: 'Force closed', color: 'var(--danger)' },
+};
 ---
 
-<BaseLayout
-  title="Admin | Workshop Dashboard"
-  description="Workshop instance dashboard"
-  pathname="/admin"
->
+<BaseLayout title="Admin · Workshop dashboard" description="Workshop instance dashboard" pathname="/admin">
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
   {!isAuthenticated ? (
-    <section class="min-h-[80vh] flex items-center">
+    <section class="auth-section">
       <div class="container">
-        <div class="max-w-sm mx-auto">
-          <div class="card p-8">
-            <div class="text-center mb-8">
-              <div class="terminal max-w-xs mx-auto mb-6">
-                <div class="terminal__header">
-                  <div class="terminal__dots">
-                    <div class="terminal__dot terminal__dot--red"></div>
-                    <div class="terminal__dot terminal__dot--yellow"></div>
-                    <div class="terminal__dot terminal__dot--green"></div>
-                  </div>
-                  <span class="terminal__title">admin.sh</span>
-                </div>
-                <div class="terminal__body">
-                  <span class="terminal__prompt">$</span>
-                  <span class="terminal__command"> sudo workshop-admin</span>
-                  <div class="terminal__output">Password required...</div>
-                </div>
-              </div>
-              <h1 class="heading-3">Admin Login</h1>
-            </div>
+        <div class="auth-card">
+          <Terminal name="admin.sh">
+            <div><span class="pr">$</span> <span class="cmd">sudo workshop-admin</span></div>
+            <div class="out">Password required…</div>
+          </Terminal>
 
-            {authError && (
-              <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <p class="text-sm text-red-700 dark:text-red-400 text-center">{authError}</p>
-              </div>
-            )}
-
-            <form method="POST" class="space-y-4">
-              <div>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  autocomplete="current-password"
-                  required
-                  class="w-full px-4 py-3 rounded-lg border border-edge bg-surface text-ink placeholder-ink-faint focus:outline-none focus:border-accent transition-colors"
-                />
-              </div>
-              <button type="submit" class="btn-primary w-full py-3">
-                Sign In
-              </button>
-            </form>
+          <div class="auth-card__head">
+            <Kicker plain>Admin</Kicker>
+            <h1 class="auth-card__title">Sign in</h1>
           </div>
+
+          {authError && <p class="auth-card__error">{authError}</p>}
+
+          <form method="POST" class="auth-card__form">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              autocomplete="current-password"
+              required
+              class="auth-card__input"
+            />
+            <button type="submit" class="ds-btn ds-btn-primary" style="width:100%;">Sign in</button>
+          </form>
         </div>
       </div>
     </section>
   ) : (
-    <section class="py-16 md:py-24">
+    <section class="admin-section">
       <div class="container">
-        <div class="max-w-5xl mx-auto">
-          <!-- Header -->
-          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <h1 class="heading-2 mb-2">Workshop Instances</h1>
-              <p class="text-ink-muted">Manage and monitor workshop access</p>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-ink-faint">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {instances.length} instance{instances.length !== 1 ? 's' : ''}
+        <div class="admin-head">
+          <Kicker>Admin · Workshops</Kicker>
+          <div class="admin-head__row">
+            <h1 class="admin-head__title">Workshop instances</h1>
+            <div class="admin-head__meta">
+              <span class="ds-dot"></span>
+              <span>{instances.length} instance{instances.length !== 1 ? 's' : ''}</span>
             </div>
           </div>
+          <p class="admin-head__body">Each instance can have its own Resend audience so you can broadcast to a single workshop's attendees.</p>
+        </div>
 
-          {instances.length === 0 ? (
-            <div class="card p-12 text-center">
-              <h3 class="heading-3 mb-4">No instances yet</h3>
-              <p class="text-ink-muted mb-6">
-                Create a workshop instance in Sanity Studio to get started.
-              </p>
-              <a
-                href="https://faziz-dev.sanity.studio"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-primary"
-              >
+        {instances.length === 0 ? (
+          <div class="empty">
+            <GridTexture />
+            <div class="empty__inner">
+              <h3 class="empty__title">No instances yet</h3>
+              <p class="empty__body">Create a workshop instance in Sanity Studio to get started.</p>
+              <a href="https://faziz-dev.sanity.studio" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary">
                 Open Sanity Studio
               </a>
             </div>
-          ) : (
-            <div class="space-y-4">
-              {instances.map((instance) => {
-                const status = getAccessStatus(instance);
-                const close = getCloseDate(instance);
-                const cfg = statusConfig[status];
+          </div>
+        ) : (
+          <div class="instance-list">
+            {instances.map((instance) => {
+              const status = getAccessStatus(instance);
+              const close = getCloseDate(instance);
+              const meta = statusMeta[status];
+              const audienceCount = instance.resendAudienceId ? audienceCounts.get(instance.resendAudienceId) : undefined;
+              const sanityEditUrl = `https://faziz-dev.sanity.studio/structure/workshopInstance;${instance._id}`;
+              const resendDashboardUrl = instance.resendAudienceId
+                ? `https://resend.com/audiences/${instance.resendAudienceId}`
+                : null;
+              const attendUrl = `https://faziz-dev.com/workshops/attend/${instance.token}`;
 
-                return (
-                  <div class="card overflow-hidden">
-                    <!-- Status bar -->
-                    <div class={`h-1 ${status === 'open' ? 'bg-emerald-500' : status === 'upcoming' ? 'bg-amber-500' : 'bg-red-500'}`}></div>
-
-                    <div class="p-6">
-                      <!-- Header -->
-                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                        <div>
-                          <h2 class="font-display font-semibold text-lg text-ink">{instance.title}</h2>
-                          <p class="text-sm text-ink-muted">{instance.event}</p>
-                        </div>
-                        <span class={`tag ${cfg.classes}`}>
-                          {cfg.label}
-                        </span>
+              return (
+                <article class="instance">
+                  <div class="instance__status" style={`background: rgb(${meta.color});`} aria-hidden="true"></div>
+                  <div class="instance__body">
+                    <header class="instance__head">
+                      <div class="instance__title-block">
+                        <h2 class="instance__title">{instance.title}</h2>
+                        <p class="instance__event">{instance.event}</p>
                       </div>
+                      <span class="instance__chip" style={`color: rgb(${meta.color}); border-color: rgb(${meta.color} / 0.4);`}>
+                        <span class="ds-dot" style={`background: rgb(${meta.color}); box-shadow: 0 0 0 3px rgb(${meta.color} / 0.1);`}></span>
+                        {meta.label}
+                      </span>
+                    </header>
 
-                      <!-- Meta grid -->
-                      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        <div>
-                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Workshop Date</p>
-                          <p class="text-sm text-ink font-medium">{formatDate(instance.workshopDate)}</p>
-                        </div>
-                        <div>
-                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Close Date</p>
-                          <p class="text-sm text-ink font-medium">{formatDate(close.toISOString())}</p>
-                        </div>
-                        <div>
-                          <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Duration</p>
-                          <p class="text-sm text-ink font-medium">{instance.accessDurationDays} days</p>
-                        </div>
+                    <dl class="instance__meta-grid">
+                      <div>
+                        <dt>Workshop date</dt>
+                        <dd>{formatDate(instance.workshopDate)}</dd>
                       </div>
+                      <div>
+                        <dt>Closes</dt>
+                        <dd>{formatDate(close.toISOString())}</dd>
+                      </div>
+                      <div>
+                        <dt>Duration</dt>
+                        <dd>{instance.accessDurationDays} days</dd>
+                      </div>
+                    </dl>
 
-                      <!-- Access link -->
-                      <div class="mb-6">
-                        <p class="text-xs text-ink-faint uppercase tracking-wider mb-2">Access Link</p>
-                        <button
-                          class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-overlay border border-edge hover:border-edge-strong transition-colors font-mono text-xs text-accent cursor-pointer group"
-                          data-url={`https://faziz-dev.com/workshops/attend/${instance.token}`}
-                          onclick="navigator.clipboard.writeText(this.dataset.url);this.querySelector('.copy-label').textContent='Copied!';setTimeout(()=>this.querySelector('.copy-label').textContent='Click to copy',2000)"
-                        >
-                          <span>faziz-dev.com/workshops/attend/{instance.token}</span>
-                          <span class="copy-label text-ink-faint group-hover:text-ink-muted transition-colors">Click to copy</span>
-                        </button>
-                      </div>
-
-                      <!-- Actions -->
-                      <div class="flex flex-wrap gap-3 pt-4 border-t border-edge">
-                        <a
-                          href={`/workshops/attend/${instance.token}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="btn-ghost text-sm"
-                        >
-                          Preview
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
-                        <a
-                          href={instance.repoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="btn-ghost text-sm"
-                        >
-                          Repo
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
-                        <a
-                          href={`https://faziz-dev.sanity.studio/structure/workshopInstance;${instance._id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="btn-ghost text-sm"
-                        >
-                          Edit in Sanity
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
-                      </div>
+                    <div class="instance__row">
+                      <span class="instance__label">Access link</span>
+                      <button
+                        class="instance__copy"
+                        data-url={attendUrl}
+                        onclick="navigator.clipboard.writeText(this.dataset.url);const lbl=this.querySelector('.lbl');const prev=lbl.textContent;lbl.textContent='Copied';setTimeout(()=>{lbl.textContent=prev;},2000);"
+                      >
+                        <code>{attendUrl.replace('https://', '')}</code>
+                        <span class="lbl">Copy</span>
+                      </button>
                     </div>
+
+                    <div class="instance__row">
+                      <span class="instance__label">Resend audience</span>
+                      {instance.resendAudienceId ? (
+                        <div class="instance__audience">
+                          <code class="instance__audience-id">{instance.resendAudienceId}</code>
+                          {audienceCount && audienceCount.count !== null && (
+                            <span class="instance__audience-count">{audienceCount.count} contact{audienceCount.count !== 1 ? 's' : ''}</span>
+                          )}
+                          {audienceCount?.error && (
+                            <span class="instance__audience-error" title={audienceCount.error}>count unavailable</span>
+                          )}
+                          {resendDashboardUrl && (
+                            <a href={resendDashboardUrl} target="_blank" rel="noopener noreferrer" class="ds-link instance__audience-link">
+                              Open in Resend
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div class="instance__audience instance__audience--empty">
+                          <span>Not set — broadcasts go to the global audience only.</span>
+                          <a href={sanityEditUrl} target="_blank" rel="noopener noreferrer" class="ds-link">
+                            Add ID in Sanity
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    <footer class="instance__actions">
+                      <a href={`/workshops/attend/${instance.token}`} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
+                        Preview
+                      </a>
+                      {instance.repoUrl && (
+                        <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
+                          Repo
+                        </a>
+                      )}
+                      <a href={sanityEditUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
+                        Edit in Sanity
+                      </a>
+                    </footer>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   )}
 </BaseLayout>
+
+<style>
+  .auth-section {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    padding-block: 4rem;
+  }
+  .auth-card {
+    max-width: 26rem;
+    margin: 0 auto;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    padding: 2rem;
+  }
+  .auth-card__head {
+    text-align: center;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .auth-card__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: rgb(var(--ink));
+    margin-top: 0.6rem;
+  }
+  .auth-card__error {
+    background: rgb(var(--danger) / 0.1);
+    border: 1px solid rgb(var(--danger) / 0.4);
+    color: rgb(var(--danger));
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .auth-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .auth-card__input {
+    width: 100%;
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge-strong));
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    color: rgb(var(--ink));
+    font-size: 0.98rem;
+  }
+  .auth-card__input:focus { outline: none; border-color: rgb(var(--accent)); }
+
+  .admin-section { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
+  .admin-head { max-width: 60rem; margin-bottom: 2.5rem; }
+  .admin-head__row {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .admin-head__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+  }
+  .admin-head__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.78rem;
+    color: rgb(var(--ink-faint));
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .admin-head__body {
+    color: rgb(var(--ink-muted));
+    margin-top: 1rem;
+    max-width: 60ch;
+  }
+
+  .empty {
+    position: relative;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    padding: 3rem;
+    text-align: center;
+    overflow: hidden;
+  }
+  .empty__inner { position: relative; }
+  .empty__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: rgb(var(--ink));
+  }
+  .empty__body {
+    color: rgb(var(--ink-muted));
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .instance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .instance {
+    display: flex;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .instance:hover { border-color: rgb(var(--edge-strong)); }
+  .instance__status { width: 4px; flex-shrink: 0; }
+  .instance__body { padding: 1.6rem; flex: 1; min-width: 0; }
+  .instance__head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .instance__title-block { min-width: 0; }
+  .instance__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: rgb(var(--ink));
+  }
+  .instance__event {
+    font-size: 0.9rem;
+    color: rgb(var(--ink-muted));
+    margin-top: 0.15rem;
+  }
+  .instance__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid;
+    border-radius: 999px;
+    background: rgb(var(--surface-1));
+    flex-shrink: 0;
+  }
+
+  .instance__meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  .instance__meta-grid dt {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+    margin-bottom: 0.25rem;
+  }
+  .instance__meta-grid dd {
+    font-size: 0.9rem;
+    color: rgb(var(--ink));
+    font-weight: 500;
+  }
+
+  .instance__row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(var(--edge));
+  }
+  .instance__label {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+    flex-shrink: 0;
+    min-width: 110px;
+  }
+  .instance__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+    background: rgb(var(--surface-1));
+    color: rgb(var(--ink-muted));
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .instance__copy:hover { border-color: rgb(var(--accent-bright)); color: rgb(var(--ink)); }
+  .instance__copy code {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: rgb(var(--accent-bright));
+  }
+  .instance__copy .lbl {
+    font-size: 0.7rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .instance__audience {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .instance__audience-id {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: rgb(var(--ink));
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+  }
+  .instance__audience-count {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    color: rgb(var(--signal));
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .instance__audience-error {
+    font-size: 0.72rem;
+    color: rgb(var(--ink-faint));
+    font-style: italic;
+  }
+  .instance__audience-link svg { width: 0.9em; height: 0.9em; }
+  .instance__audience--empty {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  .instance__actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 1.4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgb(var(--edge));
+  }
+  .instance__actions .ds-btn {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+  }
+</style>

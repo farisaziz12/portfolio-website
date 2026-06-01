@@ -1,0 +1,119 @@
+---
+const items = [
+  {
+    href: '/invite',
+    title: 'Book me to speak',
+    desc: 'Keynotes, talks & workshops for your conference.',
+    cta: 'Invite me',
+    icon: '<path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
+  },
+  {
+    href: '/consulting',
+    title: 'Hire me to consult',
+    desc: 'Architecture reviews, strategy & hands-on help.',
+    cta: 'See consulting',
+    icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  },
+  {
+    href: '/mentorship',
+    title: 'Get mentored',
+    desc: '1:1 coaching to grow your career & skills.',
+    cta: 'Mentorship',
+    icon: '<circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 7a3 3 0 0 1 0 6M18.5 19a5 5 0 0 0-3-4.6"/>',
+  },
+  {
+    href: '/blog',
+    title: 'Read my writing',
+    desc: 'Essays on frontend, payments & engineering life.',
+    cta: 'Visit the blog',
+    icon: '<path d="M4 5a2 2 0 0 1 2-2h7v18H6a2 2 0 0 1-2-2zM13 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/><path d="M7 7h3M7 11h3"/>',
+  },
+];
+---
+
+<nav class="audience-router ds-reveal" aria-label="Where to next">
+  {items.map((item) => (
+    <a href={item.href}>
+      <span class="audience-router__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" set:html={item.icon} />
+      </span>
+      <b>{item.title}</b>
+      <span class="audience-router__desc">{item.desc}</span>
+      <span class="audience-router__go">
+        {item.cta}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  ))}
+</nav>
+
+<style>
+  .audience-router {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgb(var(--edge));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .audience-router a {
+    background: rgb(var(--surface-1));
+    padding: 1.5rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 168px;
+    color: inherit;
+  }
+  .audience-router a:hover { background: rgb(var(--surface-3)); }
+  .audience-router__icon {
+    color: rgb(var(--accent-bright));
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+  }
+  .audience-router__icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 1.6;
+  }
+  .audience-router b {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+  .audience-router__desc {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.45;
+  }
+  .audience-router__go {
+    margin-top: auto;
+    color: rgb(var(--accent-bright));
+    font-size: 0.74rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .audience-router__go svg {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .audience-router a:hover .audience-router__go svg { transform: translateX(3px); }
+
+  @media (max-width: 780px) {
+    .audience-router { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 440px) {
+    .audience-router { grid-template-columns: 1fr; }
+  }
+</style>

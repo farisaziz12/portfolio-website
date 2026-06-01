@@ -1,0 +1,107 @@
+---
+import GridTexture from './GridTexture.astro';
+import Kicker from './Kicker.astro';
+import { availabilityLabel } from '../../lib/availability';
+
+interface Props {
+  status?: string;
+  title?: string;
+  body?: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  /** Pass null to suppress the secondary CTA. */
+  secondaryHref?: string | null;
+  secondaryLabel?: string;
+}
+
+const {
+  // Default status is computed at render time from today + 6-week lead time,
+  // so the quarter auto-advances. Override per-page when copy needs to differ.
+  status = availabilityLabel('Available for opportunities'),
+  title = "Let's work together",
+  body = "I speak at conferences, run workshops, and offer technical advisory. Tell me about your event or team and I'll get back within two days.",
+  primaryHref = '/invite',
+  primaryLabel = 'Invite me to speak',
+  secondaryHref = '/services',
+  secondaryLabel = 'Explore services',
+} = Astro.props;
+const showSecondary = !!secondaryHref;
+---
+
+<div class="contact-panel">
+  <GridTexture class="contact-panel__texture" />
+  <div class="contact-panel__inner">
+    <Kicker plain variant="signal">
+      <span class="ds-dot ds-dot--pulse"></span>{status}
+    </Kicker>
+    <h2 class="contact-panel__title">{title}</h2>
+    <p class="contact-panel__body">{body}</p>
+    <div class="contact-panel__actions">
+      <a href={primaryHref} class="ds-btn ds-btn-primary ds-btn-lg">
+        {primaryLabel}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      {showSecondary && (
+        <a href={secondaryHref} class="ds-btn ds-btn-secondary ds-btn-lg">{secondaryLabel}</a>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .contact-panel {
+    position: relative;
+    overflow: hidden;
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge-strong));
+    border-top: 3px solid rgb(var(--accent));
+    border-radius: 20px;
+    /* Generous vertical room so the badge and CTAs never crowd the panel edges.
+       min-height comfortably exceeds the natural content height so align-items: center
+       actually has room to push the block toward the panel's optical centre. */
+    padding: clamp(4rem, 8vw, 6rem) clamp(2rem, 5vw, 4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: clamp(420px, 44vw, 540px);
+    text-align: center;
+  }
+  .contact-panel__texture {
+    opacity: 0.35;
+  }
+  .contact-panel__inner {
+    position: relative;
+    max-width: 60ch;
+    width: 100%;
+    /* Center inline-level children (kicker, actions row) horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .contact-panel__actions {
+    justify-content: center;
+  }
+  .contact-panel__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    margin-top: 1rem;
+  }
+  .contact-panel__body {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    margin-top: 1rem;
+  }
+  .contact-panel__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.8rem;
+  }
+</style>

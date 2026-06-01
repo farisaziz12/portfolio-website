@@ -11,6 +11,7 @@ export default defineType({
   groups: [
     { name: 'main', title: 'Main', default: true },
     { name: 'lenses', title: 'Lens Content' },
+    { name: 'caseStudy', title: 'Case Study' },
     { name: 'story', title: 'Story & Links' },
     { name: 'display', title: 'Display Settings' },
   ],
@@ -349,6 +350,61 @@ export default defineType({
           }
           return true;
         }),
+    }),
+
+    // ─────────────────────────────────────────────────────────────
+    // CASE STUDY GROUP - Optional in-depth case study for /impact
+    // Fill in any of these fields to feature this metric as a case
+    // study on the Impact page (renders below the top-stats grid).
+    // ─────────────────────────────────────────────────────────────
+    defineField({
+      name: 'caseStudy',
+      title: 'In-depth case study',
+      description:
+        'Optional. Fill in `Title` to feature this metric as a case study on /impact. The metric still shows in the top-stats grid even if you leave this empty.',
+      type: 'object',
+      group: 'caseStudy',
+      fields: [
+        {
+          name: 'title',
+          title: 'Case study title',
+          type: 'string',
+          description: 'Headline of the case study card, e.g. "Revenue growth in APAC after launching Alipay".',
+          validation: (Rule) => Rule.max(120),
+        },
+        {
+          name: 'description',
+          title: 'Lead paragraph',
+          type: 'text',
+          rows: 3,
+          description: 'Short narrative below the title. 1–3 sentences.',
+          validation: (Rule) => Rule.max(400),
+        },
+        {
+          name: 'context',
+          title: 'Context',
+          type: 'text',
+          rows: 3,
+          description: 'What was the situation before? One or two sentences.',
+          validation: (Rule) => Rule.max(280),
+        },
+        {
+          name: 'approach',
+          title: 'Approach',
+          type: 'text',
+          rows: 3,
+          description: 'What did you do? One or two sentences.',
+          validation: (Rule) => Rule.max(280),
+        },
+        {
+          name: 'result',
+          title: 'Result',
+          type: 'text',
+          rows: 3,
+          description: 'What actually moved? One or two sentences.',
+          validation: (Rule) => Rule.max(280),
+        },
+      ],
     }),
 
     // ─────────────────────────────────────────────────────────────

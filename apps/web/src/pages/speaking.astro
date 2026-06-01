@@ -1,240 +1,726 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import IconChip from '../components/design/IconChip.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { allEventsQuery } from '../lib/sanity/queries';
-import EventsFilter from '../components/islands/EventsFilter';
+import {
+  upcomingEventsQuery,
+  pastEventsQuery,
+  speakingStatsQuery,
+  allTalksQuery,
+} from '../lib/sanity/queries';
+import { getCountryFlag } from 'shared/utils';
+import { isRealConference } from '../lib/conferences';
+import { bookingYears } from '../lib/availability';
 
-interface SpeakingEvent {
+interface UpcomingEvent {
   _id: string;
   title: string;
   slug: string;
   type: string;
-  conference: string;
+  conference?: string;
   date: string;
-  location?: {
-    city?: string;
-    country?: string;
-    isOnline?: boolean;
-  };
-  links?: {
-    eventUrl?: string;
-    videoUrl?: string;
-    slidesUrl?: string;
-  };
-  featured?: boolean;
+  location?: { city?: string; country?: string; isOnline?: boolean };
+  links?: { eventUrl?: string; videoUrl?: string };
 }
 
-// Fetch all events - EventsFilter will handle upcoming filtering
-let events: SpeakingEvent[] = [];
-
-try {
-  events = await sanityFetch<SpeakingEvent[]>(allEventsQuery) || [];
-} catch (error) {
-  console.error('Failed to fetch events:', error);
+interface PastEvent {
+  _id: string;
+  title: string;
+  conference?: string;
+  date: string;
 }
+
+interface SpeakingStats {
+  totalEvents: number;
+  upcomingEvents: number;
+  countries: number;
+  cities: number;
+  talks: number;
+  workshops: number;
+}
+
+interface TalkListItem {
+  _id: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+  duration?: number;
+  topics?: string[];
+  latestEvent?: { conference?: string; location?: string };
+}
+
+const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
+  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
+  sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
+    totalEvents: 60, upcomingEvents: 0, countries: 12, cities: 25, talks: 0, workshops: 0,
+  })),
+  sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
+]);
+
+// Normalize event types into the four filter buckets the design uses.
+function normaliseType(t?: string): 'talk' | 'workshop' | 'meetup' | 'other' {
+  if (!t) return 'other';
+  const k = t.toLowerCase();
+  if (k === 'workshop') return 'workshop';
+  if (k === 'meetup') return 'meetup';
+  if (['talk', 'conference', 'panel', 'keynote', 'webinar', 'hosting', 'podcast'].includes(k)) return 'talk';
+  return 'other';
+}
+
+const normalisedUpcoming = upcomingEvents.map((e) => ({
+  ...e,
+  bucket: normaliseType(e.type),
+  formatted: {
+    day: new Date(e.date).getDate().toString(),
+    month: new Date(e.date).toLocaleString('en-US', { month: 'short' }),
+  },
+  location: e.location?.isOnline
+    ? 'Online'
+    : [e.location?.city, e.location?.country].filter(Boolean).join(', ') || '',
+  flag: e.location?.isOnline ? '🌐' : (e.location?.country ? getCountryFlag(e.location.country) : ''),
+}));
+
+const upcomingCount = normalisedUpcoming.length;
+
+// Top 3 past talks for the carousel — prefer ones with conference set, ordered by date.
+const featuredPastTalks = talks.slice(0, 3);
+
+// Conferences logo wall — case-insensitive dedupe, take 6 most-frequent.
+// Filter out placeholder values like "TBD".
+const confCounts = new Map<string, { display: string; count: number }>();
+for (const e of pastEvents) {
+  const raw = e.conference?.trim();
+  if (!isRealConference(raw)) continue;
+  const key = raw!.toLowerCase().replace(/\s+/g, ' ');
+  const existing = confCounts.get(key);
+  if (existing) existing.count += 1;
+  else confCounts.set(key, { display: raw!, count: 1 });
+}
+const topConferences = Array.from(confCounts.values())
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 6)
+  .map((c) => c.display);
 
 const topics = [
-  { icon: '⚛️', name: 'React', code: 'react' },
-  { icon: '▲', name: 'Next.js', code: 'nextjs' },
-  { icon: '💳', name: 'Payments', code: 'payments' },
-  { icon: '🛠️', name: 'DX', code: 'dx' },
-  { icon: '🏗️', name: 'Architecture', code: 'arch' },
-  { icon: '🧪', name: 'Testing', code: 'testing' },
+  {
+    title: 'React & Next.js',
+    desc: 'Performance & architecture at scale.',
+    icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
+  },
+  {
+    title: 'Payments & Fintech',
+    desc: 'Resilience & scaling money globally.',
+    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  },
+  {
+    title: 'Developer Experience',
+    desc: 'Tooling & workflows that scale teams.',
+    icon: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
+  },
+  {
+    title: 'Career & Community',
+    desc: 'Growth, speaking & building community.',
+    icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
+  },
 ];
+
+const showToggleThreshold = 3;
 ---
 
 <BaseLayout
-  title="Speaking | Faris Aziz"
-  description="Upcoming speaking engagements by Faris Aziz at conferences, meetups, and workshops around the world."
+  title="Speaking — Talks & Workshops | Faris Aziz"
+  description={`Book Faris Aziz to speak: ${stats.totalEvents} talks across ${stats.countries} countries. Production-grade engineering, framework-agnostic, drawn from real case studies.`}
   pathname="/speaking"
 >
-  <!-- Hero Section - Bold & Creative -->
-  <section class="relative min-h-[70vh] flex items-center overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 grid-pattern opacity-50"></div>
-    <div class="absolute inset-0 gradient-mesh"></div>
+  <!-- HERO -->
+  <header class="speaking-hero">
+    <GridTexture />
+    <div class="container speaking-hero__inner">
+      <Kicker>Speaking · framework-agnostic</Kicker>
+      <h1 class="speaking-hero__title">
+        Real-world engineering, for people who <span class="accent-word">love the web</span>.
+      </h1>
+      <p class="speaking-hero__lead">
+        I speak about production and scale — the pragmatic decisions and leadership calls behind real systems, drawn from case studies rather than theory. React and Next.js are home base, but I'm framework-agnostic at heart. What I actually care about is the web, incredible UX, and lifting up the engineers who build it.
+      </p>
 
-    <div class="container relative z-10 py-20 md:py-32">
-      <div class="max-w-5xl">
-        <!-- Terminal-style intro -->
-        <div class="terminal max-w-md mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
-            </div>
-            <span class="terminal__title">speaker.sh</span>
-          </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> whoami</span>
-            <div class="terminal__output">Conference Speaker & Workshop Instructor</div>
-          </div>
+      <div class="speaking-hero__pills">
+        <span class="ds-pill">Production &amp; scale</span>
+        <span class="ds-pill">Pragmatic architecture</span>
+        <span class="ds-pill">Engineering leadership</span>
+        <span class="ds-pill">Performance &amp; UX</span>
+        <span class="ds-pill">React &amp; Next.js</span>
+      </div>
+
+      <div class="speaking-hero__stats">
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.totalEvents}</div>
+          <div class="ds-stat__label">Events</div>
         </div>
-
-        <!-- Big Bold Title -->
-        <h1 class="hero-title mb-8">
-          <span class="block text-ink">I speak at</span>
-          <span class="block hero-title--gradient">conferences</span>
-          <span class="block text-ink-muted text-4xl md:text-5xl lg:text-6xl mt-4">worldwide.</span>
-        </h1>
-
-        <!-- Topic Pills -->
-        <div class="flex flex-wrap gap-3 mb-12">
-          {topics.map((topic) => (
-            <div class="topic-badge">
-              <span class="topic-badge__icon">{topic.icon}</span>
-              <span class="topic-badge__name">{topic.code}</span>
-            </div>
-          ))}
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.countries}</div>
+          <div class="ds-stat__label">Countries</div>
         </div>
-
-        <!-- CTA Buttons -->
-        <div class="flex flex-wrap gap-4">
-          <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
-            Invite me to speak
-            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
-          <a href="/talks" class="btn-secondary text-lg px-8 py-4">
-            Browse talks
-          </a>
+        <div>
+          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.cities}</div>
+          <div class="ds-stat__label">Cities</div>
         </div>
       </div>
+
+      <div class="speaking-hero__actions">
+        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
+          Invite me to speak
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a href="#talks" class="ds-btn ds-btn-secondary ds-btn-lg">Watch past talks</a>
+      </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Upcoming Events - Using EventsFilter -->
-  <section class="section py-16 md:py-20">
-    <div class="container">
-      <div class="max-w-6xl mx-auto">
-        <div class="flex items-center gap-4 mb-10">
-          <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-          <h2 class="heading-2">Upcoming Events</h2>
+  <!-- UPCOMING EVENTS -->
+  <section class="speaking-section">
+    <div class="container wide">
+      <div class="speaking-section__head">
+        <div>
+          <Kicker>On the calendar</Kicker>
+          <h2 class="speaking-h2">Upcoming events</h2>
         </div>
-
-        {events.length > 0 ? (
-          <EventsFilter
-            client:load
-            events={events}
-            upcomingOnly={true}
-            showArchiveLink={true}
-          />
-        ) : (
-          <div class="card p-12 text-center max-w-2xl mx-auto">
-            <div class="text-6xl mb-6">📅</div>
-            <h3 class="heading-3 mb-4">No Upcoming Events</h3>
-            <p class="text-ink-muted mb-6">
-              Check back soon for new speaking engagements.
-            </p>
-            <a href="/events" class="btn-primary">
-              Browse past events
-            </a>
-          </div>
+        {upcomingCount > 0 && (
+          <span class="ds-pill ds-pill--signal">
+            <span class="ds-dot ds-dot--pulse"></span>
+            {upcomingCount} confirmed
+          </span>
         )}
       </div>
-    </div>
-  </section>
 
-  <!-- Topics I Speak About - Bento Grid -->
-  <section class="section-dark py-20 md:py-28 relative overflow-hidden">
-    <div class="absolute inset-0 dot-pattern opacity-20"></div>
-
-    <div class="container relative z-10">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">
-          Topics I <span class="text-gradient">Speak About</span>
-        </h2>
-        <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-          Real-world experience from building production systems at scale
-        </p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-        <!-- Featured Topic - Spans 2 -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-accent/20 to-violet-500/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300 group">
-          <div class="text-5xl mb-6">⚛️</div>
-          <h3 class="font-display font-bold text-2xl text-white mb-3">React & Next.js</h3>
-          <p class="text-slate-300 mb-4">Advanced patterns, Server Components, performance optimization, and scalable architecture for production applications.</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">hooks</span>
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">SSR</span>
-            <span class="px-2 py-1 text-xs font-mono bg-white/10 text-white/80 rounded">performance</span>
+      {upcomingCount > 0 ? (
+        <>
+          <div class="speaking-filters" id="evFilters">
+            <button type="button" class="ds-pill ev-chip active" data-filter="all">All</button>
+            <button type="button" class="ds-pill ev-chip" data-filter="talk">Talks</button>
+            <button type="button" class="ds-pill ev-chip" data-filter="workshop">Workshops</button>
+            <button type="button" class="ds-pill ev-chip" data-filter="meetup">Meetups</button>
           </div>
-        </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="text-4xl mb-4">💳</div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Payment Systems</h3>
-          <p class="text-slate-400 text-sm">Stripe, checkout flows, subscription billing</p>
-        </div>
+          <div class="events-list" id="eventsList">
+            {normalisedUpcoming.map((e) => (
+              <a class="event-row" data-type={e.bucket} href={`/events/${e.slug}`}>
+                <div class="event-row__date">
+                  <b>{e.formatted.day}</b>
+                  <span>{e.formatted.month}</span>
+                </div>
+                <div class="event-row__body">
+                  <div class="event-row__title">{e.title}</div>
+                  {e.conference && <div class="event-row__sub">{e.conference}</div>}
+                </div>
+                <span class={`ds-tag event-row__tag event-row__tag--${e.bucket}`}>
+                  {e.bucket === 'workshop' ? 'Workshop' : e.bucket === 'meetup' ? 'Meetup' : 'Talk'}
+                </span>
+                <div class="event-row__loc">
+                  {e.flag && <span class="event-row__flag" aria-hidden="true">{e.flag}</span>}
+                  <span>{e.location}</span>
+                </div>
+              </a>
+            ))}
+          </div>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="text-4xl mb-4">🛠️</div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Developer Experience</h3>
-          <p class="text-slate-400 text-sm">Tooling, workflows, productivity</p>
+          {upcomingCount > showToggleThreshold && (
+            <div class="speaking-events__toggle">
+              <button type="button" class="ds-btn ds-btn-secondary" id="eventsToggle">
+                Show all {upcomingCount} upcoming
+                <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <p class="speaking-events__empty" id="evEmpty">No events match that filter.</p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div class="speaking-empty">
+          <p>No upcoming events confirmed yet — check back soon, or invite me directly.</p>
+          <a href="/invite" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Invite me to speak</a>
         </div>
+      )}
+    </div>
+  </section>
 
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="text-4xl mb-4">🏗️</div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Architecture</h3>
-          <p class="text-slate-400 text-sm">Design systems, monorepos, micro-frontends</p>
-        </div>
-
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="text-4xl mb-4">🧪</div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">Testing</h3>
-          <p class="text-slate-400 text-sm">Playwright, Vitest, TDD strategies</p>
-        </div>
-
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
-          <div class="text-4xl mb-4">🤖</div>
-          <h3 class="font-display font-bold text-xl text-white mb-2">AI Integration</h3>
-          <p class="text-slate-400 text-sm">LLMs, AI-assisted development</p>
-        </div>
+  <!-- TOPICS -->
+  <section class="speaking-section speaking-section--alt">
+    <div class="container">
+      <div class="speaking-section__heading">
+        <Kicker class="ds-reveal">Topics</Kicker>
+        <h2 class="speaking-h2 ds-reveal">What I bring to <span class="mark">your stage</span></h2>
+      </div>
+      <div class="speaking-topics wide">
+        {topics.map((topic) => (
+          <div class="ds-card speaking-topic ds-reveal">
+            <IconChip>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={topic.icon} />
+            </IconChip>
+            <h3 class="speaking-topic__title">{topic.title}</h3>
+            <p class="speaking-topic__desc">{topic.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-accent via-violet-600 to-pink-600"></div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-
-    <div class="container relative z-10 py-24 md:py-32">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Currently accepting speaking invitations
-        </div>
-
-        <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-          Want me at your event?
-        </h2>
-        <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-          I'm available for conferences, meetups, podcasts, and workshops. Let's make your event memorable.
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/invite"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-          >
-            Send speaker invite
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </a>
-          <a
-            href="/talks"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-          >
-            Browse my talks
+  <!-- PAST TALKS -->
+  {featuredPastTalks.length > 0 && (
+    <section class="speaking-section" id="talks" style="scroll-margin-top:80px;">
+      <div class="container">
+        <div class="speaking-section__head">
+          <div>
+            <Kicker>Recorded</Kicker>
+            <h2 class="speaking-h2">Past talks</h2>
+          </div>
+          <a href="https://www.youtube.com/@faziz-dev" class="ds-link" target="_blank" rel="noopener noreferrer">
+            All on YouTube
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </a>
         </div>
+        <div class="speaking-talks wide">
+          {featuredPastTalks.map((t) => (
+            <a href={`/talks/${t.slug}`} class="ds-card ds-card-interactive speaking-talkcard ds-reveal">
+              <div class="speaking-talkcard__media">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+              </div>
+              <div class="speaking-talkcard__body">
+                <h3 class="speaking-talkcard__title">{t.title}</h3>
+                {t.abstract && <p class="speaking-talkcard__abstract">{t.abstract.split('\n')[0].slice(0, 120)}{t.abstract.length > 120 ? '…' : ''}</p>}
+                <div class="speaking-talkcard__meta">
+                  {t.latestEvent?.conference || 'Conference'}
+                  {t.duration && ` · ${t.duration} min`}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="/talks" class="ds-btn ds-btn-secondary">Browse all talks</a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- LOGO WALL -->
+  {topConferences.length > 0 && (
+    <section class="speaking-section-sm speaking-logos-wrap">
+      <div class="container">
+        <p class="speaking-logos__label">Stages I've shared</p>
+        <div class="speaking-logos">
+          {topConferences.map((c) => <span>{c}</span>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- INVITE CTA -->
+  <section class="speaking-section" id="invite" style="scroll-margin-top:80px;">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status={`Booking ${bookingYears()} dates now`}
+          title="Invite me to your event"
+          body="Conferences, meetups, internal tech talks, workshops — tell me about your audience and I'll tailor a talk to fit. I reply within two days."
+          primaryHref="/invite"
+          primaryLabel="Send an invite"
+          secondaryHref="/talks"
+          secondaryLabel="Browse my talks"
+        />
       </div>
     </div>
   </section>
+
+  <script>
+    document.documentElement.classList.add('js');
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+    setTimeout(() => {
+      document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+    }, 500);
+
+    // Upcoming events: filter + expand/collapse
+    (function () {
+      const list = document.getElementById('eventsList');
+      if (!list) return;
+      const rows = Array.from(list.querySelectorAll<HTMLAnchorElement>('.event-row'));
+      const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.ev-chip'));
+      const toggle = document.getElementById('eventsToggle') as HTMLButtonElement | null;
+      const empty = document.getElementById('evEmpty');
+      let filter = 'all';
+      let expanded = false;
+
+      function apply() {
+        let matches = 0;
+        rows.forEach((r) => {
+          const typeOk = filter === 'all' || r.dataset.type === filter;
+          if (!typeOk) {
+            r.classList.add('is-hidden');
+            return;
+          }
+          matches++;
+          const collapseHide = filter === 'all' && !expanded && matches > 3;
+          r.classList.toggle('is-hidden', collapseHide);
+        });
+        const total = rows.length;
+        if (toggle) {
+          toggle.style.display = filter === 'all' && total > 3 ? '' : 'none';
+          toggle.innerHTML = expanded
+            ? 'Show fewer <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;transform:rotate(180deg);"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            : 'Show all ' + total + ' upcoming <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        if (empty) (empty as HTMLElement).style.display = matches === 0 ? '' : 'none';
+      }
+
+      chips.forEach((c) => {
+        c.addEventListener('click', () => {
+          chips.forEach((x) => x.classList.remove('active'));
+          c.classList.add('active');
+          filter = c.dataset.filter || 'all';
+          expanded = false;
+          apply();
+        });
+      });
+      toggle?.addEventListener('click', () => {
+        expanded = !expanded;
+        apply();
+      });
+      apply();
+    })();
+  </script>
 </BaseLayout>
+
+<style>
+  .speaking-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgb(var(--edge));
+    padding-block: clamp(4rem, 9vw, 7rem);
+  }
+  .speaking-hero__inner { position: relative; }
+  .speaking-hero__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    color: rgb(var(--ink));
+    max-width: 17ch;
+    margin-top: 1.2rem;
+    text-wrap: balance;
+  }
+  .speaking-hero__lead {
+    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
+    max-width: 62ch;
+    margin-top: 1.5rem;
+  }
+  .speaking-hero__pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.6rem;
+  }
+  .speaking-hero__stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .speaking-hero__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .speaking-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
+  .speaking-section-sm { padding-block: clamp(2.5rem, 5vw, 4rem); }
+  .speaking-section--alt {
+    background: rgb(var(--surface-1));
+    border-top: 1px solid rgb(var(--edge));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .speaking-section__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+  }
+  .speaking-section__heading {
+    text-align: center;
+    margin-bottom: 2.4rem;
+  }
+  .speaking-section__heading .kicker { justify-content: center; }
+  .speaking-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    margin-top: 0.7rem;
+  }
+
+  /* Event filter chips */
+  .speaking-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+  }
+  .ev-chip {
+    cursor: pointer;
+    background: rgb(var(--surface-1));
+  }
+  .ev-chip.active {
+    border-color: rgb(var(--accent));
+    color: rgb(var(--accent-bright));
+    background: rgb(var(--accent) / 0.1);
+  }
+
+  /* Event rows */
+  .events-list {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.3rem 1.2rem;
+    border: 1px solid transparent;
+    border-bottom: 1px solid rgb(var(--edge));
+    border-radius: 10px;
+    color: inherit;
+    transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .event-row:hover {
+    background: rgb(var(--surface-2));
+    border-color: rgb(var(--edge));
+  }
+  .events-list .event-row:last-child { border-bottom: 0; }
+  .event-row.is-hidden { display: none; }
+  .event-row__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    text-align: center;
+    flex-shrink: 0;
+    width: 56px;
+  }
+  .event-row__date b {
+    display: block;
+    font-size: 1.7rem;
+    color: rgb(var(--ink));
+    line-height: 1;
+    font-weight: 600;
+  }
+  .event-row__date span {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .event-row__body { flex: 1; min-width: 0; }
+  .event-row__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+  .event-row__sub {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-faint));
+    margin-top: 0.15rem;
+  }
+  .event-row__tag { flex-shrink: 0; }
+  /* Per-type tag colours. talk = accent blue (default), workshop = signal teal, meetup = warm amber. */
+  .event-row__tag--talk {
+    color: rgb(var(--accent-bright));
+    border-color: rgb(var(--accent) / 0.4);
+    background: rgb(var(--accent) / 0.08);
+  }
+  .event-row__tag--workshop {
+    color: rgb(var(--signal));
+    border-color: rgb(var(--signal) / 0.4);
+    background: rgb(var(--signal) / 0.08);
+  }
+  .event-row__tag--meetup {
+    color: #F2C94C; /* warm amber — semantic "community gathering", distinct from blue/teal */
+    border-color: rgba(242, 201, 76, 0.4);
+    background: rgba(242, 201, 76, 0.08);
+  }
+
+  .event-row__loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.86rem;
+    color: rgb(var(--ink-faint));
+    flex-shrink: 0;
+  }
+  .event-row__flag {
+    font-size: 1rem;
+    line-height: 1;
+  }
+  @media (max-width: 600px) {
+    .event-row__loc, .event-row__tag { display: none; }
+    .event-row { gap: 1rem; padding: 1.1rem 0.8rem; }
+  }
+
+  .speaking-events__toggle {
+    text-align: center;
+    margin-top: 1.6rem;
+  }
+  .speaking-events__empty {
+    display: none;
+    margin-top: 1rem;
+    color: rgb(var(--ink-faint));
+    font-size: 0.9rem;
+  }
+  .speaking-empty {
+    text-align: center;
+    color: rgb(var(--ink-muted));
+    padding: 3rem 1rem;
+    border: 1px dashed rgb(var(--edge));
+    border-radius: 14px;
+  }
+
+  /* Topics */
+  .speaking-topics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 1024px) {
+    .speaking-topics { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .speaking-topics { grid-template-columns: 1fr; }
+  }
+  .speaking-topic {
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .speaking-topic__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: rgb(var(--ink));
+    margin-top: 0.5rem;
+  }
+  .speaking-topic__desc {
+    font-size: 0.88rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  /* Talks */
+  .speaking-talks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+  @media (max-width: 900px) {
+    .speaking-talks { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .speaking-talks { grid-template-columns: 1fr; }
+  }
+  .speaking-talkcard {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: inherit;
+  }
+  .speaking-talkcard__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: rgb(var(--surface-3));
+    border-bottom: 1px solid rgb(var(--edge));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .speaking-talkcard__media svg {
+    width: 40px;
+    height: 40px;
+    color: rgb(var(--ink-faint));
+  }
+  .speaking-talkcard__body {
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .speaking-talkcard__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+  }
+  .speaking-talkcard__abstract {
+    font-size: 0.88rem;
+    color: rgb(var(--ink-muted));
+    margin-top: 0.5rem;
+    flex: 1;
+  }
+  .speaking-talkcard__meta {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: rgb(var(--ink-faint));
+    text-transform: uppercase;
+    margin-top: 0.7rem;
+  }
+
+  /* Logo wall */
+  .speaking-logos-wrap {
+    border-top: 1px solid rgb(var(--edge));
+    background: rgb(var(--surface-1));
+  }
+  .speaking-logos__label {
+    text-align: center;
+    margin-bottom: 1.6rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .speaking-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    opacity: 0.72;
+  }
+  .speaking-logos span {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(var(--ink-muted));
+  }
+</style>

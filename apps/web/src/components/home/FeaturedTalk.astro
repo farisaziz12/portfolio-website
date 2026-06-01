@@ -1,0 +1,181 @@
+---
+import { urlFor } from '../../lib/sanity/client';
+
+interface FeaturedTalk {
+  _id: string;
+  title: string;
+  slug: string;
+  abstract?: string;
+  duration?: number;
+  viewCount?: number;
+  assets?: {
+    videoUrl?: string;
+    thumbnailImage?: any;
+  };
+  latestEvent?: {
+    conference?: string;
+    city?: string;
+  };
+}
+
+interface Props {
+  talk: FeaturedTalk | null;
+}
+
+const { talk } = Astro.props;
+
+if (!talk) return null;
+
+const videoUrl = talk.assets?.videoUrl || '/talks/' + talk.slug;
+const thumb = talk.assets?.thumbnailImage
+  ? urlFor(talk.assets.thumbnailImage).width(1200).height(675).quality(90).url()
+  : null;
+
+function formatViews(n?: number) {
+  if (!n) return null;
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k views`;
+  return `${n} views`;
+}
+const views = formatViews(talk.viewCount);
+---
+
+<section class="featured-talk-section">
+  <div class="container">
+    <div class="featured-talk wide">
+      <div class="featured-talk__media ds-reveal">
+        {thumb ? (
+          <img src={thumb} alt={`Thumbnail for ${talk.title}`} loading="lazy" />
+        ) : (
+          <div class="featured-talk__placeholder">
+            <span class="ds-tag">Talk · 16:9</span>
+          </div>
+        )}
+        <a class="featured-talk__play" href={videoUrl} target={talk.assets?.videoUrl ? '_blank' : undefined} rel={talk.assets?.videoUrl ? 'noopener noreferrer' : undefined} aria-label={`Watch ${talk.title}`}>
+          <span>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+          </span>
+        </a>
+      </div>
+      <div class="ds-reveal">
+        <p class="kicker">Most-watched talk</p>
+        <h2 class="featured-talk__title">{talk.title}</h2>
+        {talk.abstract && <p class="featured-talk__abstract">{talk.abstract.split('\n')[0]}</p>}
+        <div class="featured-talk__tags">
+          {talk.latestEvent?.conference && <span class="ds-tag">{talk.latestEvent.conference}</span>}
+          {talk.duration && <span class="ds-tag">{talk.duration} min</span>}
+          {views && (
+            <span class="ds-tag">
+              <span class="ds-dot" style="background:rgb(var(--accent));box-shadow:none;"></span>
+              {views}
+            </span>
+          )}
+        </div>
+        <div class="featured-talk__actions">
+          {talk.assets?.videoUrl && (
+            <a href={talk.assets.videoUrl} class="ds-btn ds-btn-primary" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:1.1em;height:1.1em;" aria-hidden="true">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.6V8.4l6.3 3.6z" />
+              </svg>
+              Watch on YouTube
+            </a>
+          )}
+          <a href={`/talks/${talk.slug}`} class="ds-btn ds-btn-secondary">Talk details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .featured-talk-section {
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+    background: rgb(var(--surface-1));
+    border-top: 1px solid rgb(var(--edge));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .featured-talk {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 2.4rem;
+    align-items: center;
+  }
+  @media (max-width: 820px) {
+    .featured-talk { grid-template-columns: 1fr; gap: 1.6rem; }
+  }
+  .featured-talk__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgb(var(--surface-3));
+    box-shadow: inset 0 0 0 1px rgb(var(--edge));
+  }
+  .featured-talk__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .featured-talk__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(var(--ink-faint));
+  }
+  .featured-talk__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: backdrop-filter 0.2s;
+  }
+  .featured-talk__play span {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    background: rgba(10, 12, 16, 0.5);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 28px -10px rgba(0,0,0,.65);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
+  }
+  .featured-talk__play svg {
+    width: 26px;
+    height: 26px;
+    color: #fff;
+    margin-left: 4px;
+  }
+  .featured-talk__play:hover span {
+    transform: scale(1.05);
+    background: rgba(10, 12, 16, 0.7);
+  }
+  .featured-talk__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    margin: 1rem 0 0.6rem;
+  }
+  .featured-talk__abstract {
+    color: rgb(var(--ink-muted));
+  }
+  .featured-talk__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1.2rem 0 1.6rem;
+  }
+  .featured-talk__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

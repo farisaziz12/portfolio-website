@@ -94,6 +94,12 @@ export default defineType({
       description: 'Show the email opt-in form on the attend page'
     }),
     defineField({
+      name: 'resendAudienceId',
+      title: 'Resend Audience ID',
+      type: 'string',
+      description: 'Paste the UUID of the Resend audience for THIS workshop (create one at resend.com → Audiences → New). Signups for this instance will be added to BOTH the global audience and this audience, so you can broadcast emails to just this workshop\'s attendees. Leave empty to use the global audience only.'
+    }),
+    defineField({
       name: 'sections',
       title: 'Workshop Sections',
       type: 'array',

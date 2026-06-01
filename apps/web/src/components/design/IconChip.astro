@@ -1,0 +1,21 @@
+---
+interface Props {
+  variant?: 'accent' | 'signal';
+  class?: string;
+  size?: 'sm' | 'md';
+}
+
+const { variant = 'accent', class: className = '', size = 'md' } = Astro.props;
+const classes = [
+  'icon-chip',
+  variant === 'signal' ? 'icon-chip--signal' : '',
+  size === 'sm' ? 'icon-chip--sm' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<span class={classes} style={size === 'sm' ? 'width:36px;height:36px;border-radius:6px;' : undefined}>
+  <slot />
+</span>

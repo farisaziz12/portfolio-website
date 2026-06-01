@@ -1,472 +1,337 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
+import ContactPanel from '../../components/design/ContactPanel.astro';
+import AgendaAccordion from '../../components/islands/AgendaAccordion';
 import { sanityFetch } from '../../lib/sanity/client';
 import { workshopBySlugQuery, allWorkshopsQuery } from '../../lib/sanity/queries';
 import { formatDate, getCountryFlag } from 'shared/utils';
-import AgendaAccordion from '../../components/islands/AgendaAccordion';
+import { bookingYears } from '../../lib/availability';
 
-interface AgendaItem {
-  _key?: string;
-  title?: string;
-  topic?: string;
-  duration?: string;
-  description?: any[];
-}
-
+interface AgendaItem { _key?: string; title?: string; topic?: string; duration?: string; description?: any[] }
 interface WorkshopEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  date: string;
-  conference: string;
-  location?: {
-    city?: string;
-    country?: string;
-  };
+  _id: string; title: string; slug: string; date: string; conference: string;
+  location?: { city?: string; country?: string };
 }
-
 interface Workshop {
-  _id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  duration?: string;
-  technologies?: string[];
-  level?: string;
-  prerequisites?: string[];
-  outcomes?: string[];
-  isBookable?: boolean;
-  agenda?: AgendaItem[];
-  upcomingEvents?: WorkshopEvent[];
-  pastEvents?: WorkshopEvent[];
+  _id: string; title: string; slug: string;
+  description?: string; duration?: string; technologies?: string[];
+  level?: string; prerequisites?: string[]; outcomes?: string[];
+  isBookable?: boolean; agenda?: AgendaItem[];
+  upcomingEvents?: WorkshopEvent[]; pastEvents?: WorkshopEvent[];
 }
 
 export async function getStaticPaths() {
   const workshops = await sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []);
-  return workshops.map((workshop) => ({
-    params: { slug: workshop.slug },
-  }));
+  return workshops.map((w) => ({ params: { slug: w.slug } }));
 }
 
 const { slug } = Astro.params;
 const workshop = await sanityFetch<Workshop | null>(workshopBySlugQuery, { slug }).catch(() => null);
+if (!workshop) return Astro.redirect('/404');
 
-if (!workshop) {
-  return Astro.redirect('/404');
-}
-
-const levelColors: Record<string, string> = {
-  beginner: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-  intermediate: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-  advanced: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
-};
+const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0);
 ---
 
 <BaseLayout
   title={`${workshop.title} | Workshops | Faris Aziz`}
-  description={workshop.description || `${workshop.title} - A hands-on workshop by Faris Aziz`}
+  description={workshop.description || `${workshop.title} — a hands-on workshop by Faris Aziz`}
   pathname={`/workshops/${slug}`}
 >
-  <!-- Hero Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 grid-pattern opacity-50"></div>
-    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-cyan-500/5"></div>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb">
+        <a href="/speaking">Speaking</a>
+        <span class="page-crumbs__sep">/</span>
+        <a href="/workshops">Workshops</a>
+        <span class="page-crumbs__sep">/</span>
+        <span class="page-crumbs__cur">{workshop.title.length > 28 ? workshop.title.slice(0, 26) + '…' : workshop.title}</span>
+      </nav>
 
-    <div class="container relative z-10 pt-20 md:pt-28 pb-16">
-      <div class="max-w-4xl">
-        <!-- Breadcrumb -->
-        <a href="/workshops" class="inline-flex items-center gap-2 text-ink-muted hover:text-accent mb-8 transition-colors">
-          <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      <div class="event-tags">
+        <span class="ds-tag">Workshop</span>
+        {workshop.duration && <span class="ds-tag">{workshop.duration}</span>}
+        {workshop.level && <span class="ds-tag">{workshop.level}</span>}
+        {sessionCount > 0 && <span class="ds-tag">{sessionCount} session{sessionCount !== 1 ? 's' : ''}</span>}
+        {workshop.isBookable !== false && (
+          <span class="ds-tag" style="color:rgb(var(--signal));border-color:rgb(var(--signal) / 0.4);">
+            <span class="ds-dot" style="background:rgb(var(--signal));box-shadow:none;"></span>
+            Bookable
+          </span>
+        )}
+      </div>
+
+      <h1 class="page-hero__title event-title">{workshop.title}</h1>
+      {workshop.description && <p class="page-hero__lead">{workshop.description}</p>}
+
+      <div class="page-hero__actions">
+        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
+          Book this workshop
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          All workshops
         </a>
-
-        <!-- Terminal intro -->
-        <div class="terminal max-w-lg mb-8 animate-fade-in">
-          <div class="terminal__header">
-            <div class="terminal__dots">
-              <div class="terminal__dot terminal__dot--red"></div>
-              <div class="terminal__dot terminal__dot--yellow"></div>
-              <div class="terminal__dot terminal__dot--green"></div>
-            </div>
-            <span class="terminal__title">workshop.sh</span>
-          </div>
-          <div class="terminal__body">
-            <span class="terminal__prompt">$</span>
-            <span class="terminal__command"> npm run workshop --name="{workshop.title}"</span>
-            <div class="terminal__output">Initializing hands-on session...</div>
-          </div>
-        </div>
-
-        <!-- Tags -->
-        <div class="flex flex-wrap items-center gap-3 mb-6">
-          {workshop.duration && (
-            <span class="tag tag-workshop">{workshop.duration}</span>
-          )}
-          {workshop.level && (
-            <span class={`tag ${levelColors[workshop.level.toLowerCase()] || ''}`}>
-              {workshop.level}
-            </span>
-          )}
-          {workshop.isBookable !== false && (
-            <span class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-200 dark:border-emerald-800">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Available to book
-            </span>
-          )}
-        </div>
-
-        <!-- Title -->
-        <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6 whitespace-pre-line" transition:name="page-title">
-          <span class="block text-ink">{workshop.title}</span>
-        </h1>
-
-        <!-- Description -->
-        {workshop.description && (
-          <p class="text-base md:text-lg text-ink-muted max-w-3xl mb-10 whitespace-pre-line leading-relaxed">
-            {workshop.description}
-          </p>
-        )}
-
-        <!-- CTA Buttons -->
-        <div class="flex flex-wrap gap-4">
-          <a href="/invite" class="btn-primary text-lg px-8 py-4 group glow">
-            Book this workshop
-            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
-          <a href="/workshops" class="btn-secondary text-lg px-8 py-4">
-            View all workshops
-          </a>
-        </div>
+        <a href="/workshops" class="ds-btn ds-btn-secondary ds-btn-lg">View all workshops</a>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Quick Info Bento -->
-  <section class="section-subtle py-16 md:py-20">
-    <div class="container">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-        {workshop.duration && (
-          <div class="bento__item flex flex-col items-center justify-center py-8">
-            <div class="text-4xl mb-3">⏱️</div>
-            <div class="text-2xl font-display font-bold text-ink">{workshop.duration}</div>
-            <div class="text-ink-muted text-sm uppercase tracking-widest mt-1">Duration</div>
-          </div>
-        )}
-        {workshop.level && (
-          <div class="bento__item flex flex-col items-center justify-center py-8">
-            <div class="text-4xl mb-3">📊</div>
-            <div class="text-2xl font-display font-bold text-ink">{workshop.level}</div>
-            <div class="text-ink-muted text-sm uppercase tracking-widest mt-1">Level</div>
-          </div>
-        )}
-        {((workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0)) > 0 && (
-          <div class="bento__item flex flex-col items-center justify-center py-8">
-            <div class="text-4xl mb-3">🎯</div>
-            <div class="text-2xl font-display font-bold text-accent">{(workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0)}</div>
-            <div class="text-ink-muted text-sm uppercase tracking-widest mt-1">Sessions</div>
-          </div>
-        )}
-        <div class="bento__item bento__item--featured flex flex-col items-center justify-center py-8">
-          <div class="text-4xl mb-3">👥</div>
-          <div class="text-2xl font-display font-bold text-white">Interactive</div>
-          <div class="text-slate-400 text-sm uppercase tracking-widest mt-1">Format</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Learning Outcomes -->
   {workshop.outcomes && workshop.outcomes.length > 0 && (
-    <section class="section py-16 md:py-20">
+    <section class="page-section">
       <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">What You'll Learn</h2>
-              <p class="text-ink-muted">Key takeaways from this workshop</p>
-            </div>
-          </div>
-
-          <div class="grid md:grid-cols-2 gap-4">
-            {workshop.outcomes.map((outcome: string, index: number) => (
-              <div class="card p-6 group hover:border-emerald-500/30 transition-all">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
-                  <p class="text-ink leading-relaxed">{outcome}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div class="page-section__head">
+          <Kicker>Outcomes</Kicker>
+          <h2 class="page-h2">What you'll learn</h2>
         </div>
+        <ul class="event-list" style="grid-template-columns:repeat(2,1fr);display:grid;gap:0.8rem 2rem;max-width:none;">
+          {workshop.outcomes.map((o) => (
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>{o}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )}
 
-  <!-- Workshop Agenda -->
   {workshop.agenda && workshop.agenda.length > 0 && (
-    <section class="section-dark py-16 md:py-24 relative overflow-hidden">
-      <div class="absolute inset-0 dot-pattern opacity-20"></div>
-
-      <div class="container relative z-10">
-        <div class="max-w-4xl mx-auto">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-              Workshop <span class="text-gradient">Agenda</span>
-            </h2>
-            <p class="text-slate-400 text-lg">
-              A structured breakdown of what we'll cover
-            </p>
-          </div>
-
-          <AgendaAccordion items={workshop.agenda} client:load />
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__head">
+          <Kicker>The plan</Kicker>
+          <h2 class="page-h2">Agenda</h2>
+        </div>
+        <div style="max-width:760px;">
+          <AgendaAccordion client:visible items={workshop.agenda} />
         </div>
       </div>
     </section>
   )}
 
-  <!-- Prerequisites -->
   {workshop.prerequisites && workshop.prerequisites.length > 0 && (
-    <section class="section py-16 md:py-20">
+    <section class="page-section">
       <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">Prerequisites</h2>
-              <p class="text-ink-muted">What you should know before attending</p>
-            </div>
-          </div>
-
-          <div class="card p-8">
-            <ul class="space-y-4">
-              {workshop.prerequisites.map((prereq: string) => (
-                <li class="flex items-center gap-4 text-ink">
-                  <div class="flex-shrink-0 w-6 h-6 rounded bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
-                  {prereq}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div class="page-section__head">
+          <Kicker>Before you start</Kicker>
+          <h2 class="page-h2">Prerequisites</h2>
         </div>
+        <ul class="event-list" style="max-width:none;">
+          {workshop.prerequisites.map((p) => (
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )}
 
-  <!-- Technologies -->
   {workshop.technologies && workshop.technologies.length > 0 && (
-    <section class="section-subtle py-16 md:py-20">
+    <section class="page-section page-section--alt">
       <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="text-center mb-10">
-            <h2 class="heading-2 mb-2">Technologies Covered</h2>
-            <p class="text-ink-muted text-lg">Tools and frameworks we'll work with</p>
-          </div>
-
-          <div class="flex flex-wrap justify-center gap-3">
-            {workshop.technologies.map((tech: string) => (
-              <div class="topic-badge">
-                <span class="topic-badge__name">{tech}</span>
-              </div>
-            ))}
-          </div>
+        <div class="page-section__head">
+          <Kicker>Stack</Kicker>
+          <h2 class="page-h2">Technologies covered</h2>
+        </div>
+        <div class="event-tags" style="margin-bottom:0;">
+          {workshop.technologies.map((t) => <span class="ds-tag">{t}</span>)}
         </div>
       </div>
     </section>
   )}
 
-  <!-- Upcoming Sessions -->
-  {workshop.upcomingEvents && workshop.upcomingEvents.length > 0 && (
-    <section class="section py-16 md:py-20">
+  {(workshop.upcomingEvents?.length || workshop.pastEvents?.length) ? (
+    <section class="page-section">
       <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">Upcoming Sessions</h2>
-              <p class="text-ink-muted">Catch this workshop at these events</p>
-            </div>
-          </div>
+        <div class="page-section__head">
+          <Kicker>On the calendar</Kicker>
+          <h2 class="page-h2">Sessions</h2>
+        </div>
 
-          <div class="space-y-4">
-            {workshop.upcomingEvents.map((event: WorkshopEvent) => (
-              <a
-                href={`/events/${event.slug}`}
-                class="group block bg-surface-raised rounded-2xl border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-300 overflow-hidden"
-              >
-                <div class="flex flex-col md:flex-row">
-                  <!-- Date Block -->
-                  <div class="flex-shrink-0 md:w-28 bg-gradient-to-br from-emerald-500 to-teal-500 p-4 md:p-6 flex md:flex-col items-center justify-center text-white gap-2 md:gap-0">
-                    <div class="text-sm font-medium uppercase tracking-wider opacity-80">
-                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                    </div>
-                    <div class="text-3xl md:text-4xl font-display font-bold">
-                      {new Date(event.date).getDate()}
-                    </div>
-                    <div class="text-sm opacity-80">
-                      {new Date(event.date).getFullYear()}
-                    </div>
-                  </div>
-
-                  <!-- Content -->
-                  <div class="flex-grow p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <div class="flex items-center gap-2 mb-1">
-                        <h3 class="font-display font-bold text-lg text-ink group-hover:text-accent transition-colors">
-                          {event.conference}
-                        </h3>
-                        <span class="px-2 py-0.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-full">Upcoming</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-ink-muted">
-                        <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
-                        <span>{event.location?.city}, {event.location?.country}</span>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-ink-faint group-hover:text-accent transition-colors">
-                      <span class="text-sm">View details</span>
-                      <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
+        {workshop.upcomingEvents && workshop.upcomingEvents.length > 0 && (
+          <div class="event-sessions">
+            <p class="event-sessions__label">
+              <span class="ds-dot ds-dot--pulse"></span> Upcoming
+            </p>
+            {workshop.upcomingEvents.map((e) => (
+              <a class="event-session" href={`/events/${e.slug}`}>
+                <div class="event-session__date">
+                  <b>{new Date(e.date).getDate()}</b>
+                  <span>{new Date(e.date).toLocaleString('en-US', { month: 'short' })}</span>
                 </div>
+                <div class="event-session__body">
+                  <b>{e.conference || e.title}</b>
+                  <span>
+                    {e.location?.country && <>{getCountryFlag(e.location.country)} </>}
+                    {[e.location?.city, e.location?.country].filter(Boolean).join(', ') || 'Online'}
+                  </span>
+                </div>
+                <span class="event-session__year">{formatDate(e.date, { month: 'short', year: 'numeric' })}</span>
               </a>
             ))}
           </div>
-        </div>
-      </div>
-    </section>
-  )}
+        )}
 
-  <!-- Past Sessions -->
-  {workshop.pastEvents && workshop.pastEvents.length > 0 && (
-    <section class="section py-16 md:py-20">
-      <div class="container">
-        <div class="max-w-4xl mx-auto">
-          <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="heading-2 mb-0">Past Sessions</h2>
-              <p class="text-ink-muted">Where this workshop has been delivered</p>
-            </div>
-          </div>
-
-          <div class="space-y-4">
-            {workshop.pastEvents.map((event: WorkshopEvent) => (
-              <a
-                href={`/events/${event.slug}`}
-                class="group block bg-surface-raised rounded-2xl border border-edge hover:border-accent/50 transition-all duration-300 overflow-hidden"
-              >
-                <div class="flex flex-col md:flex-row">
-                  <!-- Date Block -->
-                  <div class="flex-shrink-0 md:w-28 bg-gradient-to-br from-violet-500 to-purple-500 p-4 md:p-6 flex md:flex-col items-center justify-center text-white gap-2 md:gap-0">
-                    <div class="text-sm font-medium uppercase tracking-wider opacity-80">
-                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                    </div>
-                    <div class="text-3xl md:text-4xl font-display font-bold">
-                      {new Date(event.date).getDate()}
-                    </div>
-                    <div class="text-sm opacity-80">
-                      {new Date(event.date).getFullYear()}
-                    </div>
-                  </div>
-
-                  <!-- Content -->
-                  <div class="flex-grow p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <h3 class="font-display font-bold text-lg text-ink mb-1 group-hover:text-accent transition-colors">
-                        {event.conference}
-                      </h3>
-                      <div class="flex items-center gap-2 text-ink-muted">
-                        <span class="text-xl">{getCountryFlag(event.location?.country || '')}</span>
-                        <span>{event.location?.city}, {event.location?.country}</span>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-ink-faint group-hover:text-accent transition-colors">
-                      <span class="text-sm">View details</span>
-                      <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
+        {workshop.pastEvents && workshop.pastEvents.length > 0 && (
+          <div class="event-sessions" style="margin-top:2rem;">
+            <p class="event-sessions__label" style="color:rgb(var(--ink-faint));">Past sessions</p>
+            {workshop.pastEvents.map((e) => (
+              <a class="event-session" href={`/events/${e.slug}`}>
+                <div class="event-session__date">
+                  <b>{new Date(e.date).getDate()}</b>
+                  <span>{new Date(e.date).toLocaleString('en-US', { month: 'short' })}</span>
                 </div>
+                <div class="event-session__body">
+                  <b>{e.conference || e.title}</b>
+                  <span>
+                    {e.location?.country && <>{getCountryFlag(e.location.country)} </>}
+                    {[e.location?.city, e.location?.country].filter(Boolean).join(', ') || 'Online'}
+                  </span>
+                </div>
+                <span class="event-session__year">{formatDate(e.date, { month: 'short', year: 'numeric' })}</span>
               </a>
             ))}
           </div>
-        </div>
+        )}
       </div>
     </section>
-  )}
+  ) : null}
 
-  <!-- CTA Section -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600"></div>
-    <div class="absolute inset-0 grid-pattern opacity-10"></div>
-
-    <div class="container relative z-10 py-20 md:py-28">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-8">
-          <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-          Available for booking
-        </div>
-
-        <h2 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-          Ready to book this workshop?
-        </h2>
-        <p class="text-white/80 text-xl mb-10 max-w-2xl mx-auto">
-          Available for conferences, corporate training, and bootcamps. Let's discuss how to customize it for your audience.
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/invite"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-teal-700 font-bold text-lg rounded-xl hover:bg-white/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-          >
-            Book this workshop
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </a>
-          <a
-            href="/workshops"
-            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl border border-white/30 hover:bg-white/20 transition-all duration-200"
-          >
-            View all workshops
-          </a>
-        </div>
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status={`Booking ${bookingYears()} dates`}
+          title="Ready to book this workshop?"
+          body="Tell me about your team or event audience and I'll tailor depth, pace, and exercises to fit. I reply within two days."
+          primaryHref="/invite"
+          primaryLabel="Book a workshop"
+          secondaryHref="/workshops"
+          secondaryLabel="View other workshops"
+        />
       </div>
     </div>
   </section>
+
+  <script>
+    function initPage() {
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage, { once: true });
+    } else { initPage(); }
+    document.addEventListener('astro:after-swap', initPage);
+  </script>
 </BaseLayout>
 
+<style>
+  .event-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .event-title { max-width: 22ch; }
+  .event-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.8rem;
+    max-width: 70ch;
+  }
+  .event-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    color: rgb(var(--ink-muted));
+    line-height: 1.55;
+  }
+  .event-list svg {
+    width: 20px;
+    height: 20px;
+    color: rgb(var(--signal));
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
 
+  .event-sessions { display: grid; }
+  .event-sessions__label {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--signal));
+    margin-bottom: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .event-session {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.1rem 0.4rem;
+    border-bottom: 1px solid rgb(var(--edge));
+    color: inherit;
+    transition: color 0.15s, background 0.15s;
+  }
+  .event-session:hover { color: rgb(var(--accent-bright)); background: rgb(var(--surface-2)); }
+  .event-session__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    text-align: center;
+    flex-shrink: 0;
+    width: 50px;
+  }
+  .event-session__date b {
+    display: block;
+    font-size: 1.4rem;
+    color: rgb(var(--ink));
+    line-height: 1;
+    font-weight: 600;
+  }
+  .event-session__date span {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .event-session__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .event-session__body b {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+  .event-session__body span {
+    font-size: 0.85rem;
+    color: rgb(var(--ink-faint));
+  }
+  .event-session:hover .event-session__body b { color: rgb(var(--accent-bright)); }
+  .event-session__year {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: rgb(var(--ink-faint));
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+</style>

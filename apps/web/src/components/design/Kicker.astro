@@ -1,0 +1,19 @@
+---
+interface Props {
+  plain?: boolean;
+  variant?: 'default' | 'signal';
+  class?: string;
+}
+
+const { plain = false, variant = 'default', class: className = '' } = Astro.props;
+const classes = [
+  'kicker',
+  plain ? 'kicker--plain' : '',
+  variant === 'signal' ? 'kicker--signal' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<span class={classes}><slot /></span>

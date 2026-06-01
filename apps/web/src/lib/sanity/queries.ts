@@ -37,7 +37,8 @@ export const pastEventsQuery = groq`
       title,
       "slug": slug.current
     },
-    links
+    links,
+    featured
   }
 `;
 
@@ -1182,6 +1183,28 @@ export const impactMetricsV2ByDomainQuery = groq`
   }
 `;
 
+// Impact Case Studies — only metrics with a populated caseStudy.title.
+// Used by /impact to render the in-depth narrative section.
+export const impactCaseStudiesQuery = groq`
+  *[_type == "impactMetricV2" && defined(caseStudy.title)] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    domain,
+    headlineNumber,
+    unit,
+    prefix,
+    label,
+    caseStudy {
+      title,
+      description,
+      context,
+      approach,
+      result
+    }
+  }
+`;
+
 // Featured Impact Metrics V2 (for hero section)
 export const featuredImpactMetricsV2Query = groq`
   *[_type == "impactMetricV2" && featured == true] | order(order asc) {
@@ -1368,12 +1391,51 @@ export const allWorkshopInstancesQuery = groq`
     _id,
     title,
     event,
+    "slug": slug.current,
     "token": token.current,
     workshopDate,
     accessDurationDays,
     forceClose,
     repoUrl,
     overallFeedbackUrl,
-    emailCaptureEnabled
+    emailCaptureEnabled,
+    resendAudienceId
   }
+`;
+
+// Look up a workshopInstance by slug — used server-side by the subscribe API
+// to read the resendAudienceId so we never trust a client-supplied audience ID.
+export const workshopInstanceBySlugQuery = groq`
+  *[_type == "workshopInstance" && slug.current == $slug][0] {
+    _id,
+    title,
+    event,
+    "slug": slug.current,
+    "token": token.current,
+    resendAudienceId
+  }
+`;
+
+// Featured talk for the homepage — prefer one explicitly flagged, else latest with a video.
+export const featuredTalkQuery = groq`
+  *[_type == "talk" && homepageFeatured == true && defined(assets.videoUrl)] | order(_updatedAt desc)[0] {
+    _id,
+    title,
+    "slug": slug.current,
+    abstract,
+    duration,
+    viewCount,
+    assets,
+    "latestEvent": *[_type == "event" && references(^._id)] | order(date desc)[0] {
+      conference,
+      "city": location.city
+    }
+  }
+`;
+
+// Distinct cities for the "Global reach" map — from past events with a location.
+export const reachMapDataQuery = groq`
+  array::unique(
+    *[_type == "event" && defined(location.city)].location.city
+  )
 `;

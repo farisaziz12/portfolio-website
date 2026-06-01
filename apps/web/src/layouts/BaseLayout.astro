@@ -68,11 +68,11 @@ const {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fonts: Space Grotesk (display) + Inter (body) -->
+    <!-- Fonts: Space Grotesk (display) + Hanken Grotesk (body) + IBM Plex Mono (signal) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
@@ -101,13 +101,17 @@ const {
     <!-- Analytics -->
     <PostHog />
 
-    <!-- Theme: Dark mode first, respect system preference -->
+    <!-- Theme: dark-first; respect stored preference, then OS preference. Sets both `.dark` (Tailwind) and `data-theme` (DS v2). -->
     <script is:inline>
       (function() {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = stored || (prefersDark ? 'dark' : 'light');
-        document.documentElement.classList.toggle('dark', theme === 'dark');
+        const root = document.documentElement;
+        root.classList.add('js');
+        var stored = null;
+        try { stored = localStorage.getItem('theme') || localStorage.getItem('faziz-theme'); } catch(_) {}
+        var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        var theme = stored || (prefersLight ? 'light' : 'dark');
+        root.classList.toggle('dark', theme === 'dark');
+        root.setAttribute('data-theme', theme);
       })();
     </script>
   </head>
