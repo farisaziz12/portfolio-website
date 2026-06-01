@@ -7,13 +7,19 @@ import { GeneralSubscribeConfirmEmail } from '../../../emails/GeneralSubscribeCo
 import { sanityFetch } from '../../../lib/sanity/client'
 import { workshopInstanceBySlugQuery } from '../../../lib/sanity/queries'
 
-const GLOBAL_AUDIENCE_ID = import.meta.env.RESEND_AUDIENCE_ID
-const apiKey = import.meta.env.RESEND_API_KEY
+// Read runtime env via process.env first, falling back to import.meta.env for local
+// `astro dev`. On Vercel, non-public vars referenced through import.meta.env get inlined
+// at build time and end up undefined at runtime — so process.env is the reliable source
+// for the deployed serverless functions.
+const env = (key: string): string | undefined => process.env[key] ?? import.meta.env[key]
+
+const GLOBAL_AUDIENCE_ID = env('RESEND_AUDIENCE_ID')
+const apiKey = env('RESEND_API_KEY')
 const resend = apiKey ? new Resend(apiKey) : null
 
 // `from` address is env-driven so we don't hardcode a sender domain in source.
 // Set RESEND_FROM_EMAIL to a verified Resend sender (e.g. "noreply@yourdomain.com").
-const FROM_EMAIL = import.meta.env.RESEND_FROM_EMAIL
+const FROM_EMAIL = env('RESEND_FROM_EMAIL')
 const FROM = FROM_EMAIL ? `Faris Aziz <${FROM_EMAIL}>` : null
 
 interface WorkshopInstanceLookup {
