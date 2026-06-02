@@ -1,0 +1,263 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import PortableTextRenderer from '../components/blog/PortableTextRenderer.astro';
+import { sanityFetch } from '../lib/sanity/client';
+import { nowPageQuery } from '../lib/sanity/queries';
+import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
+
+interface ReadingItem {
+  title: string;
+  author?: string;
+  url?: string;
+  kind?: 'book' | 'article' | 'talk' | 'podcast' | 'course';
+}
+
+interface NowPage {
+  lastUpdated?: string;
+  location?: string;
+  headline?: string;
+  currentlyWorkingOn?: (PortableTextBlock | ArbitraryTypedObject)[];
+  currentlyLearning?: (PortableTextBlock | ArbitraryTypedObject)[];
+  currentlyReading?: ReadingItem[];
+  currentlyThinkingAbout?: (PortableTextBlock | ArbitraryTypedObject)[];
+  notAvailableFor?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+}
+
+const now = await sanityFetch<NowPage | null>(nowPageQuery).catch(() => null);
+
+const lastUpdatedLabel = now?.lastUpdated
+  ? new Date(now.lastUpdated).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  : null;
+
+const hasContent =
+  !!now &&
+  (now.currentlyWorkingOn?.length ||
+    now.currentlyLearning?.length ||
+    now.currentlyReading?.length ||
+    now.currentlyThinkingAbout?.length ||
+    now.notAvailableFor);
+
+const kindLabel: Record<NonNullable<ReadingItem['kind']>, string> = {
+  book: 'Book',
+  article: 'Article',
+  talk: 'Talk',
+  podcast: 'Podcast',
+  course: 'Course',
+};
+---
+
+<BaseLayout
+  title={now?.seoTitle || '/now — what I\'m focused on right now | Faris Aziz'}
+  description={now?.seoDescription || "What I'm focused on right now — and what I'm not. A snapshot, not a feed."}
+  pathname="/now"
+>
+  <header class="page-hero now-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>$ cat /now</Kicker>
+      <h1 class="page-hero__title">
+        What I'm focused on, <span class="accent-word">right now.</span>
+      </h1>
+      {now?.headline && (
+        <p class="page-hero__lead">{now.headline}</p>
+      )}
+      {!now?.headline && (
+        <p class="page-hero__lead">
+          A snapshot of what's on my plate right now. Updated when life updates, not on a schedule.
+        </p>
+      )}
+      <div class="now-meta">
+        {lastUpdatedLabel && (
+          <span class="ds-pill ds-pill--signal">
+            <span class="ds-dot ds-dot--pulse"></span>Last updated {lastUpdatedLabel}
+          </span>
+        )}
+        {now?.location && (
+          <span class="ds-pill">📍 {now.location}</span>
+        )}
+      </div>
+    </div>
+  </header>
+
+  {!hasContent ? (
+    <section class="page-section">
+      <div class="container">
+        <div class="page-empty narrow" style="margin:0 auto;">
+          <h3>Coming soon</h3>
+          <p>This page is being written. Check back shortly.</p>
+        </div>
+      </div>
+    </section>
+  ) : (
+    <section class="page-section now-body">
+      <div class="container">
+        <div class="now-narrow">
+          {now?.currentlyWorkingOn && now.currentlyWorkingOn.length > 0 && (
+            <div class="now-block">
+              <h2 class="now-h2">Working on</h2>
+              <div class="prose prose-lg dark:prose-invert">
+                <PortableTextRenderer value={now.currentlyWorkingOn} />
+              </div>
+            </div>
+          )}
+
+          {now?.currentlyLearning && now.currentlyLearning.length > 0 && (
+            <div class="now-block">
+              <h2 class="now-h2">Learning</h2>
+              <div class="prose prose-lg dark:prose-invert">
+                <PortableTextRenderer value={now.currentlyLearning} />
+              </div>
+            </div>
+          )}
+
+          {now?.currentlyReading && now.currentlyReading.length > 0 && (
+            <div class="now-block">
+              <h2 class="now-h2">Reading & watching</h2>
+              <ul class="now-reading">
+                {now.currentlyReading.map((item) => (
+                  <li class="now-reading__item">
+                    {item.kind && (
+                      <span class="ds-tag now-reading__kind">{kindLabel[item.kind]}</span>
+                    )}
+                    <div>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" class="now-reading__title">
+                          {item.title}
+                        </a>
+                      ) : (
+                        <span class="now-reading__title">{item.title}</span>
+                      )}
+                      {item.author && <span class="now-reading__author"> · {item.author}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {now?.currentlyThinkingAbout && now.currentlyThinkingAbout.length > 0 && (
+            <div class="now-block">
+              <h2 class="now-h2">Thinking about</h2>
+              <div class="prose prose-lg dark:prose-invert">
+                <PortableTextRenderer value={now.currentlyThinkingAbout} />
+              </div>
+            </div>
+          )}
+
+          {now?.notAvailableFor && (
+            <div class="now-block now-block--alt">
+              <h2 class="now-h2">Not available for</h2>
+              <p class="now-prose">{now.notAvailableFor}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="page-section now-foot-section">
+    <div class="container">
+      <div class="now-foot">
+        <p>
+          This is a <a href="https://nownownow.com/about" target="_blank" rel="noopener noreferrer">/now page</a> —
+          a snapshot of what I'm focused on in this season, not a feed.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .now-hero { padding-block: clamp(4rem, 8vw, 6rem); }
+  .now-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+
+  .now-body { padding-block: clamp(2rem, 5vw, 4rem); }
+  .now-narrow {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  .now-block {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .now-block:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .now-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+    color: rgb(var(--ink));
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  .now-prose {
+    color: rgb(var(--ink-muted));
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .now-reading {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .now-reading__item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 10px;
+  }
+  .now-reading__kind {
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .now-reading__title {
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+  a.now-reading__title:hover {
+    color: rgb(var(--accent-bright));
+  }
+  .now-reading__author {
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+  }
+
+  .now-foot-section { padding-bottom: clamp(3rem, 6vw, 5rem); }
+  .now-foot {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+    color: rgb(var(--ink-faint));
+    font-size: 0.9rem;
+  }
+  .now-foot a {
+    color: rgb(var(--accent-bright));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

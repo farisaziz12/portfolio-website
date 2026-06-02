@@ -2,9 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import CredentialStrip from '../components/about/CredentialStrip.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { pageQuery, speakingStatsQuery, featuredTestimonialsQuery } from '../lib/sanity/queries';
-import { availabilityLabel } from '../lib/availability';
+import { pageQuery, speakingStatsQuery, featuredTestimonialsQuery, upcomingEventDatesQuery } from '../lib/sanity/queries';
+import { availabilityFromCount, getQuarterEventCount } from '../lib/availability';
 
 interface Milestone {
   _key: string;
@@ -55,13 +56,16 @@ interface Testimonial {
   company?: string;
 }
 
-const [pageContent, stats, testimonials] = await Promise.all([
+const [pageContent, stats, testimonials, upcomingDates] = await Promise.all([
   sanityFetch<PageContent | null>(pageQuery, { identifier: 'about' }).catch(() => null),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
     totalEvents: 86, countries: 20, cities: 29, talks: 0,
   })),
   sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+  sanityFetch<{ date?: string }[]>(upcomingEventDatesQuery).catch(() => []),
 ]);
+
+const quarterEventCount = getQuarterEventCount(upcomingDates);
 
 const heroImage = pageContent?.heroImage;
 const seo = pageContent?.seo;
@@ -84,7 +88,7 @@ const fallbackTimeline = [
   {
     year: '2022 — 2024',
     title: 'Leading teams',
-    desc: 'Led a cross-functional squad of 15 engineers across two teams — frontend, backend, and the skip-level management in between.',
+    desc: 'Led a cross-functional squad of 15 engineers across two teams — frontend and backend, plus the skip-level management in between.',
   },
   {
     year: '2024 — now',
@@ -110,7 +114,7 @@ const headlineBio = pageContent?.aboutHero?.bio;
 const heroLocation = pageContent?.aboutHero?.location || 'Geneva';
 
 const ctaContent = {
-  status: pageContent?.aboutCta?.statusText || availabilityLabel('Available'),
+  status: pageContent?.aboutCta?.statusText || availabilityFromCount(quarterEventCount),
   title: pageContent?.aboutCta?.title || "Let's build something",
   body: pageContent?.aboutCta?.description || "Speaking, consulting, or mentorship — if it involves shipping resilient software, I'm interested.",
   primaryHref: pageContent?.aboutCta?.primaryCtaUrl || '/invite',
@@ -139,7 +143,7 @@ const ctaContent = {
             `I'm a ${headlineRole || 'Staff Software Engineer'} based in ${heroLocation}. For a decade I've built resilient frontend systems and payment integrations — the kind where a dropped request means real money lost. Speaking came later: I had things worth saying because I'd shipped them.`}
         </p>
         <p class="about-hero__body">
-          Today I split my time between deep engineering work, mentoring engineers who want to grow, and talking on stages around the world about what actually works in production.
+          Today I split my time between deep engineering work and mentoring engineers who want to grow. The rest I spend on stage, talking about what actually works in production.
         </p>
         <div class="about-hero__actions">
           <a href="/services" class="ds-btn ds-btn-primary">
@@ -166,6 +170,9 @@ const ctaContent = {
       </div>
     </div>
   </header>
+
+  <!-- CREDENTIAL STRIP — renders nothing if no employers in Sanity -->
+  <CredentialStrip />
 
   <!-- BY THE NUMBERS -->
   <section class="about-section">

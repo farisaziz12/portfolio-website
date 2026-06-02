@@ -42,9 +42,12 @@ const servicesLinks = [
 
 const footerLinks = [
   { label: 'Blog', href: '/blog' },
+  { label: 'Newsletter', href: '/newsletter' },
+  { label: 'Subscribe', href: '/subscribe' },
   { label: 'Projects', href: '/projects' },
   { label: 'Impact', href: '/impact' },
   { label: 'About', href: '/about' },
+  { label: 'Now', href: '/now' },
   { label: 'Media', href: '/media' },
 ];
 
@@ -179,7 +182,7 @@ const externalLinks = [
 
     <!-- Subscribe -->
     <div class="mt-10 pt-8 border-t border-edge max-w-md">
-      <GeneralSubscribe client:idle compact />
+      <GeneralSubscribe client:idle variant="inline" source="footer" heading="The newsletter" ctaLabel="Subscribe" />
     </div>
 
     <!-- Bottom bar -->

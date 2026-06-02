@@ -20,6 +20,8 @@ import serviceLandingPage from './serviceLandingPage';
 import siteNavigation from './siteNavigation';
 import siteSettings from './siteSettings';
 import workshopInstance from './workshopInstance';
+import nowPage from './nowPage';
+import employer from './employer';
 
 export const schemaTypes = [
   // Core speaking content
@@ -59,4 +61,8 @@ export const schemaTypes = [
   // Pages & profile
   page,
   speakerProfile,
+  nowPage,
+
+  // About / credibility
+  employer,
 ];

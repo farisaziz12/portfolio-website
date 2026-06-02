@@ -5,8 +5,8 @@ import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { featuredImpactMetricsV2Query } from '../lib/sanity/queries';
-import { availabilityLabel, formatQuarter } from '../lib/availability';
+import { featuredImpactMetricsV2Query, upcomingEventDatesQuery } from '../lib/sanity/queries';
+import { availabilityFromCount, formatQuarter, getQuarterEventCount } from '../lib/availability';
 
 interface ImpactMetricV2 {
   _id: string;
@@ -20,7 +20,12 @@ interface ImpactMetricV2 {
   contextNote?: string;
 }
 
-const impactMetrics = await sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []);
+const [impactMetrics, upcomingDates] = await Promise.all([
+  sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []),
+  sanityFetch<{ date?: string }[]>(upcomingEventDatesQuery).catch(() => []),
+]);
+const quarterEventCount = getQuarterEventCount(upcomingDates);
+const derivedAvailability = availabilityFromCount(quarterEventCount);
 
 const domainLabel: Record<string, string> = {
   community: 'Community',
@@ -95,7 +100,7 @@ const steps = [
 const faq = [
   {
     question: "What's the difference between consulting and mentorship?",
-    answer: 'Consulting is project-focused — I work with your team on architecture, performance, and delivery. Mentorship is growth-focused — 1:1 coaching for an individual engineer\'s career and skills.',
+    answer: 'Consulting is project-focused — I work with your team on architecture and delivery. Mentorship is growth-focused — 1:1 coaching for an individual engineer\'s career.',
     open: true,
   },
   {
@@ -139,7 +144,7 @@ const faq = [
     <div class="container svc-hero__inner">
       <span class="ds-pill ds-pill--signal svc-hero__badge">
         <span class="ds-dot ds-dot--pulse"></span>
-        {availabilityLabel('Limited availability')}
+        {derivedAvailability}
       </span>
       <h1 class="svc-hero__title">
         Let's work<br /><span class="accent-word">together.</span>
@@ -175,7 +180,7 @@ const faq = [
           </IconChip>
           <p class="svc-choose__price">For teams &amp; startups</p>
           <h3 class="svc-choose__title">Consulting</h3>
-          <p class="svc-choose__body">Project-focused expertise. Architecture reviews, technical strategy, hands-on implementation, and team enablement.</p>
+          <p class="svc-choose__body">Project-focused expertise. Architecture reviews and hands-on implementation, plus team enablement when the team's the bottleneck.</p>
           <ul class="svc-choose__list">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Architecture reviews &amp; audits</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Performance optimization</li>
@@ -194,7 +199,7 @@ const faq = [
           </IconChip>
           <p class="svc-choose__price">For individual engineers</p>
           <h3 class="svc-choose__title">Mentorship</h3>
-          <p class="svc-choose__body">Growth-focused guidance. 1:1 coaching, career navigation, skill development, and real accountability.</p>
+          <p class="svc-choose__body">Growth-focused guidance. 1:1 coaching with real accountability — and a plan you'll actually follow.</p>
           <ul class="svc-choose__list">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>1:1 coaching sessions</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Career strategy &amp; navigation</li>
@@ -286,7 +291,7 @@ const faq = [
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status={availabilityLabel('Available')}
+          status={derivedAvailability}
           title="Ready to level up?"
           body="Let's have a conversation about your goals and how I can help you get there. I reply within two days."
           primaryHref="https://cal.com/farisaziz12/discovery-call"

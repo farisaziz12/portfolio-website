@@ -1439,3 +1439,48 @@ export const reachMapDataQuery = groq`
     *[_type == "event" && defined(location.city)].location.city
   )
 `;
+
+// Minimal upcoming-events list — just the `date` field. Used by Header and
+// ContactPanel callers that only need the count for the Open / Limited threshold
+// rule (see lib/availability.ts → getQuarterEventCount). Tiny payload; safe to
+// call on every page render under ISR.
+export const upcomingEventDatesQuery = groq`
+  *[_type == "event" && date >= now()] | order(date asc) { date }
+`;
+
+// /now page — singleton document. Returns null if nothing's been authored yet.
+export const nowPageQuery = groq`
+  *[_type == "nowPage"][0] {
+    lastUpdated,
+    location,
+    headline,
+    currentlyWorkingOn,
+    currentlyLearning,
+    currentlyReading[]{
+      title,
+      author,
+      url,
+      kind
+    },
+    currentlyThinkingAbout,
+    notAvailableFor,
+    seoTitle,
+    seoDescription
+  }
+`;
+
+// /about credential strip — current and past employers in chronological order
+// (current first, then past sorted by end date desc).
+export const employersQuery = groq`
+  *[_type == "employer"] | order(current desc, endDate desc, startDate desc) {
+    _id,
+    companyName,
+    companyUrl,
+    role,
+    startDate,
+    endDate,
+    current,
+    summary,
+    companyLogo
+  }
+`;

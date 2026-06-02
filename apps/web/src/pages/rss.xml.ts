@@ -2,6 +2,7 @@ import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { sanityFetch } from '../lib/sanity/client';
 import { allEventsQuery, externalPostsQuery } from '../lib/sanity/queries';
+import { listPublishedPosts } from '../lib/beehiiv/posts';
 
 interface SanityEvent {
   _id: string;
@@ -23,12 +24,12 @@ interface ExternalPost {
 }
 
 export async function GET(context: APIContext) {
-  const [events, posts] = await Promise.all([
+  const [events, posts, newsletterIssues] = await Promise.all([
     sanityFetch<SanityEvent[]>(allEventsQuery).catch(() => []),
     sanityFetch<ExternalPost[]>(externalPostsQuery).catch(() => []),
+    listPublishedPosts({ limit: 50 }).catch(() => []),
   ]);
 
-  // Combine events and posts into feed items
   const items = [
     ...events.map((event) => ({
       title: `${event.title} at ${event.conference}`,
@@ -44,14 +45,21 @@ export async function GET(context: APIContext) {
       link: post.url,
       categories: [post.type],
     })),
+    ...newsletterIssues.map((issue) => ({
+      title: `Newsletter: ${issue.title}`,
+      pubDate: issue.publish_date ? new Date(issue.publish_date * 1000) : new Date(),
+      description: issue.subtitle || issue.preview_text || issue.meta_default_description || issue.title,
+      link: `${context.site}newsletter/${issue.slug}`,
+      categories: ['newsletter'],
+    })),
   ].sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
   return rss({
     title: 'Faris Aziz - Speaking & Content',
     description:
-      'Updates on speaking engagements, conference talks, and content from Faris Aziz - Staff Software Engineer and Conference Speaker.',
+      'Updates on speaking engagements, conference talks, newsletter issues, and content from Faris Aziz - Staff Software Engineer and Conference Speaker.',
     site: context.site!,
-    items: items.slice(0, 50), // Limit to 50 most recent items
+    items: items.slice(0, 50),
     customData: `<language>en-us</language>`,
   });
 }

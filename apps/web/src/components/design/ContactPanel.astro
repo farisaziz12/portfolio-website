@@ -1,7 +1,7 @@
 ---
 import GridTexture from './GridTexture.astro';
 import Kicker from './Kicker.astro';
-import { availabilityLabel } from '../../lib/availability';
+import { formatQuarter } from '../../lib/availability';
 
 interface Props {
   status?: string;
@@ -14,12 +14,12 @@ interface Props {
   secondaryLabel?: string;
 }
 
+// Default = generic "Open" pill. Pages that fetch upcoming events should
+// compute the data-driven label (availabilityFromCount) and pass it in.
 const {
-  // Default status is computed at render time from today + 6-week lead time,
-  // so the quarter auto-advances. Override per-page when copy needs to differ.
-  status = availabilityLabel('Available for opportunities'),
+  status = `Open · ${formatQuarter()}`,
   title = "Let's work together",
-  body = "I speak at conferences, run workshops, and offer technical advisory. Tell me about your event or team and I'll get back within two days.",
+  body = "I speak at conferences and run workshops — plus technical advisory for teams that need a Staff-level second opinion. Tell me about your event or team and I'll get back within two days.",
   primaryHref = '/invite',
   primaryLabel = 'Invite me to speak',
   secondaryHref = '/services',

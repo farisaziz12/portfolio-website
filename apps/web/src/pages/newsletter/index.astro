@@ -1,0 +1,325 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
+import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
+import { listPublishedPosts } from '../../lib/beehiiv/posts';
+import type { BeehiivPost } from '../../lib/beehiiv/types';
+
+const issues: BeehiivPost[] = await listPublishedPosts({ limit: 50 }).catch(() => []);
+
+const [featured, ...rest] = issues;
+const totalCount = issues.length;
+
+function formatIssueDate(unix?: number): string {
+  if (!unix) return '';
+  return new Date(unix * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+---
+
+<BaseLayout
+  title="The newsletter — every past issue | Faris Aziz"
+  description="Every past issue of Faris Aziz's newsletter. A running notebook from the conference road and the React/Next.js work I'm shipping. Sent only when there's something worth saying."
+  pathname="/newsletter"
+>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>The newsletter · {totalCount} {totalCount === 1 ? 'issue' : 'issues'}</Kicker>
+      <h1 class="page-hero__title">
+        Every <span class="accent-word">issue</span>, in one place.
+      </h1>
+      <p class="page-hero__lead">
+        Short and opinionated. Sent only when there's something worth saying. Past issues live here forever — subscribe to get the next one.
+      </p>
+      <div class="page-hero__actions">
+        <a href="/subscribe" class="ds-btn ds-btn-primary ds-btn-lg">
+          Subscribe to the newsletter
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a href="/rss.xml" class="ds-btn ds-btn-secondary ds-btn-lg">RSS feed</a>
+      </div>
+    </div>
+  </header>
+
+  {totalCount === 0 ? (
+    <section class="page-section">
+      <div class="container">
+        <div class="page-empty">
+          <h3>The first issue is coming</h3>
+          <p>Subscribe and you'll be on the list the moment it goes out.</p>
+          <div style="margin-top:1.6rem; max-width:480px;">
+            <GeneralSubscribe
+              client:load
+              variant="card"
+              source="newsletter-archive"
+              heading="Get the first issue"
+              lead="One email, occasionally. Unsubscribe anytime."
+              ctaLabel="Subscribe"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  ) : (
+    <>
+      <!-- FEATURED LATEST ISSUE -->
+      {featured && (
+        <section class="page-section">
+          <div class="container">
+            <div class="page-section__head">
+              <div>
+                <Kicker>Latest issue</Kicker>
+                <h2 class="page-h2">Just out</h2>
+              </div>
+            </div>
+            <a href={`/newsletter/${featured.slug}`} class="ds-card ds-card-interactive newsletter-featured ds-reveal">
+              {featured.thumbnail_url && (
+                <div class="newsletter-featured__media">
+                  <img src={featured.thumbnail_url} alt={featured.title} loading="eager" />
+                </div>
+              )}
+              <div class="newsletter-featured__body">
+                <div class="newsletter-card__meta">
+                  {featured.publish_date && <span>{formatIssueDate(featured.publish_date)}</span>}
+                </div>
+                <h3 class="newsletter-featured__title">{featured.title}</h3>
+                {featured.subtitle && (
+                  <p class="newsletter-featured__excerpt">{featured.subtitle}</p>
+                )}
+                <span class="ds-link">
+                  Read the issue
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          </div>
+        </section>
+      )}
+
+      <!-- PAST ISSUES GRID -->
+      {rest.length > 0 && (
+        <section class="page-section page-section--alt">
+          <div class="container">
+            <div class="page-section__head">
+              <div>
+                <Kicker>Archive</Kicker>
+                <h2 class="page-h2">Past issues</h2>
+              </div>
+              <span class="ds-pill">{rest.length}</span>
+            </div>
+            <div class="page-grid-3 newsletter-grid">
+              {rest.map((issue) => (
+                <a href={`/newsletter/${issue.slug}`} class="ds-card ds-card-interactive newsletter-card ds-reveal">
+                  <div class="newsletter-card__media">
+                    {issue.thumbnail_url ? (
+                      <img src={issue.thumbnail_url} alt={issue.title} loading="lazy" />
+                    ) : (
+                      <div class="newsletter-card__placeholder">
+                        <span class="ds-tag">Issue</span>
+                      </div>
+                    )}
+                  </div>
+                  <div class="newsletter-card__body">
+                    <h3 class="newsletter-card__title">{issue.title}</h3>
+                    {issue.subtitle && (
+                      <p class="newsletter-card__excerpt">{issue.subtitle}</p>
+                    )}
+                    <div class="newsletter-card__meta">
+                      {issue.publish_date && <span>{formatIssueDate(issue.publish_date)}</span>}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  )}
+
+  <!-- SUBSCRIBE BAND -->
+  <section class="page-section">
+    <div class="container">
+      <div class="wide newsletter-subscribe-band ds-reveal">
+        <div>
+          <Kicker>Don't miss the next one</Kicker>
+          <h2 class="page-h2">Join the list</h2>
+          <p class="newsletter-subscribe-band__lead">
+            One email, occasionally. A running notebook from the conference road and the React work I'm shipping. Plus reader-only perks.
+          </p>
+        </div>
+        <div class="newsletter-subscribe-band__form">
+          <GeneralSubscribe
+            client:load
+            variant="card"
+            source="newsletter-archive"
+            heading="Subscribe"
+            lead="One click to unsubscribe later. No spam."
+            ctaLabel="Subscribe"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initPage() {
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage, { once: true });
+    } else { initPage(); }
+    document.addEventListener('astro:after-swap', initPage);
+  </script>
+</BaseLayout>
+
+<style>
+  .newsletter-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+    color: inherit;
+  }
+  @media (max-width: 760px) {
+    .newsletter-featured { grid-template-columns: 1fr; }
+  }
+  .newsletter-featured__media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: rgb(var(--surface-3));
+  }
+  .newsletter-featured__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .newsletter-featured:hover .newsletter-featured__media img {
+    transform: scale(1.04);
+  }
+  .newsletter-featured__body {
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+  .newsletter-featured__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+    color: rgb(var(--ink));
+    line-height: 1.2;
+  }
+  .newsletter-featured__excerpt {
+    color: rgb(var(--ink-muted));
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .newsletter-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+  }
+  .newsletter-grid { margin-top: 0; }
+  .newsletter-card__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: rgb(var(--surface-3));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .newsletter-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .newsletter-card:hover .newsletter-card__media img { transform: scale(1.04); }
+  .newsletter-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(var(--ink-faint));
+  }
+  .newsletter-card__body {
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .newsletter-card__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgb(var(--ink));
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .newsletter-card__excerpt {
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .newsletter-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.6rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    color: rgb(var(--ink-faint));
+    letter-spacing: 0.04em;
+  }
+
+  .newsletter-subscribe-band {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1.6rem, 4vw, 3rem);
+    align-items: center;
+    padding: clamp(2rem, 4vw, 3rem);
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 20px;
+  }
+  @media (max-width: 760px) {
+    .newsletter-subscribe-band { grid-template-columns: 1fr; }
+  }
+  .newsletter-subscribe-band__lead {
+    color: rgb(var(--ink-muted));
+    margin-top: 0.8rem;
+    max-width: 42ch;
+  }
+</style>

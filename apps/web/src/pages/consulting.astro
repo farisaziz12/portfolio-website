@@ -6,8 +6,8 @@ import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { consultingOffersQuery } from '../lib/sanity/queries';
-import { availabilityLabel } from '../lib/availability';
+import { consultingOffersQuery, upcomingEventDatesQuery } from '../lib/sanity/queries';
+import { availabilityFromCount, getQuarterEventCount } from '../lib/availability';
 
 interface ServiceOffer {
   _id: string;
@@ -27,7 +27,11 @@ interface ServiceOffer {
   order?: number;
 }
 
-const offers = await sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []);
+const [offers, upcomingDates] = await Promise.all([
+  sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []),
+  sanityFetch<{ date?: string }[]>(upcomingEventDatesQuery).catch(() => []),
+]);
+const quarterEventCount = getQuarterEventCount(upcomingDates);
 
 const expertise = [
   {
@@ -84,7 +88,7 @@ const audiences = [
 
 <BaseLayout
   title="Consulting | Faris Aziz"
-  description="Technical consulting for teams and startups. Architecture reviews, technical strategy, and hands-on implementation."
+  description="Technical consulting for teams and startups. Architecture reviews and hands-on implementation from a Staff Engineer who's shipped payments at scale."
   pathname="/consulting"
 >
   <header class="page-hero">
@@ -100,7 +104,7 @@ const audiences = [
         Ship better software, <span class="accent-word">faster</span>.
       </h1>
       <p class="page-hero__lead">
-        Hands-on technical expertise to help your team solve hard problems and build systems that scale. Architecture reviews, technical strategy, and implementation support.
+        Hands-on technical expertise to help your team solve hard problems and build systems that scale. Architecture reviews and implementation support — the technical strategy comes free.
       </p>
       <div class="page-hero__actions">
         <a href="#offers" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -183,7 +187,7 @@ const audiences = [
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status={availabilityLabel('Available')}
+          status={availabilityFromCount(quarterEventCount)}
           title="Let's solve your toughest challenges"
           body="Free 20-minute discovery call. We'll talk about what's slowing you down and whether I can help. No pitch, no obligation."
           primaryHref="https://cal.com/farisaziz12/discovery-call"

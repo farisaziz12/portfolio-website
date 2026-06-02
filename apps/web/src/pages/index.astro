@@ -150,22 +150,22 @@ const topConferences = Array.from(conferenceCounts.values())
 const topics = [
   {
     title: 'React & Next.js',
-    desc: 'Performance, architecture, and production patterns at scale.',
+    desc: 'Performance and architecture patterns for production at scale.',
     icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
   },
   {
     title: 'Payments & Fintech',
-    desc: 'Orchestration, resilience, and scaling money globally.',
+    desc: 'Orchestrating money across borders — how Alipay, Stripe, and friends actually behave under load.',
     icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   },
   {
     title: 'Developer Experience',
-    desc: 'Tooling, productivity, and workflows engineers actually love.',
+    desc: 'Tooling and workflows engineers actually love using.',
     icon: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
   },
   {
     title: 'Career & Community',
-    desc: 'Growth, public speaking, and building communities that last.',
+    desc: 'Growing a career on stage. How I went from first lightning talk to ZurichJS organizer.',
     icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
   },
 ];
@@ -541,7 +541,7 @@ const formatEventDate = (dateStr: string) => {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </IconChip>
           <h3 class="home-service__title">Consulting</h3>
-          <p class="home-service__body">Architecture reviews, technical strategy, and hands-on implementation for teams and startups.</p>
+          <p class="home-service__body">Architecture reviews and hands-on implementation for teams and startups shipping payment flows that can't fall over.</p>
           <ul class="home-service__list">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Architecture reviews &amp; audits</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Performance optimization</li>
@@ -557,7 +557,7 @@ const formatEventDate = (dateStr: string) => {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
           </IconChip>
           <h3 class="home-service__title">Mentorship</h3>
-          <p class="home-service__body">1:1 coaching for engineers looking to grow their careers, skills, and confidence.</p>
+          <p class="home-service__body">1:1 coaching for engineers looking to grow their career — and the confidence to back it up.</p>
           <ul class="home-service__list">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Career strategy &amp; navigation</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-11"/></svg>Code &amp; portfolio reviews</li>
@@ -613,10 +613,10 @@ const formatEventDate = (dateStr: string) => {
   <section class="home-section-sm home-newsletter-wrap">
     <div class="container wide home-newsletter">
       <div>
-        <h3 class="home-newsletter__title">Follow my conference schedule</h3>
-        <p class="home-newsletter__body">Join engineers from across the community — one email when I publish or announce where I'm speaking next. No spam, unsubscribe anytime.</p>
+        <h3 class="home-newsletter__title">The newsletter</h3>
+        <p class="home-newsletter__body">A running notebook from the conference road and the React work I'm shipping. Plus reader-only perks. <a href="/subscribe" style="color:rgb(var(--accent-bright));text-decoration:underline;text-underline-offset:3px;">See past issues →</a></p>
       </div>
-      <GeneralSubscribe client:load />
+      <GeneralSubscribe client:load variant="card" source="home" heading="Get the next issue" lead="One email, occasionally. Unsubscribe anytime." ctaLabel="Subscribe" />
     </div>
   </section>
 
