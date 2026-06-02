@@ -1,7 +1,12 @@
 import { useState, type FormEvent } from 'react';
 
-type Format = 'keynote' | 'talk' | 'workshop' | 'panel';
-type Size = 's' | 'm' | 'l' | 'xl';
+// The form sends the human-readable label so the admin email shows real values
+// (e.g. "100–500", "Talk") instead of internal codes. No mapping layer.
+const FORMAT_OPTIONS = ['Keynote', 'Talk', 'Workshop', 'Panel'] as const;
+const SIZE_OPTIONS = ['< 100', '100–500', '500–2k', '2k+'] as const;
+
+type Format = (typeof FORMAT_OPTIONS)[number];
+type Size = (typeof SIZE_OPTIONS)[number];
 
 interface Fields {
   name: string;
@@ -20,8 +25,8 @@ const initial: Fields = {
   event: '',
   date: '',
   location: '',
-  format: 'talk',
-  size: 'm',
+  format: 'Talk',
+  size: '100–500',
   message: '',
 };
 
@@ -144,7 +149,7 @@ export default function InviteForm() {
 
         <Field label="Format" full>
           <div className="invite-form__seg">
-            {(['keynote', 'talk', 'workshop', 'panel'] as Format[]).map((opt) => (
+            {FORMAT_OPTIONS.map((opt) => (
               <label key={opt}>
                 <input
                   type="radio"
@@ -153,7 +158,7 @@ export default function InviteForm() {
                   checked={fields.format === opt}
                   onChange={() => set('format', opt)}
                 />
-                <span>{opt.charAt(0).toUpperCase() + opt.slice(1)}</span>
+                <span>{opt}</span>
               </label>
             ))}
           </div>
@@ -161,21 +166,16 @@ export default function InviteForm() {
 
         <Field label="Audience size" full>
           <div className="invite-form__seg">
-            {([
-              { v: 's', l: '< 100' },
-              { v: 'm', l: '100–500' },
-              { v: 'l', l: '500–2k' },
-              { v: 'xl', l: '2k+' },
-            ] as { v: Size; l: string }[]).map((opt) => (
-              <label key={opt.v}>
+            {SIZE_OPTIONS.map((opt) => (
+              <label key={opt}>
                 <input
                   type="radio"
                   name="size"
-                  value={opt.v}
-                  checked={fields.size === opt.v}
-                  onChange={() => set('size', opt.v)}
+                  value={opt}
+                  checked={fields.size === opt}
+                  onChange={() => set('size', opt)}
                 />
-                <span>{opt.l}</span>
+                <span>{opt}</span>
               </label>
             ))}
           </div>
