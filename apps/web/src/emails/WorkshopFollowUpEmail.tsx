@@ -41,7 +41,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
             )}
 
             <Text style={s.paragraph}>
-              <strong style={{ color: '#f8fafc' }}>What's next?</strong>
+              <strong style={{ color: s.inkStrong }}>What's next?</strong>
             </Text>
             <Text style={s.paragraph}>
               Check out my other workshops and upcoming conference appearances.

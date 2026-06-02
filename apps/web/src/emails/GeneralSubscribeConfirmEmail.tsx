@@ -32,7 +32,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
             </Text>
 
             <Text style={s.paragraph}>
-              <strong style={{ color: '#f8fafc' }}>What to expect:</strong>
+              <strong style={{ color: s.inkStrong }}>What to expect:</strong>
             </Text>
             <Text style={s.paragraph}>
               Occasional updates about upcoming workshops, conference talks, and new content. No spam — ever.

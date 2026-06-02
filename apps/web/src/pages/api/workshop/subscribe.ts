@@ -1,26 +1,17 @@
 export const prerender = false
 
 import type { APIRoute } from 'astro'
-import { Resend } from 'resend'
 import { WorkshopWelcomeEmail } from '../../../emails/WorkshopWelcomeEmail'
 import { GeneralSubscribeConfirmEmail } from '../../../emails/GeneralSubscribeConfirmEmail'
 import { sanityFetch } from '../../../lib/sanity/client'
 import { workshopInstanceBySlugQuery } from '../../../lib/sanity/queries'
-
-// Read runtime env via process.env first, falling back to import.meta.env for local
-// `astro dev`. On Vercel, non-public vars referenced through import.meta.env get inlined
-// at build time and end up undefined at runtime — so process.env is the reliable source
-// for the deployed serverless functions.
-const env = (key: string): string | undefined => process.env[key] ?? import.meta.env[key]
+import { env, getFrom, resend, sendOrLog } from '../../../lib/email'
 
 const GLOBAL_AUDIENCE_ID = env('RESEND_AUDIENCE_ID')
-const apiKey = env('RESEND_API_KEY')
-const resend = apiKey ? new Resend(apiKey) : null
 
 // `from` address is env-driven so we don't hardcode a sender domain in source.
 // Set RESEND_FROM_EMAIL to a verified Resend sender (e.g. "noreply@yourdomain.com").
-const FROM_EMAIL = env('RESEND_FROM_EMAIL')
-const FROM = FROM_EMAIL ? `Faris Aziz <${FROM_EMAIL}>` : null
+const FROM = getFrom('Faris Aziz')
 
 interface WorkshopInstanceLookup {
   _id: string
@@ -102,39 +93,31 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Send the appropriate welcome email — only if a FROM is configured.
-  let emailPromise: Promise<void> = Promise.resolve()
+  let emailPromise: Promise<unknown> = Promise.resolve()
   if (!FROM) {
     console.warn('RESEND_FROM_EMAIL not set — skipping welcome email')
   } else if (source === 'workshop-attend' && instanceSlug) {
-    emailPromise = resend.emails
-      .send({
-        from: FROM,
-        to: email,
-        subject: `You're in — ${event || instanceTitle} materials`,
-        react: WorkshopWelcomeEmail({
-          name: firstName,
-          event: event || '',
-          workshopTitle: instanceTitle,
-          repoUrl: '',
-          attendUrl: `https://faziz-dev.com/workshops/attend/${instanceSlug}`,
-        }),
-      })
-      .then((r) => {
-        console.log('Welcome email sent:', r)
-      })
-      .catch((err) => console.error('Failed to send email:', err))
+    emailPromise = sendOrLog({
+      context: 'workshop:welcome',
+      from: FROM,
+      to: email,
+      subject: `You're in — ${event || instanceTitle} materials`,
+      react: WorkshopWelcomeEmail({
+        name: firstName,
+        event: event || '',
+        workshopTitle: instanceTitle,
+        repoUrl: '',
+        attendUrl: `https://faziz-dev.com/workshops/attend/${instanceSlug}`,
+      }),
+    })
   } else if (source === 'website') {
-    emailPromise = resend.emails
-      .send({
-        from: FROM,
-        to: email,
-        subject: "You're on the list",
-        react: GeneralSubscribeConfirmEmail({ name: firstName || undefined }),
-      })
-      .then((r) => {
-        console.log('Confirm email sent:', r)
-      })
-      .catch((err) => console.error('Failed to send email:', err))
+    emailPromise = sendOrLog({
+      context: 'workshop:subscribe-confirm',
+      from: FROM,
+      to: email,
+      subject: "You're on the list",
+      react: GeneralSubscribeConfirmEmail({ name: firstName || undefined }),
+    })
   }
 
   await Promise.allSettled([...audienceWrites, emailPromise])

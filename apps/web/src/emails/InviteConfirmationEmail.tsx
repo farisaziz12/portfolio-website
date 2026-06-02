@@ -30,7 +30,7 @@ export function InviteConfirmationEmail({ name, event }: Props) {
 
             <Text style={s.paragraph}>
               Your invitation{event ? ` for ${event}` : ''} just landed in my inbox.
-              I'll review the details and reply within <strong style={{ color: '#f8fafc' }}>two business days</strong> — usually faster.
+              I'll review the details and reply within <strong style={{ color: s.inkStrong }}>two business days</strong> — usually faster.
             </Text>
 
             <Text style={s.paragraph}>

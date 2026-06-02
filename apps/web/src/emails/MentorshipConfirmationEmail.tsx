@@ -29,7 +29,7 @@ export function MentorshipConfirmationEmail({ name }: Props) {
 
             <Text style={s.paragraph}>
               Your mentorship inquiry just landed in my inbox. I'll read through it carefully and reply within
-              <strong style={{ color: '#f8fafc' }}> two business days</strong>.
+              <strong style={{ color: s.inkStrong }}> two business days</strong>.
             </Text>
 
             <Text style={s.paragraph}>
