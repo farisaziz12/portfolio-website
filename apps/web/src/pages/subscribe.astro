@@ -1,0 +1,407 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import GeneralSubscribe from '../components/islands/GeneralSubscribe';
+import { listPublishedPosts } from '../lib/beehiiv/posts';
+
+// Pull the latest issue server-side so the page doubles as proof-of-quality. ISR
+// (1h revalidate, configured in astro.config.mjs) keeps it fresh without webhooks.
+// If Beehiiv is unconfigured or down, this falls through to null and we render
+// the page without the preview block.
+const latestPosts = await listPublishedPosts({ limit: 1 }).catch(() => []);
+const latestIssue = latestPosts[0] ?? null;
+const latestDate = latestIssue?.publish_date
+  ? new Date(latestIssue.publish_date * 1000).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  : null;
+
+const benefits = [
+  {
+    title: 'From the conference road',
+    body: "What I'm picking up at the conferences I attend and speak at. Talks worth your weekend. Tools I'd actually try in production. The good stuff that doesn't fit in a tweet.",
+  },
+  {
+    title: 'React, Next.js, TanStack — the working notes',
+    body: "Snippets and patterns from production. Framework-agnostic at heart, but I live in the JS ecosystem. If I haven't shipped it or watched it break, it doesn't go in.",
+  },
+  {
+    title: 'Payments tips when they earn your inbox',
+    body: 'Quick notes from the corner of the stack where I spent a decade — Alipay launches, retries, money that has to move. Only when something is genuinely worth a look.',
+  },
+  {
+    title: 'Subscriber-only perks',
+    body: "Questions from my workshops worth a wider audience. Snippets from talks I've given. Plus discounts to events I'm tied into, when they show up.",
+  },
+];
+
+const faq = [
+  {
+    question: 'How often will you email me?',
+    answer: "Roughly every two to four weeks when I have something worth saying — never on a forced schedule. If I'm in deep work or on the conference circuit, you might hear from me less. I'd rather skip a month than send filler.",
+    open: true,
+  },
+  {
+    question: "What's the difference between this and your blog?",
+    answer: "The blog is long-form writing built to survive a year. The newsletter is a running notebook. Notes from the conference I just attended. A workshop question that surprised me. A tool I think you should actually try. The blog gets reread; the newsletter gets opened and replied to.",
+    open: false,
+  },
+  {
+    question: 'Will you spam me or sell my email?',
+    answer: "No. Newsletter only. No sponsored content. No list rentals. No surprise drip campaigns. The footer of every email has a one-click unsubscribe — and if you do unsubscribe, I won't try to win you back.",
+    open: false,
+  },
+  {
+    question: "I'm not a frontend engineer — is this useful?",
+    answer: "Probably yes. A lot of what I write isn't framework-specific. Talks I'd recommend. Patterns from the road. Career notes from a senior IC who's been around the block. Code examples skew React and Next.js, but the takeaways travel.",
+    open: false,
+  },
+];
+---
+
+<BaseLayout
+  title="Subscribe to the newsletter | Faris Aziz"
+  description="A running notebook from the conference road and the React/Next.js work I'm shipping. Occasional emails. Plus reader-only discounts."
+  pathname="/subscribe"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    })} />
+  </Fragment>
+
+  <!-- HERO -->
+  <header class="page-hero subscribe-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>$ subscribe --newsletter</Kicker>
+      <h1 class="page-hero__title">
+        Notes from the field,<br />
+        <span class="accent-word">straight to your inbox.</span>
+      </h1>
+      <p class="page-hero__lead">
+        One email, occasionally. A running notebook from the conference road and the engineering trenches I live in. Workshop questions worth passing on. Plus the occasional discount for subscribers.
+      </p>
+
+      <div class="subscribe-hero__form ds-reveal">
+        <GeneralSubscribe
+          client:load
+          variant="prominent"
+          source="subscribe-page"
+          heading="Get the next issue"
+          lead="Join engineers from across the community. One click to unsubscribe — no questions."
+          ctaLabel="Subscribe"
+        />
+      </div>
+    </div>
+  </header>
+
+  <!-- BENEFITS -->
+  <section class="page-section">
+    <div class="container">
+      <div class="page-section__head">
+        <div>
+          <Kicker class="ds-reveal">What's in it</Kicker>
+          <h2 class="page-h2 ds-reveal">What you'll <span class="accent-word">get</span></h2>
+        </div>
+      </div>
+      <div class="subscribe-benefits">
+        {benefits.map((b) => (
+          <div class="ds-card subscribe-benefit ds-reveal">
+            <h3 class="subscribe-benefit__title">{b.title}</h3>
+            <p class="subscribe-benefit__body">{b.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- LATEST ISSUE PREVIEW -->
+  {latestIssue && (
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__head">
+          <div>
+            <Kicker class="ds-reveal">Read the latest one first</Kicker>
+            <h2 class="page-h2 ds-reveal">Most recent issue</h2>
+          </div>
+        </div>
+        <a href={`/newsletter/${latestIssue.slug}`} class="ds-card ds-card-interactive subscribe-sample ds-reveal">
+          {latestIssue.thumbnail_url && (
+            <div class="subscribe-sample__media">
+              <img src={latestIssue.thumbnail_url} alt={latestIssue.title} loading="lazy" />
+            </div>
+          )}
+          <div class="subscribe-sample__body">
+            <div class="subscribe-sample__meta">
+              {latestDate && <span>{latestDate}</span>}
+              {latestIssue.content_tags && latestIssue.content_tags.length > 0 && (
+                <>
+                  <span>·</span>
+                  <span>{latestIssue.content_tags.slice(0, 2).join(' · ')}</span>
+                </>
+              )}
+            </div>
+            <h3 class="subscribe-sample__title">{latestIssue.title}</h3>
+            {latestIssue.subtitle && (
+              <p class="subscribe-sample__excerpt">{latestIssue.subtitle}</p>
+            )}
+            <span class="ds-link subscribe-sample__link">
+              Read the issue
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </div>
+        </a>
+        <div class="subscribe-sample__archive">
+          <a href="/newsletter" class="ds-link">
+            Browse all past issues
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- FAQ -->
+  <section class="page-section">
+    <div class="container">
+      <div class="page-section__head">
+        <div>
+          <Kicker class="ds-reveal">Questions</Kicker>
+          <h2 class="page-h2 ds-reveal">Before you subscribe</h2>
+        </div>
+      </div>
+      <div class="subscribe-faq ds-reveal">
+        {faq.map((item) => (
+          <details open={item.open}>
+            <summary>{item.question}</summary>
+            <div class="subscribe-faq__ans">{item.answer}</div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <section class="page-section page-section--alt">
+    <div class="container">
+      <div class="wide subscribe-bottom ds-reveal">
+        <h2 class="subscribe-bottom__title">Still reading? Just subscribe.</h2>
+        <p class="subscribe-bottom__lead">
+          One click to unsubscribe later. The first email arrives when there's something worth saying.
+        </p>
+        <div class="subscribe-bottom__form">
+          <GeneralSubscribe
+            client:load
+            variant="prominent"
+            source="subscribe-page"
+            heading="Get the next issue"
+            lead=""
+            ctaLabel="Subscribe"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initSubscribe() {
+      document.documentElement.classList.add('js');
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+
+      try { (window as any).posthog?.capture('subscribe_page_viewed'); } catch {}
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSubscribe, { once: true });
+    } else {
+      initSubscribe();
+    }
+    document.addEventListener('astro:after-swap', initSubscribe);
+  </script>
+</BaseLayout>
+
+<style>
+  .subscribe-hero {
+    padding-block: clamp(4rem, 8vw, 6rem);
+  }
+  .subscribe-hero__form {
+    max-width: 640px;
+    margin-top: 2.4rem;
+  }
+
+  .subscribe-benefits {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  @media (max-width: 760px) {
+    .subscribe-benefits { grid-template-columns: 1fr; }
+  }
+  .subscribe-benefit {
+    padding: 1.6rem;
+  }
+  .subscribe-benefit__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: rgb(var(--ink));
+    margin-bottom: 0.6rem;
+  }
+  .subscribe-benefit__body {
+    font-size: 0.95rem;
+    color: rgb(var(--ink-muted));
+    line-height: 1.55;
+  }
+
+  .subscribe-sample {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 0;
+    overflow: hidden;
+    max-width: 920px;
+    margin: 0 auto;
+    color: inherit;
+  }
+  @media (max-width: 760px) {
+    .subscribe-sample { grid-template-columns: 1fr; }
+  }
+  .subscribe-sample__media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: rgb(var(--surface-3));
+  }
+  .subscribe-sample__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .subscribe-sample:hover .subscribe-sample__media img {
+    transform: scale(1.04);
+  }
+  .subscribe-sample__body {
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+  .subscribe-sample__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: rgb(var(--ink-faint));
+    letter-spacing: 0.04em;
+  }
+  .subscribe-sample__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    color: rgb(var(--ink));
+    line-height: 1.2;
+  }
+  .subscribe-sample__excerpt {
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .subscribe-sample__link {
+    margin-top: 0.4rem;
+  }
+  .subscribe-sample__archive {
+    text-align: center;
+    margin-top: 1.6rem;
+  }
+
+  .subscribe-faq {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .subscribe-faq details {
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    padding: 0 1.4rem;
+  }
+  .subscribe-faq summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.1rem 0;
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 500;
+    font-size: 1rem;
+    color: rgb(var(--ink));
+    position: relative;
+    padding-right: 2rem;
+  }
+  .subscribe-faq summary::-webkit-details-marker { display: none; }
+  .subscribe-faq summary::after {
+    content: '+';
+    position: absolute;
+    right: 0.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgb(var(--ink-faint));
+    font-size: 1.4rem;
+    transition: transform 0.2s ease;
+  }
+  .subscribe-faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  .subscribe-faq__ans {
+    padding: 0 0 1.2rem;
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .subscribe-bottom {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .subscribe-bottom__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+  }
+  .subscribe-bottom__lead {
+    color: rgb(var(--ink-muted));
+    font-size: 1.05rem;
+    margin: 0.8rem auto 2rem;
+    max-width: 52ch;
+  }
+</style>

@@ -9,8 +9,9 @@ import {
   featuredImpactMetricsV2Query,
   impactCaseStudiesQuery,
   speakingStatsQuery,
+  upcomingEventDatesQuery,
 } from '../lib/sanity/queries';
-import { availabilityLabel } from '../lib/availability';
+import { availabilityFromCount, getQuarterEventCount } from '../lib/availability';
 
 interface ImpactPageSettings {
   heroHeadline?: string;
@@ -56,14 +57,17 @@ interface CaseStudyMetric {
   };
 }
 
-const [pageSettings, sanityMetrics, sanityCaseStudies, stats] = await Promise.all([
+const [pageSettings, sanityMetrics, sanityCaseStudies, stats, upcomingDates] = await Promise.all([
   sanityFetch<ImpactPageSettings | null>(impactPageQuery).catch(() => null),
   sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []),
   sanityFetch<CaseStudyMetric[]>(impactCaseStudiesQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
     totalEvents: 86, countries: 20, cities: 29, talks: 0,
   })),
+  sanityFetch<{ date?: string }[]>(upcomingEventDatesQuery).catch(() => []),
 ]);
+
+const quarterEventCount = getQuarterEventCount(upcomingDates);
 
 const heroTagline = pageSettings?.heroTagline || 'Measurable results';
 const heroHeadlineParts = pageSettings?.heroHeadline?.split(' ') || [];
@@ -71,7 +75,7 @@ const heroHeadlineParts = pageSettings?.heroHeadline?.split(' ') || [];
 const useCmsHeadline = !!pageSettings?.heroHeadline;
 const heroSubheadline =
   pageSettings?.heroSubheadline ||
-  "Anyone can list stats. These are the results I'm proud of — across community, leadership, and product — each with the context, the approach, and what actually moved.";
+  "Anyone can list stats. These are the results I'm proud of — community impact, product wins, leadership moments. Each one comes with the context and what actually moved.";
 
 const seoTitle = pageSettings?.seoTitle || 'Impact — Measurable Results | Faris Aziz';
 const seoDescription =
@@ -198,7 +202,7 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     desc: 'Community is where I get to lift people up at scale. As an organizer of ZurichJS, I focused on making it a place engineers actually want to come back to.',
     rows: [
       { label: 'Context', body: 'A local meetup with potential but inconsistent momentum and turnout.' },
-      { label: 'Approach', body: 'Consistent cadence, strong speakers, hands-on workshops, and a genuinely welcoming room.' },
+      { label: 'Approach', body: 'Consistent monthly cadence. Strong speakers and hands-on workshops, in a room people actually want to be in.' },
       { label: 'Result', body: '425 new members added during 2025, with sold-out workshop days.' },
     ],
   },
@@ -211,7 +215,7 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     desc: 'The best leadership keeps you close to the work. I led 15 engineers across frontend and backend — plus the skip-level management in between — without losing the plot technically.',
     rows: [
       { label: 'Context', body: 'Two teams shipping a shared product surface, with coordination overhead slowing delivery.' },
-      { label: 'Approach', body: 'Clear ownership, pragmatic architecture decisions, and mentoring engineers into more senior roles.' },
+      { label: 'Approach', body: 'Clear ownership and pragmatic architecture decisions. Mentored 4 engineers into more senior roles along the way.' },
       { label: 'Result', body: 'Faster, more predictable delivery — and several engineers leveled up along the way.' },
     ],
   },
@@ -327,7 +331,7 @@ const jsonLd = {
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status={availabilityLabel('Available')}
+          status={availabilityFromCount(quarterEventCount)}
           title="Want results like these for your team?"
           body="Whether it's a payments problem, a performance ceiling, or a team that needs leveling up — let's talk."
           primaryHref="/services"

@@ -37,7 +37,7 @@ const benefits = [
   },
   {
     title: 'Take-home materials',
-    desc: 'Code samples, exercises, and reference docs to keep building after the session ends.',
+    desc: 'Code samples and reference docs you can keep building on after the session ends.',
     icon: '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"/>',
     signal: true,
   },
@@ -190,7 +190,7 @@ const topics = [
   <section class="page-section">
     <div class="container">
       <div style="max-width:42rem;margin:0 auto;">
-        <GeneralSubscribe client:load />
+        <GeneralSubscribe client:load variant="card" source="website" heading="Workshop updates + newsletter" lead="Get notified when new workshops are announced, plus the occasional newsletter. Unsubscribe anytime." ctaLabel="Subscribe" />
       </div>
     </div>
   </section>

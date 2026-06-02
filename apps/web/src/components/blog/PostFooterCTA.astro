@@ -1,0 +1,98 @@
+---
+import GeneralSubscribe from '../islands/GeneralSubscribe';
+---
+
+<section class="post-footer-cta">
+  <div class="container">
+    <div class="post-footer-cta__grid">
+      <!-- Newsletter card -->
+      <div class="post-footer-cta__card post-footer-cta__card--newsletter">
+        <span class="post-footer-cta__kicker">Liked this?</span>
+        <h3 class="post-footer-cta__title">Get the next one in your inbox.</h3>
+        <p class="post-footer-cta__body">
+          A running notebook from the conference road and the React work I'm shipping. One email, occasionally. Subscribe and the next issue lands in your inbox.
+        </p>
+        <div class="post-footer-cta__form">
+          <GeneralSubscribe
+            client:load
+            variant="inline"
+            source="blog-cta"
+            heading=""
+            ctaLabel="Subscribe"
+          />
+        </div>
+      </div>
+
+      <!-- Services card -->
+      <a href="/services" class="post-footer-cta__card post-footer-cta__card--services">
+        <span class="post-footer-cta__kicker">Working on something like this?</span>
+        <h3 class="post-footer-cta__title">Let's talk.</h3>
+        <p class="post-footer-cta__body">
+          I help teams ship resilient frontend systems and payment integrations — through hands-on consulting or 1:1 mentorship for individual engineers.
+        </p>
+        <span class="ds-link post-footer-cta__link">
+          See how I can help
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .post-footer-cta {
+    padding-block: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3rem);
+  }
+  .post-footer-cta__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  @media (max-width: 760px) {
+    .post-footer-cta__grid { grid-template-columns: 1fr; }
+  }
+  .post-footer-cta__card {
+    padding: clamp(1.4rem, 2.5vw, 1.8rem);
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .post-footer-cta__card--services:hover {
+    border-color: rgb(var(--accent));
+    transform: translateY(-2px);
+  }
+  .post-footer-cta__kicker {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--accent-bright));
+  }
+  .post-footer-cta__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.2rem, 2vw, 1.4rem);
+    color: rgb(var(--ink));
+    line-height: 1.2;
+  }
+  .post-footer-cta__body {
+    color: rgb(var(--ink-muted));
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+  .post-footer-cta__link {
+    margin-top: 0.4rem;
+  }
+  .post-footer-cta__form {
+    margin-top: 0.4rem;
+  }
+</style>

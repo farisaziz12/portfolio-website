@@ -5,6 +5,7 @@ import GridTexture from '../../components/design/GridTexture.astro';
 import ContactPanel from '../../components/design/ContactPanel.astro';
 import PortableTextRenderer from '../../components/blog/PortableTextRenderer.astro';
 import TableOfContents from '../../components/blog/TableOfContents.astro';
+import PostFooterCTA from '../../components/blog/PostFooterCTA.astro';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { allBlogPostSlugsQuery, blogPostBySlugQuery } from '../../lib/sanity/queries';
 import { formatDate, formatReadingTime } from 'shared/utils';
@@ -117,6 +118,9 @@ const categoryLabel = post.category ? (categoryLabels[post.category] || post.cat
       </article>
     </div>
   </section>
+
+  <!-- POST FOOTER CTA — newsletter + services, end-of-article conversion -->
+  <PostFooterCTA />
 
   {post.relatedTalk && (
     <section class="page-section page-section--alt">

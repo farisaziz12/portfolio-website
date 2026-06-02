@@ -1,0 +1,310 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
+import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
+import { listPublishedPosts, getPostBySlug } from '../../lib/beehiiv/posts';
+import type { BeehiivPost } from '../../lib/beehiiv/types';
+
+export async function getStaticPaths() {
+  const issues = await listPublishedPosts({ limit: 100 }).catch(() => []);
+  return issues.map((issue) => ({ params: { slug: issue.slug } }));
+}
+
+const { slug } = Astro.params;
+const issue: BeehiivPost | null = await getPostBySlug(slug as string).catch(() => null);
+if (!issue) return Astro.redirect('/newsletter');
+
+// Sort newest → oldest so "previous" = older, "next" = newer (chronologically).
+// listPublishedPosts already returns desc by publish_date, but be defensive.
+const allIssues = await listPublishedPosts({ limit: 100 }).catch(() => []);
+const sorted = [...allIssues].sort((a, b) => (b.publish_date ?? 0) - (a.publish_date ?? 0));
+const idx = sorted.findIndex((i) => i.slug === issue.slug);
+const newer = idx > 0 ? sorted[idx - 1] : null;
+const older = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null;
+
+const publishedDate = issue.publish_date
+  ? new Date(issue.publish_date * 1000)
+  : null;
+const publishedISO = publishedDate?.toISOString();
+const publishedLabel = publishedDate?.toLocaleDateString('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+const html = issue.content?.free?.web ?? '';
+
+const seoTitle = issue.meta_default_title || `${issue.title} | Newsletter`;
+const seoDescription = issue.meta_default_description || issue.subtitle || issue.preview_text || '';
+---
+
+<BaseLayout
+  title={seoTitle}
+  description={seoDescription}
+  image={issue.thumbnail_url}
+  article={true}
+  pathname={`/newsletter/${issue.slug}`}
+  publishedTime={publishedISO}
+>
+  <header class="page-hero newsletter-issue-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb">
+        <a href="/newsletter">Newsletter</a>
+        <span class="page-crumbs__sep">/</span>
+        <span class="page-crumbs__cur">{issue.title.length > 36 ? issue.title.slice(0, 34) + '…' : issue.title}</span>
+      </nav>
+
+      <div class="newsletter-issue-tags">
+        <Kicker>Newsletter</Kicker>
+        {publishedLabel && <span class="ds-tag">{publishedLabel}</span>}
+      </div>
+
+      <h1 class="page-hero__title newsletter-issue-title">{issue.title}</h1>
+      {issue.subtitle && (
+        <p class="page-hero__lead">{issue.subtitle}</p>
+      )}
+    </div>
+  </header>
+
+  {issue.thumbnail_url && (
+    <section class="newsletter-cover-section">
+      <div class="container">
+        <div class="newsletter-cover">
+          <img src={issue.thumbnail_url} alt={issue.title} loading="eager" />
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="page-section newsletter-body-section">
+    <div class="container">
+      <article class="newsletter-body prose prose-lg dark:prose-invert">
+        {html ? (
+          <Fragment set:html={html} />
+        ) : (
+          <p>
+            This issue's full text isn't available on the site yet — <a href={issue.web_url || '/newsletter'}>read it on Beehiiv</a>.
+          </p>
+        )}
+      </article>
+    </div>
+  </section>
+
+  <!-- SUBSCRIBE CTA -->
+  <section class="page-section page-section--alt">
+    <div class="container">
+      <div class="wide newsletter-cta ds-reveal">
+        <div>
+          <Kicker>Don't miss the next one</Kicker>
+          <h2 class="page-h2">Get the next issue</h2>
+          <p class="newsletter-cta__lead">
+            If this one was useful, the next will be too. One email, occasionally — no spam.
+          </p>
+        </div>
+        <div>
+          <GeneralSubscribe
+            client:load
+            variant="card"
+            source="newsletter-archive"
+            heading="Subscribe"
+            lead="One click to unsubscribe later."
+            ctaLabel="Subscribe"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREV / NEXT NAV -->
+  {(newer || older) && (
+    <section class="page-section">
+      <div class="container">
+        <div class="newsletter-nav">
+          {older ? (
+            <a href={`/newsletter/${older.slug}`} class="ds-card ds-card-interactive newsletter-nav__card">
+              <span class="newsletter-nav__label">← Older issue</span>
+              <span class="newsletter-nav__title">{older.title}</span>
+            </a>
+          ) : <div></div>}
+          {newer ? (
+            <a href={`/newsletter/${newer.slug}`} class="ds-card ds-card-interactive newsletter-nav__card newsletter-nav__card--right">
+              <span class="newsletter-nav__label">Newer issue →</span>
+              <span class="newsletter-nav__title">{newer.title}</span>
+            </a>
+          ) : <div></div>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <script>
+    function initPage() {
+      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
+      window.setTimeout(() => {
+        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
+      }, 600);
+
+      try {
+        const slug = window.location.pathname.split('/').filter(Boolean).pop();
+        (window as any).posthog?.capture('newsletter_issue_viewed', { slug });
+      } catch {}
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage, { once: true });
+    } else { initPage(); }
+    document.addEventListener('astro:after-swap', initPage);
+  </script>
+</BaseLayout>
+
+<style>
+  .newsletter-issue-hero { padding-block: clamp(3rem, 6vw, 5rem); }
+  .newsletter-issue-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .newsletter-issue-title { max-width: 26ch; }
+
+  .newsletter-cover-section {
+    padding-block: clamp(1.5rem, 3vw, 2.5rem);
+    background: rgb(var(--surface-1));
+    border-bottom: 1px solid rgb(var(--edge));
+  }
+  .newsletter-cover {
+    max-width: 920px;
+    margin: 0 auto;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgb(var(--edge));
+  }
+  .newsletter-cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .newsletter-body-section { padding-block: clamp(2rem, 4vw, 3rem); }
+  .newsletter-body {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  /* Beehiiv ships its own inline styles in some blocks — neutralize them where we
+     can so the issue body inherits site typography. We can't strip everything, but
+     we override font-family/color so the read feels native. */
+  .newsletter-body :global(*) {
+    font-family: inherit !important;
+  }
+  .newsletter-body :global(h1),
+  .newsletter-body :global(h2),
+  .newsletter-body :global(h3),
+  .newsletter-body :global(h4) {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif) !important;
+    color: rgb(var(--ink));
+  }
+  .newsletter-body :global(p),
+  .newsletter-body :global(li) {
+    color: rgb(var(--ink-muted));
+  }
+  .newsletter-body :global(a) {
+    color: rgb(var(--accent-bright));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .newsletter-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .newsletter-body :global(blockquote) {
+    border-left: 3px solid rgb(var(--accent));
+    padding-left: 1rem;
+    color: rgb(var(--ink));
+    font-style: italic;
+    margin: 1.4rem 0;
+  }
+  .newsletter-body :global(code) {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace) !important;
+    background: rgb(var(--surface-1));
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+  .newsletter-body :global(pre) {
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .newsletter-body :global(pre code) {
+    background: transparent;
+    padding: 0;
+  }
+  .newsletter-body :global(hr) {
+    border: none;
+    border-top: 1px solid rgb(var(--edge));
+    margin: 2rem 0;
+  }
+
+  .newsletter-cta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1.6rem, 4vw, 3rem);
+    align-items: center;
+    padding: clamp(2rem, 4vw, 3rem);
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 20px;
+  }
+  @media (max-width: 760px) {
+    .newsletter-cta { grid-template-columns: 1fr; }
+  }
+  .newsletter-cta__lead {
+    color: rgb(var(--ink-muted));
+    margin-top: 0.8rem;
+    max-width: 42ch;
+  }
+
+  .newsletter-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+  @media (max-width: 640px) {
+    .newsletter-nav { grid-template-columns: 1fr; }
+  }
+  .newsletter-nav__card {
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    color: inherit;
+  }
+  .newsletter-nav__card--right { text-align: right; }
+  .newsletter-nav__label {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .newsletter-nav__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgb(var(--ink));
+    line-height: 1.3;
+  }
+</style>
