@@ -4,6 +4,7 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch } from '../lib/sanity/client';
+import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import {
   impactPageQuery,
   featuredImpactMetricsV2Query,
@@ -96,22 +97,22 @@ const product = cmsByDomain.get('product');
 
 const topStats: TopStat[] = [
   {
-    to: stats.totalEvents || 86,
+    to: stats.totalEvents || FALLBACK_SPEAKER_STATS.totalEvents,
     label: 'Talks given',
-    note: `Across ${stats.countries || 20} countries.`,
+    note: `Across ${stats.countries || FALLBACK_SPEAKER_STATS.countries} countries.`,
   },
   {
-    to: community?.headlineNumber ?? 425,
+    to: community?.headlineNumber ?? PROOF.communityMembers,
     label: community?.label || 'Community members',
     note: community?.contextNote || 'Grown at ZurichJS.',
   },
   {
-    to: leadership?.headlineNumber ?? 15,
+    to: leadership?.headlineNumber ?? PROOF.engineersLed,
     label: leadership?.label || 'Engineers led',
     note: leadership?.contextNote || 'Across two teams.',
   },
   {
-    to: product?.headlineNumber ?? 3.5,
+    to: product?.headlineNumber ?? PROOF.revenueMultiplier,
     decimals: product?.unit === 'x' ? 1 : (product?.headlineNumber && product.headlineNumber < 10 ? 1 : 0),
     suffix: product?.unit === 'x' || !product ? '×' : product.unit === 'percent' ? '%' : '',
     label: product?.label || 'Revenue impact',

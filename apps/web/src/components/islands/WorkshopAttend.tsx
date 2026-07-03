@@ -125,7 +125,7 @@ function renderSpan(child: PortableTextChild, markDefs?: PortableTextMarkDef[]) 
   }
   if (child.marks?.includes('code')) {
     node = (
-      <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-sm font-mono text-[rgb(var(--ink))]">
+      <code className="px-1.5 py-0.5 rounded bg-surface-3 text-sm font-mono text-[rgb(var(--ink))]">
         {node}
       </code>
     );
@@ -266,19 +266,19 @@ function sanityImageUrl(ref: string, projectId: string, dataset: string, width =
 }
 
 const calloutColors: Record<CalloutType, string> = {
-  info: 'bg-blue-500/10 border-blue-500/30',
-  warning: 'bg-amber-500/10 border-amber-500/30',
-  success: 'bg-emerald-500/10 border-emerald-500/30',
-  error: 'bg-red-500/10 border-red-500/30',
-  tip: 'bg-violet-500/10 border-violet-500/30',
+  info: 'bg-accent/10 border-accent/30',
+  warning: 'bg-[rgb(var(--warn)/0.1)] border-[rgb(var(--warn)/0.3)]',
+  success: 'bg-signal/10 border-signal/30',
+  error: 'bg-danger/10 border-danger/30',
+  tip: 'bg-accent-bright/10 border-accent-bright/30',
 };
 
 const calloutTextColors: Record<CalloutType, string> = {
-  info: 'text-blue-600 dark:text-blue-400',
-  warning: 'text-amber-600 dark:text-amber-400',
-  success: 'text-emerald-600 dark:text-emerald-400',
-  error: 'text-red-600 dark:text-red-400',
-  tip: 'text-violet-600 dark:text-violet-400',
+  info: 'text-accent',
+  warning: 'text-[rgb(var(--warn))]',
+  success: 'text-signal',
+  error: 'text-danger',
+  tip: 'text-accent-bright',
 };
 
 const calloutIcons: Record<CalloutType, string> = {
@@ -409,36 +409,36 @@ function CodeBlockRenderer({ block }: { block: CodeBlock }) {
   return (
     <div className="my-6 group relative">
       {block.filename && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-t-lg border-b border-slate-700">
-          <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex items-center gap-2 px-4 py-2 bg-surface-3 rounded-t-lg border-b border-edge">
+          <svg className="w-4 h-4 text-ink-faint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span className="text-sm text-slate-300 font-mono">{block.filename}</span>
+          <span className="text-sm text-ink-muted font-mono">{block.filename}</span>
         </div>
       )}
       <div className={`relative ${block.filename ? 'rounded-b-lg' : 'rounded-lg'} overflow-hidden`}>
         {highlightedHtml ? (
           <div
-            className="overflow-x-auto text-sm [&>pre]:p-4 [&>pre]:bg-slate-900 [&>pre]:!m-0"
+            className="overflow-x-auto text-sm [&>pre]:p-4 [&>pre]:!m-0"
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}
           />
         ) : (
-          <pre className={`overflow-x-auto p-4 bg-slate-900 text-slate-100 text-sm font-mono ${block.filename ? '' : 'rounded-lg'}`}>
+          <pre className={`overflow-x-auto p-4 bg-surface-2 text-ink text-sm font-mono ${block.filename ? '' : 'rounded-lg'}`}>
             <code>{code}</code>
           </pre>
         )}
         <button
           type="button"
           onClick={handleCopy}
-          className="absolute top-3 right-3 p-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label="Copy code"
         >
           {copied ? (
-            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           ) : (
-            <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           )}
@@ -571,7 +571,7 @@ function GateView({
             </button>
 
             {status === 'error' && (
-              <p className="text-sm text-red-500 text-center">Something went wrong — try again.</p>
+              <p className="text-sm text-danger text-center">Something went wrong — try again.</p>
             )}
           </form>
         </div>
@@ -635,7 +635,7 @@ function ScheduleView({
         </div>
         <div className="h-2 rounded-full bg-[rgb(var(--surface-overlay))]">
           <div
-            className="h-2 rounded-full bg-emerald-500 transition-all duration-300"
+            className="h-2 rounded-full bg-signal transition-all duration-300"
             style={{ width: `${sections.length > 0 ? (completedCount / sections.length) * 100 : 0}%` }}
           />
         </div>
@@ -656,7 +656,7 @@ function ScheduleView({
                 {/* Step indicator */}
                 <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold ${
                   done
-                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                    ? 'bg-signal/10 text-signal'
                     : 'bg-[rgb(var(--surface-overlay))] text-[rgb(var(--ink-faint))]'
                 }`}>
                   {done ? (
@@ -783,7 +783,7 @@ function SectionView({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-signal hover:bg-signal-deep transition-colors"
           >
             Back to schedule
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

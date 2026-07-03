@@ -77,12 +77,12 @@ function getPrefix(unit?: string, prefix?: string): string {
 // Helper to get highlight color class
 function getHighlightColor(color?: string): string {
   const colors: Record<string, string> = {
-    indigo: 'text-indigo-500',
-    violet: 'text-violet-500',
-    pink: 'text-pink-500',
-    emerald: 'text-emerald-500',
-    amber: 'text-amber-500',
-    blue: 'text-blue-500',
+    indigo: 'text-accent',
+    violet: 'text-accent',
+    pink: 'text-accent-bright',
+    emerald: 'text-signal',
+    amber: 'text-accent-bright',
+    blue: 'text-accent',
   };
   return colors[color || 'indigo'] || colors.indigo;
 }

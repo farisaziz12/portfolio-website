@@ -66,15 +66,15 @@ const cities = stats?.cities ?? new Set(events.map((e) => e.location?.city).filt
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalEvents}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalEvents}</div>
           <div class="ds-stat__label">Events</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{countries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{countries}</div>
           <div class="ds-stat__label">Countries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{cities}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{cities}</div>
           <div class="ds-stat__label">Cities</div>
         </div>
       </div>

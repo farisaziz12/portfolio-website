@@ -7,8 +7,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
-    "typecheck": "astro check"
+    "lint": "eslint . && node scripts/ui-guardrails.mjs",
+    "typecheck": "astro check",
+    "lint:ui": "node scripts/ui-guardrails.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

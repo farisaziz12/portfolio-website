@@ -37,13 +37,7 @@ export function SocialPostCard({
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div
-        className={`
-          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col
-          ${isTwitter
-            ? 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
-            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-blue-500/10'
-          }
-        `}
+        className="p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col bg-surface-2 border border-edge hover:shadow-xl hover:shadow-black/20"
       >
         {/* Header - clickable to open post */}
         <a
@@ -61,37 +55,37 @@ export function SocialPostCard({
           ) : (
             <div className={`
               w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold
-              ${isTwitter ? 'bg-slate-800 text-white' : 'bg-[#0a66c2] text-white'}
+              ${isTwitter ? 'bg-ink text-bg' : 'bg-[#0a66c2] text-white'}
             `}>
               {post.author?.charAt(0)}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <p className={`font-semibold text-sm truncate ${isTwitter ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+              <p className="font-semibold text-sm truncate text-ink">
                 {post.author}
               </p>
               {isTwitter && post.authorHandle && (
-                <span className="text-slate-500 text-xs">@{post.authorHandle}</span>
+                <span className="text-ink-faint text-xs">@{post.authorHandle}</span>
               )}
             </div>
             {post.authorRole && (
-              <p className={`text-xs truncate ${isTwitter ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className="text-xs truncate text-ink-muted">
                 {post.authorRole}
               </p>
             )}
             {!post.authorRole && !isTwitter && post.authorHandle && (
-              <p className="text-xs truncate text-slate-500 dark:text-slate-400">
+              <p className="text-xs truncate text-ink-muted">
                 @{post.authorHandle}
               </p>
             )}
             {post.postDate && (
-              <p className={`text-xs ${isTwitter ? 'text-slate-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className="text-xs text-ink-faint">
                 {new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             )}
           </div>
-          <div className={isTwitter ? 'text-white' : 'text-[#0a66c2]'}>
+          <div className={isTwitter ? 'text-ink' : 'text-[#0a66c2]'}>
             {isTwitter ? (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -106,23 +100,19 @@ export function SocialPostCard({
 
         {/* Content */}
         <p className={`
-          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow
-          ${isTwitter ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}
+          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow text-ink-muted
           ${isExpanded ? '' : 'line-clamp-4'}
         `}>
           {post.content}
         </p>
 
         {/* Footer */}
-        <div className={`flex items-center justify-between pt-3 border-t mt-auto ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
+        <div className="flex items-center justify-between pt-3 border-t mt-auto border-edge">
           {showExpandButton ? (
             <button
               type="button"
               onClick={toggleExpand}
-              className={`
-                text-xs font-medium cursor-pointer select-none
-                ${isTwitter ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}
-              `}
+              className="text-xs font-medium cursor-pointer select-none text-accent hover:text-accent-bright"
             >
               {isExpanded ? 'Show less' : 'Show more'}
             </button>
@@ -133,7 +123,7 @@ export function SocialPostCard({
             href={post.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-1 text-xs font-medium ${isTwitter ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+            className="flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-bright"
           >
             Read on {isTwitter ? 'X' : 'LinkedIn'}
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

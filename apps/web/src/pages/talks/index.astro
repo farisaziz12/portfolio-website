@@ -44,15 +44,15 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalTalks}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalTalks}</div>
           <div class="ds-stat__label">Talks</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalDeliveries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalDeliveries}</div>
           <div class="ds-stat__label">Deliveries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{uniqueTopics}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{uniqueTopics}</div>
           <div class="ds-stat__label">Topics</div>
         </div>
       </div>

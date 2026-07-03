@@ -12,7 +12,8 @@ import {
   allTalksQuery,
 } from '../lib/sanity/queries';
 import { getCountryFlag } from 'shared/utils';
-import { isRealConference } from '../lib/conferences';
+import { topConferences } from '../lib/conferences';
+import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { bookingYears } from '../lib/availability';
 
 interface UpcomingEvent {
@@ -55,9 +56,7 @@ interface TalkListItem {
 const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 60, upcomingEvents: 0, countries: 12, cities: 25, talks: 0, workshops: 0,
-  })),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
 ]);
 
@@ -89,21 +88,8 @@ const upcomingCount = normalisedUpcoming.length;
 // Top 3 past talks for the carousel — prefer ones with conference set, ordered by date.
 const featuredPastTalks = talks.slice(0, 3);
 
-// Conferences logo wall — case-insensitive dedupe, take 6 most-frequent.
-// Filter out placeholder values like "TBD".
-const confCounts = new Map<string, { display: string; count: number }>();
-for (const e of pastEvents) {
-  const raw = e.conference?.trim();
-  if (!isRealConference(raw)) continue;
-  const key = raw!.toLowerCase().replace(/\s+/g, ' ');
-  const existing = confCounts.get(key);
-  if (existing) existing.count += 1;
-  else confCounts.set(key, { display: raw!, count: 1 });
-}
-const topConferences = Array.from(confCounts.values())
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 6)
-  .map((c) => c.display);
+// Conferences logo wall — shared aggregation (see lib/conferences.ts).
+const conferenceWall = topConferences(pastEvents);
 
 const topics = [
   {
@@ -160,15 +146,15 @@ const nextThree = normalisedUpcoming.slice(0, 3);
 
       <div class="speaking-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.totalEvents}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.totalEvents}</div>
           <div class="ds-stat__label">Events</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.countries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.countries}</div>
           <div class="ds-stat__label">Countries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.cities}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.cities}</div>
           <div class="ds-stat__label">Cities</div>
         </div>
       </div>
@@ -266,7 +252,7 @@ const nextThree = normalisedUpcoming.slice(0, 3);
 
   <!-- PAST TALKS -->
   {featuredPastTalks.length > 0 && (
-    <section class="speaking-section" id="talks" style="scroll-margin-top:80px;">
+    <section class="speaking-section anchor-target" id="talks">
       <div class="container">
         <div class="speaking-section__head">
           <div>
@@ -303,19 +289,19 @@ const nextThree = normalisedUpcoming.slice(0, 3);
   )}
 
   <!-- LOGO WALL -->
-  {topConferences.length > 0 && (
+  {conferenceWall.length > 0 && (
     <section class="speaking-section-sm speaking-logos-wrap">
       <div class="container">
         <p class="speaking-logos__label">Stages I've shared</p>
         <div class="speaking-logos">
-          {topConferences.map((c) => <span>{c}</span>)}
+          {conferenceWall.map((c) => <span>{c}</span>)}
         </div>
       </div>
     </section>
   )}
 
   <!-- INVITE CTA -->
-  <section class="speaking-section" id="invite" style="scroll-margin-top:80px;">
+  <section class="speaking-section anchor-target" id="invite">
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
@@ -490,9 +476,9 @@ const nextThree = normalisedUpcoming.slice(0, 3);
     background: rgb(var(--signal) / 0.08);
   }
   .event-row__tag--meetup {
-    color: #F2C94C; /* warm amber — semantic "community gathering", distinct from blue/teal */
-    border-color: rgba(242, 201, 76, 0.4);
-    background: rgba(242, 201, 76, 0.08);
+    color: rgb(var(--warn)); /* warm amber — semantic "community gathering", distinct from blue/teal */
+    border-color: rgb(var(--warn) / 0.4);
+    background: rgb(var(--warn) / 0.08);
   }
 
   .event-row__loc {

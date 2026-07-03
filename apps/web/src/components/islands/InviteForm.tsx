@@ -80,6 +80,7 @@ export default function InviteForm() {
         return;
       }
       setSuccess(true);
+      try { (window as any).posthog?.capture('invite_form_submitted', { format: fields.format }); } catch (_) {}
     } catch (err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
     } finally {

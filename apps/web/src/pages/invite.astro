@@ -11,7 +11,7 @@ import {
   speakerProfileQuery,
   upcomingEventsQuery,
 } from '../lib/sanity/queries';
-import { isRealConference } from '../lib/conferences';
+import { topConferences } from '../lib/conferences';
 import { bookingYears } from '../lib/availability';
 
 interface PastEvent { _id: string; conference?: string }
@@ -117,21 +117,8 @@ function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: st
   return { tone: 'booked', label: 'Booked' };
 }
 
-// Top 6 conferences for the proof logo wall (case-insensitive dedupe).
-// Filter out placeholder values like "TBD" — see lib/conferences.ts.
-const conf = new Map<string, { display: string; count: number }>();
-for (const e of pastEvents) {
-  const raw = e.conference?.trim();
-  if (!isRealConference(raw)) continue;
-  const key = raw!.toLowerCase().replace(/\s+/g, ' ');
-  const existing = conf.get(key);
-  if (existing) existing.count += 1;
-  else conf.set(key, { display: raw!, count: 1 });
-}
-const topConferences = Array.from(conf.values())
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 6)
-  .map((c) => c.display);
+// Top 6 conferences for the proof logo wall — shared aggregation (lib/conferences.ts).
+const conferenceWall = topConferences(pastEvents);
 
 // Pick up to 3 testimonials for the proof block (no hardcoded fallback — section
 // only renders when Sanity actually returns content).
@@ -389,14 +376,14 @@ const proofQuotes = testimonials.slice(0, 3);
   )}
 
   <!-- PROOF -->
-  {(topConferences.length > 0 || proofQuotes.length > 0) && (
+  {(conferenceWall.length > 0 || proofQuotes.length > 0) && (
     <section class="invite-proof">
       <div class="container">
-        {topConferences.length > 0 && (
+        {conferenceWall.length > 0 && (
           <>
             <p class="invite-proof__label">Recently on stage at</p>
             <div class="invite-proof__logos">
-              {topConferences.map((c) => <span>{c}</span>)}
+              {conferenceWall.map((c) => <span>{c}</span>)}
             </div>
           </>
         )}
@@ -932,10 +919,9 @@ const proofQuotes = testimonials.slice(0, 3);
     border-color: rgb(var(--signal) / 0.3);
   }
   .cal-month__status--limited {
-    /* warning tone — derived from accent-bright at lower saturation feel; use a warm amber-ish via direct hex to avoid adding tokens */
-    color: #F4B860;
-    background: rgba(244, 184, 96, 0.1);
-    border-color: rgba(244, 184, 96, 0.3);
+    color: rgb(var(--warn));
+    background: rgb(var(--warn) / 0.1);
+    border-color: rgb(var(--warn) / 0.3);
   }
   .cal-month__status--booked {
     color: rgb(var(--danger));
@@ -971,7 +957,7 @@ const proofQuotes = testimonials.slice(0, 3);
     color: rgb(var(--ink-muted));
   }
   .cal-legend__item--open { color: rgb(var(--signal)); }
-  .cal-legend__item--limited { color: #F4B860; }
+  .cal-legend__item--limited { color: rgb(var(--warn)); }
   .cal-legend__item--booked { color: rgb(var(--danger)); }
 
   /* ── Bios ───────────────────────────────────────────────────────────────── */

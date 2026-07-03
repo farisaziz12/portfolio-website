@@ -120,6 +120,21 @@ const {
         document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
+
+    <!-- Funnel analytics: any element with data-track fires a cta_click event.
+         One document-level listener — survives ViewTransitions swaps. -->
+    <script is:inline>
+      document.addEventListener('click', function (e) {
+        var el = e.target && e.target.closest ? e.target.closest('[data-track]') : null;
+        if (!el || !window.posthog) return;
+        window.posthog.capture('cta_click', {
+          cta: el.getAttribute('data-track'),
+          label: el.getAttribute('data-track-label') || (el.textContent || '').trim().slice(0, 60),
+          href: el.getAttribute('href') || undefined,
+          path: location.pathname,
+        });
+      });
+    </script>
   </head>
 
   <body class="min-h-screen flex flex-col">

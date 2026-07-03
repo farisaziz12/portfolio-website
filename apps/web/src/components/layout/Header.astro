@@ -55,7 +55,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
           </a>
           <div class="mm-foot">
             <span class="small">Booking {bookingYearsLabel} dates</span>
-            <a class="ds-link" href="/invite">Invite me
+            <a class="ds-link" href="/invite" data-track="megamenu-invite">Invite me
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
@@ -84,7 +84,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
           </a>
           <div class="mm-foot">
             <span class="small">Available {quarterLabel}</span>
-            <a class="ds-link" href="https://cal.com/farisaziz12/discovery-call" target="_blank" rel="noopener noreferrer">Book a discovery call
+            <a class="ds-link" href="https://cal.com/farisaziz12/discovery-call" target="_blank" rel="noopener noreferrer" data-track="megamenu-discovery-call">Book a discovery call
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
@@ -103,7 +103,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
 
       <ThemeToggle client:load />
 
-      <a href={ctaHref} class="ds-btn ds-btn-primary site-nav__cta">{ctaLabel}</a>
+      <a href={ctaHref} class="ds-btn ds-btn-primary site-nav__cta" data-track="header-cta" data-track-label={ctaLabel}>{ctaLabel}</a>
 
       <button type="button" class="site-nav__burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

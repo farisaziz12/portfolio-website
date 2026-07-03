@@ -6,6 +6,23 @@ This document is the result of a full code-level audit of every page, navigation
 path, and the theming/styling system. It is organized as: **current-state map → findings → phased
 strategy**. Findings carry `file:line` references so each one is directly actionable.
 
+> **Execution status (2026-07-03):** Phases 0–4 have been implemented on this branch, with these
+> exceptions that need a human/Sanity Studio:
+> 1. **Enter the drafted consulting/mentorship offers into Sanity** (`SANITY_SERVICES_CONTENT.md`)
+>    with real cal.com booking URLs — until then `/consulting` shows its "Coming soon" empty state.
+> 2. Longer term, move the proof numbers into Sanity; code-side they are now at least unified in
+>    `src/lib/proof.ts` (single place to edit).
+> 3. Deferred as low-value: consolidating the ~5 duplicated image-scrim CSS blocks into a shared
+>    class (cosmetic, CSS-only duplication over images; guardrails keep it from growing).
+> 4. `pnpm lint` now runs `scripts/ui-guardrails.mjs`, which fails on any new raw palette class and
+>    on growth of the hex-literal (11/15) and inline-style (47/50) baselines — ratchet those down
+>    over time.
+> Labels chosen in Phase 2: `/events` = **Schedule**, `/talks` = **Talk catalogue**, new
+> **/contact** = "Work with me" router; header CTA is context-aware (speaking silo → "Invite me",
+> everywhere else → "Work with me"). PostHog now receives `cta_click` (from `data-track`
+> attributes), `invite_form_submitted`, and `mentorship_inquiry_submitted` — build funnels on
+> these after 4–6 weeks of data.
+
 ---
 
 ## 1. Executive summary

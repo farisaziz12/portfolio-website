@@ -74,7 +74,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
           </span>
         </label>
         {status === 'error' && (
-          <p className="text-xs text-red-500">Something went wrong — try again.</p>
+          <p className="text-xs text-danger">Something went wrong — try again.</p>
         )}
       </form>
     );
@@ -122,7 +122,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
         </button>
 
         {status === 'error' && (
-          <p className="text-sm text-red-500 text-center">
+          <p className="text-sm text-danger text-center">
             Something went wrong — try again.
           </p>
         )}
