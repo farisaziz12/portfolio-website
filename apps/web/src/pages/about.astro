@@ -106,7 +106,13 @@ const fallbackTestimonials: Testimonial[] = [
   { _id: 'hh', quote: 'Whenever I need guidance about my career, there is one person I always turn to. He\'s been a mentor and a constant source of insight.', author: 'Hammad Hassan', role: 'Full-Stack Engineer' },
   { _id: 'rg', quote: 'An incredible engineer and human. I had the chance to meet Faris during the speaker session at ReactSummit.', author: 'Rajni Gediya', role: 'Staff Engineer', company: 'Mobile' },
 ];
-const wallTestimonials = testimonials.length > 0 ? testimonials.slice(0, 6) : fallbackTestimonials;
+// Real CMS content only: the hardcoded quotes have no photos, and mixed in
+// with avatar-rich social cards they read as broken images. They're a last
+// resort so the section isn't empty before Sanity has any data.
+const wallTestimonials =
+  testimonials.length > 0 ? testimonials.slice(0, 6)
+  : socialPosts.length > 0 ? []
+  : fallbackTestimonials;
 
 // Same social-card treatment as the home page: real posts + testimonials with
 // avatars, interleaved by SocialWallIsland. Image URLs resolve server-side.
