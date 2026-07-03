@@ -35,13 +35,15 @@ const regularBlogPosts = blogPosts.filter((p) => !p.featured);
 
 const totalPosts = externalPosts.length + blogPosts.length;
 
-const contentTypes = [
-  { name: 'Blog', code: 'blog', count: blogPosts.length, anchor: '#blog' },
-  { name: 'Articles', code: 'articles', count: articles.length, anchor: '#articles' },
-  { name: 'Podcasts', code: 'podcasts', count: podcasts.length, anchor: '#podcasts' },
-  { name: 'Interviews', code: 'interviews', count: interviews.length, anchor: '#interviews' },
-  { name: 'Other', code: 'other', count: other.length, anchor: '#other' },
+// Tab model: everything on the page lives in one of three panes so podcasts
+// aren't buried under three scrolls of writing. Legacy hash anchors map to
+// their pane in the init script below.
+const tabs = [
+  { id: 'writing', label: 'Writing', count: blogPosts.length + articles.length },
+  { id: 'podcasts', label: 'Podcasts & interviews', count: podcasts.length + interviews.length },
+  { id: 'more', label: 'Everything else', count: other.length },
 ].filter((t) => t.count > 0);
+const defaultTab = tabs[0]?.id || 'writing';
 
 const categoryLabels: Record<string, string> = {
   tutorial: 'Tutorial',
@@ -76,13 +78,19 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
         Self-hosted blog posts plus everything else I've written, recorded, or guested on across the web.
       </p>
 
-      {contentTypes.length > 0 && (
-        <div class="blog-anchors">
-          {contentTypes.map((t) => (
-            <a href={t.anchor} class="ds-pill">
-              {t.name}
-              <span class="blog-anchors__count">{t.count}</span>
-            </a>
+      {tabs.length > 0 && (
+        <div class="blog-tabs" role="tablist" aria-label="Content type">
+          {tabs.map((t) => (
+            <button
+              type="button"
+              class="ds-pill blog-tabs__tab"
+              role="tab"
+              data-blog-tab={t.id}
+              aria-selected={t.id === defaultTab ? 'true' : 'false'}
+            >
+              {t.label}
+              <span class="blog-tabs__count">{t.count}</span>
+            </button>
           ))}
         </div>
       )}
@@ -110,6 +118,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     </section>
   ) : (
     <>
+      <div data-blog-pane="writing" hidden={defaultTab !== 'writing'}>
       {/* BLOG POSTS */}
       {blogPosts.length > 0 && (
         <section id="blog" class="page-section">
@@ -207,6 +216,9 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
         </section>
       )}
 
+      </div>
+
+      <div data-blog-pane="podcasts" hidden={defaultTab !== 'podcasts'}>
       {/* PODCASTS */}
       {podcasts.length > 0 && (
         <section id="podcasts" class="page-section">
@@ -298,6 +310,9 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
         </section>
       )}
 
+      </div>
+
+      <div data-blog-pane="more" hidden={defaultTab !== 'more'}>
       {/* OTHER */}
       {other.length > 0 && (
         <section id="other" class="page-section">
@@ -324,6 +339,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
           </div>
         </section>
       )}
+      </div>
     </>
   )}
 
@@ -342,16 +358,57 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     </div>
   </section>
 
+  <script>
+    // Tab switching. Legacy section anchors (#blog/#articles/#podcasts/
+    // #interviews/#other) still deep-link — they resolve to their pane.
+    function initBlogTabs() {
+      const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-blog-tab]'));
+      const panes = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-pane]'));
+      if (!tabs.length || !panes.length) return;
+
+      const LEGACY: Record<string, string> = {
+        blog: 'writing', articles: 'writing',
+        podcasts: 'podcasts', interviews: 'podcasts',
+        other: 'more',
+      };
+
+      const select = (id: string, updateHash: boolean) => {
+        if (!tabs.some((t) => t.dataset.blogTab === id)) return;
+        tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.blogTab === id)));
+        panes.forEach((p) => { p.hidden = p.dataset.blogPane !== id; });
+        if (updateHash) history.replaceState(null, '', `#${id}`);
+      };
+
+      tabs.forEach((t) => t.addEventListener('click', () => select(t.dataset.blogTab || '', true)));
+
+      const raw = location.hash.replace('#', '');
+      if (raw) select(LEGACY[raw] || raw, false);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBlogTabs, { once: true });
+    } else { initBlogTabs(); }
+    document.addEventListener('astro:after-swap', initBlogTabs);
+  </script>
 </BaseLayout>
 
 <style>
-  .blog-anchors {
+  .blog-tabs {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1.6rem;
   }
-  .blog-anchors__count {
+  .blog-tabs__tab {
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .blog-tabs__tab[aria-selected='true'] {
+    background: rgb(var(--accent));
+    border-color: rgb(var(--accent));
+    color: #fff;
+  }
+  .blog-tabs__tab[aria-selected='true'] .blog-tabs__count { color: rgb(255 255 255 / 0.75); }
+  .blog-tabs__count {
     font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
     font-size: 0.7rem;
     color: rgb(var(--ink-faint));
