@@ -2289,9 +2289,33 @@
     font-size: 0.9rem;
     color: rgb(var(--ink-faint));
   }
+  /* Indented section sub-links under Speaking / Services */
+  .mobile-drawer__sublinks {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgb(var(--edge));
+    padding: 0.35rem 0 0.75rem;
+  }
+  .mobile-drawer__sublinks a {
+    font-size: 1.05rem;
+    color: rgb(var(--ink-muted));
+    padding: 0.45rem 0 0.45rem 1.1rem;
+  }
+  .mobile-drawer__sublinks a:active,
+  .mobile-drawer__sublinks a:hover {
+    color: rgb(var(--ink));
+  }
   .mobile-drawer__foot {
     margin-top: auto;
     padding-top: 2rem;
+  }
+
+  /* Small cross-funnel link row under contact panels ("Want me at your event instead?") */
+  .ds-crosslink {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.92rem;
+    color: rgb(var(--ink-muted));
   }
 
   /* Social icon button */

@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import { availabilityLabel } from '../lib/availability';
+
+// The single front door for every way of working together. Each card routes to
+// the right mechanism: the speaker-invite form, the cal.com discovery call, or
+// the mentorship inquiry form — plus a plain-email fallback underneath.
+const doors = [
+  {
+    href: '/invite',
+    kicker: 'Conferences · meetups · internal events',
+    title: 'Invite me to speak',
+    desc: 'Keynotes, talks, panels and full-day workshops. Tell me about your audience and I’ll tailor something to fit — I reply within two days.',
+    cta: 'Send an invite',
+    icon: '<path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
+    external: false,
+  },
+  {
+    href: 'https://cal.com/farisaziz12/discovery-call',
+    kicker: 'Teams · startups · agencies',
+    title: 'Book a consulting call',
+    desc: 'A free 20-minute discovery call about architecture, performance, payments or team enablement. No pitch, no obligation.',
+    cta: 'Pick a time',
+    icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    external: true,
+  },
+  {
+    href: '/mentorship#apply',
+    kicker: 'Individual engineers',
+    title: 'Get mentored',
+    desc: '1:1 coaching on career strategy, skills and confidence. Send an inquiry with your goals and budget — I reply within two days.',
+    cta: 'Send an inquiry',
+    icon: '<circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 7a3 3 0 0 1 0 6M18.5 19a5 5 0 0 0-3-4.6"/>',
+    external: false,
+  },
+];
+---
+
+<BaseLayout
+  title="Work with me — Faris Aziz"
+  description="Invite Faris to speak, book a consulting discovery call, or start a mentorship inquiry — one page, three doors."
+  pathname="/contact"
+>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>Work with me</Kicker>
+      <span class="ds-pill ds-pill--signal contact-avail">
+        <span class="ds-dot ds-dot--pulse"></span>
+        {availabilityLabel('Available')}
+      </span>
+      <h1 class="page-hero__title">Three doors, <span class="accent-word">one inbox</span>.</h1>
+      <p class="page-hero__lead">
+        Speaking, consulting or mentorship — pick the one that fits. Everything lands directly with me, and I reply within two days.
+      </p>
+    </div>
+  </header>
+
+  <section class="page-section">
+    <div class="container">
+      <div class="contact-doors wide">
+        {doors.map((d) => (
+          <a
+            href={d.href}
+            class="ds-card ds-card-interactive contact-door ds-reveal"
+            target={d.external ? '_blank' : undefined}
+            rel={d.external ? 'noopener noreferrer' : undefined}
+            data-track="contact-door"
+            data-track-label={d.title}
+          >
+            <span class="contact-door__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={d.icon} />
+            </span>
+            <span class="contact-door__kicker">{d.kicker}</span>
+            <h2 class="contact-door__title">{d.title}</h2>
+            <p class="contact-door__desc">{d.desc}</p>
+            <span class="contact-door__go">
+              {d.cta}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <p class="contact-fallback ds-reveal">
+        Not sure which fits, or something else entirely?
+        <a href="mailto:hello@farisaziz.com" class="ds-link">Email me directly</a>
+        — or find me on
+        <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-link">LinkedIn</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-avail { margin-bottom: 1.2rem; display: inline-flex; }
+
+  .contact-doors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+
+  .contact-door {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.8rem 1.6rem;
+  }
+
+  .contact-door__icon {
+    width: 26px;
+    height: 26px;
+    color: rgb(var(--accent-bright));
+    display: inline-flex;
+    margin-bottom: 0.4rem;
+  }
+  .contact-door__icon svg { width: 100%; height: 100%; }
+
+  .contact-door__kicker {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+
+  .contact-door__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+  }
+
+  .contact-door__desc {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
+
+  .contact-door__go {
+    margin-top: auto;
+    padding-top: 0.8rem;
+    color: rgb(var(--accent-bright));
+    font-size: 0.76rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .contact-door__go svg {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .contact-door:hover .contact-door__go svg { transform: translateX(3px); }
+
+  .contact-fallback {
+    margin-top: 2.2rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  @media (max-width: 860px) {
+    .contact-doors { grid-template-columns: 1fr; }
+  }
+</style>

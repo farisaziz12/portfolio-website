@@ -175,6 +175,9 @@ const jsonLd = videoUrl
   : null;
 
 const description = (talk.abstract && talk.abstract.split('\n')[0]) || `${talk.title} — a talk by Faris Aziz`;
+
+// Prefilled invite link so the form opens with this talk's context.
+const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
 ---
 
 <BaseLayout
@@ -267,7 +270,7 @@ const description = (talk.abstract && talk.abstract.split('\n')[0]) || `${talk.t
           {slidesUrl && (
             <a href={slidesUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">Download slides</a>
           )}
-          <a href="/invite" class={videoUrl ? 'ds-btn ds-btn-secondary' : 'ds-btn ds-btn-primary'}>Invite me to give this talk</a>
+          <a href={inviteHref} class={videoUrl ? 'ds-btn ds-btn-secondary' : 'ds-btn ds-btn-primary'}>Invite me to give this talk</a>
         </div>
 
         <!-- ABSTRACT -->
@@ -371,7 +374,7 @@ const description = (talk.abstract && talk.abstract.split('\n')[0]) || `${talk.t
           </dl>
           <div class="talk-card__divider"></div>
           <p class="talk-card__hint">Want this talk at your event? I tailor it to your audience.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary talk-card__cta">
+          <a href={inviteHref} class="ds-btn ds-btn-primary talk-card__cta">
             Invite me to give this talk
             <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
@@ -434,7 +437,7 @@ const description = (talk.abstract && talk.abstract.split('\n')[0]) || `${talk.t
           status={`Booking ${bookingYears()} dates`}
           title="Want a talk like this at your event?"
           body="Tell me about your audience and I'll adapt this talk — or build something new — to fit your room. I reply within two days."
-          primaryHref="/invite"
+          primaryHref={inviteHref}
           primaryLabel="Invite me"
           secondaryHref="/speaking"
           secondaryLabel="More upcoming events"

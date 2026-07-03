@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 type Format = 'keynote' | 'talk' | 'workshop' | 'panel';
 type Size = 's' | 'm' | 'l' | 'xl';
@@ -25,12 +25,32 @@ const initial: Fields = {
   message: '',
 };
 
+const FORMATS: Format[] = ['keynote', 'talk', 'workshop', 'panel'];
+
 export default function InviteForm() {
   const [fields, setFields] = useState<Fields>(initial);
   const [errors, setErrors] = useState<Record<string, true>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // Prefill from query params so "Book this talk" / "Book a workshop" CTAs land
+  // in a contextual form: /invite?format=workshop&talk=<title>&workshop=<title>
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const format = params.get('format');
+    const talk = params.get('talk');
+    const workshop = params.get('workshop');
+    setFields((f) => ({
+      ...f,
+      format: FORMATS.includes(format as Format) ? (format as Format) : f.format,
+      message: talk
+        ? `I'd like to book the talk "${talk}".\n\n`
+        : workshop
+          ? `I'd like to book the workshop "${workshop}".\n\n`
+          : f.message,
+    }));
+  }, []);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((f) => ({ ...f, [key]: value }));
@@ -77,6 +97,10 @@ export default function InviteForm() {
         </div>
         <h3 className="invite-form__success-title">Invitation sent</h3>
         <p className="invite-form__success-body">Thanks — I'll get back to you within two days. Talk soon.</p>
+        <p className="invite-form__success-body">
+          While you're here: I also do <a className="invite-form__alt-link" href="/consulting">consulting</a> and{' '}
+          <a className="invite-form__alt-link" href="/mentorship">mentorship</a>.
+        </p>
       </div>
     );
   }
@@ -144,7 +168,7 @@ export default function InviteForm() {
 
         <Field label="Format" full>
           <div className="invite-form__seg">
-            {(['keynote', 'talk', 'workshop', 'panel'] as Format[]).map((opt) => (
+            {FORMATS.map((opt) => (
               <label key={opt}>
                 <input
                   type="radio"

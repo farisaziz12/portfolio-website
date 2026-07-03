@@ -175,13 +175,16 @@ const topics = [
       </div>
       <div class="workshop-topics wide">
         {topics.map((t) => (
-          <div class="ds-card workshop-topic ds-reveal">
+          <a
+            href={`/invite?format=workshop&workshop=${encodeURIComponent(t.title)}`}
+            class="ds-card ds-card-interactive workshop-topic ds-reveal"
+          >
             <IconChip>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={t.icon} />
             </IconChip>
             <h3 class="workshop-topic__title">{t.title}</h3>
             <p class="workshop-topic__desc">{t.desc}</p>
-          </div>
+          </a>
         ))}
       </div>
     </div>
