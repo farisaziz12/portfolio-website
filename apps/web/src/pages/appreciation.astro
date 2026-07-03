@@ -4,12 +4,12 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import AppreciationFilter from '../components/islands/AppreciationFilter';
-import { client, urlFor } from '../lib/sanity/client';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
 
 const [socialPosts, testimonials] = await Promise.all([
-  client.fetch(allSocialPostsQuery),
-  client.fetch(allTestimonialsQuery),
+  sanityFetch<any[]>(allSocialPostsQuery).catch(() => []),
+  sanityFetch<any[]>(allTestimonialsQuery).catch(() => []),
 ]);
 
 const platforms = [...new Set(socialPosts.map((p: any) => p.platform))];
@@ -48,7 +48,7 @@ testimonials.forEach((t: any) => {
         The wall of <span class="accent-word">kind words</span>.
       </h1>
       <p class="page-hero__lead">
-        Real feedback from conferences, colleagues, and the tech community. Every mention motivates me to keep sharing.
+        Real posts from conferences, colleagues, and the community. Yes, I saved them all. No, I'm not even a little embarrassed.
       </p>
 
       <div class="page-hero__stats">

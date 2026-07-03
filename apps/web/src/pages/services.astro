@@ -116,7 +116,7 @@ const faq = [
   },
   {
     question: "What's your availability?",
-    answer: `I take on a limited number of engagements at a time to keep quality high. Current availability opens in ${formatQuarter()} — get in touch to claim a slot.`,
+    answer: `I take on a few engagements at a time so each one gets real attention. Next availability opens in ${formatQuarter()} — worth reaching out early if you want in.`,
     open: false,
   },
   {
@@ -239,7 +239,7 @@ const faq = [
     <div class="container">
       <div class="svc-section__heading">
         <Kicker class="ds-reveal">Track record</Kicker>
-        <h2 class="svc-h2 ds-reveal">Proven results</h2>
+        <h2 class="svc-h2 ds-reveal">Numbers I'm <span class="mark">proud of</span></h2>
       </div>
       <div class="wide svc-proof ds-reveal">
         {proofItems.map((m) => {
@@ -270,7 +270,7 @@ const faq = [
     <div class="container">
       <div class="svc-section__heading">
         <Kicker class="ds-reveal">How it works</Kicker>
-        <h2 class="svc-h2 ds-reveal">A simple process, <span class="mark">built for results</span></h2>
+        <h2 class="svc-h2 ds-reveal">How it <span class="mark">usually goes</span></h2>
       </div>
       <div class="svc-steps wide">
         {steps.map((step, i) => (
@@ -311,8 +311,8 @@ const faq = [
       <div class="wide ds-reveal">
         <ContactPanel
           status={availabilityLabel('Available')}
-          title="Ready to level up?"
-          body="Let's have a conversation about your goals and how I can help you get there. I reply within two days."
+          title="Not sure where to start? Start with the call."
+          body="Twenty minutes, no agenda beyond your problem. Worst case, you walk away with a free second opinion."
           primaryHref="https://cal.com/farisaziz12/discovery-call"
           primaryLabel="Book a free 20-min call"
           secondaryHref="/contact#message"

@@ -108,12 +108,12 @@ export async function getStaticPaths() {
     },
     consulting: {
       kicker: 'Consulting',
-      title: 'Ship better software, faster.',
+      title: "Let's get your team unstuck.",
       meta: 'Architecture reviews, performance, payments & team enablement.',
     },
     mentorship: {
       kicker: 'Mentorship',
-      title: 'Accelerate your career.',
+      title: "You're closer than you think.",
       meta: '1:1 coaching — career strategy, technical mastery & public speaking.',
     },
     blog: {
