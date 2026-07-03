@@ -389,8 +389,11 @@ function TalkCard({ talk }: { talk: Talk }) {
         )}
       </div>
 
-      {/* Title */}
-      <h3 className="font-display font-semibold text-lg text-ink mb-3 group-hover:text-accent transition-colors line-clamp-2">
+      {/* Title — morphs into the detail page h1 via ViewTransitions */}
+      <h3
+        className="font-display font-semibold text-lg text-ink mb-3 group-hover:text-accent transition-colors line-clamp-2"
+        style={{ viewTransitionName: `talk-${talk.slug}` }}
+      >
         {talk.title}
       </h3>
 
@@ -460,7 +463,10 @@ function TalkListItem({ talk }: { talk: Talk }) {
       {/* Content */}
       <div className="flex-grow min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-ink group-hover:text-accent transition-colors truncate">
+          <h3
+            className="font-semibold text-ink group-hover:text-accent transition-colors truncate"
+            style={{ viewTransitionName: `talk-${talk.slug}` }}
+          >
             {talk.title}
           </h3>
           {isPopular && (

@@ -58,3 +58,27 @@ export function bookingYears(opts: { now?: Date } = {}): string {
   const y = now.getFullYear();
   return `${y} & ${y + 1}`;
 }
+
+/**
+ * Honest urgency: how full the next bookable quarter actually is, derived
+ * from confirmed event dates. Thresholds are the invite-page calendar's
+ * monthly scheme (0–2 open, 3–4 limited, 5+ booked) scaled to a quarter.
+ */
+export interface QuarterLoad {
+  /** e.g. "Q3 2026" */
+  label: string;
+  /** Confirmed events falling inside that quarter. */
+  confirmed: number;
+  tone: 'open' | 'limited' | 'booked';
+}
+
+export function quarterLoad(eventDates: (string | undefined)[], opts: QuarterOpts = {}): QuarterLoad {
+  const { quarter, year } = getNextBookableQuarter(opts);
+  const confirmed = eventDates.filter((d) => {
+    if (!d) return false;
+    const dt = new Date(d);
+    return dt.getFullYear() === year && Math.floor(dt.getMonth() / 3) + 1 === quarter;
+  }).length;
+  const tone: QuarterLoad['tone'] = confirmed <= 6 ? 'open' : confirmed <= 12 ? 'limited' : 'booked';
+  return { label: `Q${quarter} ${year}`, confirmed, tone };
+}

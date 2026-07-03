@@ -168,6 +168,49 @@ const {
       })();
     </script>
 
+    <!-- Cal.com modal embed: any link to cal.com opens as an on-site modal
+         instead of navigating away (the commitment moment stays on-site).
+         Loader is injected lazily on first hover/click; if the embed script
+         can't load, the click falls through to normal navigation. -->
+    <script is:inline>
+      (function () {
+        var injected = false;
+        function ensureCal() {
+          if (injected) return;
+          injected = true;
+          /* Official Cal.com embed bootstrap (queues calls until embed.js loads) */
+          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+          window.Cal("init", { origin: "https://cal.com" });
+          window.Cal("ui", {
+            theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
+            hideEventTypeDetails: false,
+            layout: "month_view",
+          });
+        }
+        function calAnchor(target) {
+          return target && target.closest ? target.closest('a[href^="https://cal.com/"]') : null;
+        }
+        // Warm the embed as soon as a cal link is hovered/touched.
+        document.addEventListener("pointerover", function (e) {
+          if (calAnchor(e.target)) ensureCal();
+        }, { passive: true });
+        document.addEventListener("click", function (e) {
+          var a = calAnchor(e.target);
+          if (!a) return;
+          ensureCal();
+          if (typeof window.Cal !== "function") return; // very defensive: navigate normally
+          e.preventDefault();
+          var calLink = new URL(a.href).pathname.replace(/^\//, "");
+          window.Cal("modal", { calLink: calLink });
+          try { window.posthog && window.posthog.capture("discovery_call_opened", { path: location.pathname }); } catch (_) {}
+          // If the embed never materializes (blocked script, offline), fall back to the real page.
+          setTimeout(function () {
+            if (!document.querySelector("cal-modal-box")) window.open(a.href, "_blank", "noopener");
+          }, 2500);
+        });
+      })();
+    </script>
+
     <!-- Funnel analytics: any element with data-track fires a cta_click event.
          One document-level listener — survives ViewTransitions swaps. -->
     <script is:inline>

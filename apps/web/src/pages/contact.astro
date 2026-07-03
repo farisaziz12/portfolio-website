@@ -2,8 +2,24 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
-import { availabilityLabel } from '../lib/availability';
+import { availabilityLabel, quarterLoad } from '../lib/availability';
 import ContactForm from '../components/islands/ContactForm';
+import { sanityFetch } from '../lib/sanity/client';
+import { upcomingEventsQuery } from '../lib/sanity/queries';
+
+interface UpcomingEvent {
+  date: string;
+}
+
+// Honest urgency: real confirmed-date density for the next bookable quarter.
+const upcoming = await sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []);
+const load = quarterLoad(upcoming.map((e) => e.date));
+const loadLine =
+  load.tone === 'booked'
+    ? `${load.label} is fully booked — planning the next one`
+    : load.confirmed > 0
+      ? `${load.label} · ${load.confirmed} date${load.confirmed === 1 ? '' : 's'} already confirmed${load.tone === 'limited' ? ' · filling up' : ''}`
+      : null;
 
 // The single front door for every way of working together. Each card routes to
 // the right mechanism: the speaker-invite form, the cal.com discovery call, or
@@ -65,6 +81,9 @@ const doors = [
           <span class="ds-dot ds-dot--pulse"></span>
           {availabilityLabel('Available')}
         </span>
+        {loadLine && (
+          <span class:list={['ds-pill', 'contact-load', `contact-load--${load.tone}`]}>{loadLine}</span>
+        )}
       </div>
       <h1 class="page-hero__title">Four doors, <span class="accent-word">one inbox</span>.</h1>
       <p class="page-hero__lead">
@@ -170,6 +189,17 @@ const doors = [
     margin-bottom: 1.6rem;
   }
   .contact-avail { display: inline-flex; }
+  .contact-load { display: inline-flex; color: rgb(var(--ink-muted)); }
+  .contact-load--limited {
+    color: rgb(var(--warn));
+    border-color: rgb(var(--warn) / 0.4);
+    background: rgb(var(--warn) / 0.08);
+  }
+  .contact-load--booked {
+    color: rgb(var(--danger));
+    border-color: rgb(var(--danger) / 0.4);
+    background: rgb(var(--danger) / 0.08);
+  }
 
   .contact-doors {
     display: grid;

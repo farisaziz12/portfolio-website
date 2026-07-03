@@ -1796,6 +1796,17 @@
     box-shadow: 0 0 0 1px rgb(var(--accent) / 0.2);
   }
 
+  /* Theme-toggle circular reveal: while .theme-vt is set, disable the default
+     root crossfade so the clip-path circle (driven from ThemeToggle.tsx) is the
+     only animation. Scoped so Astro's page-navigation transitions are untouched. */
+  :root.theme-vt::view-transition-old(root),
+  :root.theme-vt::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  :root.theme-vt::view-transition-old(root) { z-index: 1; }
+  :root.theme-vt::view-transition-new(root) { z-index: 2; }
+
   /* Command palette items stagger in as it opens */
   @keyframes ds-cmdk-in {
     from { opacity: 0; transform: translateY(4px); }
@@ -2088,6 +2099,56 @@
 .invite-form__success-body {
   color: rgb(var(--ink-muted));
   margin-top: 0.5rem;
+}
+
+/* Post-submit next steps — the waiting period does press-kit work */
+.invite-form__next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgb(var(--edge));
+  font-size: 0.9rem;
+}
+.invite-form__next-label { color: rgb(var(--ink-faint)); }
+.invite-form__next a {
+  color: rgb(var(--accent-bright));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgb(var(--accent) / 0.4);
+}
+.invite-form__next a:hover { text-decoration-color: rgb(var(--accent-bright)); }
+
+/* "Add details (optional)" progressive disclosure */
+.invite-form__details-toggle {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.2rem 0;
+  cursor: pointer;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-bright));
+}
+.invite-form__details-toggle svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.invite-form__details-hint {
+  color: rgb(var(--ink-faint));
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.78rem;
 }
 
 /* ============================================

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 
 export default function ThemeToggle() {
   // Dark is the site default; only an explicit stored "light" preference overrides it.
@@ -29,8 +30,43 @@ export default function ThemeToggle() {
     try { localStorage.setItem('faziz-theme', theme); } catch (_) {}
   }, [theme, mounted]);
 
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    const next = theme === 'light' ? 'dark' : 'light';
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } };
+
+    if (!doc.startViewTransition || reduce) {
+      setTheme(next);
+      return;
+    }
+
+    // Circular reveal expanding from the toggle button. Scoped with a root
+    // class so it never interferes with Astro's page-navigation transitions.
+    const rect = btnRef.current?.getBoundingClientRect();
+    const x = rect ? rect.left + rect.width / 2 : window.innerWidth - 40;
+    const y = rect ? rect.top + rect.height / 2 : 40;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    document.documentElement.classList.add('theme-vt');
+    const transition = doc.startViewTransition(() => {
+      flushSync(() => setTheme(next));
+    });
+    transition.ready
+      .then(() => {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+          { duration: 450, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' }
+        );
+      })
+      .catch(() => {});
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('theme-vt');
+    });
   };
 
   // Prevent hydration mismatch
@@ -47,6 +83,7 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
+      ref={btnRef}
       onClick={toggleTheme}
       className="group p-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-edge transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}

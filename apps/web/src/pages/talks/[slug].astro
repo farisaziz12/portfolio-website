@@ -233,7 +233,7 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
         </div>
       )}
 
-      <h1 class="talk-hero__title">{talk.title}</h1>
+      <h1 class="talk-hero__title" transition:name={`talk-${slug}`}>{talk.title}</h1>
 
       {talk.abstract && (
         <p class="talk-hero__lead">{talk.abstract.split('\n')[0]}</p>
@@ -459,6 +459,19 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
     </div>
   </section>
 
+  <!-- Sticky action bar — the booking CTA stays reachable at every scroll depth -->
+  <div class="talk-stickybar" id="talkStickybar" aria-hidden="true">
+    <div class="container talk-stickybar__inner">
+      <span class="talk-stickybar__title">{talk.title}</span>
+      <a href={inviteHref} class="ds-btn ds-btn-primary talk-stickybar__cta" data-track="talk-stickybar" data-track-label={talk.title}>
+        Invite me to give this talk
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+  </div>
+
   <script>
     function initTalk() {
       document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
@@ -474,6 +487,29 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
       window.setTimeout(() => {
         document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
       }, 600);
+
+      const bar = document.getElementById('talkStickybar');
+      const actions = document.querySelector('.talk-actions');
+      const contact = document.querySelector('.page-section--contact') || document.querySelector('.contact-panel');
+      if (bar && actions) {
+        let pastActions = false;
+        let nearContact = false;
+        const sync = () => {
+          const show = pastActions && !nearContact;
+          bar.classList.toggle('talk-stickybar--visible', show);
+          bar.setAttribute('aria-hidden', String(!show));
+        };
+        new IntersectionObserver(([e]) => {
+          pastActions = !e.isIntersecting && e.boundingClientRect.top < 0;
+          sync();
+        }).observe(actions);
+        if (contact) {
+          new IntersectionObserver(([e]) => {
+            nearContact = e.isIntersecting;
+            sync();
+          }).observe(contact);
+        }
+      }
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initTalk, { once: true });
@@ -773,5 +809,52 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
     color: rgb(var(--ink-muted));
     margin-top: 0.4rem;
     line-height: 1.55;
+  }
+
+  /* Sticky action bar */
+  .talk-stickybar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    background: color-mix(in srgb, rgb(var(--bg)) 88%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgb(var(--edge));
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateY(102%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .talk-stickybar--visible {
+    transform: none;
+    pointer-events: auto;
+  }
+  .talk-stickybar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.7rem;
+  }
+  .talk-stickybar__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: rgb(var(--ink));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .talk-stickybar__cta {
+    flex-shrink: 0;
+    padding: 0.55rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
+  @media (max-width: 560px) {
+    .talk-stickybar__title { display: none; }
+    .talk-stickybar__inner { justify-content: center; }
   }
 </style>
