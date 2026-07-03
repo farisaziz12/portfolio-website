@@ -330,6 +330,28 @@ export const companiesQuery = groq`
 `;
 
 // Media
+// Every photo for the /gallery walkthrough — grouped client-side by the
+// referenced event. Photos without an event still appear (last group).
+export const galleryPhotosQuery = groq`
+  *[_type == "media" && type == "photo" && defined(image)] | order(coalesce(event->date, date) desc, date desc) {
+    _id,
+    title,
+    image,
+    date,
+    description,
+    credit,
+    location,
+    "event": event->{
+      _id,
+      title,
+      conference,
+      "slug": slug.current,
+      date,
+      location
+    }
+  }
+`;
+
 export const allMediaQuery = groq`
   *[_type == "media"] | order(date desc) {
     _id,

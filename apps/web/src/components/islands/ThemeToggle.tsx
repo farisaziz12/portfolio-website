@@ -1,14 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // Dark is the site default; only an explicit stored "light" preference overrides it.
+  // Must stay in sync with the inline bootstrap script in BaseLayout.astro.
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    setTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+    // Stay in sync when something else (e.g. the command palette) flips the theme.
+    const onThemeChange = (e: Event) => {
+      const next = (e as CustomEvent<{ theme?: string }>).detail?.theme;
+      if (next === 'light' || next === 'dark') setTheme(next);
+    };
+    window.addEventListener('themechange', onThemeChange);
+    return () => window.removeEventListener('themechange', onThemeChange);
   }, []);
 
   useEffect(() => {
@@ -20,8 +30,43 @@ export default function ThemeToggle() {
     try { localStorage.setItem('faziz-theme', theme); } catch (_) {}
   }, [theme, mounted]);
 
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    const next = theme === 'light' ? 'dark' : 'light';
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } };
+
+    if (!doc.startViewTransition || reduce) {
+      setTheme(next);
+      return;
+    }
+
+    // Circular reveal expanding from the toggle button. Scoped with a root
+    // class so it never interferes with Astro's page-navigation transitions.
+    const rect = btnRef.current?.getBoundingClientRect();
+    const x = rect ? rect.left + rect.width / 2 : window.innerWidth - 40;
+    const y = rect ? rect.top + rect.height / 2 : 40;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    document.documentElement.classList.add('theme-vt');
+    const transition = doc.startViewTransition(() => {
+      flushSync(() => setTheme(next));
+    });
+    transition.ready
+      .then(() => {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+          { duration: 450, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' }
+        );
+      })
+      .catch(() => {});
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('theme-vt');
+    });
   };
 
   // Prevent hydration mismatch
@@ -29,7 +74,7 @@ export default function ThemeToggle() {
     return (
       <button
         type="button"
-        className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 w-9 h-9"
+        className="p-2 rounded-lg bg-surface-2 w-9 h-9"
         aria-label="Toggle theme"
       />
     );
@@ -38,13 +83,14 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
+      ref={btnRef}
       onClick={toggleTheme}
-      className="group p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+      className="group p-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-edge transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (
         <svg
-          className="w-5 h-5 text-slate-600 group-hover:text-slate-800 transition-colors"
+          className="w-5 h-5 text-ink-muted group-hover:text-ink transition-colors"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -58,7 +104,7 @@ export default function ThemeToggle() {
         </svg>
       ) : (
         <svg
-          className="w-5 h-5 text-amber-400 group-hover:text-amber-300 transition-colors"
+          className="w-5 h-5 text-[rgb(var(--warn))] group-hover:text-ink transition-colors"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

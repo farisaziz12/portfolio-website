@@ -4,6 +4,7 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import { EventRow } from '../components/events/EventRow';
 import { sanityFetch } from '../lib/sanity/client';
 import {
   upcomingEventsQuery,
@@ -11,8 +12,8 @@ import {
   speakingStatsQuery,
   allTalksQuery,
 } from '../lib/sanity/queries';
-import { getCountryFlag } from 'shared/utils';
-import { isRealConference } from '../lib/conferences';
+import { topConferences } from '../lib/conferences';
+import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { bookingYears } from '../lib/availability';
 
 interface UpcomingEvent {
@@ -55,55 +56,17 @@ interface TalkListItem {
 const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 60, upcomingEvents: 0, countries: 12, cities: 25, talks: 0, workshops: 0,
-  })),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
 ]);
 
-// Normalize event types into the four filter buckets the design uses.
-function normaliseType(t?: string): 'talk' | 'workshop' | 'meetup' | 'other' {
-  if (!t) return 'other';
-  const k = t.toLowerCase();
-  if (k === 'workshop') return 'workshop';
-  if (k === 'meetup') return 'meetup';
-  if (['talk', 'conference', 'panel', 'keynote', 'webinar', 'hosting', 'podcast'].includes(k)) return 'talk';
-  return 'other';
-}
-
-const normalisedUpcoming = upcomingEvents.map((e) => ({
-  ...e,
-  bucket: normaliseType(e.type),
-  formatted: {
-    day: new Date(e.date).getDate().toString(),
-    month: new Date(e.date).toLocaleString('en-US', { month: 'short' }),
-  },
-  location: e.location?.isOnline
-    ? 'Online'
-    : [e.location?.city, e.location?.country].filter(Boolean).join(', ') || '',
-  flag: e.location?.isOnline ? '🌐' : (e.location?.country ? getCountryFlag(e.location.country) : ''),
-}));
-
-const upcomingCount = normalisedUpcoming.length;
+const upcomingCount = upcomingEvents.length;
 
 // Top 3 past talks for the carousel — prefer ones with conference set, ordered by date.
 const featuredPastTalks = talks.slice(0, 3);
 
-// Conferences logo wall — case-insensitive dedupe, take 6 most-frequent.
-// Filter out placeholder values like "TBD".
-const confCounts = new Map<string, { display: string; count: number }>();
-for (const e of pastEvents) {
-  const raw = e.conference?.trim();
-  if (!isRealConference(raw)) continue;
-  const key = raw!.toLowerCase().replace(/\s+/g, ' ');
-  const existing = confCounts.get(key);
-  if (existing) existing.count += 1;
-  else confCounts.set(key, { display: raw!, count: 1 });
-}
-const topConferences = Array.from(confCounts.values())
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 6)
-  .map((c) => c.display);
+// Conferences logo wall — shared aggregation (see lib/conferences.ts).
+const conferenceWall = topConferences(pastEvents);
 
 const topics = [
   {
@@ -128,13 +91,16 @@ const topics = [
   },
 ];
 
-const showToggleThreshold = 3;
+// The hub shows a teaser of the next three engagements — the full, filterable
+// upcoming + past schedule lives on /events.
+const nextThree = upcomingEvents.slice(0, 3);
 ---
 
 <BaseLayout
   title="Speaking — Talks & Workshops | Faris Aziz"
   description={`Book Faris Aziz to speak: ${stats.totalEvents} talks across ${stats.countries} countries. Production-grade engineering, framework-agnostic, drawn from real case studies.`}
   pathname="/speaking"
+  image="/og/speaking.png"
 >
   <!-- HERO -->
   <header class="speaking-hero">
@@ -158,15 +124,15 @@ const showToggleThreshold = 3;
 
       <div class="speaking-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.totalEvents}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.totalEvents}</div>
           <div class="ds-stat__label">Events</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.countries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.countries}</div>
           <div class="ds-stat__label">Countries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.cities}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.cities}</div>
           <div class="ds-stat__label">Cities</div>
         </div>
       </div>
@@ -189,7 +155,7 @@ const showToggleThreshold = 3;
       <div class="speaking-section__head">
         <div>
           <Kicker>On the calendar</Kicker>
-          <h2 class="speaking-h2">Upcoming events</h2>
+          <h2 class="speaking-h2">Next up</h2>
         </div>
         {upcomingCount > 0 && (
           <span class="ds-pill ds-pill--signal">
@@ -201,46 +167,18 @@ const showToggleThreshold = 3;
 
       {upcomingCount > 0 ? (
         <>
-          <div class="speaking-filters" id="evFilters">
-            <button type="button" class="ds-pill ev-chip active" data-filter="all">All</button>
-            <button type="button" class="ds-pill ev-chip" data-filter="talk">Talks</button>
-            <button type="button" class="ds-pill ev-chip" data-filter="workshop">Workshops</button>
-            <button type="button" class="ds-pill ev-chip" data-filter="meetup">Meetups</button>
+          <div class="events-list">
+            {nextThree.map((e, i) => <EventRow event={e} index={i} />)}
           </div>
 
-          <div class="events-list" id="eventsList">
-            {normalisedUpcoming.map((e) => (
-              <a class="event-row" data-type={e.bucket} href={`/events/${e.slug}`}>
-                <div class="event-row__date">
-                  <b>{e.formatted.day}</b>
-                  <span>{e.formatted.month}</span>
-                </div>
-                <div class="event-row__body">
-                  <div class="event-row__title">{e.title}</div>
-                  {e.conference && <div class="event-row__sub">{e.conference}</div>}
-                </div>
-                <span class={`ds-tag event-row__tag event-row__tag--${e.bucket}`}>
-                  {e.bucket === 'workshop' ? 'Workshop' : e.bucket === 'meetup' ? 'Meetup' : 'Talk'}
-                </span>
-                <div class="event-row__loc">
-                  {e.flag && <span class="event-row__flag" aria-hidden="true">{e.flag}</span>}
-                  <span>{e.location}</span>
-                </div>
-              </a>
-            ))}
+          <div class="speaking-events__toggle">
+            <a href="/events" class="ds-btn ds-btn-secondary">
+              View the full schedule
+              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
           </div>
-
-          {upcomingCount > showToggleThreshold && (
-            <div class="speaking-events__toggle">
-              <button type="button" class="ds-btn ds-btn-secondary" id="eventsToggle">
-                Show all {upcomingCount} upcoming
-                <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;" aria-hidden="true">
-                  <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-              <p class="speaking-events__empty" id="evEmpty">No events match that filter.</p>
-            </div>
-          )}
         </>
       ) : (
         <div class="speaking-empty">
@@ -260,13 +198,13 @@ const showToggleThreshold = 3;
       </div>
       <div class="speaking-topics wide">
         {topics.map((topic) => (
-          <div class="ds-card speaking-topic ds-reveal">
+          <a href="/talks" class="ds-card ds-card-interactive speaking-topic ds-reveal">
             <IconChip>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={topic.icon} />
             </IconChip>
             <h3 class="speaking-topic__title">{topic.title}</h3>
             <p class="speaking-topic__desc">{topic.desc}</p>
-          </div>
+          </a>
         ))}
       </div>
     </div>
@@ -274,7 +212,7 @@ const showToggleThreshold = 3;
 
   <!-- PAST TALKS -->
   {featuredPastTalks.length > 0 && (
-    <section class="speaking-section" id="talks" style="scroll-margin-top:80px;">
+    <section class="speaking-section anchor-target" id="talks">
       <div class="container">
         <div class="speaking-section__head">
           <div>
@@ -311,19 +249,19 @@ const showToggleThreshold = 3;
   )}
 
   <!-- LOGO WALL -->
-  {topConferences.length > 0 && (
+  {conferenceWall.length > 0 && (
     <section class="speaking-section-sm speaking-logos-wrap">
       <div class="container">
         <p class="speaking-logos__label">Stages I've shared</p>
         <div class="speaking-logos">
-          {topConferences.map((c) => <span>{c}</span>)}
+          {conferenceWall.map((c) => <span>{c}</span>)}
         </div>
       </div>
     </section>
   )}
 
   <!-- INVITE CTA -->
-  <section class="speaking-section" id="invite" style="scroll-margin-top:80px;">
+  <section class="speaking-section anchor-target" id="invite">
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
@@ -339,71 +277,6 @@ const showToggleThreshold = 3;
     </div>
   </section>
 
-  <script>
-    document.documentElement.classList.add('js');
-
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-    setTimeout(() => {
-      document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-    }, 500);
-
-    // Upcoming events: filter + expand/collapse
-    (function () {
-      const list = document.getElementById('eventsList');
-      if (!list) return;
-      const rows = Array.from(list.querySelectorAll<HTMLAnchorElement>('.event-row'));
-      const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.ev-chip'));
-      const toggle = document.getElementById('eventsToggle') as HTMLButtonElement | null;
-      const empty = document.getElementById('evEmpty');
-      let filter = 'all';
-      let expanded = false;
-
-      function apply() {
-        let matches = 0;
-        rows.forEach((r) => {
-          const typeOk = filter === 'all' || r.dataset.type === filter;
-          if (!typeOk) {
-            r.classList.add('is-hidden');
-            return;
-          }
-          matches++;
-          const collapseHide = filter === 'all' && !expanded && matches > 3;
-          r.classList.toggle('is-hidden', collapseHide);
-        });
-        const total = rows.length;
-        if (toggle) {
-          toggle.style.display = filter === 'all' && total > 3 ? '' : 'none';
-          toggle.innerHTML = expanded
-            ? 'Show fewer <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;transform:rotate(180deg);"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-            : 'Show all ' + total + ' upcoming <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        }
-        if (empty) (empty as HTMLElement).style.display = matches === 0 ? '' : 'none';
-      }
-
-      chips.forEach((c) => {
-        c.addEventListener('click', () => {
-          chips.forEach((x) => x.classList.remove('active'));
-          c.classList.add('active');
-          filter = c.dataset.filter || 'all';
-          expanded = false;
-          apply();
-        });
-      });
-      toggle?.addEventListener('click', () => {
-        expanded = !expanded;
-        apply();
-      });
-      apply();
-    })();
-  </script>
 </BaseLayout>
 
 <style>
@@ -481,120 +354,14 @@ const showToggleThreshold = 3;
     margin-top: 0.7rem;
   }
 
-  /* Event filter chips */
-  .speaking-filters {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.4rem;
-  }
-  .ev-chip {
-    cursor: pointer;
-    background: rgb(var(--surface-1));
-  }
-  .ev-chip.active {
-    border-color: rgb(var(--accent));
-    color: rgb(var(--accent-bright));
-    background: rgb(var(--accent) / 0.1);
-  }
-
-  /* Event rows */
   .events-list {
     display: grid;
     gap: 0.2rem;
-  }
-  .event-row {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.3rem 1.2rem;
-    border: 1px solid transparent;
-    border-bottom: 1px solid rgb(var(--edge));
-    border-radius: 10px;
-    color: inherit;
-    transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .event-row:hover {
-    background: rgb(var(--surface-2));
-    border-color: rgb(var(--edge));
-  }
-  .events-list .event-row:last-child { border-bottom: 0; }
-  .event-row.is-hidden { display: none; }
-  .event-row__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    text-align: center;
-    flex-shrink: 0;
-    width: 56px;
-  }
-  .event-row__date b {
-    display: block;
-    font-size: 1.7rem;
-    color: rgb(var(--ink));
-    line-height: 1;
-    font-weight: 600;
-  }
-  .event-row__date span {
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .event-row__body { flex: 1; min-width: 0; }
-  .event-row__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .event-row__sub {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-    margin-top: 0.15rem;
-  }
-  .event-row__tag { flex-shrink: 0; }
-  /* Per-type tag colours. talk = accent blue (default), workshop = signal teal, meetup = warm amber. */
-  .event-row__tag--talk {
-    color: rgb(var(--accent-bright));
-    border-color: rgb(var(--accent) / 0.4);
-    background: rgb(var(--accent) / 0.08);
-  }
-  .event-row__tag--workshop {
-    color: rgb(var(--signal));
-    border-color: rgb(var(--signal) / 0.4);
-    background: rgb(var(--signal) / 0.08);
-  }
-  .event-row__tag--meetup {
-    color: #F2C94C; /* warm amber — semantic "community gathering", distinct from blue/teal */
-    border-color: rgba(242, 201, 76, 0.4);
-    background: rgba(242, 201, 76, 0.08);
-  }
-
-  .event-row__loc {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.86rem;
-    color: rgb(var(--ink-faint));
-    flex-shrink: 0;
-  }
-  .event-row__flag {
-    font-size: 1rem;
-    line-height: 1;
-  }
-  @media (max-width: 600px) {
-    .event-row__loc, .event-row__tag { display: none; }
-    .event-row { gap: 1rem; padding: 1.1rem 0.8rem; }
   }
 
   .speaking-events__toggle {
     text-align: center;
     margin-top: 1.6rem;
-  }
-  .speaking-events__empty {
-    display: none;
-    margin-top: 1rem;
-    color: rgb(var(--ink-faint));
-    font-size: 0.9rem;
   }
   .speaking-empty {
     text-align: center;

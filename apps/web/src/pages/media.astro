@@ -32,6 +32,7 @@ const press = media.filter((m) => m.type === 'press');
   title="Media | Faris Aziz"
   description="Photos, videos, and press coverage from Faris Aziz's speaking engagements at conferences and meetups around the world."
   pathname="/media"
+  image="/og/media.png"
 >
   <header class="page-hero">
     <GridTexture />
@@ -46,15 +47,15 @@ const press = media.filter((m) => m.type === 'press');
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{photos.length}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{photos.length}</div>
           <div class="ds-stat__label">Photos</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{videos.length}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{videos.length}</div>
           <div class="ds-stat__label">Videos</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{press.length}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{press.length}</div>
           <div class="ds-stat__label">Press</div>
         </div>
       </div>
@@ -86,8 +87,12 @@ const press = media.filter((m) => m.type === 'press');
             <div class="page-grid-3">
               {videos.map((m) => {
                 const thumb = m.image ? urlFor(m.image).width(800).height(450).quality(90).url() : null;
+                const Tag = m.videoUrl ? 'a' : 'div';
+                const linkAttrs = m.videoUrl
+                  ? { href: m.videoUrl, target: '_blank', rel: 'noopener noreferrer' }
+                  : {};
                 return (
-                  <a href={m.videoUrl || '#'} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
+                  <Tag {...linkAttrs} class:list={['ds-card', 'media-card', 'ds-reveal', { 'ds-card-interactive': !!m.videoUrl }]}>
                     <div class="media-card__media">
                       {thumb ? (
                         <img src={thumb} alt={m.title || 'Talk recording'} loading="lazy" />
@@ -108,7 +113,7 @@ const press = media.filter((m) => m.type === 'press');
                         {m.credit && <span>· {m.credit}</span>}
                       </div>
                     </div>
-                  </a>
+                  </Tag>
                 );
               })}
             </div>
@@ -124,6 +129,8 @@ const press = media.filter((m) => m.type === 'press');
               <div>
                 <Kicker>On stage</Kicker>
                 <h2 class="page-h2">Photos</h2>
+                <p class="media-gallery-link"><a href="/gallery" class="ds-link">Walk through the full gallery, event by event
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
               </div>
               <span class="ds-pill">{photos.length}</span>
             </div>
@@ -170,8 +177,12 @@ const press = media.filter((m) => m.type === 'press');
             <div class="page-grid-3">
               {press.map((m) => {
                 const img = m.image ? urlFor(m.image).width(600).height(340).quality(90).url() : null;
+                const Tag = m.videoUrl ? 'a' : 'div';
+                const linkAttrs = m.videoUrl
+                  ? { href: m.videoUrl, target: '_blank', rel: 'noopener noreferrer' }
+                  : {};
                 return (
-                  <a href={m.videoUrl || '#'} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
+                  <Tag {...linkAttrs} class:list={['ds-card', 'media-card', 'ds-reveal', { 'ds-card-interactive': !!m.videoUrl }]}>
                     {img && (
                       <div class="media-card__media">
                         <img src={img} alt={m.title || 'Press'} loading="lazy" />
@@ -186,7 +197,7 @@ const press = media.filter((m) => m.type === 'press');
                         {m.credit && <span>· {m.credit}</span>}
                       </div>
                     </div>
-                  </a>
+                  </Tag>
                 );
               })}
             </div>
@@ -211,27 +222,10 @@ const press = media.filter((m) => m.type === 'press');
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>
+  .media-gallery-link { margin-top: 0.5rem; font-size: 0.92rem; }
   .media-card {
     overflow: hidden;
     display: flex;

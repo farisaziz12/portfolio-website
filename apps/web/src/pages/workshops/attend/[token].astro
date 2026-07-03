@@ -57,19 +57,15 @@ const formatDateLong = (dateStr: string) => {
     <section class="min-h-[80vh] flex items-center">
       <div class="container py-20 md:py-32">
         <div class="max-w-3xl mx-auto text-center">
-          <div class="terminal max-w-lg mx-auto mb-8 animate-fade-in">
-            <div class="terminal__header">
-              <div class="terminal__dots">
-                <div class="terminal__dot terminal__dot--red"></div>
-                <div class="terminal__dot terminal__dot--yellow"></div>
-                <div class="terminal__dot terminal__dot--green"></div>
-              </div>
-              <span class="terminal__title">workshop.sh</span>
+          <div class="ds-terminal max-w-lg mx-auto mb-8 animate-fade-in">
+            <div class="ds-terminal__bar">
+              <span class="ds-terminal__dots"><i></i><i></i><i></i></span>
+              <span class="ds-terminal__name">workshop.sh</span>
             </div>
-            <div class="terminal__body">
-              <span class="terminal__prompt">$</span>
-              <span class="terminal__command"> npm run workshop --session="{instance.event}"</span>
-              <div class="terminal__output">Waiting for session to begin...</div>
+            <div class="ds-terminal__body">
+              <span class="pr">$</span>
+              <span class="cmd"> npm run workshop --session="{instance.event}"</span>
+              <div class="out mt-2">Waiting for session to begin...</div>
             </div>
           </div>
 
@@ -97,7 +93,7 @@ const formatDateLong = (dateStr: string) => {
             This workshop session has ended. Materials are no longer available.
           </p>
 
-          <a href="/workshops" class="btn-primary">
+          <a href="/workshops" class="ds-btn ds-btn-primary">
             View workshops
           </a>
         </div>

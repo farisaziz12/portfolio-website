@@ -325,10 +325,10 @@ export default function TalksFilter({ talks }: TalksFilterProps) {
           </div>
         )
       ) : (
-        <div className="card p-12 text-center">
+        <div className="ds-card p-12 text-center">
           <div className="text-5xl mb-4">🔍</div>
           <p className="text-ink-muted mb-4">No talks match your filters.</p>
-          <button onClick={clearFilters} className="link">
+          <button onClick={clearFilters} className="ds-link">
             Clear all filters
           </button>
         </div>
@@ -345,23 +345,23 @@ function TalkCard({ talk }: { talk: Talk }) {
   return (
     <a
       href={`/talks/${talk.slug}`}
-      className="card card-interactive group p-6 flex flex-col h-full"
+      className="ds-card ds-card-interactive group p-6 flex flex-col h-full"
     >
       {/* Header with badges */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-wrap gap-2">
           {isPopular && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-[rgb(var(--warn)/0.12)] text-[rgb(var(--warn))] rounded-full">
               Popular
             </span>
           )}
           {isNew && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-signal/10 text-signal rounded-full">
               New
             </span>
           )}
           {hasVersions && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 rounded-full flex items-center gap-1">
+            <span className="px-2 py-0.5 text-xs font-medium bg-accent/10 text-accent rounded-full flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
@@ -389,8 +389,11 @@ function TalkCard({ talk }: { talk: Talk }) {
         )}
       </div>
 
-      {/* Title */}
-      <h3 className="font-display font-semibold text-lg text-ink mb-3 group-hover:text-accent transition-colors line-clamp-2">
+      {/* Title — morphs into the detail page h1 via ViewTransitions */}
+      <h3
+        className="font-display font-semibold text-lg text-ink mb-3 group-hover:text-accent transition-colors line-clamp-2"
+        style={{ viewTransitionName: `talk-${talk.slug}` }}
+      >
         {talk.title}
       </h3>
 
@@ -460,11 +463,14 @@ function TalkListItem({ talk }: { talk: Talk }) {
       {/* Content */}
       <div className="flex-grow min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-ink group-hover:text-accent transition-colors truncate">
+          <h3
+            className="font-semibold text-ink group-hover:text-accent transition-colors truncate"
+            style={{ viewTransitionName: `talk-${talk.slug}` }}
+          >
             {talk.title}
           </h3>
           {isPopular && (
-            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded">
+            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-[rgb(var(--warn)/0.12)] text-[rgb(var(--warn))] rounded">
               Popular
             </span>
           )}

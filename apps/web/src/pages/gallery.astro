@@ -1,0 +1,398 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { galleryPhotosQuery } from '../lib/sanity/queries';
+import { getCountryFlag } from '../lib/flags';
+
+interface GalleryPhoto {
+  _id: string;
+  title?: string;
+  image: any;
+  date?: string;
+  description?: string;
+  credit?: string;
+  location?: { city?: string; country?: string };
+  event?: {
+    _id: string;
+    title?: string;
+    conference?: string;
+    slug?: string;
+    date?: string;
+    location?: { city?: string; country?: string };
+  };
+}
+
+const photos = await sanityFetch<GalleryPhoto[]>(galleryPhotosQuery).catch(() => []);
+
+// Group by event (query is already event-date desc; preserve first-seen order).
+// Photos without an event land in a final "Elsewhere" group.
+interface Group {
+  key: string;
+  title: string;
+  slug?: string;
+  date?: string;
+  city?: string;
+  flag?: string;
+  photos: GalleryPhoto[];
+}
+
+const groupMap = new Map<string, Group>();
+for (const p of photos) {
+  const key = p.event?._id || '__elsewhere';
+  let g = groupMap.get(key);
+  if (!g) {
+    g = p.event
+      ? {
+          key,
+          title: p.event.title || p.event.conference || 'Event',
+          slug: p.event.slug,
+          date: p.event.date,
+          city: p.event.location?.city,
+          flag: getCountryFlag(p.event.location?.country),
+          photos: [],
+        }
+      : { key, title: 'Elsewhere', photos: [] };
+    groupMap.set(key, g);
+  }
+  g.photos.push(p);
+}
+const groups = Array.from(groupMap.values());
+// Keep "Elsewhere" last regardless of photo dates.
+groups.sort((a, b) => (a.key === '__elsewhere' ? 1 : 0) - (b.key === '__elsewhere' ? 1 : 0));
+
+// Flat index across all groups so one lightbox can walk the whole gallery.
+let flatIndex = 0;
+const groupsWithUrls = groups.map((g) => ({
+  ...g,
+  photos: g.photos.map((p) => {
+    let thumb = '';
+    let full = '';
+    try {
+      thumb = urlFor(p.image).height(360).quality(80).url();
+      full = urlFor(p.image).width(1800).quality(88).url();
+    } catch {}
+    return { ...p, thumb, full, idx: flatIndex++ };
+  }).filter((p) => p.thumb),
+}));
+const totalPhotos = groupsWithUrls.reduce((n, g) => n + g.photos.length, 0);
+
+function fmtDate(d?: string) {
+  return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+}
+---
+
+<BaseLayout
+  title="Gallery | Faris Aziz"
+  description="Photos from conferences, meetups, and workshops around the world — grouped by event."
+  pathname="/gallery"
+  image="/og/gallery.png"
+>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <Kicker>From the road</Kicker>
+      <h1 class="page-hero__title">
+        Stages, hallways, and the <span class="accent-word">bits in between</span>.
+      </h1>
+      <p class="page-hero__lead">
+        A walk through the events — every strip is one event, scroll sideways to relive it. All shots free for organizers to reuse, credit appreciated.
+      </p>
+    </div>
+  </header>
+
+  <section class="page-section">
+    <div class="container">
+      {totalPhotos > 0 ? (
+        <div class="gallery-groups wide">
+          {groupsWithUrls.filter((g) => g.photos.length > 0).map((g) => (
+            <div class="gallery-group ds-reveal">
+              <div class="gallery-group__head">
+                <div class="gallery-group__meta">
+                  <h2 class="gallery-group__title">
+                    {g.slug ? <a href={`/events/${g.slug}`}>{g.title}</a> : g.title}
+                  </h2>
+                  <p class="gallery-group__sub">
+                    {g.flag && <span class="gallery-group__flag">{g.flag}</span>}
+                    {[g.city, fmtDate(g.date)].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <span class="ds-pill">{g.photos.length}</span>
+              </div>
+              <div class="gallery-strip">
+                {g.photos.map((p) => (
+                  <button
+                    type="button"
+                    class="gallery-shot"
+                    data-gallery-index={p.idx}
+                    data-full-url={p.full}
+                    data-caption={[p.title || p.description, g.title !== 'Elsewhere' ? g.title : '', p.credit ? `📷 ${p.credit}` : ''].filter(Boolean).join(' — ')}
+                  >
+                    <img src={p.thumb} alt={p.title || p.description || g.title} loading="lazy" decoding="async" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="page-empty">
+          <h3>Photos incoming</h3>
+          <p>The gallery fills up as event photos land in the CMS. In the meantime, the <a href="/media" class="ds-link">media page</a> has recordings and press shots.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status="Cameras welcome"
+          title="Want shots like these from your event?"
+          body="Invite me to speak and I'll happily coordinate photos — tag me when you publish and I'll add them here."
+          primaryHref="/invite"
+          primaryLabel="Invite me to speak"
+          secondaryHref="/media"
+          secondaryLabel="Recordings & press"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox (same interaction pattern as the /invite headshot viewer) -->
+  <div id="galleryLightbox" class="gallery-lightbox" aria-hidden="true" role="dialog" aria-label="Photo viewer">
+    <button type="button" class="gallery-lightbox__close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" /></svg>
+    </button>
+    <button type="button" class="gallery-lightbox__nav gallery-lightbox__prev" aria-label="Previous photo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </button>
+    <figure>
+      <img class="gallery-lightbox__image" src="" alt="" />
+      <figcaption>
+        <span class="gallery-lightbox__caption"></span>
+        <span class="gallery-lightbox__counter"></span>
+      </figcaption>
+    </figure>
+    <button type="button" class="gallery-lightbox__nav gallery-lightbox__next" aria-label="Next photo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </button>
+  </div>
+
+  <script>
+    function initGallery() {
+      const lightbox = document.getElementById('galleryLightbox');
+      if (!lightbox || lightbox.dataset.wired === 'true') return;
+      lightbox.dataset.wired = 'true';
+
+      const image = lightbox.querySelector('.gallery-lightbox__image') as HTMLImageElement | null;
+      const caption = lightbox.querySelector('.gallery-lightbox__caption') as HTMLElement | null;
+      const counter = lightbox.querySelector('.gallery-lightbox__counter') as HTMLElement | null;
+
+      const shots = () => Array.from(document.querySelectorAll<HTMLButtonElement>('[data-gallery-index]'));
+      let current = 0;
+
+      const open = (i: number) => {
+        const all = shots();
+        const shot = all[i];
+        if (!image || !shot) return;
+        current = i;
+        image.src = shot.getAttribute('data-full-url') || '';
+        image.alt = shot.querySelector('img')?.alt || '';
+        if (caption) caption.textContent = shot.getAttribute('data-caption') || '';
+        if (counter) counter.textContent = `${i + 1} / ${all.length}`;
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      };
+      const close = () => {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      };
+      const nav = (dir: number) => {
+        const n = shots().length;
+        open((current + dir + n) % n);
+      };
+
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const shot = target.closest('[data-gallery-index]');
+        if (shot) { open(shots().indexOf(shot as HTMLButtonElement)); return; }
+        if (target.closest('.gallery-lightbox__close')) close();
+        else if (target.closest('.gallery-lightbox__prev')) nav(-1);
+        else if (target.closest('.gallery-lightbox__next')) nav(1);
+        else if (target === lightbox) close();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        if (e.key === 'ArrowLeft') nav(-1);
+        if (e.key === 'ArrowRight') nav(1);
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGallery, { once: true });
+    } else { initGallery(); }
+    document.addEventListener('astro:after-swap', initGallery);
+  </script>
+</BaseLayout>
+
+<style>
+  .gallery-groups {
+    display: grid;
+    gap: clamp(2.4rem, 5vw, 3.6rem);
+  }
+
+  .gallery-group__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .gallery-group__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    color: rgb(var(--ink));
+  }
+
+  .gallery-group__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .gallery-group__title a:hover { color: rgb(var(--accent-bright)); }
+
+  .gallery-group__sub {
+    margin-top: 0.2rem;
+    font-size: 0.88rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  .gallery-group__flag { margin-right: 0.4rem; }
+
+  /* Filmstrip: one horizontal scroll-snap row per event */
+  .gallery-strip {
+    display: flex;
+    gap: 0.7rem;
+    overflow-x: auto;
+    padding-bottom: 0.8rem;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--edge-strong)) transparent;
+  }
+
+  .gallery-shot {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    height: clamp(160px, 24vw, 240px);
+    padding: 0;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgb(var(--surface-2));
+    cursor: zoom-in;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s;
+  }
+
+  .gallery-shot:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--edge-strong));
+  }
+
+  .gallery-shot img {
+    height: 100%;
+    width: auto;
+    max-width: 70vw;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Lightbox */
+  .gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: clamp(0.8rem, 3vw, 2rem);
+    background: rgb(var(--bg) / 0.92);
+    backdrop-filter: blur(8px);
+  }
+
+  .gallery-lightbox.open { display: flex; }
+
+  .gallery-lightbox figure {
+    max-width: min(1200px, 92vw);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .gallery-lightbox__image {
+    max-width: 100%;
+    max-height: 78vh;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid rgb(var(--edge-strong));
+  }
+
+  .gallery-lightbox figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.88rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  .gallery-lightbox__counter {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    color: rgb(var(--ink-faint));
+    flex-shrink: 0;
+  }
+
+  .gallery-lightbox__close,
+  .gallery-lightbox__nav {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgb(var(--edge-strong));
+    background: rgb(var(--surface-2));
+    color: rgb(var(--ink));
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .gallery-lightbox__close {
+    position: absolute;
+    top: clamp(0.8rem, 3vw, 1.6rem);
+    right: clamp(0.8rem, 3vw, 1.6rem);
+  }
+
+  .gallery-lightbox__close:hover,
+  .gallery-lightbox__nav:hover {
+    border-color: rgb(var(--accent));
+    color: rgb(var(--accent-bright));
+  }
+
+  .gallery-lightbox__close svg,
+  .gallery-lightbox__nav svg { width: 20px; height: 20px; }
+
+  @media (max-width: 640px) {
+    .gallery-lightbox__nav { display: none; } /* swipe-scroll strips + tap-through instead */
+  }
+</style>

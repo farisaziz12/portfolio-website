@@ -164,12 +164,13 @@ export interface ExplorerState {
 }
 
 // Constants for UI configuration
+// Icons intentionally empty — emojis are banned from the UI (docs/ui-rules.md §6).
 export const DOMAIN_CONFIG: DomainConfig[] = [
-  { id: 'all', label: 'All', icon: '✨', color: 'indigo' },
-  { id: 'community', label: 'Community', icon: '👥', color: 'violet' },
-  { id: 'product', label: 'Product / Monetization', icon: '💰', color: 'emerald' },
-  { id: 'leadership', label: 'Engineering Leadership', icon: '🎯', color: 'amber' },
-  { id: 'speaking', label: 'Speaking', icon: '🎤', color: 'blue' },
+  { id: 'all', label: 'All', icon: '', color: 'indigo' },
+  { id: 'community', label: 'Community', icon: '', color: 'violet' },
+  { id: 'product', label: 'Product / Monetization', icon: '', color: 'emerald' },
+  { id: 'leadership', label: 'Engineering Leadership', icon: '', color: 'amber' },
+  { id: 'speaking', label: 'Speaking', icon: '', color: 'blue' },
 ];
 
 export const LENS_CONFIG: LensConfig[] = [
@@ -214,53 +215,41 @@ export function formatMetricNumber(value: number, unit?: MetricUnit, prefix?: st
   return prefix ? `${prefix}${formatted}` : formatted;
 }
 
-// Helper function to get color classes for a highlight color
+// Helper function to get color classes for a highlight color.
+// The legacy HighlightColor values (kept for CMS back-compat) all collapse
+// into the two Design System v2 families: accent (blue) and signal (teal).
 export function getColorClasses(color?: HighlightColor): {
   text: string;
   bg: string;
   border: string;
   gradient: string;
 } {
-  const colors: Record<
-    HighlightColor,
-    { text: string; bg: string; border: string; gradient: string }
-  > = {
-    indigo: {
-      text: 'text-indigo-500',
-      bg: 'bg-indigo-500/10',
-      border: 'border-indigo-500/30',
-      gradient: 'from-indigo-500 to-violet-600',
-    },
-    violet: {
-      text: 'text-violet-500',
-      bg: 'bg-violet-500/10',
-      border: 'border-violet-500/30',
-      gradient: 'from-violet-500 to-purple-600',
-    },
-    emerald: {
-      text: 'text-emerald-500',
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30',
-      gradient: 'from-emerald-500 to-teal-600',
-    },
-    amber: {
-      text: 'text-amber-500',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/30',
-      gradient: 'from-amber-500 to-orange-600',
-    },
-    pink: {
-      text: 'text-pink-500',
-      bg: 'bg-pink-500/10',
-      border: 'border-pink-500/30',
-      gradient: 'from-pink-500 to-rose-600',
-    },
-    blue: {
-      text: 'text-blue-500',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/30',
-      gradient: 'from-blue-500 to-indigo-600',
-    },
+  const accent = {
+    text: 'text-accent',
+    bg: 'bg-accent/10',
+    border: 'border-accent/30',
+    gradient: 'from-accent to-accent-deep',
+  };
+  const accentBright = {
+    text: 'text-accent-bright',
+    bg: 'bg-accent-bright/10',
+    border: 'border-accent-bright/30',
+    gradient: 'from-accent-bright to-accent',
+  };
+  const signal = {
+    text: 'text-signal',
+    bg: 'bg-signal/10',
+    border: 'border-signal/30',
+    gradient: 'from-signal to-signal-deep',
+  };
+
+  const colors: Record<HighlightColor, typeof accent> = {
+    indigo: accent,
+    violet: accent,
+    blue: accent,
+    pink: accentBright,
+    amber: accentBright,
+    emerald: signal,
   };
 
   return colors[color || 'indigo'];

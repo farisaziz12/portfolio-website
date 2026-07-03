@@ -7,6 +7,7 @@ import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
 import { bookingYears } from '../../lib/availability';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { eventBySlugQuery, allEventsQuery, socialPostsForEventQuery } from '../../lib/sanity/queries';
+import type { SocialPost } from '../../lib/sanity/types';
 import { formatDate, getCountryFlag } from 'shared/utils';
 
 interface EventDetail {
@@ -28,11 +29,6 @@ interface EventDetail {
 
 interface EventListItem { _id: string; slug: string }
 
-interface SocialPost {
-  _id: string; url: string; platform: 'twitter' | 'linkedin';
-  author: string; authorHandle?: string; authorImage?: any;
-  authorRole?: string; content: string; postDate?: string;
-}
 
 export async function getStaticPaths() {
   const events = await sanityFetch<EventListItem[]>(allEventsQuery).catch(() => []);
@@ -72,12 +68,60 @@ const locationStr = isOnline
 const typeLabel = event.type?.charAt(0).toUpperCase() + event.type?.slice(1);
 
 const hasMedia = (event.relatedMedia?.length || 0) > 0;
+
+// schema.org Event node — performer resolves to the site-wide #person entity.
+const siteUrl = 'https://faziz-dev.com';
+const eventSchema: Record<string, unknown> = {
+  '@type': 'Event',
+  name: `${event.title} at ${event.conference}`,
+  startDate: event.date,
+  ...(event.endDate ? { endDate: event.endDate } : {}),
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: isOnline
+    ? 'https://schema.org/OnlineEventAttendanceMode'
+    : 'https://schema.org/OfflineEventAttendanceMode',
+  location: isOnline
+    ? { '@type': 'VirtualLocation', url: event.links?.eventUrl || `${siteUrl}/events/${slug}` }
+    : {
+        '@type': 'Place',
+        name: event.location?.venue || event.conference,
+        address: [event.location?.city, event.location?.country].filter(Boolean).join(', ') || undefined,
+      },
+  performer: { '@id': `${siteUrl}/#person` },
+  ...(event.description ? { description: event.description } : {}),
+  ...(event.links?.eventUrl ? { url: event.links.eventUrl } : {}),
+};
+
+const breadcrumbSchema = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+    { '@type': 'ListItem', position: 2, name: 'Schedule', item: `${siteUrl}/events` },
+    { '@type': 'ListItem', position: 3, name: event.title, item: `${siteUrl}/events/${slug}` },
+  ],
+};
+
+const videoSchema = event.links?.videoUrl
+  ? {
+      '@type': 'VideoObject',
+      name: `${event.talk?.title || event.title} — ${event.conference}`,
+      description: event.talk?.abstract?.split('\n')[0] || event.description || event.title,
+      uploadDate: event.date,
+      contentUrl: event.links.videoUrl,
+      author: { '@id': `${siteUrl}/#person` },
+    }
+  : null;
+
+const extraSchema = [eventSchema, breadcrumbSchema, ...(videoSchema ? [videoSchema] : [])];
 ---
 
 <BaseLayout
   title={`${event.title} | ${event.conference || 'Event'} | Faris Aziz`}
   description={event.description || `${event.title} — ${event.conference} · ${dateStr}`}
   pathname={`/events/${slug}`}
+  image={`/og/events/${slug}.png`}
+  imageAlt={`${event.title} — Faris Aziz speaking engagement`}
+  extraSchema={extraSchema}
 >
   <header class="page-hero">
     <GridTexture />
@@ -266,24 +310,6 @@ const hasMedia = (event.relatedMedia?.length || 0) > 0;
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

@@ -37,14 +37,14 @@ const showSecondary = !!secondaryHref;
     <h2 class="contact-panel__title">{title}</h2>
     <p class="contact-panel__body">{body}</p>
     <div class="contact-panel__actions">
-      <a href={primaryHref} class="ds-btn ds-btn-primary ds-btn-lg">
+      <a href={primaryHref} class="ds-btn ds-btn-primary ds-btn-lg" data-track="contact-panel-primary" data-track-label={primaryLabel}>
         {primaryLabel}
         <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </a>
       {showSecondary && (
-        <a href={secondaryHref} class="ds-btn ds-btn-secondary ds-btn-lg">{secondaryLabel}</a>
+        <a href={secondaryHref} class="ds-btn ds-btn-secondary ds-btn-lg" data-track="contact-panel-secondary" data-track-label={secondaryLabel}>{secondaryLabel}</a>
       )}
     </div>
   </div>

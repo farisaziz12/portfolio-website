@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { navigate } from 'astro:transitions/client';
 
 type Cmd =
   | { group: string; label: string; icon: string; href: string; external?: boolean; keyHint?: string }
-  | { group: string; label: string; icon: string; action: 'toggle-theme'; keyHint?: string };
+  | { group: string; label: string; icon: string; action: 'toggle-theme'; keyHint?: string }
+  | { group: string; label: string; icon: string; action: 'copy'; text: string; keyHint?: string };
 
 const ICON: Record<string, string> = {
   home: '<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
@@ -16,6 +18,8 @@ const ICON: Record<string, string> = {
   sun: '<circle cx="12" cy="12" r="3.6"/><path d="M12 3v1.5M12 19.5V21M4.2 4.2l1 1M18.8 18.8l1 1M3 12h1.5M19.5 12H21M4.2 19.8l1-1M18.8 5.2l1-1" stroke-linecap="round"/>',
   gh: '<path d="M9 19c-4 1.5-4-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6A4.6 4.6 0 0 0 18.5 6 4.3 4.3 0 0 0 18 2.5s-1-.3-3.5 1.3a12 12 0 0 0-6 0C6 2.2 5 2.5 5 2.5A4.3 4.3 0 0 0 4.5 6 4.6 4.6 0 0 0 3 9c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" stroke-linecap="round" stroke-linejoin="round"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
+  heart: '<path d="M12 20.5S3.5 15 3.5 8.9A4.6 4.6 0 0 1 8 4.3c1.7 0 3.2 1 4 2.4a4.6 4.6 0 0 1 4-2.4 4.6 4.6 0 0 1 4.5 4.6C20.5 15 12 20.5 12 20.5z"/>',
 };
 
 const COMMANDS: Cmd[] = [
@@ -31,25 +35,54 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'About', icon: ICON.user, href: '/about' },
   { group: 'Pages', label: 'Blog', icon: ICON.pen, href: '/blog' },
   { group: 'Pages', label: 'Projects', icon: ICON.book, href: '/projects' },
-  { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite', keyHint: 'CTA' },
+  { group: 'Pages', label: 'Media & press kit', icon: ICON.img, href: '/media' },
+  { group: 'Pages', label: 'Photo gallery', icon: ICON.img, href: '/gallery' },
+  { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
+  { group: 'Actions', label: 'Work with me', icon: ICON.mail, href: '/contact', keyHint: 'CTA' },
+  { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite' },
+  {
+    group: 'Actions',
+    label: 'Copy short bio',
+    icon: ICON.pen,
+    action: 'copy',
+    text: 'Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and organizes ZurichJS.',
+    keyHint: 'for organizers',
+  },
+  { group: 'Actions', label: 'Message me', icon: ICON.mail, href: '/contact#message' },
   { group: 'Actions', label: 'Toggle theme', icon: ICON.sun, action: 'toggle-theme' },
   { group: 'Elsewhere', label: 'GitHub', icon: ICON.gh, href: 'https://github.com/farisaziz12', external: true },
   { group: 'Elsewhere', label: 'LinkedIn', icon: ICON.user, href: 'https://linkedin.com/in/farisaziz12', external: true },
 ];
 
+const RECENT_KEY = 'cmdk-recent';
+
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
+  const [recentLabel, setRecentLabel] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try { setRecentLabel(localStorage.getItem(RECENT_KEY)); } catch (_) {}
+  }, [open]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return COMMANDS;
+    if (!q) {
+      // Pin the last-used command to the top so the palette learns one habit.
+      const recent = recentLabel ? COMMANDS.find((c) => c.label === recentLabel) : undefined;
+      if (recent) {
+        return [{ ...recent, group: 'Recent' }, ...COMMANDS.filter((c) => c.label !== recentLabel)];
+      }
+      return COMMANDS;
+    }
     return COMMANDS.filter(
       (c) => c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, recentLabel]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -85,6 +118,19 @@ export default function CommandPalette() {
   }, [query]);
 
   function run(cmd: Cmd) {
+    try { localStorage.setItem(RECENT_KEY, cmd.label); } catch (_) {}
+    if ('action' in cmd && cmd.action === 'copy') {
+      try {
+        navigator.clipboard?.writeText(cmd.text);
+      } catch (_) {}
+      // Flash "Copied" on the item before closing — copy without feedback feels broken.
+      setCopiedLabel(cmd.label);
+      window.setTimeout(() => {
+        setOpen(false);
+        setCopiedLabel(null);
+      }, 900);
+      return;
+    }
     setOpen(false);
     if ('action' in cmd && cmd.action === 'toggle-theme') {
       const root = document.documentElement;
@@ -95,11 +141,12 @@ export default function CommandPalette() {
         localStorage.setItem('theme', next);
         localStorage.setItem('faziz-theme', next);
       } catch (_) {}
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
       return;
     }
     if ('href' in cmd) {
       if (cmd.external) window.open(cmd.href, '_blank', 'noopener');
-      else window.location.href = cmd.href;
+      else navigate(cmd.href);
     }
   }
 
@@ -146,13 +193,14 @@ export default function CommandPalette() {
                   {showGroup && <div className="cmdk__group">{c.group}</div>}
                   <div
                     className="cmdk__item"
+                    style={{ '--cmdk-delay': `${Math.min(i, 10) * 15}ms` } as React.CSSProperties}
                     aria-selected={i === selectedIdx}
                     onMouseMove={() => i !== selectedIdx && setSelectedIdx(i)}
                     onClick={() => run(c)}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} dangerouslySetInnerHTML={{ __html: c.icon }} />
-                    <span>{c.label}</span>
-                    {'keyHint' in c && c.keyHint && <span className="k">{c.keyHint}</span>}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} dangerouslySetInnerHTML={{ __html: copiedLabel === c.label ? '<path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>' : c.icon }} />
+                    <span>{copiedLabel === c.label ? 'Copied to clipboard' : c.label}</span>
+                    {'keyHint' in c && c.keyHint && copiedLabel !== c.label && <span className="k">{c.keyHint}</span>}
                   </div>
                 </div>
               );

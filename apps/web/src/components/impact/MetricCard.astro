@@ -62,13 +62,14 @@ function calculateGrowth(current?: number, previous?: number): number | null {
 // Get solid color from category or highlight color
 function getColorClass(category?: Category, highlightColor?: string): string {
   // Map category colors to solid text colors
+  // Legacy CMS color values collapse into the DS v2 accent/signal families.
   const categoryColorMap: Record<string, string> = {
-    'from-violet-500 to-purple-600': 'text-violet-500',
-    'from-emerald-500 to-teal-600': 'text-emerald-500',
-    'from-amber-500 to-orange-600': 'text-amber-500',
-    'from-pink-500 to-rose-600': 'text-pink-500',
-    'from-blue-500 to-indigo-600': 'text-blue-500',
-    'from-accent to-accent-dark': 'text-indigo-500',
+    'from-violet-500 to-purple-600': 'text-accent',
+    'from-emerald-500 to-teal-600': 'text-signal',
+    'from-amber-500 to-orange-600': 'text-accent-bright',
+    'from-pink-500 to-rose-600': 'text-accent-bright',
+    'from-blue-500 to-indigo-600': 'text-accent',
+    'from-accent to-accent-dark': 'text-accent',
   };
 
   if (category?.color && categoryColorMap[category.color]) {
@@ -76,11 +77,11 @@ function getColorClass(category?: Category, highlightColor?: string): string {
   }
 
   const colors: Record<string, string> = {
-    accent: 'text-indigo-500',
-    violet: 'text-violet-500',
-    pink: 'text-pink-500',
-    emerald: 'text-emerald-500',
-    amber: 'text-amber-500',
+    accent: 'text-accent',
+    violet: 'text-accent',
+    pink: 'text-accent-bright',
+    emerald: 'text-signal',
+    amber: 'text-accent-bright',
   };
   return colors[highlightColor || 'accent'] || colors.accent;
 }

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 type Format = 'keynote' | 'talk' | 'workshop' | 'panel';
 type Size = 's' | 'm' | 'l' | 'xl';
@@ -25,12 +25,36 @@ const initial: Fields = {
   message: '',
 };
 
+const FORMATS: Format[] = ['keynote', 'talk', 'workshop', 'panel'];
+
 export default function InviteForm() {
   const [fields, setFields] = useState<Fields>(initial);
   const [errors, setErrors] = useState<Record<string, true>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Date/location/format/size live behind "Add details" — three fields is a
+  // first touch, eight is a chore. Deep links that prefill a format auto-open it.
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Prefill from query params so "Book this talk" / "Book a workshop" CTAs land
+  // in a contextual form: /invite?format=workshop&talk=<title>&workshop=<title>
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const format = params.get('format');
+    const talk = params.get('talk');
+    const workshop = params.get('workshop');
+    if (FORMATS.includes(format as Format)) setDetailsOpen(true);
+    setFields((f) => ({
+      ...f,
+      format: FORMATS.includes(format as Format) ? (format as Format) : f.format,
+      message: talk
+        ? `I'd like to book the talk "${talk}".\n\n`
+        : workshop
+          ? `I'd like to book the workshop "${workshop}".\n\n`
+          : f.message,
+    }));
+  }, []);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((f) => ({ ...f, [key]: value }));
@@ -60,6 +84,7 @@ export default function InviteForm() {
         return;
       }
       setSuccess(true);
+      try { (window as any).posthog?.capture('invite_form_submitted', { format: fields.format }); } catch (_) {}
     } catch (err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -77,6 +102,17 @@ export default function InviteForm() {
         </div>
         <h3 className="invite-form__success-title">Invitation sent</h3>
         <p className="invite-form__success-body">Thanks — I'll get back to you within two days. Talk soon.</p>
+        <div className="invite-form__next">
+          <span className="invite-form__next-label">While you wait, grab what you need:</span>
+          <a href="#bios">Bios</a>
+          <a href="#headshots">Headshots</a>
+          <a href="#rider">Rider</a>
+          <a href="#availability">Availability</a>
+        </div>
+        <p className="invite-form__success-body">
+          While you're here: I also do <a className="invite-form__alt-link" href="/consulting">consulting</a> and{' '}
+          <a className="invite-form__alt-link" href="/mentorship">mentorship</a>.
+        </p>
       </div>
     );
   }
@@ -122,6 +158,28 @@ export default function InviteForm() {
           />
         </Field>
 
+        <button
+          type="button"
+          className="invite-form__details-toggle"
+          aria-expanded={detailsOpen}
+          onClick={() => setDetailsOpen((o) => !o)}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            aria-hidden
+            style={{ transform: detailsOpen ? 'rotate(90deg)' : undefined }}
+          >
+            <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {detailsOpen ? 'Hide details' : 'Add details (optional)'}
+          {!detailsOpen && <span className="invite-form__details-hint">date · location · format · audience size</span>}
+        </button>
+
+        {detailsOpen && (
+        <>
         <Field label="Date" htmlFor="date">
           <input
             id="date"
@@ -144,7 +202,7 @@ export default function InviteForm() {
 
         <Field label="Format" full>
           <div className="invite-form__seg">
-            {(['keynote', 'talk', 'workshop', 'panel'] as Format[]).map((opt) => (
+            {FORMATS.map((opt) => (
               <label key={opt}>
                 <input
                   type="radio"
@@ -180,6 +238,8 @@ export default function InviteForm() {
             ))}
           </div>
         </Field>
+        </>
+        )}
 
         <Field label="What's the event about?" htmlFor="msg" full>
           <textarea

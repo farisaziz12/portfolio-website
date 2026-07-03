@@ -8,31 +8,15 @@ import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
 import { sanityFetch } from '../lib/sanity/client';
 import { consultingOffersQuery } from '../lib/sanity/queries';
 import { availabilityLabel } from '../lib/availability';
+import type { ServiceOffer } from '../lib/sanity/types';
 
-interface ServiceOffer {
-  _id: string;
-  title: string;
-  slug: string;
-  serviceType: 'consulting' | 'mentorship';
-  shortDescription: string;
-  bestFor?: string;
-  outcomes?: string[];
-  engagementFormat?: string;
-  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
-  price?: number;
-  priceCurrency?: string;
-  priceUnit?: string;
-  bookingUrl: string;
-  featured?: boolean;
-  order?: number;
-}
 
 const offers = await sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []);
 
 const expertise = [
   {
     title: 'React & Next.js',
-    desc: 'Server components, performance budgets, advanced patterns at production scale.',
+    desc: 'Component architecture, rendering strategy, performance budgets — production patterns at scale.',
     icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
   },
   {
@@ -56,9 +40,9 @@ const expertise = [
     icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>',
   },
   {
-    title: 'Security',
-    desc: 'Auth patterns, API hardening, the boring-but-critical practices.',
-    icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    title: 'Engineering leadership',
+    desc: 'Leading teams without losing the plot technically — mentoring, hiring, and scaling squads.',
+    icon: '<circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 7a3 3 0 0 1 0 6M18.5 19a5 5 0 0 0-3-4.6"/>',
   },
 ];
 
@@ -86,6 +70,20 @@ const audiences = [
   title="Consulting | Faris Aziz"
   description="Technical consulting for teams and startups. Architecture reviews, technical strategy, and hands-on implementation."
   pathname="/consulting"
+  image="/og/consulting.png"
+  markdownAlternate="/consulting.md"
+  extraSchema={[
+    {
+      '@type': 'Service',
+      name: 'Technical consulting',
+      serviceType: 'Software engineering consulting',
+      description:
+        'Architecture reviews, performance optimization, technical strategy, and hands-on implementation support for teams and startups — specializing in React, Next.js, and payment systems.',
+      provider: { '@id': 'https://faziz-dev.com/#person' },
+      areaServed: 'Worldwide',
+      url: 'https://faziz-dev.com/consulting',
+    },
+  ]}
 >
   <header class="page-hero">
     <GridTexture />
@@ -97,10 +95,10 @@ const audiences = [
       </nav>
       <Kicker>Consulting · for teams & startups</Kicker>
       <h1 class="page-hero__title">
-        Ship better software, <span class="accent-word">faster</span>.
+        Let's get your team <span class="accent-word">unstuck</span>.
       </h1>
       <p class="page-hero__lead">
-        Hands-on technical expertise to help your team solve hard problems and build systems that scale. Architecture reviews, technical strategy, and implementation support.
+        Architecture reviews, technical strategy, hands-on pairing — whatever the problem actually needs. I've spent a decade on systems where a dropped request means lost money, so chances are I've seen a version of your fire before.
       </p>
       <div class="page-hero__actions">
         <a href="#offers" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -118,7 +116,7 @@ const audiences = [
     <div class="container">
       <div class="page-section__heading">
         <Kicker class="ds-reveal">Areas of expertise</Kicker>
-        <h2 class="page-h2 ds-reveal">Battle-tested at <span class="mark">production scale</span></h2>
+        <h2 class="page-h2 ds-reveal">Stuff I've <span class="mark">actually shipped</span></h2>
       </div>
       <div class="workshop-topics wide">
         {expertise.map((e) => (
@@ -184,34 +182,17 @@ const audiences = [
       <div class="wide ds-reveal">
         <ContactPanel
           status={availabilityLabel('Available')}
-          title="Let's solve your toughest challenges"
-          body="Free 20-minute discovery call. We'll talk about what's slowing you down and whether I can help. No pitch, no obligation."
+          title="Tell me what's slowing you down"
+          body="Free 20-minute call. You describe the problem, I tell you honestly whether I can help — and if I can't, I'll point you at someone who can. No pitch."
           primaryHref="https://cal.com/farisaziz12/discovery-call"
           primaryLabel="Book a free call"
           secondaryHref={null}
         />
+        <p class="ds-crosslink">Want me at your event instead? <a href="/invite" class="ds-link">Invite me to speak</a> — or <a href="/mentorship" class="ds-link">get mentored 1:1</a>.</p>
       </div>
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

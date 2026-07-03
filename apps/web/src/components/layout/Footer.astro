@@ -1,7 +1,30 @@
 ---
 import GeneralSubscribe from '../islands/GeneralSubscribe';
+import { sanityFetch } from '../../lib/sanity/client';
+import groq from 'groq';
 
 const currentYear = new Date().getFullYear();
+
+// Presence line: if an event is happening right now (start <= now <= end+24h),
+// show where I actually am; otherwise home base + a live clock.
+interface CurrentEvent {
+  title: string;
+  conference?: string;
+  location?: { city?: string; country?: string; isOnline?: boolean };
+}
+
+const currentEventQuery = groq`
+  *[_type == "event" && date <= now() && dateTime(coalesce(endDate, date)) + 60*60*24 > dateTime(now())]
+    | order(date desc)[0] { title, conference, location }
+`;
+
+const currentEvent = await sanityFetch<CurrentEvent | null>(currentEventQuery).catch(() => null);
+const presenceCity = currentEvent?.location?.isOnline
+  ? null
+  : currentEvent?.location?.city || null;
+const presenceLabel = currentEvent
+  ? `Currently at ${currentEvent.conference || currentEvent.title}${presenceCity ? ` · ${presenceCity}` : ''}`
+  : null;
 
 const socialLinks = [
   {
@@ -28,13 +51,14 @@ const socialLinks = [
 
 const speakingLinks = [
   { label: 'Speaking', href: '/speaking' },
-  { label: 'Talks', href: '/talks' },
+  { label: 'Schedule', href: '/events' },
+  { label: 'Talk catalogue', href: '/talks' },
   { label: 'Workshops', href: '/workshops' },
-  { label: 'Events', href: '/events' },
-  { label: 'Invite Me', href: '/invite' },
+  { label: 'Invite me', href: '/invite' },
 ];
 
 const servicesLinks = [
+  { label: 'Work with me', href: '/contact' },
   { label: 'Services', href: '/services' },
   { label: 'Consulting', href: '/consulting' },
   { label: 'Mentorship', href: '/mentorship' },
@@ -44,6 +68,7 @@ const footerLinks = [
   { label: 'Blog', href: '/blog' },
   { label: 'Projects', href: '/projects' },
   { label: 'Impact', href: '/impact' },
+  { label: 'Appreciation', href: '/appreciation' },
   { label: 'About', href: '/about' },
   { label: 'Media', href: '/media' },
 ];
@@ -65,6 +90,16 @@ const externalLinks = [
         </a>
         <p class="text-secondary mt-3">
           Staff Software Engineer and Conference Speaker. Building resilient systems. Based in Geneva.
+        </p>
+
+        <!-- Presence: where I am right now (event-aware), else home base + live clock -->
+        <p class="footer-presence flex items-center gap-2 mt-4 text-body-sm text-ink-faint">
+          <span class="ds-dot ds-dot--pulse"></span>
+          {presenceLabel ? (
+            <span>{presenceLabel}</span>
+          ) : (
+            <span>Geneva · <span data-footer-clock>--:--</span></span>
+          )}
         </p>
 
         <!-- Social links -->
@@ -190,3 +225,26 @@ const externalLinks = [
     </div>
   </div>
 </footer>
+
+<script>
+  // Live home-base clock (only rendered when not travelling). Re-binds after
+  // ViewTransitions swaps; ticks every 30s.
+  function startFooterClock() {
+    const el = document.querySelector('[data-footer-clock]');
+    if (!el) return;
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Zurich',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
+    const tick = () => {
+      el.textContent = fmt.format(new Date()).replace(',', ' ');
+    };
+    tick();
+    window.clearInterval((window as any).__footerClockTimer);
+    (window as any).__footerClockTimer = window.setInterval(tick, 30_000);
+  }
+  startFooterClock();
+  document.addEventListener('astro:after-swap', startFooterClock);
+</script>

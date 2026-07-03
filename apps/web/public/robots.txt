@@ -1,0 +1,23 @@
+# faziz-dev.com — crawlers (including AI crawlers) explicitly welcome.
+# This is a personal portfolio: every crawl is marketing.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /workshops/attend/
+
+# AI crawlers — default-allow already applies; listed for self-documentation.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: CCBot
+User-agent: meta-externalagent
+Allow: /
+
+Sitemap: https://faziz-dev.com/sitemap-index.xml

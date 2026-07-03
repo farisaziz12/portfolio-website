@@ -20,6 +20,7 @@ export default defineType({
         list: [
           { title: 'LinkedIn', value: 'linkedin' },
           { title: 'Twitter/X', value: 'twitter' },
+          { title: 'Bluesky', value: 'bluesky' },
         ],
         layout: 'radio',
       },

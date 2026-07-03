@@ -7,6 +7,7 @@ import ContactPanel from '../../components/design/ContactPanel.astro';
 import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopsQuery } from '../../lib/sanity/queries';
+import { availabilityLabel } from '../../lib/availability';
 
 interface Workshop {
   _id: string;
@@ -59,6 +60,7 @@ const topics = [
   title="Workshops | Faris Aziz"
   description="Hands-on workshops by Faris Aziz on React, Next.js, and modern web development. Available for conferences and corporate training."
   pathname="/workshops"
+  image="/og/workshops.png"
 >
   <header class="page-hero">
     <GridTexture />
@@ -87,7 +89,7 @@ const topics = [
     <div class="container">
       <div class="page-section__heading">
         <Kicker class="ds-reveal">Why workshops</Kicker>
-        <h2 class="page-h2 ds-reveal">Deep learning through <span class="mark">hands-on</span> practice</h2>
+        <h2 class="page-h2 ds-reveal">Nobody learns from <span class="mark">slides alone</span></h2>
       </div>
       <div class="page-grid-3 wide">
         {benefits.map((b) => (
@@ -174,13 +176,16 @@ const topics = [
       </div>
       <div class="workshop-topics wide">
         {topics.map((t) => (
-          <div class="ds-card workshop-topic ds-reveal">
+          <a
+            href={`/invite?format=workshop&workshop=${encodeURIComponent(t.title)}`}
+            class="ds-card ds-card-interactive workshop-topic ds-reveal"
+          >
             <IconChip>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={t.icon} />
             </IconChip>
             <h3 class="workshop-topic__title">{t.title}</h3>
             <p class="workshop-topic__desc">{t.desc}</p>
-          </div>
+          </a>
         ))}
       </div>
     </div>
@@ -200,7 +205,7 @@ const topics = [
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status="Custom workshops · 2026"
+          status={availabilityLabel('Custom workshops')}
           title="Need a custom workshop?"
           body="Tailored sessions for your team or event — pick a topic, tell me about your audience's level, and I'll build it for you."
           primaryHref="/invite"
@@ -212,24 +217,6 @@ const topics = [
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>
@@ -287,6 +274,11 @@ const topics = [
   .workshop-card__desc {
     color: rgb(var(--ink-muted));
     line-height: 1.55;
+    /* Long Sanity descriptions get clamped — the full text lives on the detail page. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .workshop-card__techs {
     display: flex;

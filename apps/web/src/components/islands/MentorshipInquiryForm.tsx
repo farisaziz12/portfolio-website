@@ -68,6 +68,7 @@ export default function MentorshipInquiryForm() {
         return;
       }
       setSuccess(true);
+      try { (window as any).posthog?.capture('mentorship_inquiry_submitted'); } catch (_) {}
     } catch (_err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
     } finally {

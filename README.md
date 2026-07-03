@@ -1,174 +1,92 @@
 # faziz-dev.com
 
-Personal portfolio and speaker platform for Faris Aziz - Staff Software Engineer, Conference Speaker & Workshop Instructor.
+Personal portfolio and speaker platform for Faris Aziz — Staff Software
+Engineer, Conference Speaker & Workshop Instructor.
 
-## Tech Stack
+## Tech stack
 
-- **Frontend**: [Astro](https://astro.build/) 5.x with React islands
+- **Frontend**: [Astro](https://astro.build/) 5.x with React islands + ViewTransitions
 - **CMS**: [Sanity](https://www.sanity.io/) v3 with custom schemas
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with custom design tokens
+- **Styling**: Design System v2 — CSS custom-property tokens on Tailwind, enforced by CI guardrails
+- **Email**: [Resend](https://resend.com/) (all contact flows are form-based — no `mailto:`)
+- **Analytics**: PostHog
+- **Hosting**: Vercel (static + ISR homepage)
 - **Monorepo**: pnpm workspaces
 
-## Project Structure
+## Documentation
+
+| Guide | What's in it |
+|---|---|
+| [`apps/web/README.md`](./apps/web/README.md) | Website architecture: rendering, islands, global behaviors, conventions |
+| [`docs/sanity-guide.md`](./docs/sanity-guide.md) | CMS guide: content model, what powers which page, editing recipes |
+| [`apps/web/CLAUDE.md`](./apps/web/CLAUDE.md) | Email subsystem: Resend setup, templates, env vars, gotchas |
+| [`docs/ui-rules.md`](./docs/ui-rules.md) | Design-system rulebook: tokens, `ds-*` classes, guardrails |
+| [`docs/measurement.md`](./docs/measurement.md) | Analytics: event inventory, funnels to build in PostHog |
+
+## Project structure
 
 ```
 /
 ├── apps/
-│   ├── web/                 # Astro website
-│   │   ├── src/
-│   │   │   ├── components/  # Astro & React components
-│   │   │   ├── layouts/     # Page layouts
-│   │   │   ├── lib/sanity/  # Sanity client & queries
-│   │   │   ├── pages/       # Astro pages
-│   │   │   └── styles/      # Global styles
-│   │   └── public/          # Static assets
-│   └── studio/              # Sanity Studio
-│       ├── schemas/         # Content schemas
-│       └── desk/            # Desk structure
+│   ├── web/                 # Astro website (see apps/web/README.md)
+│   └── studio/              # Sanity Studio (schemas/, desk/)
 ├── packages/
 │   └── shared/              # Shared types & utilities
-├── scripts/
-│   └── migrate-content.ts   # Content migration script
-└── .migration-data/         # Backup of original content
+├── docs/                    # Guides (see table above)
+└── scripts/                 # Content migration
 ```
 
-## Quick Start
+## Quick start
 
-### Prerequisites
-
-- Node.js 20+
-- pnpm 9+
-- Sanity account (for CMS)
-
-### Installation
+Prerequisites: Node.js 20+, pnpm 9+, a Sanity account.
 
 ```bash
-# Clone the repository
 git clone https://github.com/farisaziz12/portfolio-website.git
 cd portfolio-website
-
-# Install dependencies
 pnpm install
 
-# Set up environment variables
+# Environment
 cp apps/web/.env.example apps/web/.env
 cp apps/studio/.env.example apps/studio/.env
-# Edit .env files with your Sanity credentials
+# Fill in Sanity credentials; email vars are documented in apps/web/CLAUDE.md
 ```
-
-### Development
 
 ```bash
-# Start all apps (web + studio)
-pnpm dev
-
-# Start only the website
-pnpm web
-
-# Start only Sanity Studio
-pnpm studio
+pnpm dev        # web + studio
+pnpm web        # website only (localhost:4321)
+pnpm studio     # Sanity Studio only
+pnpm build      # build everything
+pnpm --filter web lint   # eslint + UI guardrails
 ```
 
-### Building
-
-```bash
-# Build all apps
-pnpm build
-
-# Build only the website
-pnpm --filter web build
-```
-
-## Environment Variables
-
-### apps/web/.env
-
-```env
-PUBLIC_SANITY_PROJECT_ID=your_project_id
-PUBLIC_SANITY_DATASET=production
-```
-
-### apps/studio/.env
-
-```env
-SANITY_STUDIO_PROJECT_ID=your_project_id
-SANITY_STUDIO_DATASET=production
-```
-
-### Root (for migration script)
-
-```env
-SANITY_PROJECT_ID=your_project_id
-SANITY_DATASET=production
-SANITY_API_TOKEN=your_write_token
-```
-
-## Content Migration
-
-To migrate content from the backup JSON files to Sanity:
-
-```bash
-# Set environment variables
-export SANITY_PROJECT_ID=your_project_id
-export SANITY_DATASET=production
-export SANITY_API_TOKEN=your_write_token
-
-# Run migration
-pnpm migrate
-```
-
-See [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) for detailed content management instructions.
+Without Sanity credentials/network the site still runs — every fetch falls
+back to an empty state or hardcoded proof numbers by design.
 
 ## Pages
 
 | Route | Description |
 |-------|-------------|
-| `/` | Home page with hero, stats, upcoming events |
-| `/speaking` | Speaking overview with upcoming/past events |
-| `/events` | All events archive |
-| `/events/[slug]` | Individual event detail |
-| `/talks` | Available talks index |
-| `/talks/[slug]` | Talk detail with event history |
-| `/workshops` | Workshops index |
-| `/workshops/[slug]` | Workshop detail |
-| `/invite` | Speaker kit for event organizers |
-| `/about` | About page with work experience |
-| `/projects` | Projects portfolio |
-| `/projects/[slug]` | Project detail |
-| `/media` | Photo/video gallery |
-| `/blog` | External posts & podcasts |
+| `/` | Home — hero terminal, next events, proof, social wall (ISR ~1h) |
+| `/speaking` | Speaking hub: topics, next up, conference wall |
+| `/events`, `/events/[slug]` | Full schedule/archive with filters + flags |
+| `/talks`, `/talks/[slug]` | Bookable talk catalogue and detail |
+| `/workshops`, `/workshops/[slug]` | Workshop catalogue and detail |
+| `/workshops/attend/[slug]` | Token-gated attendee page |
+| `/invite` | Speaker press kit: bios, headshots, rider, invite form |
+| `/contact` | Four doors: speak, consult, mentor, hire — one form |
+| `/consulting`, `/mentorship`, `/services` | Service offers (Sanity-driven) |
+| `/impact` | Track record with case studies |
+| `/appreciation` | Social proof wall |
+| `/about`, `/projects`, `/media`, `/blog` | Story, work, gallery, writing |
+| `/llms.txt`, `/*.md` | Agent-facing markdown mirrors of every key page |
+| `/og/*.png` | Build-time generated Open Graph cards |
 | `/rss.xml` | RSS feed |
-
-## Sanity Schemas
-
-| Schema | Description |
-|--------|-------------|
-| `talk` | Canonical talk topics |
-| `event` | Speaking event occurrences |
-| `workshop` | Workshop offerings |
-| `project` | Portfolio projects |
-| `company` | Work experience |
-| `media` | Gallery photos/videos |
-| `testimonial` | Social proof quotes |
-| `externalPost` | External articles/podcasts |
-| `page` | Editable pages |
-| `speakerProfile` | Speaker kit singleton |
 
 ## Deployment
 
-### Vercel (Recommended)
-
-1. Connect your GitHub repository to Vercel
-2. Set the root directory to `apps/web`
-3. Add environment variables in Vercel dashboard
-4. Deploy!
-
-### Sanity Studio
-
-```bash
-cd apps/studio
-npx sanity deploy
-```
+- **Website**: Vercel — root directory `apps/web`, env vars from
+  `apps/web/CLAUDE.md` set on Production *and* Preview.
+- **Studio**: `cd apps/studio && npx sanity deploy`
 
 ## License
 

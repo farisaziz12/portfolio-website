@@ -32,12 +32,17 @@ const workshop = await sanityFetch<Workshop | null>(workshopBySlugQuery, { slug 
 if (!workshop) return Astro.redirect('/404');
 
 const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0);
+
+// Prefilled invite link so the form opens with this workshop's context.
+const inviteHref = `/invite?format=workshop&workshop=${encodeURIComponent(workshop.title)}`;
 ---
 
 <BaseLayout
   title={`${workshop.title} | Workshops | Faris Aziz`}
   description={workshop.description || `${workshop.title} — a hands-on workshop by Faris Aziz`}
   pathname={`/workshops/${slug}`}
+  image={`/og/workshops/${slug}.png`}
+  imageAlt={`${workshop.title} — hands-on workshop by Faris Aziz`}
 >
   <header class="page-hero">
     <GridTexture />
@@ -67,7 +72,7 @@ const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEven
       {workshop.description && <p class="page-hero__lead">{workshop.description}</p>}
 
       <div class="page-hero__actions">
-        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
+        <a href={inviteHref} class="ds-btn ds-btn-primary ds-btn-lg">
           Book this workshop
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
@@ -208,7 +213,7 @@ const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEven
           status={`Booking ${bookingYears()} dates`}
           title="Ready to book this workshop?"
           body="Tell me about your team or event audience and I'll tailor depth, pace, and exercises to fit. I reply within two days."
-          primaryHref="/invite"
+          primaryHref={inviteHref}
           primaryLabel="Book a workshop"
           secondaryHref="/workshops"
           secondaryLabel="View other workshops"
@@ -217,24 +222,6 @@ const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEven
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

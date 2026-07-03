@@ -28,6 +28,7 @@ const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boo
   title="Projects | Faris Aziz"
   description="Featured projects and case studies by Faris Aziz. Open source contributions, side projects, and professional work."
   pathname="/projects"
+  image="/og/projects.png"
 >
   <header class="page-hero">
     <GridTexture />
@@ -42,15 +43,15 @@ const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boo
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalProjects}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalProjects}</div>
           <div class="ds-stat__label">Projects</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{featuredCount}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{featuredCount}</div>
           <div class="ds-stat__label">Featured</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{categories.length}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{categories.length}</div>
           <div class="ds-stat__label">Categories</div>
         </div>
       </div>
@@ -62,7 +63,7 @@ const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boo
           </svg>
           View GitHub
         </a>
-        <a href="/invite" class="ds-btn ds-btn-secondary ds-btn-lg">Work with me</a>
+        <a href="/contact" class="ds-btn ds-btn-secondary ds-btn-lg">Work with me</a>
       </div>
     </div>
   </header>
@@ -144,24 +145,6 @@ const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boo
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

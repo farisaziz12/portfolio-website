@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 
+import { platformChrome, PlatformIcon, type SocialPlatform } from './socialPlatform';
+
 interface SocialPost {
   _id: string;
-  platform: 'twitter' | 'linkedin';
+  platform: SocialPlatform;
   author: string;
   authorRole?: string;
   authorHandle?: string;
@@ -34,7 +36,7 @@ interface AppreciationFilterProps {
 }
 
 type MainTab = 'social' | 'testimonials';
-type PlatformFilter = 'all' | 'twitter' | 'linkedin';
+type PlatformFilter = 'all' | SocialPlatform;
 type TestimonialFilter = 'all' | 'linkedin' | 'mentorcruise' | 'workshop' | 'talk';
 
 const contextLabels: Record<string, string> = {
@@ -106,22 +108,22 @@ export default function AppreciationFilter({
     <div className="appreciation-container">
       {/* Modern Segmented Tabs */}
       <div className="flex justify-center mb-10">
-        <div className="inline-flex p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl gap-1">
+        <div className="inline-flex p-1.5 bg-surface-2 rounded-2xl gap-1">
           <button
             onClick={() => setActiveTab('social')}
             className={`
               relative flex items-center gap-3 px-6 py-3.5 rounded-xl font-medium text-sm transition-all duration-200
               ${activeTab === 'social'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-lg shadow-slate-200/50 dark:shadow-black/20'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                ? 'bg-surface-3 text-ink shadow-lg shadow-black/20'
+                : 'text-ink-muted hover:text-ink'
               }
             `}
           >
             <span className={`
               flex items-center justify-center w-8 h-8 rounded-lg transition-colors
               ${activeTab === 'social'
-                ? 'bg-gradient-to-br from-blue-500 to-violet-500 text-white'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                ? 'bg-accent text-white'
+                : 'bg-surface-3 text-ink-muted'
               }
             `}>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -133,8 +135,8 @@ export default function AppreciationFilter({
             <span className={`
               px-2 py-0.5 text-xs font-semibold rounded-full transition-colors
               ${activeTab === 'social'
-                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                ? 'bg-accent/10 text-accent'
+                : 'bg-surface-3 text-ink-muted'
               }
             `}>
               {stats.posts}
@@ -146,16 +148,16 @@ export default function AppreciationFilter({
             className={`
               relative flex items-center gap-3 px-6 py-3.5 rounded-xl font-medium text-sm transition-all duration-200
               ${activeTab === 'testimonials'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-lg shadow-slate-200/50 dark:shadow-black/20'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                ? 'bg-surface-3 text-ink shadow-lg shadow-black/20'
+                : 'text-ink-muted hover:text-ink'
               }
             `}
           >
             <span className={`
               flex items-center justify-center w-8 h-8 rounded-lg transition-colors
               ${activeTab === 'testimonials'
-                ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                ? 'bg-accent text-white'
+                : 'bg-surface-3 text-ink-muted'
               }
             `}>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -166,8 +168,8 @@ export default function AppreciationFilter({
             <span className={`
               px-2 py-0.5 text-xs font-semibold rounded-full transition-colors
               ${activeTab === 'testimonials'
-                ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                ? 'bg-accent/10 text-accent'
+                : 'bg-surface-3 text-ink-muted'
               }
             `}>
               {stats.testimonials}
@@ -186,8 +188,8 @@ export default function AppreciationFilter({
               className={`
                 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                 ${platformFilter === 'all'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                  ? 'bg-ink text-bg shadow-lg'
+                  : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                 }
               `}
             >
@@ -199,22 +201,35 @@ export default function AppreciationFilter({
                 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                 ${platformFilter === 'twitter'
                   ? 'bg-black text-white shadow-lg'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                  : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                 }
               `}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
-              X / Twitter
+              X
+            </button>
+            <button
+              onClick={() => setPlatformFilter('bluesky')}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                ${platformFilter === 'bluesky'
+                  ? 'bg-[#1083fe] text-white shadow-lg shadow-[#1083fe]/25'
+                  : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
+                }
+              `}
+            >
+              <PlatformIcon platform="bluesky" className="w-4 h-4" />
+              Bluesky
             </button>
             <button
               onClick={() => setPlatformFilter('linkedin')}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                 ${platformFilter === 'linkedin'
-                  ? 'bg-[#0a66c2] text-white shadow-lg shadow-blue-500/25'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                  ? 'bg-[#0a66c2] text-white shadow-lg shadow-[#0a66c2]/25'
+                  : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                 }
               `}
             >
@@ -226,7 +241,7 @@ export default function AppreciationFilter({
           </div>
 
           {/* Results count */}
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+          <p className="text-center text-sm text-ink-muted mb-6">
             Showing {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'}
           </p>
 
@@ -247,10 +262,10 @@ export default function AppreciationFilter({
           {filteredPosts.length === 0 && (
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🔍</div>
-              <p className="text-slate-500 dark:text-slate-400">No posts match the current filter.</p>
+              <p className="text-ink-muted">No posts match the current filter.</p>
               <button
                 onClick={() => setPlatformFilter('all')}
-                className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                className="mt-4 text-accent hover:underline text-sm font-medium"
               >
                 Show all posts
               </button>
@@ -269,8 +284,8 @@ export default function AppreciationFilter({
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                 ${testimonialFilter === 'all'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                  ? 'bg-ink text-bg shadow-lg'
+                  : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                 }
               `}
             >
@@ -278,8 +293,8 @@ export default function AppreciationFilter({
               <span className={`
                 text-xs px-1.5 py-0.5 rounded-full
                 ${testimonialFilter === 'all'
-                  ? 'bg-white/20 text-white/90'
-                  : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                  ? 'bg-bg/20 text-bg/90'
+                  : 'bg-surface-3 text-ink-muted'
                 }
               `}>
                 {stats.testimonials}
@@ -292,8 +307,8 @@ export default function AppreciationFilter({
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${testimonialFilter === 'linkedin'
-                    ? 'bg-[#0a66c2] text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'bg-[#0a66c2] text-white shadow-lg shadow-[#0a66c2]/25'
+                    : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                   }
                 `}
               >
@@ -305,7 +320,7 @@ export default function AppreciationFilter({
                   text-xs px-1.5 py-0.5 rounded-full
                   ${testimonialFilter === 'linkedin'
                     ? 'bg-white/20 text-white/90'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                    : 'bg-surface-3 text-ink-muted'
                   }
                 `}>
                   {stats.linkedinRecs}
@@ -319,8 +334,8 @@ export default function AppreciationFilter({
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${testimonialFilter === 'mentorcruise'
-                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/25'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                    : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                   }
                 `}
               >
@@ -332,7 +347,7 @@ export default function AppreciationFilter({
                   text-xs px-1.5 py-0.5 rounded-full
                   ${testimonialFilter === 'mentorcruise'
                     ? 'bg-white/20 text-white/90'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                    : 'bg-surface-3 text-ink-muted'
                   }
                 `}>
                   {stats.mentorcruiseRecs}
@@ -346,8 +361,8 @@ export default function AppreciationFilter({
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${testimonialFilter === 'workshop'
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'bg-signal-deep text-white shadow-lg shadow-signal/25'
+                    : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                   }
                 `}
               >
@@ -359,7 +374,7 @@ export default function AppreciationFilter({
                   text-xs px-1.5 py-0.5 rounded-full
                   ${testimonialFilter === 'workshop'
                     ? 'bg-white/20 text-white/90'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                    : 'bg-surface-3 text-ink-muted'
                   }
                 `}>
                   {stats.workshopRecs}
@@ -373,8 +388,8 @@ export default function AppreciationFilter({
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${testimonialFilter === 'talk'
-                    ? 'bg-pink-600 text-white shadow-lg shadow-pink-500/25'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'bg-accent-bright text-white shadow-lg shadow-accent-bright/25'
+                    : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                   }
                 `}
               >
@@ -386,7 +401,7 @@ export default function AppreciationFilter({
                   text-xs px-1.5 py-0.5 rounded-full
                   ${testimonialFilter === 'talk'
                     ? 'bg-white/20 text-white/90'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                    : 'bg-surface-3 text-ink-muted'
                   }
                 `}>
                   {stats.talkRecs}
@@ -396,7 +411,7 @@ export default function AppreciationFilter({
           </div>
 
           {/* Results count */}
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+          <p className="text-center text-sm text-ink-muted mb-6">
             Showing {filteredTestimonials.length} {filteredTestimonials.length === 1 ? 'testimonial' : 'testimonials'}
           </p>
 
@@ -424,10 +439,10 @@ export default function AppreciationFilter({
           {filteredTestimonials.length === 0 && (
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🔍</div>
-              <p className="text-slate-500 dark:text-slate-400">No testimonials match the current filter.</p>
+              <p className="text-ink-muted">No testimonials match the current filter.</p>
               <button
                 onClick={() => setTestimonialFilter('all')}
-                className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                className="mt-4 text-accent hover:underline text-sm font-medium"
               >
                 Show all testimonials
               </button>
@@ -458,7 +473,7 @@ export default function AppreciationFilter({
 function LinkedInRec({ testimonial, imageUrl, index }: { testimonial: Testimonial; imageUrl?: string; index: number }) {
   return (
     <div
-      className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 animate-fadeIn"
+      className="bg-surface-2 rounded-2xl p-6 border border-edge hover:shadow-lg hover:shadow-accent/5 transition-all duration-200 animate-fadeIn"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex items-start gap-4 mb-4">
@@ -466,7 +481,7 @@ function LinkedInRec({ testimonial, imageUrl, index }: { testimonial: Testimonia
           <img
             src={imageUrl}
             alt={testimonial.author}
-            className="w-14 h-14 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700"
+            className="w-14 h-14 rounded-full object-cover ring-2 ring-edge"
           />
         ) : (
           <div className="w-14 h-14 rounded-full bg-[#0a66c2] text-white flex items-center justify-center text-lg font-semibold">
@@ -474,14 +489,14 @@ function LinkedInRec({ testimonial, imageUrl, index }: { testimonial: Testimonia
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-slate-900 dark:text-white">{testimonial.author}</p>
+          <p className="font-semibold text-ink">{testimonial.author}</p>
           {testimonial.role && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-ink-muted">
               {testimonial.role}{testimonial.company && ` at ${testimonial.company}`}
             </p>
           )}
           {testimonial.date && (
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p className="text-xs text-ink-faint mt-1">
               {new Date(testimonial.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </p>
           )}
@@ -492,15 +507,15 @@ function LinkedInRec({ testimonial, imageUrl, index }: { testimonial: Testimonia
       </div>
 
       {testimonial.context && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg text-sm text-slate-600 dark:text-slate-300">
-          <svg className="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor">
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-surface-3 rounded-lg text-sm text-ink-muted">
+          <svg className="w-4 h-4 text-ink-faint" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 8a3 3 0 100-6 3 3 0 000 6zM2 14s-1 0-1-1 1-4 7-4 7 3 7 4-1 1-1 1H2z"/>
           </svg>
           <span>{testimonial.author} {getContextLabel(testimonial.context).toLowerCase()} with Faris</span>
         </div>
       )}
 
-      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-4 whitespace-pre-line">
+      <blockquote className="text-ink leading-relaxed mb-4 whitespace-pre-line">
         "{testimonial.quote}"
       </blockquote>
 
@@ -535,7 +550,7 @@ function PostCard({
   isExpanded: boolean;
   onToggleExpand: () => void;
 }) {
-  const isTwitter = post.platform === 'twitter';
+  const chrome = platformChrome(post.platform);
   const showExpandButton = post.content.length > 150;
 
   return (
@@ -544,13 +559,7 @@ function PostCard({
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div
-        className={`
-          p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col
-          ${isTwitter
-            ? 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
-            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-blue-500/10'
-          }
-        `}
+        className={`p-4 rounded-2xl transition-all duration-200 hover:-translate-y-1 overflow-hidden h-full flex flex-col ${chrome.card}`}
       >
         {/* Header - clickable to open post */}
         <a
@@ -566,65 +575,50 @@ function PostCard({
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
-            <div className={`
-              w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold
-              ${isTwitter ? 'bg-slate-800 text-white' : 'bg-[#0a66c2] text-white'}
-            `}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${chrome.avatarFallback}`}>
               {post.author?.charAt(0)}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <p className={`font-semibold text-sm truncate ${isTwitter ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+              <p className={`font-semibold text-sm truncate ${chrome.primaryText}`}>
                 {post.author}
               </p>
-              {isTwitter && post.authorHandle && (
-                <span className="text-slate-500 text-xs">@{post.authorHandle}</span>
+              {chrome.inlineHandle && post.authorHandle && (
+                <span className={`text-xs ${chrome.secondaryText}`}>@{post.authorHandle}</span>
               )}
             </div>
             {post.authorRole && (
-              <p className={`text-xs truncate ${isTwitter ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className={`text-xs truncate ${chrome.secondaryText}`}>
                 {post.authorRole}
               </p>
             )}
-            {!post.authorRole && !isTwitter && post.authorHandle && (
-              <p className="text-xs truncate text-slate-500 dark:text-slate-400">
+            {!post.authorRole && !chrome.inlineHandle && post.authorHandle && (
+              <p className={`text-xs truncate ${chrome.secondaryText}`}>
                 @{post.authorHandle}
               </p>
             )}
           </div>
-          <div className={isTwitter ? 'text-white' : 'text-[#0a66c2]'}>
-            {isTwitter ? (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-            )}
+          <div className={chrome.icon}>
+            <PlatformIcon platform={post.platform} />
           </div>
         </a>
 
         {/* Content */}
         <p className={`
-          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow
-          ${isTwitter ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}
+          text-sm leading-relaxed mb-3 whitespace-pre-line flex-grow ${chrome.bodyText}
           ${isExpanded ? '' : 'line-clamp-4'}
         `}>
           {post.content}
         </p>
 
         {/* Footer */}
-        <div className={`flex items-center justify-between pt-3 border-t mt-auto ${isTwitter ? 'border-slate-700/50' : 'border-slate-200 dark:border-slate-700'}`}>
+        <div className={`flex items-center justify-between pt-3 border-t mt-auto ${chrome.divider}`}>
           {showExpandButton ? (
             <button
               type="button"
               onClick={onToggleExpand}
-              className={`
-                text-xs font-medium cursor-pointer select-none
-                ${isTwitter ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}
-              `}
+              className={`text-xs font-medium cursor-pointer select-none ${chrome.link}`}
             >
               {isExpanded ? 'Show less' : 'Show more'}
             </button>
@@ -635,9 +629,9 @@ function PostCard({
             href={post.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-1 text-xs font-medium ${isTwitter ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+            className={`flex items-center gap-1 text-xs font-medium ${chrome.link}`}
           >
-            View on {isTwitter ? 'X' : 'LinkedIn'}
+            View on {chrome.name}
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M7 17L17 7M17 7H7M17 7V17" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -652,17 +646,17 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
   const type = testimonial.type || 'other';
 
   const typeStyles: Record<string, { bg: string; text: string; gradient: string }> = {
-    mentorcruise: { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-700 dark:text-violet-400', gradient: 'from-violet-600 to-purple-600' },
-    workshop: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', gradient: 'from-emerald-500 to-teal-500' },
-    talk: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-700 dark:text-pink-400', gradient: 'from-pink-500 to-rose-500' },
-    other: { bg: 'bg-slate-100 dark:bg-slate-700', text: 'text-slate-600 dark:text-slate-400', gradient: 'from-slate-500 to-slate-600' },
+    mentorcruise: { bg: 'bg-accent/10', text: 'text-accent', gradient: 'from-accent to-accent-deep' },
+    workshop: { bg: 'bg-signal/10', text: 'text-signal', gradient: 'from-signal to-signal-deep' },
+    talk: { bg: 'bg-accent-bright/10', text: 'text-accent-bright', gradient: 'from-accent-bright to-accent' },
+    other: { bg: 'bg-surface-3', text: 'text-ink-muted', gradient: 'from-ink-faint to-edge-strong' },
   };
 
   const style = typeStyles[type] || typeStyles.other;
 
   return (
     <div
-      className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-200 animate-fadeIn"
+      className="bg-surface-2 rounded-2xl p-6 border border-edge hover:shadow-lg transition-all duration-200 animate-fadeIn"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex items-center gap-3 mb-4">
@@ -690,7 +684,7 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
             {[1, 2, 3, 4, 5].map((star) => (
               <svg
                 key={star}
-                className={`w-4 h-4 ${star <= testimonial.rating! ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'}`}
+                className={`w-4 h-4 ${star <= testimonial.rating! ? 'text-accent' : 'text-edge-strong'}`}
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -701,11 +695,11 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
         )}
       </div>
 
-      <blockquote className="text-slate-700 dark:text-slate-200 leading-relaxed mb-5 whitespace-pre-line">
+      <blockquote className="text-ink leading-relaxed mb-5 whitespace-pre-line">
         "{testimonial.quote}"
       </blockquote>
 
-      <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+      <div className="flex items-center gap-3 pt-4 border-t border-edge">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -718,9 +712,9 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-slate-900 dark:text-white text-sm">{testimonial.author}</p>
+          <p className="font-medium text-ink text-sm">{testimonial.author}</p>
           {(testimonial.role || testimonial.company) && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-ink-muted">
               {testimonial.role}{testimonial.company && ` · ${testimonial.company}`}
             </p>
           )}
@@ -730,7 +724,7 @@ function TestimonialCard({ testimonial, imageUrl, index }: { testimonial: Testim
             href={testimonial.source}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="text-ink-faint hover:text-ink-muted transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>

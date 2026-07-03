@@ -40,14 +40,14 @@
 
     --danger:        255 107 107;     /* #FF6B6B */
 
+    /* Warm amber — semantic "community / limited" accents (meetup tags, booking calendar) */
+    --warn:          242 201 76;      /* #F2C94C */
+
     /* Back-compat aliases for existing component utilities */
     --surface:         var(--surface-1);
     --surface-raised:  var(--surface-2);
     --surface-overlay: var(--surface-3);
     --accent-hover:    var(--accent-deep);
-    --accent-muted:    23 37 84;       /* dark accent wash */
-    --success:         var(--signal);
-    --success-muted:   20 83 45;
 
     color-scheme: dark;
   }
@@ -62,7 +62,8 @@
 
     --ink:           17 21 28;        /* #11151C */
     --ink-muted:     66 78 94;        /* #424E5E */
-    --ink-faint:     116 128 143;     /* #74808F */
+    /* ≥4.5:1 on --bg for WCAG AA at small sizes (previous #74808F was ~3.9:1) */
+    --ink-faint:     92 104 119;      /* #5C6877 */
 
     --edge:          229 232 236;     /* #E5E8EC */
     --edge-strong:   205 211 219;     /* #CDD3DB */
@@ -76,13 +77,13 @@
 
     --danger:        220 38 38;       /* red-600 */
 
+    /* Warm amber, darkened for light backgrounds (≥4.5:1 on white) */
+    --warn:          143 110 15;      /* #8F6E0F */
+
     --surface:         var(--surface-1);
     --surface-raised:  var(--surface-2);
     --surface-overlay: var(--surface-3);
     --accent-hover:    var(--accent-deep);
-    --accent-muted:    239 246 255;
-    --success:         var(--signal);
-    --success-muted:   240 253 244;
 
     color-scheme: light;
   }
@@ -205,229 +206,6 @@
     @apply px-5 sm:px-8 lg:px-12;
   }
 
-  /* Sections */
-  .section {
-    @apply py-16 md:py-24 lg:py-30;
-  }
-
-  .section-sm {
-    @apply py-10 md:py-16;
-  }
-
-  /* Dividers */
-  .divider {
-    @apply h-px bg-edge w-full;
-  }
-
-  .divider-strong {
-    @apply h-px bg-edge-strong w-full;
-  }
-}
-
-/* ============================================
-   INTERACTIVE COMPONENTS
-   ============================================ */
-
-@layer components {
-  /* Base button */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2;
-    @apply px-5 py-2.5 rounded-lg;
-    @apply font-semibold text-body-sm;
-    @apply transition-all duration-150;
-    @apply cursor-pointer select-none;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  /* Primary button - accent filled */
-  .btn-primary {
-    @apply btn;
-    @apply bg-accent text-white;
-    @apply hover:bg-accent-hover hover:shadow-md;
-    @apply active:scale-[0.98];
-  }
-
-  /* Secondary button - subtle */
-  .btn-secondary {
-    @apply btn;
-    @apply bg-surface-overlay text-ink;
-    @apply border border-edge hover:border-edge-strong;
-    @apply hover:bg-edge/50;
-  }
-
-  /* Ghost button */
-  .btn-ghost {
-    @apply btn;
-    @apply text-ink-muted hover:text-ink;
-    @apply hover:bg-surface-overlay;
-  }
-
-  /* Text link */
-  .link {
-    @apply text-accent font-medium;
-    @apply underline underline-offset-2 decoration-accent/40;
-    @apply hover:decoration-accent;
-    @apply transition-colors duration-150;
-    @apply cursor-pointer;
-  }
-
-  /* Arrow link */
-  .link-arrow {
-    @apply inline-flex items-center gap-1.5;
-    @apply text-ink-muted hover:text-accent;
-    @apply font-medium text-body-sm;
-    @apply transition-colors duration-150;
-    @apply cursor-pointer;
-  }
-
-  .link-arrow::after {
-    content: '→';
-    @apply transition-transform duration-150;
-  }
-
-  .link-arrow:hover::after {
-    transform: translateX(4px);
-  }
-}
-
-/* ============================================
-   CARD COMPONENTS
-   ============================================ */
-
-@layer components {
-  /* Base card */
-  .card {
-    @apply bg-surface-raised rounded-xl;
-    @apply border border-edge;
-  }
-
-  /* Interactive card */
-  .card-interactive {
-    @apply card;
-    @apply transition-all duration-200;
-    @apply hover:border-edge-strong hover:shadow-soft;
-    @apply cursor-pointer;
-  }
-
-  /* Highlighted card */
-  .card-accent {
-    @apply card;
-    @apply border-accent/30 bg-accent-muted;
-  }
-}
-
-/* ============================================
-   TAG & BADGE COMPONENTS
-   ============================================ */
-
-@layer components {
-  /* Simple tag */
-  .tag {
-    @apply inline-flex items-center;
-    @apply px-2.5 py-1 rounded-md;
-    @apply text-label-sm uppercase tracking-wider;
-    @apply bg-surface-overlay text-ink-muted;
-    @apply border border-edge;
-  }
-
-  /* Colored tags */
-  .tag-conference {
-    @apply tag;
-    @apply bg-accent-muted text-accent border-accent/20;
-  }
-
-  .tag-workshop {
-    @apply tag;
-    @apply bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800;
-  }
-
-  .tag-meetup {
-    @apply tag;
-    @apply bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800;
-  }
-
-  /* Topic pill */
-  .pill {
-    @apply inline-flex items-center;
-    @apply px-3 py-1.5 rounded-full;
-    @apply text-body-sm text-ink-muted;
-    @apply bg-surface-overlay border border-edge;
-    @apply transition-colors duration-150;
-  }
-
-  .pill-interactive {
-    @apply pill;
-    @apply hover:border-edge-strong hover:text-ink;
-    @apply cursor-pointer;
-  }
-}
-
-/* ============================================
-   EVENT ROW COMPONENT
-   ============================================ */
-
-@layer components {
-  .event-row {
-    @apply flex items-start gap-4 md:gap-6;
-    @apply p-4 md:p-5 -mx-4 md:-mx-5 rounded-xl;
-    @apply transition-all duration-200;
-    @apply hover:bg-surface-overlay;
-    @apply cursor-pointer;
-  }
-
-  .event-row__date {
-    @apply flex-shrink-0 w-14 md:w-16;
-    @apply text-center;
-  }
-
-  .event-row__day {
-    @apply block text-display-sm font-display text-ink;
-  }
-
-  .event-row__month {
-    @apply block text-label-sm uppercase text-ink-faint tracking-wider;
-    @apply mt-0.5;
-  }
-
-  .event-row__content {
-    @apply flex-grow min-w-0;
-  }
-
-  .event-row__title {
-    @apply text-body-lg font-semibold text-ink;
-    @apply group-hover:text-accent;
-    @apply transition-colors duration-150;
-  }
-
-  .event-row__meta {
-    @apply text-body-sm text-ink-muted;
-    @apply mt-1;
-  }
-
-  .event-row__location {
-    @apply flex-shrink-0;
-    @apply text-body-sm text-ink-faint;
-    @apply hidden sm:block;
-  }
-}
-
-/* ============================================
-   STAT COMPONENT
-   ============================================ */
-
-@layer components {
-  .stat {
-    @apply text-center;
-  }
-
-  .stat__value {
-    @apply font-display text-display text-ink;
-  }
-
-  .stat__label {
-    @apply text-body-sm text-ink-faint uppercase tracking-wider;
-    @apply mt-1;
-  }
 }
 
 /* ============================================
@@ -923,72 +701,6 @@
     }
   }
 
-  /* Section color variants */
-  .section-accent {
-    background: rgb(185 28 28); /* Deep coral - WCAG AA compliant with white */
-    @apply text-white;
-  }
-
-  .dark .section-accent {
-    background: rgb(153 27 27); /* Even deeper for dark mode */
-  }
-
-  .section-accent .heading-2,
-  .section-accent .heading-3,
-  .section-accent .stat__value {
-    @apply text-white;
-  }
-
-  .section-accent .text-lead,
-  .section-accent .text-secondary,
-  .section-accent .stat__label {
-    @apply text-white/90;
-  }
-
-  .section-dark {
-    background: rgb(15 23 42);
-    @apply text-white;
-  }
-
-  .section-dark .heading-2,
-  .section-dark .heading-3,
-  .section-dark .stat__value {
-    @apply text-white;
-  }
-
-  .section-dark .text-lead,
-  .section-dark .text-secondary {
-    @apply text-slate-300;
-  }
-
-  .section-subtle {
-    @apply bg-surface-raised;
-  }
-}
-
-/* ============================================
-   SOCIAL LINKS
-   ============================================ */
-
-@layer components {
-  .social-link {
-    @apply inline-flex items-center justify-center;
-    @apply w-10 h-10 rounded-full;
-    @apply bg-surface-overlay text-ink-muted;
-    @apply border border-edge;
-    @apply hover:border-accent hover:text-accent hover:bg-accent-muted;
-    @apply transition-all duration-200;
-    @apply cursor-pointer;
-  }
-
-  .social-link svg {
-    @apply w-5 h-5;
-  }
-
-  /* Horizontal social bar */
-  .social-bar {
-    @apply flex items-center gap-3;
-  }
 }
 
 /* ============================================
@@ -1013,12 +725,6 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Gradient text */
-  .text-gradient {
-    @apply bg-gradient-to-r from-accent to-amber-500;
-    @apply bg-clip-text text-transparent;
   }
 
   /* Line clamp */
@@ -1465,315 +1171,6 @@
 }
 
 /* ============================================
-   NERDY / CREATIVE COMPONENTS
-   ============================================ */
-
-@layer components {
-  /* Terminal-style code block */
-  .terminal {
-    @apply bg-slate-900 dark:bg-slate-950 rounded-xl overflow-hidden;
-    @apply border border-slate-700 dark:border-slate-800;
-    @apply font-mono text-sm;
-  }
-
-  .terminal__header {
-    @apply flex items-center gap-2 px-4 py-3;
-    @apply bg-slate-800 dark:bg-slate-900 border-b border-slate-700;
-  }
-
-  .terminal__dots {
-    @apply flex gap-1.5;
-  }
-
-  .terminal__dot {
-    @apply w-3 h-3 rounded-full;
-  }
-
-  .terminal__dot--red { @apply bg-red-500; }
-  .terminal__dot--yellow { @apply bg-yellow-500; }
-  .terminal__dot--green { @apply bg-green-500; }
-
-  .terminal__title {
-    @apply text-slate-400 text-xs ml-2;
-  }
-
-  .terminal__body {
-    @apply p-4 text-slate-300;
-  }
-
-  .terminal__prompt {
-    @apply text-emerald-400;
-  }
-
-  .terminal__command {
-    @apply text-white;
-  }
-
-  .terminal__output {
-    @apply text-slate-400 mt-2;
-  }
-
-  /* Inline code style */
-  .code-inline {
-    @apply px-1.5 py-0.5 rounded;
-    @apply bg-slate-100 dark:bg-slate-800;
-    @apply text-accent dark:text-blue-400;
-    @apply font-mono text-[0.9em];
-    @apply border border-slate-200 dark:border-slate-700;
-  }
-
-  /* Bento grid - creative layout */
-  .bento {
-    @apply grid gap-4 md:gap-6;
-  }
-
-  .bento-2x2 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, auto);
-  }
-
-  .bento-3x2 {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, auto);
-  }
-
-  @screen md {
-    .bento-3x2 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .bento__item {
-    @apply bg-surface-raised rounded-2xl border border-edge;
-    @apply p-6 md:p-8;
-    @apply transition-all duration-300;
-  }
-
-  .bento__item:hover {
-    @apply border-edge-strong shadow-lg;
-    transform: translateY(-2px);
-  }
-
-  .bento__item--span-2 {
-    @apply col-span-2;
-  }
-
-  .bento__item--span-row {
-    @apply row-span-2;
-  }
-
-  .bento__item--featured {
-    @apply bg-gradient-to-br from-accent to-violet-600;
-    @apply border-accent/50;
-    @apply text-white;
-  }
-
-  .bento__item--dark {
-    @apply bg-slate-900 dark:bg-slate-950 border-slate-700;
-    @apply text-white;
-  }
-
-  /* Gradient backgrounds */
-  .gradient-mesh {
-    background:
-      radial-gradient(at 40% 20%, rgb(var(--accent) / 0.15) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgb(168 85 247 / 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgb(var(--accent) / 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, rgb(236 72 153 / 0.08) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgb(168 85 247 / 0.1) 0px, transparent 50%);
-  }
-
-  .gradient-glow {
-    background: linear-gradient(135deg,
-      rgb(var(--accent) / 0.1) 0%,
-      rgb(168 85 247 / 0.1) 50%,
-      rgb(236 72 153 / 0.1) 100%
-    );
-  }
-
-  /* Feature card with icon */
-  .feature-card {
-    @apply relative overflow-hidden;
-    @apply bg-surface-raised rounded-2xl border border-edge;
-    @apply p-8 md:p-10;
-    @apply transition-all duration-300;
-  }
-
-  .feature-card:hover {
-    @apply border-accent/50 shadow-xl;
-    transform: translateY(-4px);
-  }
-
-  .feature-card__icon {
-    @apply w-14 h-14 rounded-xl mb-6;
-    @apply flex items-center justify-center;
-    @apply bg-gradient-to-br from-accent to-violet-500;
-    @apply text-white text-2xl;
-  }
-
-  .feature-card__title {
-    @apply font-display font-bold text-xl md:text-2xl text-ink mb-3;
-  }
-
-  .feature-card__description {
-    @apply text-ink-muted leading-relaxed;
-  }
-
-  /* Big stat display */
-  .stat-big {
-    @apply text-center;
-  }
-
-  .stat-big__value {
-    @apply font-display text-6xl md:text-7xl lg:text-8xl font-bold;
-    @apply bg-gradient-to-r from-accent via-violet-500 to-pink-500 bg-clip-text text-transparent;
-  }
-
-  .stat-big__label {
-    @apply text-ink-muted text-lg md:text-xl mt-2;
-    @apply uppercase tracking-widest;
-  }
-
-  /* Hero section with gradient text */
-  .hero-title {
-    @apply font-display font-bold;
-    @apply text-5xl md:text-6xl lg:text-7xl xl:text-8xl;
-    @apply tracking-tight leading-[1.1];
-  }
-
-  .hero-title--gradient {
-    @apply bg-gradient-to-r from-ink via-accent to-violet-500 bg-clip-text text-transparent;
-    background-size: 200% auto;
-    animation: gradientShift 8s ease infinite;
-  }
-
-  @keyframes gradientShift {
-    0%, 100% { background-position: 0% center; }
-    50% { background-position: 100% center; }
-  }
-
-  /* Topic badge - nerdy style */
-  .topic-badge {
-    @apply inline-flex items-center gap-2;
-    @apply px-4 py-2 rounded-lg;
-    @apply bg-slate-100 dark:bg-slate-800;
-    @apply border border-slate-200 dark:border-slate-700;
-    @apply text-ink font-medium;
-    @apply transition-all duration-200;
-  }
-
-  .topic-badge:hover {
-    @apply border-accent bg-accent-muted;
-    transform: translateY(-2px);
-  }
-
-  .topic-badge__icon {
-    @apply text-xl;
-  }
-
-  .topic-badge__name {
-    @apply font-mono text-sm;
-  }
-
-  /* Event timeline */
-  .timeline {
-    @apply relative;
-  }
-
-  .timeline::before {
-    content: '';
-    @apply absolute left-6 top-0 bottom-0 w-px;
-    @apply bg-gradient-to-b from-accent via-violet-500 to-pink-500;
-  }
-
-  .timeline__item {
-    @apply relative pl-16 pb-12;
-  }
-
-  .timeline__marker {
-    @apply absolute left-4 w-5 h-5;
-    @apply bg-accent rounded-full;
-    @apply border-4 border-surface;
-    @apply shadow-lg shadow-accent/30;
-  }
-
-  .timeline__date {
-    @apply text-sm font-mono text-ink-faint uppercase tracking-wider mb-2;
-  }
-
-  .timeline__content {
-    @apply bg-surface-raised rounded-xl border border-edge p-6;
-    @apply transition-all duration-300;
-  }
-
-  .timeline__content:hover {
-    @apply border-accent/30 shadow-lg;
-    transform: translateX(4px);
-  }
-
-  /* Animated counter */
-  .counter {
-    @apply font-display font-bold tabular-nums;
-  }
-
-  /* Keyboard key style */
-  .kbd {
-    @apply inline-flex items-center justify-center;
-    @apply px-2 py-1 min-w-[2rem];
-    @apply bg-slate-100 dark:bg-slate-800;
-    @apply border border-slate-300 dark:border-slate-600;
-    @apply rounded-md shadow-sm;
-    @apply font-mono text-xs text-ink-muted;
-  }
-
-  /* Glow effect for featured items */
-  .glow {
-    @apply relative;
-  }
-
-  .glow::before {
-    content: '';
-    @apply absolute -inset-1 rounded-2xl opacity-0;
-    background: linear-gradient(135deg, rgb(var(--accent)), rgb(168 85 247), rgb(236 72 153));
-    filter: blur(20px);
-    transition: opacity 0.5s;
-    z-index: -1;
-  }
-
-  .glow:hover::before {
-    opacity: 0.3;
-  }
-
-  /* Marquee for scrolling content */
-  .marquee {
-    @apply flex overflow-hidden;
-  }
-
-  .marquee__content {
-    @apply flex shrink-0 gap-8 animate-marquee;
-  }
-
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-
-  /* Grid pattern background */
-  .grid-pattern {
-    background-image:
-      linear-gradient(rgb(var(--edge) / 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(var(--edge) / 0.5) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  /* Dot pattern background */
-  .dot-pattern {
-    background-image: radial-gradient(rgb(var(--edge-strong)) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-}
-
-/* ============================================
    DESIGN SYSTEM v2 — UTILITY CLASSES
    ============================================ */
 
@@ -1926,6 +1323,8 @@
     color: rgb(var(--ink));
     letter-spacing: -0.02em;
   }
+  /* Compact variant used in page heroes (was a repeated inline font-size) */
+  .ds-stat__value--sm { font-size: 2.2rem; }
   .ds-stat__label {
     font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
     font-size: 0.72rem;
@@ -2006,8 +1405,9 @@
     border-radius: 14px;
   }
 
-  /* DS Link — accent text link with arrow */
+  /* DS Link — accent text link with arrow + underline that draws in from the left */
   .ds-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -2017,6 +1417,20 @@
     transition: gap 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
   }
+  .ds-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: rgb(var(--accent-bright) / 0.7);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ds-link:hover::after,
+  .ds-link:focus-visible::after { transform: scaleX(1); }
   .ds-link svg {
     width: 0.95em;
     height: 0.95em;
@@ -2289,9 +1703,126 @@
     font-size: 0.9rem;
     color: rgb(var(--ink-faint));
   }
+  /* Indented section sub-links under Speaking / Services */
+  .mobile-drawer__sublinks {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgb(var(--edge));
+    padding: 0.35rem 0 0.75rem;
+  }
+  .mobile-drawer__sublinks a {
+    font-size: 1.05rem;
+    color: rgb(var(--ink-muted));
+    padding: 0.45rem 0 0.45rem 1.1rem;
+  }
+  .mobile-drawer__sublinks a:active,
+  .mobile-drawer__sublinks a:hover {
+    color: rgb(var(--ink));
+  }
   .mobile-drawer__foot {
     margin-top: auto;
     padding-top: 2rem;
+  }
+
+  /* In-page anchor sections need clearance for the sticky header */
+  .anchor-target { scroll-margin-top: 80px; }
+
+  /* Accent text selection — felt on every page */
+  ::selection {
+    background: rgb(var(--accent) / 0.35);
+    color: rgb(var(--ink));
+  }
+
+  /* Event-row date tick — a tiny odometer nudge when a schedule row is hovered */
+  @keyframes ds-date-tick {
+    0% { transform: translateY(0); }
+    45% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
+  .event-row:hover .event-row__day {
+    animation: ds-date-tick 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Living hero terminal — the decorative prompt is a real one */
+  .hero-terminal { cursor: text; }
+  .hero-terminal .ds-terminal__body {
+    /* A touch more presence than the decorative terminals */
+    font-size: 0.9rem;
+    padding: 1.1rem 1.25rem;
+  }
+  .hero-terminal__body {
+    max-height: 230px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    overscroll-behavior: contain;
+  }
+  .hero-terminal__body::-webkit-scrollbar { display: none; }
+  .hero-terminal__inputrow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55ch;
+    /* Comfortable touch target for the prompt row */
+    min-height: 1.9em;
+  }
+  @media (max-width: 640px) {
+    .hero-terminal__body { max-height: 176px; }
+    /* 16px inputs stop iOS Safari from zooming the page on focus */
+    .hero-terminal__input { font-size: 16px; }
+    .hero-terminal .ds-terminal__body { font-size: 0.95rem; }
+  }
+  .hero-terminal__input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: rgb(var(--ink));
+    font: inherit;
+    caret-color: rgb(var(--accent-bright));
+  }
+  /* The terminal frame carries the focus affordance (accent border on active) —
+     an inner ring on the input would double up. */
+  .hero-terminal__input:focus,
+  .hero-terminal__input:focus-visible {
+    outline: none;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+  }
+  .hero-terminal__err { color: rgb(var(--danger)); }
+  .hero-terminal--active {
+    border-color: rgb(var(--accent) / 0.45);
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.2);
+  }
+
+  /* Theme-toggle circular reveal: while .theme-vt is set, disable the default
+     root crossfade so the clip-path circle (driven from ThemeToggle.tsx) is the
+     only animation. Scoped so Astro's page-navigation transitions are untouched. */
+  :root.theme-vt::view-transition-old(root),
+  :root.theme-vt::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  :root.theme-vt::view-transition-old(root) { z-index: 1; }
+  :root.theme-vt::view-transition-new(root) { z-index: 2; }
+
+  /* Command palette items stagger in as it opens */
+  @keyframes ds-cmdk-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .cmdk.open .cmdk__item {
+    animation: ds-cmdk-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--cmdk-delay, 0ms);
+  }
+
+  /* Small cross-funnel link row under contact panels ("Want me at your event instead?") */
+  .ds-crosslink {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.92rem;
+    color: rgb(var(--ink-muted));
   }
 
   /* Social icon button */
@@ -2568,6 +2099,56 @@
 .invite-form__success-body {
   color: rgb(var(--ink-muted));
   margin-top: 0.5rem;
+}
+
+/* Post-submit next steps — the waiting period does press-kit work */
+.invite-form__next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgb(var(--edge));
+  font-size: 0.9rem;
+}
+.invite-form__next-label { color: rgb(var(--ink-faint)); }
+.invite-form__next a {
+  color: rgb(var(--accent-bright));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgb(var(--accent) / 0.4);
+}
+.invite-form__next a:hover { text-decoration-color: rgb(var(--accent-bright)); }
+
+/* "Add details (optional)" progressive disclosure */
+.invite-form__details-toggle {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.2rem 0;
+  cursor: pointer;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-bright));
+}
+.invite-form__details-toggle svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.invite-form__details-hint {
+  color: rgb(var(--ink-faint));
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.78rem;
 }
 
 /* ============================================

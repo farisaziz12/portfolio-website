@@ -49,32 +49,34 @@ const cities = stats?.cities ?? new Set(events.map((e) => e.location?.city).filt
 ---
 
 <BaseLayout
-  title="All events | Faris Aziz"
+  title="Schedule — upcoming events & archive | Faris Aziz"
   description="Complete archive of speaking engagements by Faris Aziz at conferences, meetups, and workshops around the world."
   pathname="/events"
+  image="/og/events.png"
+  markdownAlternate="/events.md"
 >
   <header class="page-hero">
     <GridTexture />
     <div class="container page-hero__inner">
-      <Kicker>Speaking · archive</Kicker>
+      <Kicker>Speaking · schedule</Kicker>
       <h1 class="page-hero__title">
         Every stage, in <span class="accent-word">one place</span>.
       </h1>
       <p class="page-hero__lead">
-        Conferences, meetups, workshops, panels — the full record, filterable by format and ordered by date.
+        Where I'll be next, and everywhere I've been — conferences, meetups, workshops and panels, filterable by format and ordered by date.
       </p>
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalEvents}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalEvents}</div>
           <div class="ds-stat__label">Events</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{countries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{countries}</div>
           <div class="ds-stat__label">Countries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{cities}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{cities}</div>
           <div class="ds-stat__label">Cities</div>
         </div>
       </div>
@@ -132,22 +134,4 @@ const cities = stats?.cities ?? new Set(events.map((e) => e.location?.city).filt
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>

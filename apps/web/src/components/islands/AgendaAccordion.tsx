@@ -64,7 +64,7 @@ function PortableText({ blocks }: { blocks: PortableTextBlock[] }) {
                       href={linkMark.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-400 hover:text-emerald-300 border-b border-emerald-400/30 hover:border-emerald-400"
+                      className="text-signal border-b border-signal/30 hover:border-signal"
                     >
                       {text}
                     </a>
@@ -100,12 +100,11 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
         return (
           <div
             key={item._key || index}
-            className={`rounded-2xl border overflow-hidden transition-all duration-200 ${
+            className={`rounded-2xl border bg-ink/5 backdrop-blur-[8px] overflow-hidden transition-all duration-200 ${
               isExpanded
-                ? 'border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                : 'border-white/10'
+                ? 'border-signal/40 shadow-[0_0_20px_rgb(var(--signal)/0.1)]'
+                : 'border-edge'
             }`}
-            style={{ background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)' }}
           >
             <button
               type="button"
@@ -119,7 +118,7 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
               {/* Number Block */}
               <div
                 className="flex-shrink-0 w-[4.5rem] min-h-[5rem] flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #10b981, #14b8a6)' }}
+                style={{ background: 'linear-gradient(135deg, rgb(var(--signal)), rgb(var(--signal-deep)))' }}
               >
                 <span className="text-[1.75rem] font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
                   {String(index + 1).padStart(2, '0')}
@@ -128,7 +127,7 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
 
               {/* Content */}
               <div className="flex-1 py-5 px-4 min-w-0">
-                <h3 className="text-lg font-semibold text-white leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
+                <h3 className="text-lg font-semibold text-ink leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
                   {itemTitle}
                 </h3>
               </div>
@@ -136,12 +135,8 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
               {/* Duration */}
               {item.duration && (
                 <span
-                  className="flex-shrink-0 px-2.5 py-1 text-xs rounded-md mr-4 whitespace-nowrap"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  }}
+                  className="flex-shrink-0 px-2.5 py-1 text-xs rounded-md mr-4 whitespace-nowrap bg-ink/10 text-ink-muted"
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {item.duration}
                 </span>
@@ -151,7 +146,7 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
               {hasDescription && (
                 <div
                   className={`flex-shrink-0 w-10 h-10 mr-4 flex items-center justify-center rounded-lg transition-all duration-300 ${
-                    isExpanded ? 'bg-emerald-500/20' : 'bg-white/5'
+                    isExpanded ? 'bg-signal/20' : 'bg-ink/5'
                   }`}
                 >
                   <svg
@@ -160,7 +155,7 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
                     stroke="currentColor"
                     strokeWidth="2"
                     className={`w-5 h-5 transition-all duration-300 ${
-                      isExpanded ? 'text-emerald-400 rotate-180' : 'text-white/60'
+                      isExpanded ? 'text-signal rotate-180' : 'text-ink-muted'
                     }`}
                   >
                     <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
@@ -178,10 +173,9 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
               >
                 <div className="overflow-hidden">
                   <div
-                    className="ml-[4.5rem] mr-6 mb-5 p-5 rounded-r-lg border-l-[3px] border-emerald-500/40"
-                    style={{ background: 'rgba(16, 185, 129, 0.05)' }}
+                    className="ml-[4.5rem] mr-6 mb-5 p-5 rounded-r-lg border-l-[3px] border-signal/40 bg-signal/5"
                   >
-                    <div className="text-[0.9375rem] text-slate-300 leading-relaxed">
+                    <div className="text-[0.9375rem] text-ink-muted leading-relaxed">
                       <PortableText blocks={item.description} />
                     </div>
                   </div>

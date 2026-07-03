@@ -106,27 +106,27 @@ export default function EventCarousel({ events }: EventCarouselProps) {
           }`}
         >
           {/* Date Badge */}
-          <div className="flex-shrink-0 bg-accent/10 dark:bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center min-w-[80px]">
-            <div className="text-3xl sm:text-4xl font-display font-bold text-accent dark:text-white">
+          <div className="flex-shrink-0 bg-accent/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center min-w-[80px]">
+            <div className="text-3xl sm:text-4xl font-display font-bold text-accent">
               {eventDate.getDate()}
             </div>
-            <div className="text-xs uppercase text-accent/60 dark:text-white/60 tracking-wider">
+            <div className="text-xs uppercase text-accent/70 tracking-wider">
               {eventDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
             </div>
           </div>
 
           {/* Event Info */}
           <div className="flex-grow min-w-0">
-            <h3 className="text-xl sm:text-2xl font-display font-bold text-slate-900 dark:text-white group-hover:text-accent dark:group-hover:text-indigo-300 transition-colors line-clamp-2 sm:line-clamp-1">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-ink group-hover:text-accent transition-colors line-clamp-2 sm:line-clamp-1">
               {event.title}
             </h3>
             {event.conference && (
-              <p className="text-slate-600 dark:text-white/60 mt-1 truncate">
+              <p className="text-ink-muted mt-1 truncate">
                 {event.conference}
               </p>
             )}
             {(event.location?.city || event.location?.country) && (
-              <div className="flex items-center gap-2 mt-2 text-slate-500 dark:text-white/50 text-sm">
+              <div className="flex items-center gap-2 mt-2 text-ink-faint text-sm">
                 <span className="text-lg">{getCountryFlag(event.location?.country || '')}</span>
                 <span>
                   {[event.location?.city, event.location?.country].filter(Boolean).join(', ')}
@@ -136,7 +136,7 @@ export default function EventCarousel({ events }: EventCarouselProps) {
           </div>
 
           {/* View Button */}
-          <div className="flex-shrink-0 hidden sm:flex items-center gap-2 text-sm text-accent dark:text-indigo-400 group-hover:text-accent/80 dark:group-hover:text-indigo-300 transition-colors">
+          <div className="flex-shrink-0 hidden sm:flex items-center gap-2 text-sm text-accent group-hover:text-accent/80 transition-colors">
             <span>View event</span>
             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -147,7 +147,7 @@ export default function EventCarousel({ events }: EventCarouselProps) {
 
       {/* Navigation */}
       {events.length > 1 && (
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-edge">
           {/* Dots */}
           <div className="flex items-center gap-2">
             {events.slice(0, 5).map((_, index) => (
@@ -156,14 +156,14 @@ export default function EventCarousel({ events }: EventCarouselProps) {
                 onClick={() => goToSlide(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'bg-accent dark:bg-indigo-400 w-6'
-                    : 'bg-slate-300 dark:bg-white/30 hover:bg-slate-400 dark:hover:bg-white/50 w-2'
+                    ? 'bg-accent w-6'
+                    : 'bg-ink/30 hover:bg-ink/50 w-2'
                 }`}
                 aria-label={`Go to event ${index + 1}`}
               />
             ))}
             {events.length > 5 && (
-              <span className="text-xs text-slate-400 dark:text-white/40 ml-1">+{events.length - 5}</span>
+              <span className="text-xs text-ink-faint ml-1">+{events.length - 5}</span>
             )}
           </div>
 
@@ -171,19 +171,19 @@ export default function EventCarousel({ events }: EventCarouselProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={prevSlide}
-              className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-3 flex items-center justify-center transition-colors"
               aria-label="Previous event"
             >
-              <svg className="w-4 h-4 text-slate-600 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={nextSlide}
-              className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-3 flex items-center justify-center transition-colors"
               aria-label="Next event"
             >
-              <svg className="w-4 h-4 text-slate-600 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>

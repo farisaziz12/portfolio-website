@@ -11,8 +11,8 @@ import {
   speakerProfileQuery,
   upcomingEventsQuery,
 } from '../lib/sanity/queries';
-import { isRealConference } from '../lib/conferences';
-import { bookingYears } from '../lib/availability';
+import { topConferences } from '../lib/conferences';
+import { bookingYears, quarterLoad } from '../lib/availability';
 
 interface PastEvent { _id: string; conference?: string }
 interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string }
@@ -43,6 +43,9 @@ const [pastEvents, testimonials, profile, upcomingEvents] = await Promise.all([
   sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
 ]);
+
+// Honest urgency for the hero — how full the next bookable quarter really is.
+const load = quarterLoad(upcomingEvents.map((e) => e.date));
 
 // ── Bios — three lengths, easy-copy ──────────────────────────────────────────
 function portableTextToPlain(blocks: PortableTextBlock[] | undefined): string {
@@ -117,21 +120,8 @@ function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: st
   return { tone: 'booked', label: 'Booked' };
 }
 
-// Top 6 conferences for the proof logo wall (case-insensitive dedupe).
-// Filter out placeholder values like "TBD" — see lib/conferences.ts.
-const conf = new Map<string, { display: string; count: number }>();
-for (const e of pastEvents) {
-  const raw = e.conference?.trim();
-  if (!isRealConference(raw)) continue;
-  const key = raw!.toLowerCase().replace(/\s+/g, ' ');
-  const existing = conf.get(key);
-  if (existing) existing.count += 1;
-  else conf.set(key, { display: raw!, count: 1 });
-}
-const topConferences = Array.from(conf.values())
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 6)
-  .map((c) => c.display);
+// Top 6 conferences for the proof logo wall — shared aggregation (lib/conferences.ts).
+const conferenceWall = topConferences(pastEvents);
 
 // Pick up to 3 testimonials for the proof block (no hardcoded fallback — section
 // only renders when Sanity actually returns content).
@@ -142,6 +132,8 @@ const proofQuotes = testimonials.slice(0, 3);
   title="Invite me to speak — Faris Aziz"
   description="Book Faris Aziz for your conference, meetup, or internal tech talk. Talks and workshops on production, scale, web performance, and engineering leadership."
   pathname="/invite"
+  image="/og/invite.png"
+  markdownAlternate="/invite.md"
 >
   <!-- HERO -->
   <header class="invite-hero">
@@ -156,6 +148,13 @@ const proofQuotes = testimonials.slice(0, 3);
         <span class="ds-dot ds-dot--pulse"></span>
         Booking {bookingYears()} dates
       </span>
+      {load.confirmed > 0 && (
+        <span class:list={['ds-pill', 'invite-load', `invite-load--${load.tone}`]}>
+          {load.label}: {load.confirmed} date{load.confirmed === 1 ? '' : 's'} confirmed
+          {load.tone === 'limited' && ' · filling up'}
+          {load.tone === 'booked' && ' · fully booked'}
+        </span>
+      )}
       <h1 class="invite-hero__title">
         Invite me to <span class="accent-word">your event</span>.
       </h1>
@@ -197,8 +196,8 @@ const proofQuotes = testimonials.slice(0, 3);
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <div>
-              <b>A reliable, easy collaborator</b>
-              <span>Clear comms, on time, and genuinely invested in your event's success.</span>
+              <b>An easy person to work with</b>
+              <span>Clear comms, on time, and genuinely invested in making your event great.</span>
             </div>
           </li>
         </ul>
@@ -223,6 +222,12 @@ const proofQuotes = testimonials.slice(0, 3);
             <dd>4–6 weeks ideal</dd>
           </div>
         </dl>
+
+        <p class="invite-crosslink">
+          Not booking an event? I also do
+          <a href="/consulting" class="ds-link">consulting</a> and
+          <a href="/mentorship" class="ds-link">mentorship</a>.
+        </p>
       </aside>
 
       <!-- RIGHT: form card -->
@@ -297,9 +302,12 @@ const proofQuotes = testimonials.slice(0, 3);
               ))}
             </div>
             <button type="button" class="bio-copy" id="bio-copy-btn" data-text={bios[0].text}>
-              <svg class="bio-copy__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <svg class="bio-copy__icon bio-copy__icon--copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2"/>
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <svg class="bio-copy__icon bio-copy__icon--check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span class="bio-copy__label">Copy</span>
             </button>
@@ -320,6 +328,44 @@ const proofQuotes = testimonials.slice(0, 3);
       </div>
     </section>
   )}
+
+  <!-- SPEAKER RIDER -->
+  <section class="invite-rider anchor-target" id="rider">
+    <div class="container">
+      <header class="invite-section-head">
+        <Kicker>Press kit · Rider</Kicker>
+        <h2 class="invite-h2">The stuff I love to know</h2>
+        <p class="invite-section-lead">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
+      </header>
+
+      <div class="rider-grid wide">
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Honorarium</h3>
+          <p class="rider-item__body">Let's talk — it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Travel &amp; lodging</h3>
+          <p class="rider-item__body">For in-person events outside the Geneva / Zurich area, I'll ask you to cover travel and a place to sleep. Economy is totally fine — direct routes are a nice bonus.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Code of conduct</h3>
+          <p class="rider-item__body">I love events with a published, enforced code of conduct. Don't have one yet? No stress — I'm happy to point you at great templates.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Recording &amp; slides</h3>
+          <p class="rider-item__body">Please record it! Just send me the link after — I love sharing talks. Slides stay mine, but share them with your attendees as much as you like.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">A/V setup</h3>
+          <p class="rider-item__body">HDMI or USB-C and we're good. For workshops, a lapel or headset mic and solid attendee Wi-Fi make everything ten times better.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Promotion</h3>
+          <p class="rider-item__body">I'll shout about your event to my audience before and after. Tag me in your posts and I'll amplify them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- HEADSHOTS -->
   {headshotData.length > 0 && (
@@ -383,14 +429,14 @@ const proofQuotes = testimonials.slice(0, 3);
   )}
 
   <!-- PROOF -->
-  {(topConferences.length > 0 || proofQuotes.length > 0) && (
+  {(conferenceWall.length > 0 || proofQuotes.length > 0) && (
     <section class="invite-proof">
       <div class="container">
-        {topConferences.length > 0 && (
+        {conferenceWall.length > 0 && (
           <>
             <p class="invite-proof__label">Recently on stage at</p>
             <div class="invite-proof__logos">
-              {topConferences.map((c) => <span>{c}</span>)}
+              {conferenceWall.map((c) => <span>{c}</span>)}
             </div>
           </>
         )}
@@ -412,20 +458,7 @@ const proofQuotes = testimonials.slice(0, 3);
 
   <script>
     function initInvite() {
-      // ── Scroll-reveal ─────────────────────────────────────────────────────
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
+      // (.ds-reveal is armed by the global initializer in BaseLayout.)
 
       // ── Bio pills ─────────────────────────────────────────────────────────
       const copyBtn = document.getElementById('bio-copy-btn');
@@ -775,6 +808,26 @@ const proofQuotes = testimonials.slice(0, 3);
     font-size: 0.92rem;
   }
 
+  .invite-load { color: rgb(var(--ink-muted)); margin-left: 0.6rem; }
+  .invite-load--limited {
+    color: rgb(var(--warn));
+    border-color: rgb(var(--warn) / 0.4);
+    background: rgb(var(--warn) / 0.08);
+  }
+  .invite-load--booked {
+    color: rgb(var(--danger));
+    border-color: rgb(var(--danger) / 0.4);
+    background: rgb(var(--danger) / 0.08);
+  }
+
+  .invite-crosslink {
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgb(var(--edge));
+    font-size: 0.9rem;
+    color: rgb(var(--ink-muted));
+  }
+
   .invite-card {
     background: rgb(var(--surface-2));
     border: 1px solid rgb(var(--edge));
@@ -918,10 +971,9 @@ const proofQuotes = testimonials.slice(0, 3);
     border-color: rgb(var(--signal) / 0.3);
   }
   .cal-month__status--limited {
-    /* warning tone — derived from accent-bright at lower saturation feel; use a warm amber-ish via direct hex to avoid adding tokens */
-    color: #F4B860;
-    background: rgba(244, 184, 96, 0.1);
-    border-color: rgba(244, 184, 96, 0.3);
+    color: rgb(var(--warn));
+    background: rgb(var(--warn) / 0.1);
+    border-color: rgb(var(--warn) / 0.3);
   }
   .cal-month__status--booked {
     color: rgb(var(--danger));
@@ -957,8 +1009,39 @@ const proofQuotes = testimonials.slice(0, 3);
     color: rgb(var(--ink-muted));
   }
   .cal-legend__item--open { color: rgb(var(--signal)); }
-  .cal-legend__item--limited { color: #F4B860; }
+  .cal-legend__item--limited { color: rgb(var(--warn)); }
   .cal-legend__item--booked { color: rgb(var(--danger)); }
+
+  /* ── Speaker rider ─────────────────────────────────────────────────────── */
+  .invite-rider {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-top: 1px solid rgb(var(--edge));
+  }
+  .rider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-inline: auto;
+  }
+  @media (max-width: 900px) {
+    .rider-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .rider-grid { grid-template-columns: 1fr; }
+  }
+  .rider-item { padding: 1.5rem 1.4rem; }
+  .rider-item__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    margin-bottom: 0.45rem;
+  }
+  .rider-item__body {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
 
   /* ── Bios ───────────────────────────────────────────────────────────────── */
   .invite-bios {
@@ -1030,18 +1113,33 @@ const proofQuotes = testimonials.slice(0, 3);
     border: 1px solid rgb(var(--edge-strong));
     border-radius: 10px;
     cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .bio-copy:hover {
     color: rgb(var(--accent-bright));
     border-color: rgb(var(--accent) / 0.5);
   }
   .bio-copy__icon { width: 14px; height: 14px; flex-shrink: 0; }
+  /* Icon morph: copy icon swaps for a checkmark that pops in with a small spring */
+  .bio-copy__icon--check { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--copy { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--check {
+    display: block;
+    animation: bioCheckPop 0.32s cubic-bezier(0.16, 1.4, 0.3, 1);
+  }
+  @keyframes bioCheckPop {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); }
+  }
   .bio-copy.bio-copy--done {
     color: rgb(var(--signal));
     border-color: rgb(var(--signal) / 0.5);
     background: rgb(var(--signal) / 0.1);
+    transform: scale(1.03);
   }
+  .bio-copy { will-change: transform; }
+  .bio-copy:active { transform: scale(0.97); }
 
   .bio-content { position: relative; min-height: 80px; }
   .bio-text { display: none; }

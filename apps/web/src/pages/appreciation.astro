@@ -4,12 +4,13 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import AppreciationFilter from '../components/islands/AppreciationFilter';
-import { client, urlFor } from '../lib/sanity/client';
+import BlueskyFeed from '../components/islands/BlueskyFeed';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
 
 const [socialPosts, testimonials] = await Promise.all([
-  client.fetch(allSocialPostsQuery),
-  client.fetch(allTestimonialsQuery),
+  sanityFetch<any[]>(allSocialPostsQuery).catch(() => []),
+  sanityFetch<any[]>(allTestimonialsQuery).catch(() => []),
 ]);
 
 const platforms = [...new Set(socialPosts.map((p: any) => p.platform))];
@@ -38,6 +39,7 @@ testimonials.forEach((t: any) => {
   title="Wall of appreciation | Faris Aziz"
   description="Kind words, mentions, and testimonials from the community about my talks, work, and contributions."
   pathname="/appreciation"
+  image="/og/appreciation.png"
 >
   <header class="page-hero">
     <GridTexture />
@@ -47,20 +49,20 @@ testimonials.forEach((t: any) => {
         The wall of <span class="accent-word">kind words</span>.
       </h1>
       <p class="page-hero__lead">
-        Real feedback from conferences, colleagues, and the tech community. Every mention motivates me to keep sharing.
+        Real posts from conferences, colleagues, and the community. Yes, I saved them all. No, I'm not even a little embarrassed.
       </p>
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.posts}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.posts}</div>
           <div class="ds-stat__label">Social posts</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.testimonials}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.testimonials}</div>
           <div class="ds-stat__label">Testimonials</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{stats.platforms}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{stats.platforms}</div>
           <div class="ds-stat__label">Platforms</div>
         </div>
       </div>
@@ -92,6 +94,17 @@ testimonials.forEach((t: any) => {
     </div>
   </section>
 
+  <!-- LIVE FROM BLUESKY — ships hidden; the island reveals it once posts load -->
+  <section class="page-section page-section--alt" data-bsky-section hidden>
+    <div class="container">
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Live from Bluesky</Kicker>
+        <h2 class="page-h2 ds-reveal">The feed, <span class="mark">unfiltered</span></h2>
+      </div>
+      <BlueskyFeed client:idle actor="farisaziz.com" />
+    </div>
+  </section>
+
   <section class="page-section page-section--contact">
     <div class="container">
       <div class="wide ds-reveal">
@@ -108,22 +121,4 @@ testimonials.forEach((t: any) => {
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>

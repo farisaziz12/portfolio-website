@@ -5,8 +5,9 @@ import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { featuredImpactMetricsV2Query } from '../lib/sanity/queries';
+import { featuredImpactMetricsV2Query, allServiceLandingPagesQuery } from '../lib/sanity/queries';
 import { availabilityLabel, formatQuarter } from '../lib/availability';
+import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 
 interface ImpactMetricV2 {
   _id: string;
@@ -20,7 +21,17 @@ interface ImpactMetricV2 {
   contextNote?: string;
 }
 
-const impactMetrics = await sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []);
+interface ServiceLandingPageLink {
+  _id: string;
+  title: string;
+  slug: string;
+  metaDescription?: string;
+}
+
+const [impactMetrics, landingPages] = await Promise.all([
+  sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []),
+  sanityFetch<ServiceLandingPageLink[]>(allServiceLandingPagesQuery).catch(() => []),
+]);
 
 const domainLabel: Record<string, string> = {
   community: 'Community',
@@ -50,11 +61,11 @@ const proofMetrics =
       })()
     : null;
 
-// Hardcoded fallback (matches design prototype exactly)
+// Hardcoded fallback — single source in lib/proof.ts
 const fallbackProof = [
-  { domain: 'community', headlineNumber: 425, label: 'New members', contextNote: 'Added to ZurichJS during 2025.', unit: 'number' as const, prefix: '' },
-  { domain: 'leadership', headlineNumber: 15, label: 'Engineers led', contextNote: 'Cross-functional squad, 2022–2024.', unit: 'number' as const, prefix: '' },
-  { domain: 'product', headlineNumber: 3.5, label: 'Revenue increase', contextNote: 'In APAC after launching Alipay.', unit: 'x' as const, prefix: '' },
+  { domain: 'community', headlineNumber: PROOF.communityMembers, label: 'New members', contextNote: PROOF.communityNote, unit: 'number' as const, prefix: '' },
+  { domain: 'leadership', headlineNumber: PROOF.engineersLed, label: 'Engineers led', contextNote: PROOF.engineersNote, unit: 'number' as const, prefix: '' },
+  { domain: 'product', headlineNumber: PROOF.revenueMultiplier, label: 'Revenue increase', contextNote: PROOF.revenueNote, unit: 'x' as const, prefix: '' },
 ];
 
 const proofItems = proofMetrics || fallbackProof;
@@ -105,7 +116,7 @@ const faq = [
   },
   {
     question: "What's your availability?",
-    answer: `I take on a limited number of engagements at a time to keep quality high. Current availability opens in ${formatQuarter()} — get in touch to claim a slot.`,
+    answer: `I take on a few engagements at a time so each one gets real attention. Next availability opens in ${formatQuarter()} — worth reaching out early if you want in.`,
     open: false,
   },
   {
@@ -120,6 +131,7 @@ const faq = [
   title="Services — Consulting & Mentorship | Faris Aziz"
   description="Frontend architecture consulting, payment systems advisory, and 1:1 engineering mentorship from a Staff Engineer."
   pathname="/services"
+  image="/og/services.png"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -145,7 +157,7 @@ const faq = [
         Let's work<br /><span class="accent-word">together.</span>
       </h1>
       <p class="svc-hero__lead">
-        I help engineers and teams ship better software — through hands-on consulting and personalized 1:1 mentorship. Backed by {impactMetrics.length > 0 ? `${impactMetrics.length}+ measured outcomes` : '86 talks'} and a decade shipping payments at scale.
+        I help engineers and teams ship better software — through hands-on consulting and personalized 1:1 mentorship. Backed by {impactMetrics.length > 0 ? `${impactMetrics.length}+ measured outcomes` : `${FALLBACK_SPEAKER_STATS.totalEvents} talks`} and a decade shipping payments at scale.
       </p>
       <div class="svc-hero__actions">
         <a href="#choose" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -160,7 +172,7 @@ const faq = [
   </header>
 
   <!-- CHOOSE -->
-  <section id="choose" class="svc-section" style="scroll-margin-top:80px;">
+  <section id="choose" class="svc-section anchor-target">
     <div class="container">
       <div class="svc-section__heading">
         <Kicker class="ds-reveal">Choose your path</Kicker>
@@ -207,6 +219,18 @@ const faq = [
           </span>
         </a>
       </div>
+
+      {landingPages.length > 0 && (
+        <div class="svc-landing-links">
+          <span class="svc-landing-links__label">Focused offerings:</span>
+          {landingPages.map((lp) => (
+            <a href={`/services/${lp.slug}`} class="ds-link">
+              {lp.title}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   </section>
 
@@ -215,7 +239,7 @@ const faq = [
     <div class="container">
       <div class="svc-section__heading">
         <Kicker class="ds-reveal">Track record</Kicker>
-        <h2 class="svc-h2 ds-reveal">Proven results</h2>
+        <h2 class="svc-h2 ds-reveal">Numbers I'm <span class="mark">proud of</span></h2>
       </div>
       <div class="wide svc-proof ds-reveal">
         {proofItems.map((m) => {
@@ -246,7 +270,7 @@ const faq = [
     <div class="container">
       <div class="svc-section__heading">
         <Kicker class="ds-reveal">How it works</Kicker>
-        <h2 class="svc-h2 ds-reveal">A simple process, <span class="mark">built for results</span></h2>
+        <h2 class="svc-h2 ds-reveal">How it <span class="mark">usually goes</span></h2>
       </div>
       <div class="svc-steps wide">
         {steps.map((step, i) => (
@@ -282,37 +306,22 @@ const faq = [
   </section>
 
   <!-- CONTACT -->
-  <section class="svc-section" id="contact" style="scroll-margin-top:80px;">
+  <section class="svc-section anchor-target" id="contact">
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
           status={availabilityLabel('Available')}
-          title="Ready to level up?"
-          body="Let's have a conversation about your goals and how I can help you get there. I reply within two days."
+          title="Not sure where to start? Start with the call."
+          body="Twenty minutes, no agenda beyond your problem. Worst case, you walk away with a free second opinion."
           primaryHref="https://cal.com/farisaziz12/discovery-call"
           primaryLabel="Book a free 20-min call"
-          secondaryHref="mailto:hello@farisaziz.com"
-          secondaryLabel="Email me instead"
+          secondaryHref="/contact#message"
+          secondaryLabel="Message me instead"
         />
       </div>
     </div>
   </section>
 
-  <script>
-    document.documentElement.classList.add('js');
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-    setTimeout(() => {
-      document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-    }, 500);
-  </script>
 </BaseLayout>
 
 <style>
@@ -530,4 +539,15 @@ const faq = [
     font-size: 0.96rem;
     line-height: 1.6;
   }
+
+  /* CMS-driven landing-page links under the choose cards */
+  .svc-landing-links {
+    margin-top: 1.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem 1.6rem;
+    font-size: 0.92rem;
+  }
+  .svc-landing-links__label { color: rgb(var(--ink-faint)); }
 </style>

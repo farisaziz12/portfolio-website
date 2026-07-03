@@ -214,7 +214,7 @@ export default function ImpactExplorer({
                     setDomain(metric.domain);
                     setExpandedMetric(metric.slug);
                   }}
-                  className={`group px-4 py-3 rounded-xl border transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${colors.bg} ${colors.border}`}
+                  className={`group px-4 py-3 rounded-xl border transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent ${colors.bg} ${colors.border}`}
                 >
                   <div className={`text-2xl md:text-3xl font-display font-bold ${colors.text}`}>
                     {formatMetricNumber(metric.headlineNumber, metric.unit, metric.prefix)}
@@ -272,13 +272,12 @@ export default function ImpactExplorer({
               tabIndex={domain === d.id ? 0 : -1}
               onClick={() => handleDomainChange(d.id)}
               onKeyDown={(e) => handleTabKeyDown(e, index)}
-              className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+              className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent ${
                 domain === d.id
-                  ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
+                  ? 'bg-accent text-white shadow-lg'
                   : 'bg-surface-overlay text-ink-muted hover:bg-surface-raised hover:text-ink border border-edge'
               }`}
             >
-              <span className="mr-1.5">{d.icon}</span>
               <span className="hidden sm:inline">{d.label}</span>
               <span className="sm:hidden">{d.label.split(' ')[0]}</span>
             </button>
@@ -289,19 +288,19 @@ export default function ImpactExplorer({
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-signal"></span>
               <span className="font-medium text-ink">Outcomes</span>
               <span className="text-ink-muted">= what changed</span>
             </div>
             <span className="text-ink-faint">·</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-accent"></span>
               <span className="font-medium text-ink">How</span>
               <span className="text-ink-muted">= approach</span>
             </div>
             <span className="text-ink-faint">·</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-accent-bright"></span>
               <span className="font-medium text-ink">Proof</span>
               <span className="text-ink-muted">= evidence</span>
             </div>
@@ -329,7 +328,6 @@ export default function ImpactExplorer({
                 <section key={domainKey} className="space-y-4">
                   {/* Domain Header */}
                   <div className="flex items-center gap-3 pb-2 border-b border-edge">
-                    <span className="text-2xl">{domainConfig?.icon}</span>
                     <div>
                       <h3 className="text-lg font-display font-semibold text-ink">
                         {domainConfig?.label}
@@ -469,7 +467,7 @@ function MetricCard({
         isExpanded
           ? `${colors.border} shadow-lg ring-2 ring-offset-2 ${colors.text.replace('text-', 'ring-')}`
           : isFeatured
-            ? 'border-amber-300 dark:border-amber-700 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md'
+            ? 'border-accent/40 hover:border-accent/70 hover:shadow-md'
             : 'border-edge hover:border-edge-strong hover:shadow-md'
       }`}
     >
@@ -479,7 +477,7 @@ function MetricCard({
         onKeyDown={handleKeyDown}
         aria-expanded={isExpanded}
         aria-controls={`metric-content-${metric.slug}`}
-        className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-xl min-h-[140px] flex flex-col"
+        className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent rounded-xl min-h-[140px] flex flex-col"
       >
         <div className="flex items-start justify-between gap-2 flex-grow">
           {/* Number + Label */}
@@ -498,8 +496,8 @@ function MetricCard({
                 <span
                   className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                     metric.delta.startsWith('+') || metric.delta.includes('↑')
-                      ? 'bg-emerald-500/10 text-emerald-600'
-                      : 'bg-amber-500/10 text-amber-600'
+                      ? 'bg-signal/10 text-signal'
+                      : 'bg-surface-3 text-ink-muted'
                   }`}
                 >
                   {metric.delta}
@@ -542,7 +540,7 @@ function MetricCard({
         <div className="px-4 pb-4 border-t border-edge pt-4 space-y-4">
           {/* Card-level Lens Toggle - Mobile Optimized */}
           <div
-            className="flex w-full rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1"
+            className="flex w-full rounded-lg bg-surface-2 p-1 gap-1"
             role="radiogroup"
             aria-label="Switch view"
           >
@@ -555,10 +553,10 @@ function MetricCard({
                   e.stopPropagation();
                   setLocalLens(l.id);
                 }}
-                className={`flex-1 px-3 py-2.5 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ${
+                className={`flex-1 px-3 py-2.5 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent ${
                   localLens === l.id
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-600'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
+                    ? 'bg-surface-3 text-ink shadow-sm border border-edge-strong'
+                    : 'text-ink-muted hover:text-ink hover:bg-surface-3/50'
                 }`}
               >
                 {l.label}

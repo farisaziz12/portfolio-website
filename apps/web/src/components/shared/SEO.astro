@@ -11,7 +11,11 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  /** Alt text for the social card image. */
+  imageAlt?: string;
   article?: boolean;
+  /** Marks this page as the entity home (renders ProfilePage instead of WebPage). */
+  profilePage?: boolean;
   pathname?: string;
   publishedTime?: string;
   siteName?: string;
@@ -19,14 +23,21 @@ interface Props {
   twitterHandle?: string;
   personName?: string;
   jobTitle?: string;
+  personImage?: string;
   socialLinks?: SocialLinks;
+  /** Optional extra schema.org nodes appended to the @graph (Event, Service, BreadcrumbList…). */
+  extraSchema?: Record<string, unknown>[];
+  /** Optional markdown mirror of this page, exposed for AI agents. */
+  markdownAlternate?: string;
 }
 
 const {
   title,
   description = 'Staff Software Engineer, Conference Speaker & Workshop Instructor specializing in React, Next.js, and payments.',
-  image = '/og-default.jpg',
+  image = '/og/default.png',
+  imageAlt,
   article = false,
+  profilePage = false,
   pathname = '',
   publishedTime,
   siteName = 'Faris Aziz',
@@ -34,22 +45,86 @@ const {
   twitterHandle = 'farisaziz12',
   personName = 'Faris Aziz',
   jobTitle = 'Staff Software Engineer',
+  personImage,
   socialLinks,
+  extraSchema = [],
+  markdownAlternate,
 } = Astro.props;
 
 const siteUrl = propSiteUrl || import.meta.env.SITE || 'https://faziz-dev.com';
 const canonicalUrl = new URL(pathname, siteUrl).href;
 const imageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).href;
 const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+const ogImageAlt = imageAlt || `${fullTitle} — social card`;
 
-// Build sameAs array for JSON-LD from social links
+// Entity graph. Stable @id anchors so every page reinforces the same Person
+// entity — this is what lets search engines and AI answer engines resolve
+// "Faris Aziz" to this site (the entity home) and cite it.
+const PERSON_ID = `${siteUrl}/#person`;
+const WEBSITE_ID = `${siteUrl}/#website`;
+
 const sameAs = [
   'https://bsky.app/profile/farisaziz.com',
   socialLinks?.linkedin || 'https://linkedin.com/in/farisaziz12',
   socialLinks?.github || 'https://github.com/farisaziz12',
   socialLinks?.twitterUrl || 'https://twitter.com/farisaziz12',
-  socialLinks?.youtube,
+  socialLinks?.youtube || 'https://www.youtube.com/@faziz-dev',
+  'https://mentorcruise.com/mentor/farisaziz/',
 ].filter(Boolean);
+
+const person: Record<string, unknown> = {
+  '@type': 'Person',
+  '@id': PERSON_ID,
+  name: personName,
+  url: siteUrl,
+  jobTitle: jobTitle,
+  description:
+    'Staff Software Engineer and conference speaker based in Geneva. Speaks on React, Next.js, payment systems, developer experience, and engineering leadership. Available for talks, workshops, consulting, and mentorship.',
+  knowsAbout: [
+    'React',
+    'Next.js',
+    'Frontend architecture',
+    'Payment systems',
+    'Fintech',
+    'Web performance',
+    'Developer experience',
+    'Engineering leadership',
+    'Public speaking',
+  ],
+  sameAs,
+};
+if (personImage) person.image = { '@type': 'ImageObject', url: personImage };
+
+const website = {
+  '@type': 'WebSite',
+  '@id': WEBSITE_ID,
+  url: siteUrl,
+  name: siteName,
+  publisher: { '@id': PERSON_ID },
+};
+
+const pageNode: Record<string, unknown> = {
+  '@type': profilePage ? 'ProfilePage' : article ? 'Article' : 'WebPage',
+  '@id': `${canonicalUrl}#page`,
+  url: canonicalUrl,
+  name: fullTitle,
+  headline: title,
+  description,
+  image: imageUrl,
+  isPartOf: { '@id': WEBSITE_ID },
+  ...(profilePage ? { mainEntity: { '@id': PERSON_ID } } : { about: { '@id': PERSON_ID } }),
+  ...(article
+    ? {
+        author: { '@id': PERSON_ID },
+        ...(publishedTime ? { datePublished: publishedTime } : {}),
+      }
+    : {}),
+};
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [person, website, pageNode, ...extraSchema],
+};
 ---
 
 <!-- Primary Meta Tags -->
@@ -57,40 +132,34 @@ const sameAs = [
 <meta name="title" content={fullTitle} />
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalUrl} />
+{markdownAlternate && (
+  <link rel="alternate" type="text/markdown" href={new URL(markdownAlternate, siteUrl).href} title={`${title} (Markdown)`} />
+)}
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content={article ? 'article' : 'website'} />
+<!-- Open Graph / Facebook / LinkedIn / Bluesky -->
+<meta property="og:type" content={profilePage ? 'profile' : article ? 'article' : 'website'} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={imageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content={ogImageAlt} />
 <meta property="og:site_name" content={siteName} />
+<meta property="og:locale" content="en_US" />
 {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{article && <meta property="article:author" content={new URL('/about', siteUrl).href} />}
 
-<!-- Twitter -->
+<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content={`@${twitterHandle}`} />
 <meta name="twitter:creator" content={`@${twitterHandle}`} />
 <meta name="twitter:url" content={canonicalUrl} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
 
-<!-- JSON-LD Structured Data -->
-<script
-  type="application/ld+json"
-  set:html={JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': article ? 'Article' : 'WebPage',
-    headline: title,
-    image: imageUrl,
-    author: {
-      '@type': 'Person',
-      name: personName,
-      url: siteUrl,
-      jobTitle: jobTitle,
-      sameAs: sameAs,
-    },
-    description,
-    url: canonicalUrl,
-  })}
-/>
+<!-- JSON-LD entity graph -->
+<script type="application/ld+json" set:html={JSON.stringify(graph)} />

@@ -6,6 +6,7 @@ import ContactPanel from '../../components/design/ContactPanel.astro';
 import TalksFilter from '../../components/islands/TalksFilter';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allTalksQuery } from '../../lib/sanity/queries';
+import { availabilityLabel } from '../../lib/availability';
 
 interface Talk {
   _id: string;
@@ -29,11 +30,13 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
   title="Talks | Faris Aziz"
   description="Browse all talks by Faris Aziz on React, Next.js, payments, and developer experience. Available for conferences and meetups."
   pathname="/talks"
+  image="/og/talks.png"
+  markdownAlternate="/talks.md"
 >
   <header class="page-hero">
     <GridTexture />
     <div class="container page-hero__inner">
-      <Kicker>Talks · ready to book</Kicker>
+      <Kicker>Talk catalogue · ready to book</Kicker>
       <h1 class="page-hero__title">
         Conference talks, <span class="accent-word">tailored</span> for your room.
       </h1>
@@ -43,15 +46,15 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
 
       <div class="page-hero__stats">
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalTalks}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalTalks}</div>
           <div class="ds-stat__label">Talks</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{totalDeliveries}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{totalDeliveries}</div>
           <div class="ds-stat__label">Deliveries</div>
         </div>
         <div>
-          <div class="ds-stat__value" style="font-size:2.2rem;">{uniqueTopics}</div>
+          <div class="ds-stat__value ds-stat__value--sm">{uniqueTopics}</div>
           <div class="ds-stat__label">Topics</div>
         </div>
       </div>
@@ -99,7 +102,7 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status="Custom talks available · 2026"
+          status={availabilityLabel('Custom talks available')}
           title="Need something tailored?"
           body="If none of these fit your audience, I can build a new talk around your theme. Tell me what you're hoping to land — I reply within two days."
           primaryHref="/invite"
@@ -111,23 +114,5 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 

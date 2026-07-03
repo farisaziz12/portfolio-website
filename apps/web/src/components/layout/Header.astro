@@ -15,7 +15,13 @@ const isActive = (prefix: string) => {
 
 // "Speaking" lights up for talks/events/workshops/invite too
 const speakingActive = ['/speaking', '/talks', '/events', '/workshops', '/invite'].some(isActive);
-const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].some(isActive);
+const servicesActive = ['/services', '/consulting', '/mentorship', '/impact', '/contact'].some(isActive);
+
+// Context-aware CTA: on the speaking silo the primary action is the speaker
+// invite; everywhere else it routes to the /contact "work with me" hub so
+// consulting & mentorship prospects aren't funneled into the invite form.
+const ctaHref = speakingActive ? '/invite' : '/contact';
+const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
 ---
 
 <header class="site-nav" id="siteNav">
@@ -37,11 +43,11 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
         <div class="megamenu" role="menu">
           <a class="mm-row" href="/events" role="menuitem">
             <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
-            <span><b>Upcoming events</b><span>Where I'm speaking next</span></span>
+            <span><b>Schedule</b><span>Where I'll be next, plus the archive</span></span>
           </a>
           <a class="mm-row" href="/talks" role="menuitem">
             <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4.5v15l13-7.5z" fill="currentColor" stroke="none"/></svg></span>
-            <span><b>Talks</b><span>Recorded sessions &amp; slides</span></span>
+            <span><b>Talk catalogue</b><span>Talks you can book, with recordings</span></span>
           </a>
           <a class="mm-row" href="/workshops" role="menuitem">
             <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg></span>
@@ -49,7 +55,7 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
           </a>
           <div class="mm-foot">
             <span class="small">Booking {bookingYearsLabel} dates</span>
-            <a class="ds-link" href="/invite">Invite me
+            <a class="ds-link" href="/invite" data-track="megamenu-invite">Invite me
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
@@ -78,14 +84,14 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
           </a>
           <div class="mm-foot">
             <span class="small">Available {quarterLabel}</span>
-            <a class="ds-link" href="/services">Explore services
+            <a class="ds-link" href="https://cal.com/farisaziz12/discovery-call" target="_blank" rel="noopener noreferrer" data-track="megamenu-discovery-call">Book a discovery call
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
         </div>
       </div>
 
-      <a href="/blog" class:list={['site-nav__link', { 'is-active': isActive('/blog') }]} aria-current={isActive('/blog') ? 'page' : undefined}>Writing</a>
+      <a href="/blog" class:list={['site-nav__link', { 'is-active': isActive('/blog') }]} aria-current={isActive('/blog') ? 'page' : undefined}>Blog</a>
       <a href="/about" class:list={['site-nav__link', { 'is-active': isActive('/about') }]} aria-current={isActive('/about') ? 'page' : undefined}>About</a>
     </div>
 
@@ -97,7 +103,7 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
 
       <ThemeToggle client:load />
 
-      <a href="/invite" class="ds-btn ds-btn-primary site-nav__cta">Invite me</a>
+      <a href={ctaHref} class="ds-btn ds-btn-primary site-nav__cta" data-track="header-cta" data-track-label={ctaLabel}>{ctaLabel}</a>
 
       <button type="button" class="site-nav__burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -121,18 +127,31 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
   </div>
   <div class="mobile-drawer__links">
     <a class="mobile-drawer__link" href="/">Home</a>
-    <a class="mobile-drawer__link" href="/speaking">Speaking <span class="sub">Talks · Events · Workshops</span></a>
-    <a class="mobile-drawer__link" href="/services">Services <span class="sub">Consulting · Mentorship</span></a>
-    <a class="mobile-drawer__link" href="/impact">Impact <span class="sub">The track record</span></a>
-    <a class="mobile-drawer__link" href="/blog">Writing</a>
+
+    <a class="mobile-drawer__link" href="/speaking">Speaking</a>
+    <div class="mobile-drawer__sublinks">
+      <a href="/events">Schedule</a>
+      <a href="/talks">Talk catalogue</a>
+      <a href="/workshops">Workshops</a>
+      <a href="/invite">Invite me</a>
+    </div>
+
+    <a class="mobile-drawer__link" href="/services">Services</a>
+    <div class="mobile-drawer__sublinks">
+      <a href="/consulting">Consulting</a>
+      <a href="/mentorship">Mentorship</a>
+      <a href="/impact">Impact</a>
+    </div>
+
+    <a class="mobile-drawer__link" href="/blog">Blog</a>
     <a class="mobile-drawer__link" href="/about">About</a>
   </div>
   <div class="mobile-drawer__foot">
     <span class="ds-pill ds-pill--signal" style="margin-bottom:1rem;display:inline-flex;">
       <span class="ds-dot ds-dot--pulse"></span>{availLabel}
     </span>
-    <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg" style="width:100%;">
-      Invite me to speak
+    <a href={ctaHref} class="ds-btn ds-btn-primary ds-btn-lg" style="width:100%;">
+      {speakingActive ? 'Invite me to speak' : 'Work with me'}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
@@ -317,7 +336,7 @@ const servicesActive = ['/services', '/consulting', '/mentorship', '/impact'].so
     }
     burger?.addEventListener('click', () => setDrawer(true));
     close?.addEventListener('click', () => setDrawer(false));
-    drawer?.querySelectorAll<HTMLAnchorElement>('.mobile-drawer__link').forEach((a) => {
+    drawer?.querySelectorAll<HTMLAnchorElement>('.mobile-drawer__link, .mobile-drawer__sublinks a').forEach((a) => {
       a.addEventListener('click', () => setDrawer(false));
     });
   }

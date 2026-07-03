@@ -5,41 +5,37 @@ import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
-import SocialWall from '../components/social/SocialWall.astro';
+import SocialWallIsland from '../components/islands/SocialWallIsland';
 import MentorshipInquiryForm from '../components/islands/MentorshipInquiryForm';
-import { sanityFetch } from '../lib/sanity/client';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { mentorshipOffersQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
 import { availabilityLabel } from '../lib/availability';
+import type { ServiceOffer, SocialPost } from '../lib/sanity/types';
 
-interface ServiceOffer {
-  _id: string;
-  title: string;
-  slug: string;
-  serviceType: 'consulting' | 'mentorship';
-  shortDescription: string;
-  bestFor?: string;
-  outcomes?: string[];
-  engagementFormat?: string;
-  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
-  price?: number;
-  priceCurrency?: string;
-  priceUnit?: string;
-  bookingUrl: string;
-  featured?: boolean;
-  order?: number;
-}
 
-interface SocialPost {
-  _id: string; url: string; platform: 'linkedin' | 'twitter';
-  author: string; authorHandle?: string; authorImage?: any;
-  authorRole?: string; postImage?: any; content: string;
-  tweetId?: string; postDate?: string;
-}
 
 const [offers, socialPosts] = await Promise.all([
   sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []),
   sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
 ]);
+
+// Same social-card treatment as home and /about (avatars resolved server-side).
+const socialPostImages: Record<string, string> = {};
+for (const p of socialPosts) {
+  if (p.authorImage) {
+    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
+  }
+}
+const normalizedSocialPosts = socialPosts.map((p) => ({
+  _id: p._id,
+  platform: p.platform,
+  author: p.author,
+  authorRole: p.authorRole,
+  authorHandle: p.authorHandle,
+  content: p.content,
+  url: p.url,
+  postDate: p.postDate,
+}));
 
 const topics = [
   {
@@ -115,6 +111,20 @@ const faq = [
   title="Mentorship | Faris Aziz"
   description="1:1 mentorship for engineers who want to level up their careers. Career coaching, technical skills, and personal growth."
   pathname="/mentorship"
+  image="/og/mentorship.png"
+  markdownAlternate="/mentorship.md"
+  extraSchema={[
+    {
+      '@type': 'Service',
+      name: '1:1 engineering mentorship',
+      serviceType: 'Career and technical mentorship',
+      description:
+        '1:1 coaching for software engineers: career strategy, technical mastery, public speaking, and sustainable growth. Weekly or bi-weekly cadence, 3–6 month engagements.',
+      provider: { '@id': 'https://faziz-dev.com/#person' },
+      areaServed: 'Worldwide',
+      url: 'https://faziz-dev.com/mentorship',
+    },
+  ]}
 >
   <header class="page-hero">
     <GridTexture />
@@ -126,10 +136,10 @@ const faq = [
       </nav>
       <Kicker variant="signal">Mentorship · for individual engineers</Kicker>
       <h1 class="page-hero__title">
-        Accelerate your <span class="accent-word">career</span>.
+        You're closer than <span class="accent-word">you think</span>.
       </h1>
       <p class="page-hero__lead">
-        1:1 coaching from someone who's been mid → senior → staff in a decade. We work on the things that actually move you forward — technical, strategic, political.
+        1:1 coaching from someone who's done mid → senior → staff in half a decade. We work on the things that actually move you forward — technical, strategic, political.
       </p>
       <div class="page-hero__actions">
         <a href="#apply" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -170,7 +180,7 @@ const faq = [
     </div>
   </section>
 
-  <!-- APPLY — the default inquiry path. MentorCruise is an alternative below. -->
+  <!-- APPLY — the default inquiry path. MentorCruise is offered as an alternative underneath the form. -->
   <section id="apply" class="page-section page-section--alt">
     <div class="container">
       <div class="page-section__heading">
@@ -180,6 +190,13 @@ const faq = [
       </div>
       <div class="mentorship-form-wrap">
         <MentorshipInquiryForm client:load />
+        <p class="mentorship-alt">
+          Prefer a platform?
+          <a href="https://mentorcruise.com/mentor/farisaziz/" target="_blank" rel="noopener noreferrer" class="ds-link">
+            Book me on MentorCruise
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </p>
       </div>
     </div>
   </section>
@@ -205,7 +222,13 @@ const faq = [
           <Kicker class="ds-reveal">From mentees</Kicker>
           <h2 class="page-h2 ds-reveal">In their <span class="mark">own words</span></h2>
         </div>
-        <SocialWall posts={socialPosts} />
+        <SocialWallIsland
+          client:visible
+          posts={normalizedSocialPosts}
+          testimonials={[]}
+          socialPostImages={socialPostImages}
+          testimonialImages={{}}
+        />
       </div>
     </section>
   )}
@@ -252,34 +275,17 @@ const faq = [
       <div class="wide ds-reveal">
         <ContactPanel
           status={availabilityLabel('Mentees')}
-          title="Ready to accelerate your growth?"
-          body="If you're stuck, plateaued, or just want a sharper feedback loop — let's talk. I reply within two days."
+          title="Stuck is temporary"
+          body="If you're plateaued, second-guessing your next move, or just want a sharper feedback loop — let's talk. I reply within two days."
           primaryHref="#apply"
           primaryLabel="Send an inquiry"
           secondaryHref={null}
         />
+        <p class="ds-crosslink">Looking for something else? <a href="/consulting" class="ds-link">Team consulting</a> — or <a href="/invite" class="ds-link">invite me to speak</a>.</p>
       </div>
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>
@@ -291,6 +297,19 @@ const faq = [
     border: 1px solid rgb(var(--edge));
     border-radius: 14px;
     padding: clamp(1.5rem, 3vw, 2.2rem);
+  }
+
+  .mentorship-alt {
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgb(var(--edge));
+    font-size: 0.92rem;
+    color: rgb(var(--ink-muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .mentorship-topic {

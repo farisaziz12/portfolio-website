@@ -2,24 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
-import Terminal from '../components/design/Terminal.astro';
+import HeroTerminal from '../components/islands/HeroTerminal';
 ---
 
 <BaseLayout title="Page not found · 404 | Faris Aziz" description="The page you're looking for doesn't exist.">
   <section class="not-found">
     <GridTexture />
     <div class="container not-found__inner">
-      <Terminal name="error.sh" class="not-found__terminal">
-        <div><span class="pr">$</span> <span class="cmd">resolve --path requested</span></div>
-        <div class="out">→ 404 · Not found</div>
-      </Terminal>
+      <div class="not-found__terminal">
+        <HeroTerminal client:load name="error.sh" mode="notfound" />
+      </div>
 
       <Kicker>Error · 404</Kicker>
       <h1 class="not-found__title">
         Wrong <span class="accent-word">turn</span>.
       </h1>
       <p class="not-found__lead">
-        The page you're looking for doesn't exist, or moved somewhere else. Head home or check the talks — both work.
+        This page doesn't exist, or it moved. The terminal above actually works — or take the boring way out below.
       </p>
       <div class="not-found__actions">
         <a href="/" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -47,7 +46,7 @@ import Terminal from '../components/design/Terminal.astro';
     position: relative;
     max-width: 640px;
   }
-  .not-found__terminal { max-width: 320px; margin-bottom: 1.8rem; }
+  .not-found__terminal { max-width: 440px; margin-bottom: 1.8rem; }
   .not-found__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 700;

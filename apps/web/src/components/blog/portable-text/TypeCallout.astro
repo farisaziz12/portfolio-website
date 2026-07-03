@@ -16,11 +16,11 @@ const { node } = Astro.props;
 const calloutType: CalloutType = node.type ?? 'info';
 
 const colors: Record<CalloutType, string> = {
-  info: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
-  warning: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
-  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-  error: 'bg-red-500/10 border-red-500/30 text-red-400',
-  tip: 'bg-violet-500/10 border-violet-500/30 text-violet-400',
+  info: 'bg-accent/10 border-accent/30 text-accent-bright',
+  warning: 'bg-[rgb(var(--warn)/0.1)] border-[rgb(var(--warn)/0.3)] text-[rgb(var(--warn))]',
+  success: 'bg-signal/10 border-signal/30 text-signal',
+  error: 'bg-danger/10 border-danger/30 text-danger',
+  tip: 'bg-accent-bright/10 border-accent-bright/30 text-accent-bright',
 };
 
 const icons: Record<CalloutType, string> = {

@@ -5,17 +5,19 @@ export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
-import Terminal from '../components/design/Terminal.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import HeroTerminal from '../components/islands/HeroTerminal';
 import AudienceRouter from '../components/home/AudienceRouter.astro';
 import FeaturedTalk from '../components/home/FeaturedTalk.astro';
 import ReachMap from '../components/home/ReachMap.astro';
-import GeneralSubscribe from '../components/islands/GeneralSubscribe';
 import SocialWallIsland from '../components/islands/SocialWallIsland';
+import BlueskyFeed from '../components/islands/BlueskyFeed';
 import { isRealConference } from '../lib/conferences';
+import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
+import type { SocialPost } from '../lib/sanity/types';
 import {
   upcomingEventsQuery,
   speakingStatsQuery,
@@ -46,21 +48,6 @@ interface SpeakingStats {
 }
 interface Media { _id: string; image?: any; description?: string }
 interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string; image?: any }
-interface SocialPost {
-  _id: string;
-  url: string;
-  platform: 'linkedin' | 'twitter';
-  author: string;
-  authorHandle?: string;
-  authorImage?: any;
-  authorRole?: string;
-  postImage?: any;
-  content: string;
-  tweetId?: string;
-  postDate?: string;
-  relatedTalk?: { title: string; slug: string };
-  relatedEvent?: { title: string; slug: string; conference: string };
-}
 interface FeaturedTalkData {
   _id: string;
   title: string;
@@ -75,9 +62,7 @@ interface PastEvent { _id: string; conference?: string; featured?: boolean }
 
 const [upcomingEvents, stats, media, testimonials, socialPosts, featured, pastEvents, reachCities] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 60, upcomingEvents: 15, countries: 12, cities: 25, talks: 0, workshops: 0,
-  })),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
   sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
   sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
@@ -188,6 +173,8 @@ const formatEventDate = (dateStr: string) => {
   title="Faris Aziz — Staff Engineer & Conference Speaker"
   description={`Staff Software Engineer and Conference Speaker. ${stats.totalEvents} talks across ${stats.countries} countries. Based in Geneva.`}
   pathname=""
+  image="/og/home.png"
+  markdownAlternate="/home.md"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -233,10 +220,7 @@ const formatEventDate = (dateStr: string) => {
     <div class="hero-split-mosaic__content">
       <div class="home-hero__content-inner">
         <div class="home-hero__terminal">
-          <Terminal>
-            <div><span class="pr">$</span> <span class="cmd">whoami</span></div>
-            <div class="out">Staff Engineer & Speaker</div>
-          </Terminal>
+          <HeroTerminal client:idle />
         </div>
 
         <h1 class="home-hero__title">
@@ -269,7 +253,7 @@ const formatEventDate = (dateStr: string) => {
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.path} /></svg>
             </a>
           ))}
-          <span class="home-hero__socials-label">Follow my journey</span>
+          <span class="home-hero__socials-label">Come say hi</span>
         </div>
 
         <div class="home-hero__actions">
@@ -294,6 +278,9 @@ const formatEventDate = (dateStr: string) => {
                   src={urlFor(media[0].image).width(1200).height(1200).quality(90).url()}
                   alt={media[0].description || 'Speaking at conference'}
                   loading="eager"
+                  fetchpriority="high"
+                  width="1200"
+                  height="1200"
                 />
               )}
             </div>
@@ -500,23 +487,23 @@ const formatEventDate = (dateStr: string) => {
       <div class="wide home-impact ds-reveal">
         <div class="home-impact__cell">
           <span class="ds-tag">Community</span>
-          <div class="ds-stat__value"><span class="cu" data-to="425">0</span></div>
+          <div class="ds-stat__value"><span class="cu" data-to={PROOF.communityMembers}>0</span></div>
           <div class="ds-stat__label">New members</div>
-          <p class="ds-stat__note">Added to ZurichJS during 2025.</p>
+          <p class="ds-stat__note">{PROOF.communityNote}</p>
         </div>
         <div class="home-impact__cell">
           <span class="ds-tag">Leadership</span>
-          <div class="ds-stat__value"><span class="cu" data-to="15">0</span></div>
+          <div class="ds-stat__value"><span class="cu" data-to={PROOF.engineersLed}>0</span></div>
           <div class="ds-stat__label">Engineers led</div>
-          <p class="ds-stat__note">Cross-functional squad, 2022–2024.</p>
+          <p class="ds-stat__note">{PROOF.engineersNote}</p>
         </div>
         <div class="home-impact__cell">
           <span class="ds-tag">Product</span>
           <div class="ds-stat__value">
-            <span class="cu" data-to="3.5" data-dec="1">0</span><span class="home-impact__signal">×</span>
+            <span class="cu" data-to={PROOF.revenueMultiplier} data-dec="1">0</span><span class="home-impact__signal">×</span>
           </div>
           <div class="ds-stat__label">Revenue increase</div>
-          <p class="ds-stat__note">In APAC after launching Alipay.</p>
+          <p class="ds-stat__note">{PROOF.revenueNote}</p>
         </div>
       </div>
       <div class="home-impact__cta">
@@ -600,6 +587,17 @@ const formatEventDate = (dateStr: string) => {
     </section>
   )}
 
+  <!-- LIVE FROM BLUESKY — ships hidden; the island reveals it once posts load -->
+  <section class="home-section home-section--bsky" data-bsky-section hidden>
+    <div class="container">
+      <div class="home-section__heading">
+        <Kicker class="ds-reveal">Live from Bluesky</Kicker>
+        <h2 class="home-h2 ds-reveal">The feed, <span class="mark">unfiltered</span></h2>
+      </div>
+      <BlueskyFeed client:idle actor="farisaziz.com" />
+    </div>
+  </section>
+
   <!-- CONTACT PANEL -->
   <section class="home-section home-section--contact">
     <div class="container">
@@ -609,42 +607,16 @@ const formatEventDate = (dateStr: string) => {
     </div>
   </section>
 
-  <!-- NEWSLETTER -->
-  <section class="home-section-sm home-newsletter-wrap">
-    <div class="container wide home-newsletter">
-      <div>
-        <h3 class="home-newsletter__title">Follow my conference schedule</h3>
-        <p class="home-newsletter__body">Join engineers from across the community — one email when I publish or announce where I'm speaking next. No spam, unsubscribe anytime.</p>
-      </div>
-      <GeneralSubscribe client:load />
-    </div>
-  </section>
+  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — a second copy here was redundant. -->
 
   <script>
-    // Re-run on initial load AND on every Astro ViewTransitions swap, so that
-    // navigating back to / via in-app links re-fires the reveal + count-up.
+    // Count-up stats re-run on initial load AND on every Astro ViewTransitions
+    // swap. (.ds-reveal is armed by the global initializer in BaseLayout.)
     function initHome() {
-      document.documentElement.classList.add('js');
-
       // Reset prior state on swap-back so animations actually re-play
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
       document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
         el.textContent = '0';
       });
-
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.1 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-
-      const revealFailsafe = window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 700);
 
       function countUp(el: HTMLElement) {
         const to = parseFloat(el.dataset.to || '0');
@@ -694,7 +666,6 @@ const formatEventDate = (dateStr: string) => {
 
       // Clean up timers if the page is swapped away again.
       document.addEventListener('astro:before-swap', () => {
-        window.clearTimeout(revealFailsafe);
         window.clearTimeout(cuFailsafe);
       }, { once: true });
     }
@@ -717,7 +688,9 @@ const formatEventDate = (dateStr: string) => {
      class on <Terminal>) because Astro scoped styles don't pierce component
      boundaries — a class passed to the component would never match this rule. */
   .home-hero__terminal {
-    max-width: 300px;
+    /* Room to actually type: full width on phones, generous but capped on desktop
+       (the content column is 36rem, so 27rem keeps clear air around it). */
+    max-width: min(100%, 27rem);
     /* Smaller gap on phones so the terminal and title aren't crammed yet still
        breathe; grows to fill the tall two-column hero on lg+ screens. */
     margin-bottom: clamp(2.25rem, 8vw, 7rem);
@@ -742,8 +715,13 @@ const formatEventDate = (dateStr: string) => {
   .home-hero__stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem 1.5rem;
     margin-top: 1.8rem;
+  }
+  /* Keep all three stats on one line on small screens instead of orphaning the third. */
+  @media (max-width: 480px) {
+    .home-hero__stats { gap: 0.75rem 1rem; justify-content: space-between; }
+    .home-stat-inline b { font-size: 1.55rem; }
   }
   .home-stat-inline {
     display: flex;
@@ -1114,29 +1092,4 @@ const formatEventDate = (dateStr: string) => {
 
   /* Contact panel */
   .home-section--contact { padding-top: 0; }
-
-  /* Newsletter */
-  .home-newsletter-wrap {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-  }
-  .home-newsletter {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-items: center;
-  }
-  .home-newsletter > div { max-width: 42ch; }
-  .home-newsletter__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-  }
-  .home-newsletter__body {
-    font-size: 0.95rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.3rem;
-  }
 </style>

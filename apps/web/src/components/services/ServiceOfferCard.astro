@@ -1,22 +1,5 @@
 ---
-import SpotlightCard from '../animations/SpotlightCard.astro';
-
-interface ServiceOffer {
-  _id: string;
-  title: string;
-  slug: string;
-  serviceType: 'consulting' | 'mentorship';
-  shortDescription: string;
-  bestFor?: string;
-  outcomes?: string[];
-  engagementFormat?: string;
-  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
-  price?: number;
-  priceCurrency?: string;
-  priceUnit?: string;
-  bookingUrl: string;
-  featured?: boolean;
-}
+import type { ServiceOffer } from '../../lib/sanity/types';
 
 interface Props {
   offer: ServiceOffer;
@@ -28,11 +11,12 @@ const { offer, variant = 'default' } = Astro.props;
 const isFeatured = variant === 'featured' || offer.featured;
 const isConsulting = offer.serviceType === 'consulting';
 
-// Determine spotlight colors based on service type
-const spotlightColor = isConsulting ? 'rgba(99, 102, 241, 0.15)' : 'rgba(236, 72, 153, 0.15)';
-const borderColor = isConsulting ? 'rgba(99, 102, 241, 0.5)' : 'rgba(236, 72, 153, 0.5)';
-const accentClass = isConsulting ? 'text-accent' : 'text-pink-500';
-const bgAccentClass = isConsulting ? 'bg-accent' : 'bg-pink-500';
+// One family per funnel: accent for consulting, signal for mentorship.
+// Used only for the featured badge + featured ring — everything else stays neutral.
+const badgeClass = isConsulting
+  ? 'bg-accent/10 border-accent/30 text-accent-bright'
+  : 'bg-signal/10 border-signal/30 text-signal';
+const ringClass = isConsulting ? 'ring-2 ring-accent/30' : 'ring-2 ring-signal/30';
 
 // Format price display
 function formatPrice(offer: ServiceOffer) {
@@ -52,16 +36,12 @@ function formatPrice(offer: ServiceOffer) {
 }
 ---
 
-<SpotlightCard
-  class={`h-full ${isFeatured ? 'ring-2 ring-accent/30' : ''}`}
-  spotlightColor={spotlightColor}
-  borderColor={borderColor}
->
+<div class={`ds-card relative h-full ${isFeatured ? ringClass : ''}`}>
   <div class="p-6 md:p-8 h-full flex flex-col">
     {/* Featured badge */}
     {isFeatured && (
       <div class="absolute top-4 right-4">
-        <span class={`px-3 py-1 text-xs font-medium ${bgAccentClass} text-white rounded-full`}>
+        <span class={`px-3 py-1 text-xs font-medium border rounded-full ${badgeClass}`}>
           Popular
         </span>
       </div>
@@ -73,7 +53,7 @@ function formatPrice(offer: ServiceOffer) {
     </h3>
 
     {offer.bestFor && (
-      <p class={`text-sm ${accentClass} font-medium mb-4`}>
+      <p class="text-sm text-ink-muted font-medium mb-4">
         Best for: {offer.bestFor}
       </p>
     )}
@@ -89,7 +69,7 @@ function formatPrice(offer: ServiceOffer) {
         <ul class="space-y-2">
           {offer.outcomes.map((outcome) => (
             <li class="flex items-start gap-2 text-sm text-ink-muted">
-              <svg class={`w-5 h-5 ${accentClass} flex-shrink-0 mt-0.5`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-5 h-5 text-signal flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
               <span>{outcome}</span>
@@ -121,11 +101,7 @@ function formatPrice(offer: ServiceOffer) {
         href={offer.bookingUrl}
         target="_blank"
         rel="noopener noreferrer"
-        class={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
-          isFeatured
-            ? `${bgAccentClass} text-white`
-            : 'bg-surface-overlay text-ink border border-edge hover:border-accent/50'
-        }`}
+        class={`ds-btn w-full ${isFeatured ? 'ds-btn-primary' : 'ds-btn-secondary'}`}
       >
         Book now
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,4 +110,4 @@ function formatPrice(offer: ServiceOffer) {
       </a>
     </div>
   </div>
-</SpotlightCard>
+</div>
