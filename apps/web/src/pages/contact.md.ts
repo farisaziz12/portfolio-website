@@ -6,7 +6,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Work with Faris Aziz`,
     ``,
-    `> ${availabilityLabel('Available')}. Three ways to work together — every route lands directly with Faris, replies within two days.`,
+    `> ${availabilityLabel('Available')}. Three ways to work together — every route lands straight in Faris's inbox, and he replies within two days. He'd rather make something work than say no.`,
     ``,
     `## 1. Invite him to speak`,
     ``,

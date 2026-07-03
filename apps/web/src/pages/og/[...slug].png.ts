@@ -79,7 +79,7 @@ export async function getStaticPaths() {
     contact: {
       kicker: 'Work with me',
       title: 'Three doors, one inbox.',
-      meta: 'Speaking invitations · consulting discovery calls · 1:1 mentorship — replies within two days.',
+      meta: 'Speaking · consulting · 1:1 mentorship — pick a door, replies within two days.',
     },
     invite: {
       kicker: 'Speaker press kit',

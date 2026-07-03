@@ -45,7 +45,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## How to start`,
     ``,
-    `Send an inquiry with your goals, budget, and preferred cadence: https://faziz-dev.com/mentorship`,
+    `Send an inquiry with your goals, budget, and preferred cadence: https://faziz-dev.com/mentorship — honest fit-check first; if it's not a fit, Faris will say so and point you somewhere better.`,
   ]
     .filter(Boolean)
     .join('\n');

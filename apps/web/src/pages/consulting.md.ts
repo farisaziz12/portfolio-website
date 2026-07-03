@@ -60,7 +60,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## How to start`,
     ``,
-    `Book a free 20-minute discovery call: https://cal.com/farisaziz12/discovery-call — no pitch, no obligation.`,
+    `Book a free 20-minute discovery call: https://cal.com/farisaziz12/discovery-call — no pitch, no obligation, just a chat about what's slowing the team down.`,
   ]
     .filter(Boolean)
     .join('\n');
