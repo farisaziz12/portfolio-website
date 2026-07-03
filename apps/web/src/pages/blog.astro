@@ -76,7 +76,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
       {spokenCount > 0 && (
         <div class="blog-crosslink">
           <a href="/media#podcasts" class="ds-pill">
-            Looking for podcasts &amp; interviews? They moved to Watch &amp; listen
+            Podcasts &amp; interviews moved to Watch &amp; listen
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -224,8 +224,19 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 
 <style>
   .blog-crosslink { margin-top: 1.6rem; }
-  .blog-crosslink .ds-pill { display: inline-flex; align-items: center; }
-  .blog-crosslink svg { width: 0.9em; height: 0.9em; margin-left: 0.35rem; }
+  .blog-crosslink .ds-pill {
+    display: inline-flex;
+    align-items: center;
+    /* The base .ds-pill is nowrap for short labels; this one carries a whole
+       sentence and must wrap instead of running off small screens. */
+    white-space: normal;
+    flex-wrap: wrap;
+    max-width: 100%;
+    line-height: 1.45;
+    text-align: left;
+    border-radius: 16px;
+  }
+  .blog-crosslink svg { width: 0.9em; height: 0.9em; margin-left: 0.35rem; flex-shrink: 0; }
 
   /* Featured blog posts */
   .blog-featured {
