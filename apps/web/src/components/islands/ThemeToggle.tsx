@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // Dark is the site default; only an explicit stored "light" preference overrides it.
+  // Must stay in sync with the inline bootstrap script in BaseLayout.astro.
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    setTheme(savedTheme === 'light' ? 'light' : 'dark');
   }, []);
 
   useEffect(() => {

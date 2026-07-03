@@ -101,17 +101,23 @@ const {
     <!-- Analytics -->
     <PostHog />
 
-    <!-- Theme: dark-first; respect stored preference, then OS preference. Sets both `.dark` (Tailwind) and `data-theme` (DS v2). -->
+    <!-- Theme: dark by default; a stored preference wins. Sets both `.dark` (Tailwind) and `data-theme` (DS v2).
+         Re-applied on astro:after-swap because ViewTransitions replaces <html> attributes with the
+         server-rendered ones (no class/data-theme), which would otherwise strip the applied theme on
+         every client-side navigation. -->
     <script is:inline>
       (function() {
-        const root = document.documentElement;
-        root.classList.add('js');
-        var stored = null;
-        try { stored = localStorage.getItem('theme') || localStorage.getItem('faziz-theme'); } catch(_) {}
-        var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        var theme = stored || (prefersLight ? 'light' : 'dark');
-        root.classList.toggle('dark', theme === 'dark');
-        root.setAttribute('data-theme', theme);
+        function applyTheme() {
+          var root = document.documentElement;
+          root.classList.add('js');
+          var stored = null;
+          try { stored = localStorage.getItem('theme') || localStorage.getItem('faziz-theme'); } catch(_) {}
+          var theme = stored === 'light' ? 'light' : 'dark';
+          root.classList.toggle('dark', theme === 'dark');
+          root.setAttribute('data-theme', theme);
+        }
+        applyTheme();
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
   </head>
