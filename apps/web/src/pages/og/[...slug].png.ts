@@ -78,8 +78,8 @@ export async function getStaticPaths() {
     },
     contact: {
       kicker: 'Work with me',
-      title: 'Three doors, one inbox.',
-      meta: 'Speaking · consulting · 1:1 mentorship — pick a door, replies within two days.',
+      title: 'Four doors, one inbox.',
+      meta: 'Speaking · consulting · mentorship · full-time roles — pick a door, replies within two days.',
     },
     invite: {
       kicker: 'Speaker press kit',

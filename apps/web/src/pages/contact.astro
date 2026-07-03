@@ -35,12 +35,21 @@ const doors = [
     icon: '<circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 7a3 3 0 0 1 0 6M18.5 19a5 5 0 0 0-3-4.6"/>',
     external: false,
   },
+  {
+    href: 'mailto:hello@farisaziz.com?subject=Full-time%20role',
+    kicker: 'Companies · full-time roles',
+    title: 'Hire me full-time',
+    desc: 'Building something ambitious and need a staff engineer? I’m always up for hearing about it — tell me about the role, the team, and what you’re shipping.',
+    cta: 'Tell me about it',
+    icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
+    external: true,
+  },
 ];
 ---
 
 <BaseLayout
   title="Work with me — Faris Aziz"
-  description="Invite Faris to speak, book a consulting discovery call, or start a mentorship inquiry — one page, three doors."
+  description="Invite Faris to speak, book a consulting call, start a mentorship inquiry, or talk to him about a full-time role — one page, four doors."
   pathname="/contact"
   image="/og/contact.png"
   markdownAlternate="/contact.md"
@@ -48,14 +57,16 @@ const doors = [
   <header class="page-hero">
     <GridTexture />
     <div class="container page-hero__inner">
-      <Kicker>Work with me</Kicker>
-      <span class="ds-pill ds-pill--signal contact-avail">
-        <span class="ds-dot ds-dot--pulse"></span>
-        {availabilityLabel('Available')}
-      </span>
-      <h1 class="page-hero__title">Three doors, <span class="accent-word">one inbox</span>.</h1>
+      <div class="contact-hero-meta">
+        <Kicker>Work with me</Kicker>
+        <span class="ds-pill ds-pill--signal contact-avail">
+          <span class="ds-dot ds-dot--pulse"></span>
+          {availabilityLabel('Available')}
+        </span>
+      </div>
+      <h1 class="page-hero__title">Four doors, <span class="accent-word">one inbox</span>.</h1>
       <p class="page-hero__lead">
-        Speaking, consulting or mentorship — pick your door. Everything lands straight in my inbox, and I get back to you within two days.
+        Speaking, consulting, mentorship — or a full-time role. Pick your door: everything lands straight in my inbox, and I get back to you within two days.
       </p>
     </div>
   </header>
@@ -118,11 +129,19 @@ const doors = [
 </BaseLayout>
 
 <style>
-  .contact-avail { margin-bottom: 1.2rem; display: inline-flex; }
+  /* Kicker + availability badge share a row with clear air between and below */
+  .contact-hero-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.4rem;
+    margin-bottom: 1.6rem;
+  }
+  .contact-avail { display: inline-flex; }
 
   .contact-doors {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
   }
 

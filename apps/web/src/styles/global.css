@@ -1745,16 +1745,30 @@
 
   /* Living hero terminal — the decorative prompt is a real one */
   .hero-terminal { cursor: text; }
+  .hero-terminal .ds-terminal__body {
+    /* A touch more presence than the decorative terminals */
+    font-size: 0.9rem;
+    padding: 1.1rem 1.25rem;
+  }
   .hero-terminal__body {
-    max-height: 190px;
+    max-height: 230px;
     overflow-y: auto;
     scrollbar-width: none;
+    overscroll-behavior: contain;
   }
   .hero-terminal__body::-webkit-scrollbar { display: none; }
   .hero-terminal__inputrow {
     display: flex;
     align-items: baseline;
     gap: 0.55ch;
+    /* Comfortable touch target for the prompt row */
+    min-height: 1.9em;
+  }
+  @media (max-width: 640px) {
+    .hero-terminal__body { max-height: 176px; }
+    /* 16px inputs stop iOS Safari from zooming the page on focus */
+    .hero-terminal__input { font-size: 16px; }
+    .hero-terminal .ds-terminal__body { font-size: 0.95rem; }
   }
   .hero-terminal__input {
     flex: 1;

@@ -708,7 +708,9 @@ const formatEventDate = (dateStr: string) => {
      class on <Terminal>) because Astro scoped styles don't pierce component
      boundaries — a class passed to the component would never match this rule. */
   .home-hero__terminal {
-    max-width: 300px;
+    /* Room to actually type: full width on phones, generous but capped on desktop
+       (the content column is 36rem, so 27rem keeps clear air around it). */
+    max-width: min(100%, 27rem);
     /* Smaller gap on phones so the terminal and title aren't crammed yet still
        breathe; grows to fill the tall two-column hero on lg+ screens. */
     margin-bottom: clamp(2.25rem, 8vw, 7rem);
