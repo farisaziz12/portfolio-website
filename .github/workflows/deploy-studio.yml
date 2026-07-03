@@ -37,7 +37,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Deploy Studio (build + upload)
-        run: pnpm --filter studio deploy
+        # Explicit `run` — a bare `pnpm --filter studio deploy` hits pnpm's
+        # built-in `deploy` command instead of the package script and fails
+        # with ERR_PNPM_INVALID_DEPLOY_TARGET.
+        run: pnpm --filter studio run deploy
         env:
           SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_STUDIO_PROJECT_ID }}
           SANITY_STUDIO_DATASET: production
