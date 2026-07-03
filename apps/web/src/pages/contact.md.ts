@@ -22,11 +22,11 @@ export const GET: APIRoute = async () => {
     ``,
     `## 4. Hire him full-time`,
     ``,
-    `Companies building something ambitious: Faris is always open to hearing about staff-level engineering roles. Email with the role and team details: hello@farisaziz.com (subject: "Full-time role").`,
+    `Faris is open to full-time roles: tech lead, staff/senior frontend engineer, full-stack (frontend-leaning), payments, product engineering, and founding engineer. Send the role and team details via the contact form: https://faziz-dev.com/contact?topic=role#message`,
     ``,
     `## Direct`,
     ``,
-    `Email: hello@farisaziz.com · LinkedIn: https://linkedin.com/in/farisaziz12`,
+    `Contact form (goes straight to Faris's inbox): https://faziz-dev.com/contact#message · LinkedIn: https://linkedin.com/in/farisaziz12`,
   ].join('\n');
 
   return mdResponse(body, { footer: false });

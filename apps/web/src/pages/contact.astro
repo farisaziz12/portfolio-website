@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import { availabilityLabel } from '../lib/availability';
+import ContactForm from '../components/islands/ContactForm';
 
 // The single front door for every way of working together. Each card routes to
 // the right mechanism: the speaker-invite form, the cal.com discovery call, or
@@ -36,13 +37,14 @@ const doors = [
     external: false,
   },
   {
-    href: 'mailto:hello@farisaziz.com?subject=Full-time%20role',
+    href: '#message',
+    topic: 'role',
     kicker: 'Companies · full-time roles',
     title: 'Hire me full-time',
-    desc: 'Building something ambitious and need a staff engineer? I’m always up for hearing about it — tell me about the role, the team, and what you’re shipping.',
+    desc: 'Open to tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, and founding engineer roles — tell me what you’re shipping.',
     cta: 'Tell me about it',
     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
-    external: true,
+    external: false,
   },
 ];
 ---
@@ -82,6 +84,7 @@ const doors = [
             rel={d.external ? 'noopener noreferrer' : undefined}
             data-track="contact-door"
             data-track-label={d.title}
+            data-contact-topic={(d as any).topic}
           >
             <span class="contact-door__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={d.icon} />
@@ -101,14 +104,43 @@ const doors = [
 
       <p class="contact-fallback ds-reveal">
         Not sure which door, or something else entirely?
-        <a href="mailto:hello@farisaziz.com" class="ds-link">Just email me</a>
+        <a href="#message" class="ds-link">Just send me a message below</a>
         — or say hi on
         <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-link">LinkedIn</a>. We'll figure it out.
       </p>
     </div>
   </section>
 
+  <!-- MESSAGE — the one form behind every door that isn't a dedicated flow -->
+  <section id="message" class="page-section page-section--alt anchor-target">
+    <div class="container">
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Direct line</Kicker>
+        <h2 class="page-h2 ds-reveal">Send me a <span class="mark">message</span></h2>
+        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">Roles, ideas, questions — it all lands straight in my inbox, and I reply within two days.</p>
+      </div>
+      <div class="contact-form-wrap">
+        <ContactForm client:visible />
+      </div>
+    </div>
+  </section>
+
   <script>
+    function initDoors() {
+      document.querySelectorAll<HTMLAnchorElement>('[data-contact-topic]').forEach((a) => {
+        a.addEventListener('click', () => {
+          const topic = a.getAttribute('data-contact-topic');
+          if (!topic) return;
+          // The form hydrates lazily (client:visible) — stash the topic so its
+          // mount effect can pick it up even if the event fires pre-hydration.
+          (window as any).__contactTopic = topic;
+          window.dispatchEvent(new CustomEvent('contact:topic', { detail: { topic } }));
+        });
+      });
+    }
+    initDoors();
+    document.addEventListener('astro:after-swap', initDoors);
+
     function initPage() {
       document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
       const io = new IntersectionObserver((entries) => {
@@ -200,6 +232,15 @@ const doors = [
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .contact-door:hover .contact-door__go svg { transform: translateX(3px); }
+
+  .contact-form-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+  }
 
   .contact-fallback {
     margin-top: 2.2rem;

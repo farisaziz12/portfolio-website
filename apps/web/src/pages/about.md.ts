@@ -44,6 +44,7 @@ export const GET: APIRoute = async () => {
     `- Community: organizer of ZurichJS (https://zurichjs.com)`,
     `- Topics: React, Next.js, frontend architecture, payment systems, developer experience, engineering leadership`,
     `- Speaker press kit (bios, headshots, availability): https://faziz-dev.com/invite`,
+    `- Open to full-time roles: tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, founding engineer — https://faziz-dev.com/contact?topic=role#message`,
   ]
     .filter(Boolean)
     .join('\n');

@@ -147,6 +147,27 @@ const {
       })();
     </script>
 
+    <!-- DevTools console banner — for the people who open the console (my kind of people) -->
+    <script is:inline>
+      (function () {
+        try {
+          console.log(
+            '%c$ whoami%c\nFaris Aziz — Staff Software Engineer & Conference Speaker, Geneva.\n\n' +
+              '%cYou opened the console. My kind of person.%c\n' +
+              'Open to: tech lead · staff/senior frontend · full-stack (frontend-leaning) · payments · product engineering · founding engineer.\n\n' +
+              'Say hi:   https://faziz-dev.com/contact#message (short form, straight to my inbox)\n' +
+              'Doors:    https://faziz-dev.com/contact\n' +
+              'Agents:   https://faziz-dev.com/llms.txt\n' +
+              "P.S. the terminal on the homepage actually works — try 'hire'.",
+            'color:#1FCFA6;font-family:monospace;font-weight:bold;font-size:13px;',
+            'font-family:monospace;',
+            'color:#6AA1FF;font-weight:bold;',
+            ''
+          );
+        } catch (_) {}
+      })();
+    </script>
+
     <!-- Funnel analytics: any element with data-track fires a cta_click event.
          One document-level listener — survives ViewTransitions swaps. -->
     <script is:inline>

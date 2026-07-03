@@ -47,7 +47,7 @@ const COMMANDS: Cmd[] = [
     text: 'Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and organizes ZurichJS.',
     keyHint: 'for organizers',
   },
-  { group: 'Actions', label: 'Email me', icon: ICON.mail, href: 'mailto:hello@farisaziz.com', external: true },
+  { group: 'Actions', label: 'Message me', icon: ICON.mail, href: '/contact#message' },
   { group: 'Actions', label: 'Toggle theme', icon: ICON.sun, action: 'toggle-theme' },
   { group: 'Elsewhere', label: 'GitHub', icon: ICON.gh, href: 'https://github.com/farisaziz12', external: true },
   { group: 'Elsewhere', label: 'LinkedIn', icon: ICON.user, href: 'https://linkedin.com/in/farisaziz12', external: true },

@@ -41,6 +41,7 @@ const ROUTES: Record<string, { path: string; note: string }> = {
 const COMMAND_NAMES = [
   'help',
   'whoami',
+  'hire',
   'ls',
   'clear',
   'theme',
@@ -109,7 +110,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     if (cmd === 'help') {
       print(
         { kind: 'out', text: 'talks · schedule · book · workshops · consulting · mentorship · contact · blog · about' },
-        { kind: 'out', text: 'theme [dark|light] · whoami · ls · clear' },
+        { kind: 'out', text: 'hire · theme [dark|light] · whoami · ls · clear' },
         { kind: 'cmt', text: '# and maybe one or two undocumented ones' }
       );
       return;
@@ -122,7 +123,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
       return;
     }
     if (cmd === 'ls') {
-      print({ kind: 'out', text: Object.keys(ROUTES).filter((k) => !['events', 'invite'].includes(k)).join('  ') });
+      print({ kind: 'out', text: [...Object.keys(ROUTES).filter((k) => !['events', 'invite'].includes(k)), 'hire'].join('  ') });
       return;
     }
     if (cmd === 'theme') {
@@ -133,10 +134,18 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
       print({ kind: 'out', text: `theme set to ${next}` });
       return;
     }
+    if (cmd === 'hire' || cmd === 'hire-me' || cmd === 'hiring') {
+      print(
+        { kind: 'out', text: 'open to: tech lead · staff/senior frontend · full-stack (frontend-leaning)' },
+        { kind: 'out', text: 'payments · product engineering · founding engineer' },
+        { kind: 'out', text: "run 'contact' — the hire door opens a short form straight to my inbox." }
+      );
+      return;
+    }
     if (cmd === 'sudo') {
       if (args.join(' ').includes('hire')) {
         print({ kind: 'out', text: 'permission granted. redirecting…' });
-        window.setTimeout(() => navigate('/contact'), 650);
+        window.setTimeout(() => navigate('/contact?topic=role#message'), 650);
       } else {
         print({ kind: 'err', text: 'nice try. faris is not in the sudoers file.' });
       }

@@ -4,6 +4,13 @@ Everything that sends mail goes through Resend. This file documents the architec
 
 ---
 
+## Policy: no `mailto:` links
+
+Every contact path on the site goes through a Resend-backed form (`InviteForm`,
+`MentorshipInquiryForm`, `ContactForm`) — never a raw `mailto:`. The only
+`mailto:` allowed in the codebase is inside admin email templates (so Faris can
+reply to a submitter from his inbox).
+
 ## Architecture
 
 ```
@@ -13,16 +20,17 @@ Contact form (React island)
       → Resend
 ```
 
-Three API routes, each in `src/pages/api/`:
+The email routes, each in `src/pages/api/`:
 
 | Route | Method | Sends | Critical-path? |
 |---|---|---|---|
 | `/api/invite` | POST | Admin notification (`InviteAdminEmail`) + submitter confirmation (`InviteConfirmationEmail`) | Admin = critical → 502 on failure. Confirmation = best-effort → logged only. |
 | `/api/mentorship` | POST | Admin notification (`MentorshipAdminEmail`) + submitter confirmation (`MentorshipConfirmationEmail`) | Same split. |
+| `/api/contact` | POST | Admin notification (`ContactAdminEmail`) + submitter confirmation (`ContactConfirmationEmail`). General contact incl. full-time-role inquiries (topic field). | Same split. |
 | `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. |
 | `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD`). |
 
-**Two-stage send pattern** (used by `/api/invite` and `/api/mentorship`):
+**Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`):
 1. Send the admin notification first. If it fails, return 502 — the user needs to know their form didn't go through.
 2. Send the submitter confirmation. If that fails, just log it — the submission still made it to the admin inbox.
 
@@ -41,6 +49,7 @@ All env reads go through `env(key)` in `src/lib/email.ts`. It checks `process.en
 | `RESEND_AUDIENCE_ID` | ⬜ optional | `/api/workshop/subscribe` | Global audience that every workshop subscriber joins, regardless of instance. |
 | `INVITE_INBOX` | ⬜ optional | `/api/invite` | Override the destination inbox. Defaults to `faris@zurichjs.com`. |
 | `MENTORSHIP_INBOX` | ⬜ optional | `/api/mentorship` | Falls back to `INVITE_INBOX`, then `faris@zurichjs.com`. |
+| `CONTACT_INBOX` | ⬜ optional | `/api/contact` | Falls back to `INVITE_INBOX`, then `faris@zurichjs.com`. |
 | `ADMIN_PASSWORD` | ✅ for follow-up + `/admin` | `/api/workshop/follow-up`, `/admin` | Pass as `Authorization: Bearer $ADMIN_PASSWORD` to the follow-up route. |
 
 ### Setup checklist
@@ -67,6 +76,8 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 | `InviteConfirmationEmail.tsx` | `/api/invite` | "Thanks, I'll reply in 2 days" to submitter |
 | `MentorshipAdminEmail.tsx` | `/api/mentorship` | Notification to Faris with inquiry details |
 | `MentorshipConfirmationEmail.tsx` | `/api/mentorship` | "Thanks, I'll reply in 2 days" to submitter |
+| `ContactAdminEmail.tsx` | `/api/contact` | Notification to Faris with topic/company/message (general contact + hiring) |
+| `ContactConfirmationEmail.tsx` | `/api/contact` | "Thanks, I'll reply in 2 days" to submitter |
 | `WorkshopWelcomeEmail.tsx` | `/api/workshop/subscribe` (workshop-attend) | "You're in — here are materials" |
 | `GeneralSubscribeConfirmEmail.tsx` | `/api/workshop/subscribe` (website) | "You're on the list" |
 | `WorkshopFollowUpEmail.tsx` | `/api/workshop/follow-up` | Post-workshop feedback request |
