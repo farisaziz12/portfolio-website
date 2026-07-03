@@ -5,10 +5,10 @@ export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
-import Terminal from '../components/design/Terminal.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import HeroTerminal from '../components/islands/HeroTerminal';
 import AudienceRouter from '../components/home/AudienceRouter.astro';
 import FeaturedTalk from '../components/home/FeaturedTalk.astro';
 import ReachMap from '../components/home/ReachMap.astro';
@@ -233,10 +233,7 @@ const formatEventDate = (dateStr: string) => {
     <div class="hero-split-mosaic__content">
       <div class="home-hero__content-inner">
         <div class="home-hero__terminal">
-          <Terminal>
-            <div><span class="pr">$</span> <span class="cmd">whoami</span></div>
-            <div class="out">Staff Engineer & Speaker</div>
-          </Terminal>
+          <HeroTerminal client:idle />
         </div>
 
         <h1 class="home-hero__title">

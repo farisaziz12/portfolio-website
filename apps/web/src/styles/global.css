@@ -1405,8 +1405,9 @@
     border-radius: 14px;
   }
 
-  /* DS Link — accent text link with arrow */
+  /* DS Link — accent text link with arrow + underline that draws in from the left */
   .ds-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -1416,6 +1417,20 @@
     transition: gap 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
   }
+  .ds-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: rgb(var(--accent-bright) / 0.7);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ds-link:hover::after,
+  .ds-link:focus-visible::after { transform: scaleX(1); }
   .ds-link svg {
     width: 0.95em;
     height: 0.95em;
@@ -1711,6 +1726,71 @@
 
   /* In-page anchor sections need clearance for the sticky header */
   .anchor-target { scroll-margin-top: 80px; }
+
+  /* Accent text selection — felt on every page */
+  ::selection {
+    background: rgb(var(--accent) / 0.35);
+    color: rgb(var(--ink));
+  }
+
+  /* Event-row date tick — a tiny odometer nudge when a schedule row is hovered */
+  @keyframes ds-date-tick {
+    0% { transform: translateY(0); }
+    45% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
+  .event-row:hover .event-row__date b {
+    animation: ds-date-tick 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Living hero terminal — the decorative prompt is a real one */
+  .hero-terminal { cursor: text; }
+  .hero-terminal__body {
+    max-height: 190px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .hero-terminal__body::-webkit-scrollbar { display: none; }
+  .hero-terminal__inputrow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55ch;
+  }
+  .hero-terminal__input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: rgb(var(--ink));
+    font: inherit;
+    caret-color: rgb(var(--accent-bright));
+  }
+  /* The terminal frame carries the focus affordance (accent border on active) —
+     an inner ring on the input would double up. */
+  .hero-terminal__input:focus,
+  .hero-terminal__input:focus-visible {
+    outline: none;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+  }
+  .hero-terminal__err { color: rgb(var(--danger)); }
+  .hero-terminal--active {
+    border-color: rgb(var(--accent) / 0.45);
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.2);
+  }
+
+  /* Command palette items stagger in as it opens */
+  @keyframes ds-cmdk-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .cmdk.open .cmdk__item {
+    animation: ds-cmdk-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--cmdk-delay, 0ms);
+  }
 
   /* Small cross-funnel link row under contact panels ("Want me at your event instead?") */
   .ds-crosslink {

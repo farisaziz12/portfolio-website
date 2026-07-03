@@ -53,19 +53,35 @@ const COMMANDS: Cmd[] = [
   { group: 'Elsewhere', label: 'LinkedIn', icon: ICON.user, href: 'https://linkedin.com/in/farisaziz12', external: true },
 ];
 
+const RECENT_KEY = 'cmdk-recent';
+
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
+  const [recentLabel, setRecentLabel] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try { setRecentLabel(localStorage.getItem(RECENT_KEY)); } catch (_) {}
+  }, [open]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return COMMANDS;
+    if (!q) {
+      // Pin the last-used command to the top so the palette learns one habit.
+      const recent = recentLabel ? COMMANDS.find((c) => c.label === recentLabel) : undefined;
+      if (recent) {
+        return [{ ...recent, group: 'Recent' }, ...COMMANDS.filter((c) => c.label !== recentLabel)];
+      }
+      return COMMANDS;
+    }
     return COMMANDS.filter(
       (c) => c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, recentLabel]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -101,6 +117,19 @@ export default function CommandPalette() {
   }, [query]);
 
   function run(cmd: Cmd) {
+    try { localStorage.setItem(RECENT_KEY, cmd.label); } catch (_) {}
+    if ('action' in cmd && cmd.action === 'copy') {
+      try {
+        navigator.clipboard?.writeText(cmd.text);
+      } catch (_) {}
+      // Flash "Copied" on the item before closing — copy without feedback feels broken.
+      setCopiedLabel(cmd.label);
+      window.setTimeout(() => {
+        setOpen(false);
+        setCopiedLabel(null);
+      }, 900);
+      return;
+    }
     setOpen(false);
     if ('action' in cmd && cmd.action === 'toggle-theme') {
       const root = document.documentElement;
@@ -112,12 +141,6 @@ export default function CommandPalette() {
         localStorage.setItem('faziz-theme', next);
       } catch (_) {}
       window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
-      return;
-    }
-    if ('action' in cmd && cmd.action === 'copy') {
-      try {
-        navigator.clipboard?.writeText(cmd.text);
-      } catch (_) {}
       return;
     }
     if ('href' in cmd) {
@@ -169,13 +192,14 @@ export default function CommandPalette() {
                   {showGroup && <div className="cmdk__group">{c.group}</div>}
                   <div
                     className="cmdk__item"
+                    style={{ '--cmdk-delay': `${Math.min(i, 10) * 15}ms` } as React.CSSProperties}
                     aria-selected={i === selectedIdx}
                     onMouseMove={() => i !== selectedIdx && setSelectedIdx(i)}
                     onClick={() => run(c)}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} dangerouslySetInnerHTML={{ __html: c.icon }} />
-                    <span>{c.label}</span>
-                    {'keyHint' in c && c.keyHint && <span className="k">{c.keyHint}</span>}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} dangerouslySetInnerHTML={{ __html: copiedLabel === c.label ? '<path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>' : c.icon }} />
+                    <span>{copiedLabel === c.label ? 'Copied to clipboard' : c.label}</span>
+                    {'keyHint' in c && c.keyHint && copiedLabel !== c.label && <span className="k">{c.keyHint}</span>}
                   </div>
                 </div>
               );

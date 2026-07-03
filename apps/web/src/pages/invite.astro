@@ -292,9 +292,12 @@ const proofQuotes = testimonials.slice(0, 3);
               ))}
             </div>
             <button type="button" class="bio-copy" id="bio-copy-btn" data-text={bios[0].text}>
-              <svg class="bio-copy__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <svg class="bio-copy__icon bio-copy__icon--copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2"/>
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <svg class="bio-copy__icon bio-copy__icon--check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span class="bio-copy__label">Copy</span>
             </button>
@@ -1101,18 +1104,33 @@ const proofQuotes = testimonials.slice(0, 3);
     border: 1px solid rgb(var(--edge-strong));
     border-radius: 10px;
     cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .bio-copy:hover {
     color: rgb(var(--accent-bright));
     border-color: rgb(var(--accent) / 0.5);
   }
   .bio-copy__icon { width: 14px; height: 14px; flex-shrink: 0; }
+  /* Icon morph: copy icon swaps for a checkmark that pops in with a small spring */
+  .bio-copy__icon--check { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--copy { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--check {
+    display: block;
+    animation: bioCheckPop 0.32s cubic-bezier(0.16, 1.4, 0.3, 1);
+  }
+  @keyframes bioCheckPop {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); }
+  }
   .bio-copy.bio-copy--done {
     color: rgb(var(--signal));
     border-color: rgb(var(--signal) / 0.5);
     background: rgb(var(--signal) / 0.1);
+    transform: scale(1.03);
   }
+  .bio-copy { will-change: transform; }
+  .bio-copy:active { transform: scale(0.97); }
 
   .bio-content { position: relative; min-height: 80px; }
   .bio-text { display: none; }
