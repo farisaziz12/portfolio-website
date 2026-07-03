@@ -292,6 +292,11 @@ const topics = [
   .workshop-card__desc {
     color: rgb(var(--ink-muted));
     line-height: 1.55;
+    /* Long Sanity descriptions get clamped — the full text lives on the detail page. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .workshop-card__techs {
     display: flex;
