@@ -4,6 +4,7 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import { EventRow } from '../components/events/EventRow';
 import { sanityFetch } from '../lib/sanity/client';
 import {
   upcomingEventsQuery,
@@ -11,7 +12,6 @@ import {
   speakingStatsQuery,
   allTalksQuery,
 } from '../lib/sanity/queries';
-import { getCountryFlag } from 'shared/utils';
 import { topConferences } from '../lib/conferences';
 import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { bookingYears } from '../lib/availability';
@@ -60,30 +60,7 @@ const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
 ]);
 
-// Normalize event types into the four filter buckets the design uses.
-function normaliseType(t?: string): 'talk' | 'workshop' | 'meetup' | 'other' {
-  if (!t) return 'other';
-  const k = t.toLowerCase();
-  if (k === 'workshop') return 'workshop';
-  if (k === 'meetup') return 'meetup';
-  if (['talk', 'conference', 'panel', 'keynote', 'webinar', 'hosting', 'podcast'].includes(k)) return 'talk';
-  return 'other';
-}
-
-const normalisedUpcoming = upcomingEvents.map((e) => ({
-  ...e,
-  bucket: normaliseType(e.type),
-  formatted: {
-    day: new Date(e.date).getDate().toString(),
-    month: new Date(e.date).toLocaleString('en-US', { month: 'short' }),
-  },
-  location: e.location?.isOnline
-    ? 'Online'
-    : [e.location?.city, e.location?.country].filter(Boolean).join(', ') || '',
-  flag: e.location?.isOnline ? '🌐' : (e.location?.country ? getCountryFlag(e.location.country) : ''),
-}));
-
-const upcomingCount = normalisedUpcoming.length;
+const upcomingCount = upcomingEvents.length;
 
 // Top 3 past talks for the carousel — prefer ones with conference set, ordered by date.
 const featuredPastTalks = talks.slice(0, 3);
@@ -116,7 +93,7 @@ const topics = [
 
 // The hub shows a teaser of the next three engagements — the full, filterable
 // upcoming + past schedule lives on /events.
-const nextThree = normalisedUpcoming.slice(0, 3);
+const nextThree = upcomingEvents.slice(0, 3);
 ---
 
 <BaseLayout
@@ -191,25 +168,7 @@ const nextThree = normalisedUpcoming.slice(0, 3);
       {upcomingCount > 0 ? (
         <>
           <div class="events-list">
-            {nextThree.map((e) => (
-              <a class="event-row" href={`/events/${e.slug}`}>
-                <div class="event-row__date">
-                  <b>{e.formatted.day}</b>
-                  <span>{e.formatted.month}</span>
-                </div>
-                <div class="event-row__body">
-                  <div class="event-row__title">{e.title}</div>
-                  {e.conference && <div class="event-row__sub">{e.conference}</div>}
-                </div>
-                <span class={`ds-tag event-row__tag event-row__tag--${e.bucket}`}>
-                  {e.bucket === 'workshop' ? 'Workshop' : e.bucket === 'meetup' ? 'Meetup' : 'Conference'}
-                </span>
-                <div class="event-row__loc">
-                  {e.flag && <span class="event-row__flag" aria-hidden="true">{e.flag}</span>}
-                  <span>{e.location}</span>
-                </div>
-              </a>
-            ))}
+            {nextThree.map((e, i) => <EventRow event={e} index={i} />)}
           </div>
 
           <div class="speaking-events__toggle">
@@ -412,91 +371,9 @@ const nextThree = normalisedUpcoming.slice(0, 3);
     margin-top: 0.7rem;
   }
 
-  /* Event rows */
   .events-list {
     display: grid;
     gap: 0.2rem;
-  }
-  .event-row {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.3rem 1.2rem;
-    border: 1px solid transparent;
-    border-bottom: 1px solid rgb(var(--edge));
-    border-radius: 10px;
-    color: inherit;
-    transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .event-row:hover {
-    background: rgb(var(--surface-2));
-    border-color: rgb(var(--edge));
-  }
-  .events-list .event-row:last-child { border-bottom: 0; }
-  .event-row__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    text-align: center;
-    flex-shrink: 0;
-    width: 56px;
-  }
-  .event-row__date b {
-    display: block;
-    font-size: 1.7rem;
-    color: rgb(var(--ink));
-    line-height: 1;
-    font-weight: 600;
-  }
-  .event-row__date span {
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .event-row__body { flex: 1; min-width: 0; }
-  .event-row__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .event-row__sub {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-    margin-top: 0.15rem;
-  }
-  .event-row__tag { flex-shrink: 0; }
-  /* Per-type tag colours. talk = accent blue (default), workshop = signal teal, meetup = warm amber. */
-  .event-row__tag--talk {
-    color: rgb(var(--accent-bright));
-    border-color: rgb(var(--accent) / 0.4);
-    background: rgb(var(--accent) / 0.08);
-  }
-  .event-row__tag--workshop {
-    color: rgb(var(--signal));
-    border-color: rgb(var(--signal) / 0.4);
-    background: rgb(var(--signal) / 0.08);
-  }
-  .event-row__tag--meetup {
-    color: rgb(var(--warn)); /* warm amber — semantic "community gathering", distinct from blue/teal */
-    border-color: rgb(var(--warn) / 0.4);
-    background: rgb(var(--warn) / 0.08);
-  }
-
-  .event-row__loc {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.86rem;
-    color: rgb(var(--ink-faint));
-    flex-shrink: 0;
-  }
-  .event-row__flag {
-    font-size: 1rem;
-    line-height: 1;
-  }
-  @media (max-width: 600px) {
-    .event-row__loc, .event-row__tag { display: none; }
-    .event-row { gap: 1rem; padding: 1.1rem 0.8rem; }
   }
 
   .speaking-events__toggle {

@@ -1739,7 +1739,7 @@
     45% { transform: translateY(-3px); }
     100% { transform: translateY(0); }
   }
-  .event-row:hover .event-row__date b {
+  .event-row:hover .event-row__day {
     animation: ds-date-tick 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
