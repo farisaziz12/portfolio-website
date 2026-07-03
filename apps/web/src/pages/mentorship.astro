@@ -5,9 +5,9 @@ import GridTexture from '../components/design/GridTexture.astro';
 import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
-import SocialWall from '../components/social/SocialWall.astro';
+import SocialWallIsland from '../components/islands/SocialWallIsland';
 import MentorshipInquiryForm from '../components/islands/MentorshipInquiryForm';
-import { sanityFetch } from '../lib/sanity/client';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { mentorshipOffersQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
 import { availabilityLabel } from '../lib/availability';
 import type { ServiceOffer, SocialPost } from '../lib/sanity/types';
@@ -18,6 +18,24 @@ const [offers, socialPosts] = await Promise.all([
   sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []),
   sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
 ]);
+
+// Same social-card treatment as home and /about (avatars resolved server-side).
+const socialPostImages: Record<string, string> = {};
+for (const p of socialPosts) {
+  if (p.authorImage) {
+    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
+  }
+}
+const normalizedSocialPosts = socialPosts.map((p) => ({
+  _id: p._id,
+  platform: p.platform,
+  author: p.author,
+  authorRole: p.authorRole,
+  authorHandle: p.authorHandle,
+  content: p.content,
+  url: p.url,
+  postDate: p.postDate,
+}));
 
 const topics = [
   {
@@ -121,7 +139,7 @@ const faq = [
         You're closer than <span class="accent-word">you think</span>.
       </h1>
       <p class="page-hero__lead">
-        1:1 coaching from someone who's been mid → senior → staff in a decade. We work on the things that actually move you forward — technical, strategic, political.
+        1:1 coaching from someone who's done mid → senior → staff in half a decade. We work on the things that actually move you forward — technical, strategic, political.
       </p>
       <div class="page-hero__actions">
         <a href="#apply" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -204,7 +222,13 @@ const faq = [
           <Kicker class="ds-reveal">From mentees</Kicker>
           <h2 class="page-h2 ds-reveal">In their <span class="mark">own words</span></h2>
         </div>
-        <SocialWall posts={socialPosts} />
+        <SocialWallIsland
+          client:visible
+          posts={normalizedSocialPosts}
+          testimonials={[]}
+          socialPostImages={socialPostImages}
+          testimonialImages={{}}
+        />
       </div>
     </section>
   )}

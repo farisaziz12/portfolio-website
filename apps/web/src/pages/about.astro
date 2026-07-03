@@ -3,8 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { PROOF } from '../lib/proof';
-import { pageQuery, speakingStatsQuery, featuredTestimonialsQuery } from '../lib/sanity/queries';
+import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
+import { pageQuery, speakingStatsQuery, featuredTestimonialsQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
+import SocialWallIsland from '../components/islands/SocialWallIsland';
+import type { SocialPost } from '../lib/sanity/types';
 import { availabilityLabel } from '../lib/availability';
 
 interface Milestone {
@@ -54,14 +56,14 @@ interface Testimonial {
   author: string;
   role?: string;
   company?: string;
+  image?: unknown;
 }
 
-const [pageContent, stats, testimonials] = await Promise.all([
+const [pageContent, stats, testimonials, socialPosts] = await Promise.all([
   sanityFetch<PageContent | null>(pageQuery, { identifier: 'about' }).catch(() => null),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 86, countries: 20, cities: 29, talks: 0,
-  })),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
 ]);
 
 const heroImage = pageContent?.heroImage;
@@ -85,12 +87,12 @@ const fallbackTimeline = [
   {
     year: '2022 — 2024',
     title: 'Leading teams',
-    desc: 'Led a cross-functional squad of 15 engineers across two teams — frontend, backend, and the skip-level management in between.',
+    desc: `Led a cross-functional squad of ${PROOF.engineersLed} engineers across two teams — frontend, backend, and the skip-level management in between.`,
   },
   {
     year: '2024 — now',
     title: 'Staff, stages & community',
-    desc: 'Staff Engineer by day; speaker, mentor, and ZurichJS organizer the rest of the time. 425 new community members and counting.',
+    desc: `Staff Engineer by day; speaker, mentor, and ZurichJS organizer the rest of the time. ${PROOF.communityMembers} new community members and counting.`,
   },
 ];
 
@@ -99,12 +101,45 @@ const timelineItems =
     ? sanityMilestones.map((m) => ({ year: '', title: m.title, desc: m.description }))
     : fallbackTimeline;
 
-const fallbackTestimonials = [
+const fallbackTestimonials: Testimonial[] = [
   { _id: 'tk', quote: "Faris is one of the best speakers I've seen recently. An honor and delight to meet him — the guy is going places.", author: 'Tejas Kumar', role: 'DevRel', company: 'Conference host' },
   { _id: 'hh', quote: 'Whenever I need guidance about my career, there is one person I always turn to. He\'s been a mentor and a constant source of insight.', author: 'Hammad Hassan', role: 'Full-Stack Engineer' },
   { _id: 'rg', quote: 'An incredible engineer and human. I had the chance to meet Faris during the speaker session at ReactSummit.', author: 'Rajni Gediya', role: 'Staff Engineer', company: 'Mobile' },
 ];
-const quotes = testimonials.length > 0 ? testimonials.slice(0, 6) : fallbackTestimonials;
+const wallTestimonials = testimonials.length > 0 ? testimonials.slice(0, 6) : fallbackTestimonials;
+
+// Same social-card treatment as the home page: real posts + testimonials with
+// avatars, interleaved by SocialWallIsland. Image URLs resolve server-side.
+const socialPostImages: Record<string, string> = {};
+for (const p of socialPosts) {
+  if (p.authorImage) {
+    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
+  }
+}
+const testimonialImages: Record<string, string> = {};
+for (const t of wallTestimonials) {
+  if (t.image) {
+    try { testimonialImages[t._id] = urlFor(t.image).width(48).height(48).url(); } catch {}
+  }
+}
+const normalizedSocialPosts = socialPosts.map((p) => ({
+  _id: p._id,
+  platform: p.platform,
+  author: p.author,
+  authorRole: p.authorRole,
+  authorHandle: p.authorHandle,
+  content: p.content,
+  url: p.url,
+  postDate: p.postDate,
+}));
+const normalizedTestimonials = wallTestimonials.map((t) => ({
+  _id: t._id,
+  quote: t.quote,
+  author: t.author,
+  role: t.role,
+  company: t.company,
+}));
+const hasSocialContent = normalizedSocialPosts.length > 0 || normalizedTestimonials.length > 0;
 
 const headlineRole = pageContent?.aboutHero?.role;
 const headlineBio = pageContent?.aboutHero?.bio;
@@ -225,31 +260,28 @@ const ctaContent = {
     </div>
   </section>
 
-  <!-- TESTIMONIALS -->
-  {quotes.length > 0 && (
+  <!-- SOCIAL WALL -->
+  {hasSocialContent && (
     <section class="about-section">
       <div class="container">
         <div class="about-section__heading">
           <Kicker class="ds-reveal">From the community</Kicker>
           <h2 class="about-h2 ds-reveal">What people <span class="mark">say</span></h2>
         </div>
-        <div class="about-quotes wide">
-          {quotes.map((q) => (
-            <div class="ds-card about-quote ds-reveal">
-              <p>"{q.quote}"</p>
-              <div class="about-quote__who">
-                <span class="about-quote__avatar">
-                  {q.author.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()}
-                </span>
-                <div>
-                  <b>{q.author}</b>
-                  {(q.role || q.company) && (
-                    <><br /><span>{[q.role, q.company].filter(Boolean).join(' · ')}</span></>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+        <SocialWallIsland
+          client:visible
+          posts={normalizedSocialPosts}
+          testimonials={normalizedTestimonials}
+          socialPostImages={socialPostImages}
+          testimonialImages={testimonialImages}
+        />
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="/appreciation" class="ds-link">
+            View all mentions
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
         </div>
       </div>
     </section>
@@ -447,55 +479,4 @@ const ctaContent = {
     line-height: 1.6;
   }
 
-  /* Testimonials */
-  .about-quotes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-  }
-  @media (max-width: 900px) {
-    .about-quotes { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 600px) {
-    .about-quotes { grid-template-columns: 1fr; }
-  }
-  .about-quote {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .about-quote p {
-    font-size: 0.95rem;
-    color: rgb(var(--ink));
-    line-height: 1.6;
-  }
-  .about-quote__who {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    margin-top: auto;
-    padding-top: 1.2rem;
-  }
-  .about-quote__who b {
-    font-size: 0.85rem;
-    color: rgb(var(--ink));
-  }
-  .about-quote__who span {
-    font-size: 0.78rem;
-    color: rgb(var(--ink-faint));
-  }
-  .about-quote__avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.8rem;
-    color: rgb(var(--ink-muted));
-    flex-shrink: 0;
-  }
 </style>

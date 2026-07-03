@@ -61,9 +61,7 @@ const [pageSettings, sanityMetrics, sanityCaseStudies, stats] = await Promise.al
   sanityFetch<ImpactPageSettings | null>(impactPageQuery).catch(() => null),
   sanityFetch<ImpactMetricV2[]>(featuredImpactMetricsV2Query).catch(() => []),
   sanityFetch<CaseStudyMetric[]>(impactCaseStudiesQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({
-    totalEvents: 86, countries: 20, cities: 29, talks: 0,
-  })),
+  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
 ]);
 
 const heroTagline = pageSettings?.heroTagline || 'Measurable results';
@@ -178,7 +176,7 @@ const cmsCaseStudies: RenderedCaseStudy[] = sanityCaseStudies
 
 const fallbackCaseStudies: RenderedCaseStudy[] = [
   {
-    big: '3.5',
+    big: PROOF.revenueMultiplier.toString(),
     bigSuffix: '×',
     bigSuffixSignal: true,
     tag: 'Product',
@@ -187,11 +185,11 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     rows: [
       { label: 'Context', body: "Western-built checkout was underperforming in APAC; card-first flows didn't match local behavior." },
       { label: 'Approach', body: 'Framework-agnostic payment orchestration, region-aware UX, and resilient fallbacks for flaky networks.' },
-      { label: 'Result', body: '3.5× revenue uplift in the region after introducing Alipay as a local method.' },
+      { label: 'Result', body: `${PROOF.revenueMultiplier}× revenue uplift in the region after introducing Alipay as a local method.` },
     ],
   },
   {
-    big: '425',
+    big: PROOF.communityMembers.toString(),
     bigSuffix: '',
     bigSuffixSignal: false,
     tag: 'Community',
@@ -200,16 +198,16 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     rows: [
       { label: 'Context', body: 'A local meetup with potential but inconsistent momentum and turnout.' },
       { label: 'Approach', body: 'Consistent cadence, strong speakers, hands-on workshops, and a genuinely welcoming room.' },
-      { label: 'Result', body: '425 new members added during 2025, with sold-out workshop days.' },
+      { label: 'Result', body: `${PROOF.communityMembers} new members added during 2025, with sold-out workshop days.` },
     ],
   },
   {
-    big: '15',
+    big: PROOF.engineersLed.toString(),
     bigSuffix: '',
     bigSuffixSignal: false,
     tag: 'Leadership',
-    title: 'Leading a cross-functional squad of 15',
-    desc: 'The best leadership keeps you close to the work. I led 15 engineers across frontend and backend — plus the skip-level management in between — without losing the plot technically.',
+    title: `Leading a cross-functional squad of ${PROOF.engineersLed}`,
+    desc: `The best leadership keeps you close to the work. I led ${PROOF.engineersLed} engineers across frontend and backend — plus the skip-level management in between — without losing the plot technically.`,
     rows: [
       { label: 'Context', body: 'Two teams shipping a shared product surface, with coordination overhead slowing delivery.' },
       { label: 'Approach', body: 'Clear ownership, pragmatic architecture decisions, and mentoring engineers into more senior roles.' },
