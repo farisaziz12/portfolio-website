@@ -1,0 +1,44 @@
+# Keeps the hosted Sanity Studio (faziz-dev.sanity.studio) aligned with main:
+# any schema/desk change that lands on main is deployed automatically, so
+# editors never work against stale schemas.
+#
+# Required repo secrets:
+#   SANITY_STUDIO_PROJECT_ID — the Sanity project id (same one validate.yml uses)
+#   SANITY_AUTH_TOKEN        — a "Deploy Studio" token from sanity.io/manage
+#                              (Project → API → Tokens → add token with Deploy Studio permissions)
+name: Deploy Sanity Studio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/studio/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-studio
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Deploy Studio (build + upload)
+        run: pnpm --filter studio deploy
+        env:
+          SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_STUDIO_PROJECT_ID }}
+          SANITY_STUDIO_DATASET: production
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}

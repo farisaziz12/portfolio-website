@@ -13,6 +13,7 @@ import AudienceRouter from '../components/home/AudienceRouter.astro';
 import FeaturedTalk from '../components/home/FeaturedTalk.astro';
 import ReachMap from '../components/home/ReachMap.astro';
 import SocialWallIsland from '../components/islands/SocialWallIsland';
+import BlueskyFeed from '../components/islands/BlueskyFeed';
 import { isRealConference } from '../lib/conferences';
 import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
@@ -585,6 +586,17 @@ const formatEventDate = (dateStr: string) => {
       </div>
     </section>
   )}
+
+  <!-- LIVE FROM BLUESKY — ships hidden; the island reveals it once posts load -->
+  <section class="home-section home-section--bsky" data-bsky-section hidden>
+    <div class="container">
+      <div class="home-section__heading">
+        <Kicker class="ds-reveal">Live from Bluesky</Kicker>
+        <h2 class="home-h2 ds-reveal">The feed, <span class="mark">unfiltered</span></h2>
+      </div>
+      <BlueskyFeed client:idle actor="farisaziz.com" />
+    </div>
+  </section>
 
   <!-- CONTACT PANEL -->
   <section class="home-section home-section--contact">

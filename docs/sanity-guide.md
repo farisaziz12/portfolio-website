@@ -53,6 +53,7 @@ an upcoming appearance as a talk.
 | `/about` | `page` (about), `company` | |
 | `/blog` | `blogPost` (self-hosted), `externalPost` | External posts are categorized by type |
 | `/media` | `media`, `event` videos | |
+| `/gallery` | `media` (type=photo) grouped by `event` reference | One filmstrip per event; ungrouped photos land in "Elsewhere" |
 | `/projects` | `project` | |
 
 The agent-facing markdown mirrors (`/home.md`, `/talks.md`, `/invite.md`, …)
@@ -126,6 +127,16 @@ surface updates.
    `/api/workshop/follow-up` route — see `apps/web/CLAUDE.md` for the curl
    recipe (always dry-run first).
 
+### Add event photos to the gallery
+
+1. Studio → **Media** → create with `type = Photo`, upload the `image`
+   (alt text required), and set the **Related Event** reference — that's what
+   groups the photo into the event's filmstrip on `/gallery`.
+2. Optional: `title`/`description` (become the lightbox caption), `credit`
+   (photographer, shown as 📷), `date`.
+3. Photos without an event still show, in the trailing "Elsewhere" group.
+   Throw in as many as you like — strips scroll horizontally.
+
 ### Update bios / headshots (speaker kit)
 
 Studio → **Speaker Profile** (singleton): `bioShort`/`bioMedium`/`bioFull`
@@ -147,3 +158,12 @@ casual and direct.
 - **No contact emails in content.** All contact flows go through the site's
   Resend-backed forms — never paste a `mailto:` into CMS copy
   (policy: `apps/web/CLAUDE.md`).
+
+## Studio deployments
+
+The hosted Studio auto-deploys from `main`: any merge touching
+`apps/studio/**` triggers `.github/workflows/deploy-studio.yml`, which runs
+`sanity deploy` so editors always see the latest schemas. It needs two repo
+secrets — `SANITY_STUDIO_PROJECT_ID` and `SANITY_AUTH_TOKEN` (a token with
+Deploy Studio permissions from sanity.io/manage). PRs are validated by
+`.github/workflows/validate.yml` (studio build + web typecheck) before merge.

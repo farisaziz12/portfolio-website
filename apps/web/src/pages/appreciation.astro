@@ -4,6 +4,7 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import AppreciationFilter from '../components/islands/AppreciationFilter';
+import BlueskyFeed from '../components/islands/BlueskyFeed';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
 
@@ -90,6 +91,17 @@ testimonials.forEach((t: any) => {
         socialPostImages={socialPostImages}
         testimonialImages={testimonialImages}
       />
+    </div>
+  </section>
+
+  <!-- LIVE FROM BLUESKY — ships hidden; the island reveals it once posts load -->
+  <section class="page-section page-section--alt" data-bsky-section hidden>
+    <div class="container">
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Live from Bluesky</Kicker>
+        <h2 class="page-h2 ds-reveal">The feed, <span class="mark">unfiltered</span></h2>
+      </div>
+      <BlueskyFeed client:idle actor="farisaziz.com" />
     </div>
   </section>
 

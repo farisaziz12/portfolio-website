@@ -131,6 +131,11 @@ export async function getStaticPaths() {
       title: 'Photos, videos & press.',
       meta: 'Free for organizers and press to use — credit appreciated.',
     },
+    gallery: {
+      kicker: 'Photo gallery',
+      title: 'Stages, hallways, and the bits in between.',
+      meta: 'Event-by-event photo walkthrough from conferences around the world.',
+    },
     speaking: {
       kicker: 'Speaking',
       title: 'Real-world engineering, for people who love the web.',

@@ -36,6 +36,7 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'Blog', icon: ICON.pen, href: '/blog' },
   { group: 'Pages', label: 'Projects', icon: ICON.book, href: '/projects' },
   { group: 'Pages', label: 'Media & press kit', icon: ICON.img, href: '/media' },
+  { group: 'Pages', label: 'Photo gallery', icon: ICON.img, href: '/gallery' },
   { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
   { group: 'Actions', label: 'Work with me', icon: ICON.mail, href: '/contact', keyHint: 'CTA' },
   { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite' },

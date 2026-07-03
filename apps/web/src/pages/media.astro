@@ -129,6 +129,8 @@ const press = media.filter((m) => m.type === 'press');
               <div>
                 <Kicker>On stage</Kicker>
                 <h2 class="page-h2">Photos</h2>
+                <p class="media-gallery-link"><a href="/gallery" class="ds-link">Walk through the full gallery, event by event
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
               </div>
               <span class="ds-pill">{photos.length}</span>
             </div>
@@ -223,6 +225,7 @@ const press = media.filter((m) => m.type === 'press');
 </BaseLayout>
 
 <style>
+  .media-gallery-link { margin-top: 0.5rem; font-size: 0.92rem; }
   .media-card {
     overflow: hidden;
     display: flex;
