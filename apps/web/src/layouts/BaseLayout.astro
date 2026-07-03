@@ -8,6 +8,20 @@ import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { siteSettingsQuery } from '../lib/sanity/queries';
 import '../styles/global.css';
 
+// Self-hosted fonts (was a render-blocking Google Fonts CSS request).
+// Astro bundles these with hashed URLs and far-future caching; woff2 subsets
+// load per-unicode-range with font-display: swap.
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/600.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/hanken-grotesk/400.css';
+import '@fontsource/hanken-grotesk/500.css';
+import '@fontsource/hanken-grotesk/600.css';
+import '@fontsource/hanken-grotesk/700.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-mono/600.css';
+
 interface SiteSettings {
   siteTitle?: string;
   tagline?: string;
@@ -27,9 +41,16 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
   article?: boolean;
+  /** Marks this page as the entity home (/about) — renders ProfilePage schema. */
+  profilePage?: boolean;
   pathname?: string;
   publishedTime?: string;
+  /** Extra schema.org nodes for the page (Event, Service, BreadcrumbList…). */
+  extraSchema?: Record<string, unknown>[];
+  /** Path to this page's markdown mirror (e.g. "/talks.md"). */
+  markdownAlternate?: string;
 }
 
 // Fetch global site settings from Sanity
@@ -39,7 +60,10 @@ const siteSettings = await sanityFetch<SiteSettings | null>(siteSettingsQuery).c
 const defaultDescription = siteSettings?.metaDescription || siteSettings?.defaultMetaDescription || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Geneva.';
 const defaultImage = siteSettings?.ogImage
   ? urlFor(siteSettings.ogImage).width(1200).height(630).url()
-  : '/og-default.jpg';
+  : '/og/default.png';
+const personImage = siteSettings?.ogImage
+  ? urlFor(siteSettings.ogImage).width(800).height(800).url()
+  : undefined;
 const siteName = siteSettings?.siteTitle || 'Faris Aziz';
 const siteUrl = siteSettings?.siteUrl?.trim() || 'https://faziz-dev.com';
 const twitterHandle = siteSettings?.twitterHandle || 'farisaziz12';
@@ -50,9 +74,13 @@ const {
   title,
   description = defaultDescription,
   image = defaultImage,
+  imageAlt,
   article = false,
+  profilePage = false,
   pathname = '',
   publishedTime,
+  extraSchema = [],
+  markdownAlternate,
 } = Astro.props;
 ---
 
@@ -68,19 +96,14 @@ const {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fonts: Space Grotesk (display) + Hanken Grotesk (body) + IBM Plex Mono (signal) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
 
     <SEO
       title={title}
       description={description}
       image={image}
+      imageAlt={imageAlt}
       article={article}
+      profilePage={profilePage}
       pathname={pathname}
       publishedTime={publishedTime}
       siteName={siteName}
@@ -88,6 +111,9 @@ const {
       twitterHandle={twitterHandle}
       personName={personName}
       jobTitle={jobTitle}
+      personImage={personImage}
+      extraSchema={extraSchema}
+      markdownAlternate={markdownAlternate}
       socialLinks={{
         linkedin: siteSettings?.linkedinUrl,
         github: siteSettings?.githubUrl,

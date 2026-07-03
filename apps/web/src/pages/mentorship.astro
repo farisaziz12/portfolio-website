@@ -115,6 +115,20 @@ const faq = [
   title="Mentorship | Faris Aziz"
   description="1:1 mentorship for engineers who want to level up their careers. Career coaching, technical skills, and personal growth."
   pathname="/mentorship"
+  image="/og/mentorship.png"
+  markdownAlternate="/mentorship.md"
+  extraSchema={[
+    {
+      '@type': 'Service',
+      name: '1:1 engineering mentorship',
+      serviceType: 'Career and technical mentorship',
+      description:
+        '1:1 coaching for software engineers: career strategy, technical mastery, public speaking, and sustainable growth. Weekly or bi-weekly cadence, 3–6 month engagements.',
+      provider: { '@id': 'https://faziz-dev.com/#person' },
+      areaServed: 'Worldwide',
+      url: 'https://faziz-dev.com/mentorship',
+    },
+  ]}
 >
   <header class="page-hero">
     <GridTexture />

@@ -125,6 +125,9 @@ const ctaContent = {
   title={seo?.metaTitle || 'About — Faris Aziz'}
   description={seo?.metaDescription || `Staff Software Engineer and Conference Speaker based in ${heroLocation}, specializing in resilient frontend systems and payment integrations.`}
   pathname="/about"
+  image="/og/about.png"
+  profilePage={true}
+  markdownAlternate="/about.md"
 >
   <!-- HERO -->
   <header class="about-hero">
@@ -141,6 +144,11 @@ const ctaContent = {
         </p>
         <p class="about-hero__body">
           Today I split my time between deep engineering work, mentoring engineers who want to grow, and talking on stages around the world about what actually works in production.
+        </p>
+        {/* Declarative entity block — quotable facts for humans, search engines, and AI assistants alike. */}
+        <p class="about-hero__facts">
+          In numbers: {stats.totalEvents}+ speaking engagements across {stats.countries} countries,
+          organizer of ZurichJS, and available for keynotes, workshops, consulting, and 1:1 mentorship.
         </p>
         <div class="about-hero__actions">
           <a href="/services" class="ds-btn ds-btn-primary">
@@ -325,6 +333,14 @@ const ctaContent = {
     color: rgb(var(--ink-muted));
     max-width: 52ch;
     margin-top: 1.2rem;
+  }
+  .about-hero__facts {
+    color: rgb(var(--ink-faint));
+    font-size: 0.92rem;
+    max-width: 52ch;
+    margin-top: 1rem;
+    padding-left: 0.9rem;
+    border-left: 2px solid rgb(var(--accent) / 0.5);
   }
   .about-hero__actions {
     display: flex;

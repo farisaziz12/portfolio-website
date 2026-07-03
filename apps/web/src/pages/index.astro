@@ -186,6 +186,8 @@ const formatEventDate = (dateStr: string) => {
   title="Faris Aziz — Staff Engineer & Conference Speaker"
   description={`Staff Software Engineer and Conference Speaker. ${stats.totalEvents} talks across ${stats.countries} countries. Based in Geneva.`}
   pathname=""
+  image="/og/home.png"
+  markdownAlternate="/index.md"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -292,6 +294,9 @@ const formatEventDate = (dateStr: string) => {
                   src={urlFor(media[0].image).width(1200).height(1200).quality(90).url()}
                   alt={media[0].description || 'Speaking at conference'}
                   loading="eager"
+                  fetchpriority="high"
+                  width="1200"
+                  height="1200"
                 />
               )}
             </div>

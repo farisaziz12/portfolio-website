@@ -10,6 +10,24 @@ them against a code audit of this repo. Each item carries a verdict and effort e
 
 ---
 
+> **Execution status (2026-07-03):** Tiers 0, 2, 3 and the code-side items of Tiers 1 & 4 are
+> implemented on this branch: robots.txt with AI-crawler allowlist, blog posts in RSS, full
+> OG/Twitter meta set, JSON-LD `@graph` (Person entity + ProfilePage + Event + Service +
+> breadcrumbs), entity block on /about, markdown mirrors (`/about.md`, `/talks.md`,
+> `/talks/[slug].md`, `/events.md`, `/invite.md`, `/consulting.md`, `/mentorship.md`,
+> `/contact.md`, `/index.md`, `/blog/[slug].md`) + `llms.txt` + `X-Robots-Tag: noindex` headers,
+> the satori build-time OG card system (per-type templates, all pages wired), the speaker rider
+> on /invite, palette organizer actions (copy bio / email / work-with-me), self-hosted fonts
+> (Google Fonts CDN removed), and LCP hints on the hero image.
+> **Still owner actions:** Google Search Console + Bing Webmaster verification & sitemap
+> submission, IndexNow key + deploy hook, Wikidata Q-item, rider honorarium specifics, a
+> showreel video, testimonials reframing (needs content curation), `/now`+`/uses` pages
+> (need content), and Vercel WAF check (`curl -A "ChatGPT-User" https://faziz-dev.com/`).
+> Notes: TalksFilter already had delivery counts + "Most delivered" sort; talk videos were
+> already click-to-load facades; runtime `Accept: text/markdown` negotiation was skipped
+> deliberately — pages are prerendered static files, so the `.md`-suffix convention is the
+> supported path. Sitemap `lastmod` skipped rather than faked with build time.
+
 ## The one-paragraph thesis
 
 The site's bones are now right (IA, theming, tokens). What separates it from the world-class tier

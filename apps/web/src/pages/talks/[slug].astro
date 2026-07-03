@@ -184,6 +184,19 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
   title={`${talk.title} — Talk | Faris Aziz`}
   description={description}
   pathname={`/talks/${slug}`}
+  image={`/og/talks/${slug}.png`}
+  imageAlt={`${talk.title} — conference talk by Faris Aziz`}
+  markdownAlternate={`/talks/${slug}.md`}
+  extraSchema={[
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://faziz-dev.com' },
+        { '@type': 'ListItem', position: 2, name: 'Talk catalogue', item: 'https://faziz-dev.com/talks' },
+        { '@type': 'ListItem', position: 3, name: talk.title, item: `https://faziz-dev.com/talks/${slug}` },
+      ],
+    },
+  ]}
 >
   {jsonLd && (
     <Fragment slot="head">

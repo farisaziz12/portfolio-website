@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { allEventsQuery, externalPostsQuery } from '../lib/sanity/queries';
+import { allEventsQuery, externalPostsQuery, allBlogPostsQuery } from '../lib/sanity/queries';
 
 interface SanityEvent {
   _id: string;
@@ -22,14 +22,31 @@ interface ExternalPost {
   excerpt?: string;
 }
 
+interface BlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  publishedAt: string;
+  category?: string;
+}
+
 export async function GET(context: APIContext) {
-  const [events, posts] = await Promise.all([
+  const [events, posts, blogPosts] = await Promise.all([
     sanityFetch<SanityEvent[]>(allEventsQuery).catch(() => []),
     sanityFetch<ExternalPost[]>(externalPostsQuery).catch(() => []),
+    sanityFetch<BlogPost[]>(allBlogPostsQuery).catch(() => []),
   ]);
 
-  // Combine events and posts into feed items
+  // Combine own blog posts, events, and external posts into feed items
   const items = [
+    ...blogPosts.map((post) => ({
+      title: post.title,
+      pubDate: new Date(post.publishedAt),
+      description: post.excerpt || post.title,
+      link: `${context.site}blog/${post.slug}`,
+      categories: post.category ? [post.category] : ['blog'],
+    })),
     ...events.map((event) => ({
       title: `${event.title} at ${event.conference}`,
       pubDate: new Date(event.date),

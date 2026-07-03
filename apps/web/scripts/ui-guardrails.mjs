@@ -67,7 +67,9 @@ for (const file of walk(SRC)) {
     }
   }
 
-  if (!rel.endsWith('global.css')) {
+  // og.ts renders social cards with satori, which has no CSS-variable support —
+  // hex literals there are mandatory (kept in sync with global.css tokens).
+  if (!rel.endsWith('global.css') && rel !== 'src/lib/og.ts') {
     for (const m of text.matchAll(HEX_RE)) {
       if (HEX_ALLOWED.test(m[0])) continue;
       hexCount++;

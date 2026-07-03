@@ -86,6 +86,20 @@ const audiences = [
   title="Consulting | Faris Aziz"
   description="Technical consulting for teams and startups. Architecture reviews, technical strategy, and hands-on implementation."
   pathname="/consulting"
+  image="/og/consulting.png"
+  markdownAlternate="/consulting.md"
+  extraSchema={[
+    {
+      '@type': 'Service',
+      name: 'Technical consulting',
+      serviceType: 'Software engineering consulting',
+      description:
+        'Architecture reviews, performance optimization, technical strategy, and hands-on implementation support for teams and startups — specializing in React, Next.js, and payment systems.',
+      provider: { '@id': 'https://faziz-dev.com/#person' },
+      areaServed: 'Worldwide',
+      url: 'https://faziz-dev.com/consulting',
+    },
+  ]}
 >
   <header class="page-hero">
     <GridTexture />

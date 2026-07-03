@@ -129,6 +129,8 @@ const proofQuotes = testimonials.slice(0, 3);
   title="Invite me to speak — Faris Aziz"
   description="Book Faris Aziz for your conference, meetup, or internal tech talk. Talks and workshops on production, scale, web performance, and engineering leadership."
   pathname="/invite"
+  image="/og/invite.png"
+  markdownAlternate="/invite.md"
 >
   <!-- HERO -->
   <header class="invite-hero">
@@ -313,6 +315,44 @@ const proofQuotes = testimonials.slice(0, 3);
       </div>
     </section>
   )}
+
+  <!-- SPEAKER RIDER -->
+  <section class="invite-rider anchor-target" id="rider">
+    <div class="container">
+      <header class="invite-section-head">
+        <Kicker>Press kit · Rider</Kicker>
+        <h2 class="invite-h2">Speaker rider</h2>
+        <p class="invite-section-lead">The practical terms, up front — so we can skip a round of emails.</p>
+      </header>
+
+      <div class="rider-grid wide">
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Honorarium</h3>
+          <p class="rider-item__body">Discussed per engagement, scaled to event type and budget. Community meetups are usually free — just ask.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Travel &amp; lodging</h3>
+          <p class="rider-item__body">Covered by the event for in-person engagements outside the Geneva / Zurich area. Economy is fine; direct routes appreciated.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Code of conduct</h3>
+          <p class="rider-item__body">The event has a published, enforced code of conduct. I'm happy to point you to good templates if you don't have one yet.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Recording &amp; slides</h3>
+          <p class="rider-item__body">Recording is encouraged — please share the link afterwards. Slides remain my IP; feel free to distribute them to attendees.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">A/V setup</h3>
+          <p class="rider-item__body">HDMI or USB-C. For workshops, a lapel or headset mic and reliable Wi-Fi for attendees make everything better.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Promotion</h3>
+          <p class="rider-item__body">I'll promote the event to my audience before and after. Tag me in event posts and I'll amplify them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- HEADSHOTS -->
   {headshotData.length > 0 && (
@@ -959,6 +999,37 @@ const proofQuotes = testimonials.slice(0, 3);
   .cal-legend__item--open { color: rgb(var(--signal)); }
   .cal-legend__item--limited { color: rgb(var(--warn)); }
   .cal-legend__item--booked { color: rgb(var(--danger)); }
+
+  /* ── Speaker rider ─────────────────────────────────────────────────────── */
+  .invite-rider {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    border-top: 1px solid rgb(var(--edge));
+  }
+  .rider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-inline: auto;
+  }
+  @media (max-width: 900px) {
+    .rider-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .rider-grid { grid-template-columns: 1fr; }
+  }
+  .rider-item { padding: 1.5rem 1.4rem; }
+  .rider-item__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    margin-bottom: 0.45rem;
+  }
+  .rider-item__body {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
 
   /* ── Bios ───────────────────────────────────────────────────────────────── */
   .invite-bios {

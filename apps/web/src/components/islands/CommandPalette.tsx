@@ -3,7 +3,8 @@ import { navigate } from 'astro:transitions/client';
 
 type Cmd =
   | { group: string; label: string; icon: string; href: string; external?: boolean; keyHint?: string }
-  | { group: string; label: string; icon: string; action: 'toggle-theme'; keyHint?: string };
+  | { group: string; label: string; icon: string; action: 'toggle-theme'; keyHint?: string }
+  | { group: string; label: string; icon: string; action: 'copy'; text: string; keyHint?: string };
 
 const ICON: Record<string, string> = {
   home: '<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
@@ -38,6 +39,15 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
   { group: 'Actions', label: 'Work with me', icon: ICON.mail, href: '/contact', keyHint: 'CTA' },
   { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite' },
+  {
+    group: 'Actions',
+    label: 'Copy short bio',
+    icon: ICON.pen,
+    action: 'copy',
+    text: 'Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and organizes ZurichJS.',
+    keyHint: 'for organizers',
+  },
+  { group: 'Actions', label: 'Email me', icon: ICON.mail, href: 'mailto:hello@farisaziz.com', external: true },
   { group: 'Actions', label: 'Toggle theme', icon: ICON.sun, action: 'toggle-theme' },
   { group: 'Elsewhere', label: 'GitHub', icon: ICON.gh, href: 'https://github.com/farisaziz12', external: true },
   { group: 'Elsewhere', label: 'LinkedIn', icon: ICON.user, href: 'https://linkedin.com/in/farisaziz12', external: true },
@@ -102,6 +112,12 @@ export default function CommandPalette() {
         localStorage.setItem('faziz-theme', next);
       } catch (_) {}
       window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
+      return;
+    }
+    if ('action' in cmd && cmd.action === 'copy') {
+      try {
+        navigator.clipboard?.writeText(cmd.text);
+      } catch (_) {}
       return;
     }
     if ('href' in cmd) {

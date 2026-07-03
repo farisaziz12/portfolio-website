@@ -41,6 +41,8 @@ const inviteHref = `/invite?format=workshop&workshop=${encodeURIComponent(worksh
   title={`${workshop.title} | Workshops | Faris Aziz`}
   description={workshop.description || `${workshop.title} — a hands-on workshop by Faris Aziz`}
   pathname={`/workshops/${slug}`}
+  image={`/og/workshops/${slug}.png`}
+  imageAlt={`${workshop.title} — hands-on workshop by Faris Aziz`}
 >
   <header class="page-hero">
     <GridTexture />
