@@ -46,6 +46,10 @@ const Butterfly = () => (
 
 export function BlueskyFeed({ actor = 'farisaziz.com', limit = 12 }: { actor?: string; limit?: number }) {
   const [posts, setPosts] = useState<BskyPost[]>([]);
+  // Avatar URLs that failed to load (stale CDN blob after a profile-picture
+  // change, blocked request, …) — render the blank placeholder instead of
+  // the browser's broken-image glyph.
+  const [badAvatars, setBadAvatars] = useState<Set<string>>(() => new Set());
   const rootRef = React.useRef<HTMLDivElement>(null);
 
   // The wrapping section ships with `hidden` so a failed fetch never leaves
@@ -83,10 +87,28 @@ export function BlueskyFeed({ actor = 'farisaziz.com', limit = 12 }: { actor?: s
       {posts.map((post) => (
         <a key={post.uri} href={postUrl(post)} target="_blank" rel="noopener noreferrer" className="bsky-card">
           <div className="bsky-card__head">
-            {post.author.avatar ? (
-              <img className="bsky-card__avatar" src={post.author.avatar} alt="" loading="lazy" width="40" height="40" />
+            {post.author.avatar && !badAvatars.has(post.author.avatar) ? (
+              <img
+                className="bsky-card__avatar"
+                src={post.author.avatar}
+                alt=""
+                loading="lazy"
+                width="40"
+                height="40"
+                referrerPolicy="no-referrer"
+                onError={() => {
+                  const url = post.author.avatar!;
+                  setBadAvatars((prev) => {
+                    const next = new Set(prev);
+                    next.add(url);
+                    return next;
+                  });
+                }}
+              />
             ) : (
-              <span className="bsky-card__avatar bsky-card__avatar--blank" />
+              <span className="bsky-card__avatar bsky-card__avatar--blank" aria-hidden="true">
+                {(post.author.displayName || post.author.handle).slice(0, 1).toUpperCase()}
+              </span>
             )}
             <div className="bsky-card__who">
               <b>{post.author.displayName || post.author.handle}</b>
@@ -161,7 +183,16 @@ export function BlueskyFeed({ actor = 'farisaziz.com', limit = 12 }: { actor?: s
           flex-shrink: 0;
         }
 
-        .bsky-card__avatar--blank { background: rgb(var(--surface-3)); display: inline-block; }
+        .bsky-card__avatar--blank {
+          background: rgb(var(--surface-3));
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+          font-weight: 600;
+          font-size: 1rem;
+          color: rgb(var(--ink-muted));
+        }
 
         .bsky-card__who {
           min-width: 0;
