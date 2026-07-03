@@ -33,17 +33,12 @@ const other = externalPosts.filter((p) => !['article', 'podcast', 'interview'].i
 const featuredBlogPosts = blogPosts.filter((p) => p.featured);
 const regularBlogPosts = blogPosts.filter((p) => !p.featured);
 
-const totalPosts = externalPosts.length + blogPosts.length;
+const totalPosts = blogPosts.length + articles.length;
 
-// Tab model: everything on the page lives in one of three panes so podcasts
-// aren't buried under three scrolls of writing. Legacy hash anchors map to
-// their pane in the init script below.
-const tabs = [
-  { id: 'writing', label: 'Writing', count: blogPosts.length + articles.length },
-  { id: 'podcasts', label: 'Podcasts & interviews', count: podcasts.length + interviews.length },
-  { id: 'more', label: 'Everything else', count: other.length },
-].filter((t) => t.count > 0);
-const defaultTab = tabs[0]?.id || 'writing';
+// /blog is writing-only: podcasts, interviews, panels and other spoken/video
+// appearances live on /media (Watch & listen). Keep the counts for the
+// cross-link pill.
+const spokenCount = podcasts.length + interviews.length + other.length;
 
 const categoryLabels: Record<string, string> = {
   tutorial: 'Tutorial',
@@ -63,7 +58,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 
 <BaseLayout
   title="Writing & content | Faris Aziz"
-  description="Articles, podcasts, and external content by Faris Aziz on React, Next.js, payments, and software development."
+  description="Essays and articles by Faris Aziz on React, Next.js, payments, and engineering life."
   pathname="/blog"
   image="/og/blog.png"
 >
@@ -72,26 +67,18 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     <div class="container page-hero__inner">
       <Kicker>Writing · {totalPosts} pieces</Kicker>
       <h1 class="page-hero__title">
-        Essays, talks, and <span class="accent-word">conversations</span>.
+        Notes from <span class="accent-word">production</span>.
       </h1>
       <p class="page-hero__lead">
-        Self-hosted blog posts plus everything else I've written, recorded, or guested on across the web.
+        Long-form posts from this site plus articles I've written around the web. For podcasts and recordings, head to Watch & listen.
       </p>
 
-      {tabs.length > 0 && (
-        <div class="blog-tabs" role="tablist" aria-label="Content type">
-          {tabs.map((t) => (
-            <button
-              type="button"
-              class="ds-pill blog-tabs__tab"
-              role="tab"
-              data-blog-tab={t.id}
-              aria-selected={t.id === defaultTab ? 'true' : 'false'}
-            >
-              {t.label}
-              <span class="blog-tabs__count">{t.count}</span>
-            </button>
-          ))}
+      {spokenCount > 0 && (
+        <div class="blog-crosslink">
+          <a href="/media#podcasts" class="ds-pill">
+            Looking for podcasts &amp; interviews? They moved to Watch &amp; listen
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
       )}
 
@@ -118,7 +105,6 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     </section>
   ) : (
     <>
-      <div data-blog-pane="writing" hidden={defaultTab !== 'writing'}>
       {/* BLOG POSTS */}
       {blogPosts.length > 0 && (
         <section id="blog" class="page-section">
@@ -216,130 +202,6 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
         </section>
       )}
 
-      </div>
-
-      <div data-blog-pane="podcasts" hidden={defaultTab !== 'podcasts'}>
-      {/* PODCASTS */}
-      {podcasts.length > 0 && (
-        <section id="podcasts" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>Listen in</Kicker>
-                <h2 class="page-h2">Podcast appearances</h2>
-              </div>
-              <span class="ds-pill">{podcasts.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {podcasts.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card blog-card--podcast ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Podcast</span>
-                        </div>
-                      )}
-                      <div class="blog-card__play">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
-                      <span class="blog-card__category">Podcast</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* INTERVIEWS */}
-      {interviews.length > 0 && (
-        <section id="interviews" class="page-section page-section--alt">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>On the record</Kicker>
-                <h2 class="page-h2">Interviews</h2>
-              </div>
-              <span class="ds-pill">{interviews.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {interviews.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Interview</span>
-                        </div>
-                      )}
-                      <span class="blog-card__category">Interview</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      </div>
-
-      <div data-blog-pane="more" hidden={defaultTab !== 'more'}>
-      {/* OTHER */}
-      {other.length > 0 && (
-        <section id="other" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>More</Kicker>
-                <h2 class="page-h2">Everything else</h2>
-              </div>
-              <span class="ds-pill">{other.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {other.map((post) => (
-                <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card-min ds-reveal">
-                  <span class="ds-tag" style="margin-bottom:0.8rem;">{post.type}</span>
-                  {post.source && <p class="blog-card__source">{post.source}</p>}
-                  <h3 class="blog-card__title">{post.title}</h3>
-                  {post.publishedAt && (
-                    <p class="blog-card__meta">{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</p>
-                  )}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-      </div>
     </>
   )}
 
@@ -358,62 +220,12 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     </div>
   </section>
 
-  <script>
-    // Tab switching. Legacy section anchors (#blog/#articles/#podcasts/
-    // #interviews/#other) still deep-link — they resolve to their pane.
-    function initBlogTabs() {
-      const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-blog-tab]'));
-      const panes = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-pane]'));
-      if (!tabs.length || !panes.length) return;
-
-      const LEGACY: Record<string, string> = {
-        blog: 'writing', articles: 'writing',
-        podcasts: 'podcasts', interviews: 'podcasts',
-        other: 'more',
-      };
-
-      const select = (id: string, updateHash: boolean) => {
-        if (!tabs.some((t) => t.dataset.blogTab === id)) return;
-        tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.blogTab === id)));
-        panes.forEach((p) => { p.hidden = p.dataset.blogPane !== id; });
-        if (updateHash) history.replaceState(null, '', `#${id}`);
-      };
-
-      tabs.forEach((t) => t.addEventListener('click', () => select(t.dataset.blogTab || '', true)));
-
-      const raw = location.hash.replace('#', '');
-      if (raw) select(LEGACY[raw] || raw, false);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initBlogTabs, { once: true });
-    } else { initBlogTabs(); }
-    document.addEventListener('astro:after-swap', initBlogTabs);
-  </script>
 </BaseLayout>
 
 <style>
-  .blog-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.6rem;
-  }
-  .blog-tabs__tab {
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  .blog-tabs__tab[aria-selected='true'] {
-    background: rgb(var(--accent));
-    border-color: rgb(var(--accent));
-    color: #fff;
-  }
-  .blog-tabs__tab[aria-selected='true'] .blog-tabs__count { color: rgb(255 255 255 / 0.75); }
-  .blog-tabs__count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    margin-left: 0.25rem;
-  }
+  .blog-crosslink { margin-top: 1.6rem; }
+  .blog-crosslink .ds-pill { display: inline-flex; align-items: center; }
+  .blog-crosslink svg { width: 0.9em; height: 0.9em; margin-left: 0.35rem; }
 
   /* Featured blog posts */
   .blog-featured {

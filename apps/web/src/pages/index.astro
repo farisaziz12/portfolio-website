@@ -12,6 +12,7 @@ import FeaturedTalk from '../components/home/FeaturedTalk.astro';
 import QuarterWrapped from '../components/home/QuarterWrapped.astro';
 import ReachMap from '../components/home/ReachMap.astro';
 import SocialWallIsland from '../components/islands/SocialWallIsland';
+import EpisodePlayer from '../components/islands/EpisodePlayer';
 import { currentQuarterRange } from '../lib/availability';
 import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
@@ -25,6 +26,7 @@ import {
   featuredTalkQuery,
   reachMapDataQuery,
   quarterActivityQuery,
+  latestPodcastsQuery,
 } from '../lib/sanity/queries';
 
 interface UpcomingEvent {
@@ -56,9 +58,21 @@ interface FeaturedTalkData {
   assets?: { videoUrl?: string; thumbnailImage?: any };
   latestEvent?: { conference?: string; city?: string };
 }
+interface HomePodcast {
+  _id: string;
+  title: string;
+  url: string;
+  type: string;
+  publishedAt?: string;
+  source?: string;
+  image?: any;
+  slug?: string;
+  hasDeepDive?: boolean;
+}
+
 const quarter = currentQuarterRange();
 
-const [upcomingEvents, stats, media, testimonials, socialPosts, featured, reachCities, quarterActivity] = await Promise.all([
+const [upcomingEvents, stats, media, testimonials, socialPosts, featured, reachCities, quarterActivity, homePodcasts] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
@@ -67,7 +81,16 @@ const [upcomingEvents, stats, media, testimonials, socialPosts, featured, reachC
   sanityFetch<FeaturedTalkData | null>(featuredTalkQuery).catch(() => null),
   sanityFetch<string[]>(reachMapDataQuery).catch(() => []),
   sanityFetch<QuarterActivity>(quarterActivityQuery, { qStart: quarter.startISO, qEnd: quarter.endISO }).catch(() => null),
+  sanityFetch<HomePodcast[]>(latestPodcastsQuery).catch(() => []),
 ]);
+
+// Pre-resolve podcast covers for the "From the mic" strip.
+const podcastCovers: Record<string, string> = {};
+for (const p of homePodcasts) {
+  if (p.image) {
+    try { podcastCovers[p._id] = urlFor(p.image).width(960).height(540).quality(85).url(); } catch {}
+  }
+}
 
 // Pre-process image URLs for the social wall React island (urlFor can't run client-side).
 const socialPostImages: Record<string, string> = {};
@@ -335,6 +358,51 @@ const formatEventDate = (dateStr: string) => {
 
   <!-- THIS QUARTER, WRAPPED -->
   <QuarterWrapped label={quarter.label} activity={quarterActivity} />
+
+  <!-- FROM THE MIC — latest podcast/interview appearances, playable in place -->
+  {homePodcasts.length > 0 && (
+    <section class="home-section home-section--mic">
+      <div class="container">
+        <div class="home-section__heading">
+          <Kicker class="ds-reveal">From the mic</Kicker>
+          <h2 class="home-h2 ds-reveal">Hear me <span class="mark">think out loud</span></h2>
+          <p class="home-lead ds-reveal">Podcast and interview appearances — hit play right here, no detour.</p>
+        </div>
+        <div class="home-mic wide">
+          {homePodcasts.map((p) => (
+            <article class="home-mic__item ds-reveal">
+              <EpisodePlayer
+                client:visible
+                url={p.url}
+                title={p.title}
+                coverUrl={podcastCovers[p._id]}
+              />
+              <h3 class="home-mic__title">
+                {p.hasDeepDive && p.slug ? (
+                  <a href={`/podcasts/${p.slug}`}>{p.title}</a>
+                ) : (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}</a>
+                )}
+              </h3>
+              {p.source && <p class="home-mic__source">{p.source}</p>}
+              {p.hasDeepDive && p.slug && (
+                <a href={`/podcasts/${p.slug}`} class="ds-link home-mic__more">
+                  Key takeaways &amp; chapters
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              )}
+            </article>
+          ))}
+        </div>
+        <div class="home-mic__all">
+          <a href="/media#podcasts" class="ds-link">
+            All podcasts &amp; interviews
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- GLOBAL REACH MAP -->
   {reachCities.length > 0 && (
@@ -630,6 +698,32 @@ const formatEventDate = (dateStr: string) => {
   .home-section__heading .kicker {
     justify-content: center;
   }
+  .home-mic {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.4rem;
+  }
+  @media (max-width: 960px) { .home-mic { grid-template-columns: 1fr; max-width: 640px; margin-inline: auto; } }
+  .home-mic__title {
+    margin-top: 0.9rem;
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+  .home-mic__title a { color: rgb(var(--ink)); text-decoration: none; }
+  .home-mic__title a:hover { color: rgb(var(--accent-bright)); }
+  .home-mic__source {
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    color: rgb(var(--ink-muted));
+  }
+  .home-mic__all { text-align: center; margin-top: 2rem; }
+  .home-mic__more {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+  }
+
   .home-h2 {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
