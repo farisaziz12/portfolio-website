@@ -10,31 +10,9 @@ import MentorshipInquiryForm from '../components/islands/MentorshipInquiryForm';
 import { sanityFetch } from '../lib/sanity/client';
 import { mentorshipOffersQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
 import { availabilityLabel } from '../lib/availability';
+import type { ServiceOffer, SocialPost } from '../lib/sanity/types';
 
-interface ServiceOffer {
-  _id: string;
-  title: string;
-  slug: string;
-  serviceType: 'consulting' | 'mentorship';
-  shortDescription: string;
-  bestFor?: string;
-  outcomes?: string[];
-  engagementFormat?: string;
-  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
-  price?: number;
-  priceCurrency?: string;
-  priceUnit?: string;
-  bookingUrl: string;
-  featured?: boolean;
-  order?: number;
-}
 
-interface SocialPost {
-  _id: string; url: string; platform: 'linkedin' | 'twitter';
-  author: string; authorHandle?: string; authorImage?: any;
-  authorRole?: string; postImage?: any; content: string;
-  tweetId?: string; postDate?: string;
-}
 
 const [offers, socialPosts] = await Promise.all([
   sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []),
@@ -284,24 +262,6 @@ const faq = [
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

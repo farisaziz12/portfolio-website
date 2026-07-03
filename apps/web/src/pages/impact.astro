@@ -341,23 +341,9 @@ const jsonLd = {
   </section>
 
   <script>
+    // Count-up stats. (.ds-reveal is armed by the global initializer in BaseLayout.)
     function initImpact() {
-      document.documentElement.classList.add('js');
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
       document.querySelectorAll<HTMLElement>('.cu').forEach((el) => { el.textContent = '0'; });
-
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
 
       function countUp(el: HTMLElement) {
         const to = parseFloat(el.dataset.to || '0');

@@ -7,6 +7,7 @@ import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
 import { bookingYears } from '../../lib/availability';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { eventBySlugQuery, allEventsQuery, socialPostsForEventQuery } from '../../lib/sanity/queries';
+import type { SocialPost } from '../../lib/sanity/types';
 import { formatDate, getCountryFlag } from 'shared/utils';
 
 interface EventDetail {
@@ -28,11 +29,6 @@ interface EventDetail {
 
 interface EventListItem { _id: string; slug: string }
 
-interface SocialPost {
-  _id: string; url: string; platform: 'twitter' | 'linkedin';
-  author: string; authorHandle?: string; authorImage?: any;
-  authorRole?: string; content: string; postDate?: string;
-}
 
 export async function getStaticPaths() {
   const events = await sanityFetch<EventListItem[]>(allEventsQuery).catch(() => []);
@@ -314,24 +310,6 @@ const extraSchema = [eventSchema, breadcrumbSchema, ...(videoSchema ? [videoSche
     </div>
   </section>
 
-  <script>
-    function initPage() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPage, { once: true });
-    } else { initPage(); }
-    document.addEventListener('astro:after-swap', initPage);
-  </script>
 </BaseLayout>
 
 <style>

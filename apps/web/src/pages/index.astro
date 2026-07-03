@@ -16,6 +16,7 @@ import SocialWallIsland from '../components/islands/SocialWallIsland';
 import { isRealConference } from '../lib/conferences';
 import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
+import type { SocialPost } from '../lib/sanity/types';
 import {
   upcomingEventsQuery,
   speakingStatsQuery,
@@ -46,21 +47,6 @@ interface SpeakingStats {
 }
 interface Media { _id: string; image?: any; description?: string }
 interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string; image?: any }
-interface SocialPost {
-  _id: string;
-  url: string;
-  platform: 'linkedin' | 'twitter';
-  author: string;
-  authorHandle?: string;
-  authorImage?: any;
-  authorRole?: string;
-  postImage?: any;
-  content: string;
-  tweetId?: string;
-  postDate?: string;
-  relatedTalk?: { title: string; slug: string };
-  relatedEvent?: { title: string; slug: string; conference: string };
-}
 interface FeaturedTalkData {
   _id: string;
   title: string;
@@ -612,30 +598,13 @@ const formatEventDate = (dateStr: string) => {
   <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — a second copy here was redundant. -->
 
   <script>
-    // Re-run on initial load AND on every Astro ViewTransitions swap, so that
-    // navigating back to / via in-app links re-fires the reveal + count-up.
+    // Count-up stats re-run on initial load AND on every Astro ViewTransitions
+    // swap. (.ds-reveal is armed by the global initializer in BaseLayout.)
     function initHome() {
-      document.documentElement.classList.add('js');
-
       // Reset prior state on swap-back so animations actually re-play
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
       document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
         el.textContent = '0';
       });
-
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.1 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-
-      const revealFailsafe = window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 700);
 
       function countUp(el: HTMLElement) {
         const to = parseFloat(el.dataset.to || '0');
@@ -685,7 +654,6 @@ const formatEventDate = (dateStr: string) => {
 
       // Clean up timers if the page is swapped away again.
       document.addEventListener('astro:before-swap', () => {
-        window.clearTimeout(revealFailsafe);
         window.clearTimeout(cuFailsafe);
       }, { once: true });
     }

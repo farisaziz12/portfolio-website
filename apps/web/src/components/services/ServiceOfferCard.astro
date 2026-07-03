@@ -1,20 +1,5 @@
 ---
-interface ServiceOffer {
-  _id: string;
-  title: string;
-  slug: string;
-  serviceType: 'consulting' | 'mentorship';
-  shortDescription: string;
-  bestFor?: string;
-  outcomes?: string[];
-  engagementFormat?: string;
-  pricingType?: 'fixed' | 'hourly' | 'retainer' | 'custom';
-  price?: number;
-  priceCurrency?: string;
-  priceUnit?: string;
-  bookingUrl: string;
-  featured?: boolean;
-}
+import type { ServiceOffer } from '../../lib/sanity/types';
 
 interface Props {
   offer: ServiceOffer;

@@ -225,6 +225,34 @@ const {
         });
       });
     </script>
+
+    <!-- Scroll-reveal (.ds-reveal, see docs/ui-rules.md): the single sitewide
+         initializer. Pages only add the class — never their own observer.
+         The 600ms failsafe forces anything still hidden visible, so content
+         can't be lost if IntersectionObserver misfires. Re-arms after every
+         ViewTransition swap. -->
+    <script is:inline>
+      (function () {
+        function initReveals() {
+          var els = document.querySelectorAll('.ds-reveal');
+          if (!els.length) return;
+          els.forEach(function (el) { el.classList.remove('in'); });
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+            });
+          }, { threshold: 0.12 });
+          els.forEach(function (el) { io.observe(el); });
+          window.setTimeout(function () {
+            document.querySelectorAll('.ds-reveal:not(.in)').forEach(function (el) { el.classList.add('in'); });
+          }, 600);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initReveals, { once: true });
+        } else { initReveals(); }
+        document.addEventListener('astro:after-swap', initReveals);
+      })();
+    </script>
   </head>
 
   <body class="min-h-screen flex flex-col">

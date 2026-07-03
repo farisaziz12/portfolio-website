@@ -1,22 +1,8 @@
 ---
+import type { SocialPost } from '../../lib/sanity/types';
 import { urlFor } from '../../lib/sanity/client';
 import SocialWallIsland from '../islands/SocialWallIsland';
 
-interface SocialPost {
-  _id: string;
-  url: string;
-  platform: 'linkedin' | 'twitter';
-  author: string;
-  authorHandle?: string;
-  authorImage?: any;
-  authorRole?: string;
-  postImage?: any;
-  content: string;
-  tweetId?: string;
-  postDate?: string;
-  relatedTalk?: { title: string; slug: string };
-  relatedEvent?: { title: string; slug: string; conference: string };
-}
 
 interface Testimonial {
   _id: string;

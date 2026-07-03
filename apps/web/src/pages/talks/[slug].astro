@@ -12,6 +12,7 @@ import {
   allTalksQuery,
   socialPostsForTalkQuery,
 } from '../../lib/sanity/queries';
+import type { SocialPost } from '../../lib/sanity/types';
 
 interface TalkEvent {
   _id: string;
@@ -61,17 +62,6 @@ interface TalkListItem {
   topics?: string[];
 }
 
-interface SocialPost {
-  _id: string;
-  url: string;
-  platform: 'twitter' | 'linkedin';
-  author: string;
-  authorHandle?: string;
-  authorImage?: any;
-  authorRole?: string;
-  content: string;
-  postDate?: string;
-}
 
 export async function getStaticPaths() {
   const talks = await sanityFetch<TalkListItem[]>(allTalkSlugsQuery).catch(() => []);
@@ -473,21 +463,8 @@ const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
   </div>
 
   <script>
+    // Sticky invite bar. (.ds-reveal is armed by the global initializer in BaseLayout.)
     function initTalk() {
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
-
       const bar = document.getElementById('talkStickybar');
       const actions = document.querySelector('.talk-actions');
       const contact = document.querySelector('.page-section--contact') || document.querySelector('.contact-panel');

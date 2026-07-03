@@ -2,14 +2,8 @@ import type { APIRoute } from 'astro';
 import { sanityFetch } from '../lib/sanity/client';
 import { mentorshipOffersQuery } from '../lib/sanity/queries';
 import { mdResponse } from '../lib/markdown';
+import type { ServiceOffer } from '../lib/sanity/types';
 
-interface ServiceOffer {
-  title: string;
-  shortDescription?: string;
-  bestFor?: string;
-  engagementFormat?: string;
-  bookingUrl?: string;
-}
 
 export const GET: APIRoute = async () => {
   const offers = await sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []);

@@ -322,21 +322,6 @@ const faq = [
     </div>
   </section>
 
-  <script>
-    document.documentElement.classList.add('js');
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-    setTimeout(() => {
-      document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-    }, 500);
-  </script>
 </BaseLayout>
 
 <style>

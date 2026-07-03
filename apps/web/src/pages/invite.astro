@@ -458,20 +458,7 @@ const proofQuotes = testimonials.slice(0, 3);
 
   <script>
     function initInvite() {
-      // ── Scroll-reveal ─────────────────────────────────────────────────────
-      document.querySelectorAll('.ds-reveal.in').forEach((el) => el.classList.remove('in'));
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.ds-reveal').forEach((el) => io.observe(el));
-      window.setTimeout(() => {
-        document.querySelectorAll('.ds-reveal:not(.in)').forEach((el) => el.classList.add('in'));
-      }, 600);
+      // (.ds-reveal is armed by the global initializer in BaseLayout.)
 
       // ── Bio pills ─────────────────────────────────────────────────────────
       const copyBtn = document.getElementById('bio-copy-btn');
