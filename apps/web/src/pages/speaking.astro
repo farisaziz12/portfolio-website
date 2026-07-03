@@ -260,13 +260,13 @@ const showToggleThreshold = 3;
       </div>
       <div class="speaking-topics wide">
         {topics.map((topic) => (
-          <div class="ds-card speaking-topic ds-reveal">
+          <a href="/talks" class="ds-card ds-card-interactive speaking-topic ds-reveal">
             <IconChip>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={topic.icon} />
             </IconChip>
             <h3 class="speaking-topic__title">{topic.title}</h3>
             <p class="speaking-topic__desc">{topic.desc}</p>
-          </div>
+          </a>
         ))}
       </div>
     </div>

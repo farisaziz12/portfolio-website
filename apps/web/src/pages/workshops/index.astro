@@ -7,6 +7,7 @@ import ContactPanel from '../../components/design/ContactPanel.astro';
 import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopsQuery } from '../../lib/sanity/queries';
+import { availabilityLabel } from '../../lib/availability';
 
 interface Workshop {
   _id: string;
@@ -200,7 +201,7 @@ const topics = [
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status="Custom workshops · 2026"
+          status={availabilityLabel('Custom workshops')}
           title="Need a custom workshop?"
           body="Tailored sessions for your team or event — pick a topic, tell me about your audience's level, and I'll build it for you."
           primaryHref="/invite"

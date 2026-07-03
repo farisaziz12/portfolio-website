@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { navigate } from 'astro:transitions/client';
 
 type Cmd =
   | { group: string; label: string; icon: string; href: string; external?: boolean; keyHint?: string }
@@ -16,6 +17,8 @@ const ICON: Record<string, string> = {
   sun: '<circle cx="12" cy="12" r="3.6"/><path d="M12 3v1.5M12 19.5V21M4.2 4.2l1 1M18.8 18.8l1 1M3 12h1.5M19.5 12H21M4.2 19.8l1-1M18.8 5.2l1-1" stroke-linecap="round"/>',
   gh: '<path d="M9 19c-4 1.5-4-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6A4.6 4.6 0 0 0 18.5 6 4.3 4.3 0 0 0 18 2.5s-1-.3-3.5 1.3a12 12 0 0 0-6 0C6 2.2 5 2.5 5 2.5A4.3 4.3 0 0 0 4.5 6 4.6 4.6 0 0 0 3 9c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" stroke-linecap="round" stroke-linejoin="round"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
+  heart: '<path d="M12 20.5S3.5 15 3.5 8.9A4.6 4.6 0 0 1 8 4.3c1.7 0 3.2 1 4 2.4a4.6 4.6 0 0 1 4-2.4 4.6 4.6 0 0 1 4.5 4.6C20.5 15 12 20.5 12 20.5z"/>',
 };
 
 const COMMANDS: Cmd[] = [
@@ -31,6 +34,8 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'About', icon: ICON.user, href: '/about' },
   { group: 'Pages', label: 'Blog', icon: ICON.pen, href: '/blog' },
   { group: 'Pages', label: 'Projects', icon: ICON.book, href: '/projects' },
+  { group: 'Pages', label: 'Media & press kit', icon: ICON.img, href: '/media' },
+  { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
   { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite', keyHint: 'CTA' },
   { group: 'Actions', label: 'Toggle theme', icon: ICON.sun, action: 'toggle-theme' },
   { group: 'Elsewhere', label: 'GitHub', icon: ICON.gh, href: 'https://github.com/farisaziz12', external: true },
@@ -95,11 +100,12 @@ export default function CommandPalette() {
         localStorage.setItem('theme', next);
         localStorage.setItem('faziz-theme', next);
       } catch (_) {}
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
       return;
     }
     if ('href' in cmd) {
       if (cmd.external) window.open(cmd.href, '_blank', 'noopener');
-      else window.location.href = cmd.href;
+      else navigate(cmd.href);
     }
   }
 

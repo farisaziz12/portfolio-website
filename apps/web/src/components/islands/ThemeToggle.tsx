@@ -10,6 +10,14 @@ export default function ThemeToggle() {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     setTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+    // Stay in sync when something else (e.g. the command palette) flips the theme.
+    const onThemeChange = (e: Event) => {
+      const next = (e as CustomEvent<{ theme?: string }>).detail?.theme;
+      if (next === 'light' || next === 'dark') setTheme(next);
+    };
+    window.addEventListener('themechange', onThemeChange);
+    return () => window.removeEventListener('themechange', onThemeChange);
   }, []);
 
   useEffect(() => {

@@ -86,8 +86,12 @@ const press = media.filter((m) => m.type === 'press');
             <div class="page-grid-3">
               {videos.map((m) => {
                 const thumb = m.image ? urlFor(m.image).width(800).height(450).quality(90).url() : null;
+                const Tag = m.videoUrl ? 'a' : 'div';
+                const linkAttrs = m.videoUrl
+                  ? { href: m.videoUrl, target: '_blank', rel: 'noopener noreferrer' }
+                  : {};
                 return (
-                  <a href={m.videoUrl || '#'} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
+                  <Tag {...linkAttrs} class:list={['ds-card', 'media-card', 'ds-reveal', { 'ds-card-interactive': !!m.videoUrl }]}>
                     <div class="media-card__media">
                       {thumb ? (
                         <img src={thumb} alt={m.title || 'Talk recording'} loading="lazy" />
@@ -108,7 +112,7 @@ const press = media.filter((m) => m.type === 'press');
                         {m.credit && <span>· {m.credit}</span>}
                       </div>
                     </div>
-                  </a>
+                  </Tag>
                 );
               })}
             </div>
@@ -170,8 +174,12 @@ const press = media.filter((m) => m.type === 'press');
             <div class="page-grid-3">
               {press.map((m) => {
                 const img = m.image ? urlFor(m.image).width(600).height(340).quality(90).url() : null;
+                const Tag = m.videoUrl ? 'a' : 'div';
+                const linkAttrs = m.videoUrl
+                  ? { href: m.videoUrl, target: '_blank', rel: 'noopener noreferrer' }
+                  : {};
                 return (
-                  <a href={m.videoUrl || '#'} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
+                  <Tag {...linkAttrs} class:list={['ds-card', 'media-card', 'ds-reveal', { 'ds-card-interactive': !!m.videoUrl }]}>
                     {img && (
                       <div class="media-card__media">
                         <img src={img} alt={m.title || 'Press'} loading="lazy" />
@@ -186,7 +194,7 @@ const press = media.filter((m) => m.type === 'press');
                         {m.credit && <span>· {m.credit}</span>}
                       </div>
                     </div>
-                  </a>
+                  </Tag>
                 );
               })}
             </div>

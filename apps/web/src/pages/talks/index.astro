@@ -6,6 +6,7 @@ import ContactPanel from '../../components/design/ContactPanel.astro';
 import TalksFilter from '../../components/islands/TalksFilter';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allTalksQuery } from '../../lib/sanity/queries';
+import { availabilityLabel } from '../../lib/availability';
 
 interface Talk {
   _id: string;
@@ -99,7 +100,7 @@ const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
     <div class="container">
       <div class="wide ds-reveal">
         <ContactPanel
-          status="Custom talks available · 2026"
+          status={availabilityLabel('Custom talks available')}
           title="Need something tailored?"
           body="If none of these fit your audience, I can build a new talk around your theme. Tell me what you're hoping to land — I reply within two days."
           primaryHref="/invite"

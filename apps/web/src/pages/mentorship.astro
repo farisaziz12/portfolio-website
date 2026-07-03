@@ -170,7 +170,7 @@ const faq = [
     </div>
   </section>
 
-  <!-- APPLY — the default inquiry path. MentorCruise is an alternative below. -->
+  <!-- APPLY — the default inquiry path. MentorCruise is offered as an alternative underneath the form. -->
   <section id="apply" class="page-section page-section--alt">
     <div class="container">
       <div class="page-section__heading">
@@ -180,6 +180,13 @@ const faq = [
       </div>
       <div class="mentorship-form-wrap">
         <MentorshipInquiryForm client:load />
+        <p class="mentorship-alt">
+          Prefer a platform?
+          <a href="https://mentorcruise.com/mentor/farisaziz/" target="_blank" rel="noopener noreferrer" class="ds-link">
+            Book me on MentorCruise
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </p>
       </div>
     </div>
   </section>
@@ -291,6 +298,19 @@ const faq = [
     border: 1px solid rgb(var(--edge));
     border-radius: 14px;
     padding: clamp(1.5rem, 3vw, 2.2rem);
+  }
+
+  .mentorship-alt {
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgb(var(--edge));
+    font-size: 0.92rem;
+    color: rgb(var(--ink-muted));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .mentorship-topic {

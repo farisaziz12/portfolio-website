@@ -12,7 +12,6 @@ import ContactPanel from '../components/design/ContactPanel.astro';
 import AudienceRouter from '../components/home/AudienceRouter.astro';
 import FeaturedTalk from '../components/home/FeaturedTalk.astro';
 import ReachMap from '../components/home/ReachMap.astro';
-import GeneralSubscribe from '../components/islands/GeneralSubscribe';
 import SocialWallIsland from '../components/islands/SocialWallIsland';
 import { isRealConference } from '../lib/conferences';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
@@ -609,16 +608,7 @@ const formatEventDate = (dateStr: string) => {
     </div>
   </section>
 
-  <!-- NEWSLETTER -->
-  <section class="home-section-sm home-newsletter-wrap">
-    <div class="container wide home-newsletter">
-      <div>
-        <h3 class="home-newsletter__title">Follow my conference schedule</h3>
-        <p class="home-newsletter__body">Join engineers from across the community — one email when I publish or announce where I'm speaking next. No spam, unsubscribe anytime.</p>
-      </div>
-      <GeneralSubscribe client:load />
-    </div>
-  </section>
+  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — a second copy here was redundant. -->
 
   <script>
     // Re-run on initial load AND on every Astro ViewTransitions swap, so that
@@ -742,8 +732,13 @@ const formatEventDate = (dateStr: string) => {
   .home-hero__stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem 1.5rem;
     margin-top: 1.8rem;
+  }
+  /* Keep all three stats on one line on small screens instead of orphaning the third. */
+  @media (max-width: 480px) {
+    .home-hero__stats { gap: 0.75rem 1rem; justify-content: space-between; }
+    .home-stat-inline b { font-size: 1.55rem; }
   }
   .home-stat-inline {
     display: flex;
@@ -1114,29 +1109,4 @@ const formatEventDate = (dateStr: string) => {
 
   /* Contact panel */
   .home-section--contact { padding-top: 0; }
-
-  /* Newsletter */
-  .home-newsletter-wrap {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-  }
-  .home-newsletter {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-items: center;
-  }
-  .home-newsletter > div { max-width: 42ch; }
-  .home-newsletter__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-  }
-  .home-newsletter__body {
-    font-size: 0.95rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.3rem;
-  }
 </style>
