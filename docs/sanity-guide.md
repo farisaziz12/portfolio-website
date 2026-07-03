@@ -25,7 +25,7 @@ workshop ───────────┤            Workshop template (agen
                     │
 serviceOffer ───────┤            Consulting packages & mentorship programs
 testimonial ────────┤            Quotes with author/role/rating
-socialPost ─────────┤            LinkedIn/X mentions (social walls)
+socialPost ─────────┤            LinkedIn/X/Bluesky mentions (social walls)
 impactMetricV2 ─────┤            Headline numbers + optional case study
 speakerProfile ─────┘            Singleton: bios, headshots, taglines
 ```
@@ -99,7 +99,8 @@ surface updates.
 ### Add social proof
 
 - **Social post** (someone posted about a talk): create **Social Post** with
-  `url`, `platform`, `author`, `content` (paste the text), `postDate`. Link
+  `url`, `platform` (LinkedIn / X / Bluesky — cards take on the platform's
+  look automatically), `author`, `content` (paste the text), `postDate`. Link
   `relatedTalk`/`relatedEvent` when relevant — detail pages then show it.
   Mark featured posts to surface them on `/` and `/mentorship`.
 - **Testimonial** (a quote given to you): create **Testimonial** with `type`,

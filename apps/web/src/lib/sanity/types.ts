@@ -25,11 +25,11 @@ export interface ServiceOffer {
   order?: number;
 }
 
-/** `socialPost` documents — LinkedIn/Twitter mentions shown on social walls. */
+/** `socialPost` documents — LinkedIn/X/Bluesky mentions shown on social walls. */
 export interface SocialPost {
   _id: string;
   url: string;
-  platform: 'linkedin' | 'twitter';
+  platform: 'linkedin' | 'twitter' | 'bluesky';
   author: string;
   authorHandle?: string;
   authorImage?: unknown;
