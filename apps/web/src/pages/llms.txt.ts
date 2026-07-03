@@ -47,7 +47,7 @@ To book: speaking invitations at https://faziz-dev.com/invite (form; replies wit
 
 ## Optional
 
-- [Homepage overview](https://faziz-dev.com/index.md)
+- [Homepage overview](https://faziz-dev.com/home.md)
 ${talks
   .slice(0, 12)
   .map((t) => `- [Talk: ${t.title}](https://faziz-dev.com/talks/${t.slug}.md)`)

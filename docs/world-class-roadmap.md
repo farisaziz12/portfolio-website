@@ -15,7 +15,7 @@ them against a code audit of this repo. Each item carries a verdict and effort e
 > OG/Twitter meta set, JSON-LD `@graph` (Person entity + ProfilePage + Event + Service +
 > breadcrumbs), entity block on /about, markdown mirrors (`/about.md`, `/talks.md`,
 > `/talks/[slug].md`, `/events.md`, `/invite.md`, `/consulting.md`, `/mentorship.md`,
-> `/contact.md`, `/index.md`, `/blog/[slug].md`) + `llms.txt` + `X-Robots-Tag: noindex` headers,
+> `/contact.md`, `/home.md`, `/blog/[slug].md`) + `llms.txt` + `X-Robots-Tag: noindex` headers,
 > the satori build-time OG card system (per-type templates, all pages wired), the speaker rider
 > on /invite, palette organizer actions (copy bio / email / work-with-me), self-hosted fonts
 > (Google Fonts CDN removed), and LCP hints on the hero image.
