@@ -6,6 +6,7 @@ import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { externalPostsQuery, allBlogPostsQuery } from '../lib/sanity/queries';
 import { formatDate, formatReadingTime } from 'shared/utils';
+import BlogPostCard from '../components/blog/BlogPostCard.astro';
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 
 interface SanityImage { asset?: SanityImageSource; alt?: string }
@@ -155,36 +156,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 
             {regularBlogPosts.length > 0 && (
               <div class="page-grid-3 blog-grid">
-                {regularBlogPosts.map((post) => {
-                  const cover = safeImg(post.coverImage, 600, 340);
-                  return (
-                    <a href={`/blog/${post.slug}`} class="ds-card ds-card-interactive blog-card ds-reveal">
-                      <div class="blog-card__media">
-                        {cover ? (
-                          <img src={cover} alt={post.title} loading="lazy" />
-                        ) : (
-                          <div class="blog-card__placeholder">
-                            <span class="ds-tag">Post</span>
-                          </div>
-                        )}
-                        {post.category && (
-                          <span class="blog-card__category">
-                            {categoryLabels[post.category] || post.category}
-                          </span>
-                        )}
-                      </div>
-                      <div class="blog-card__body">
-                        <h3 class="blog-card__title">{post.title}</h3>
-                        <p class="blog-card__excerpt">{post.excerpt}</p>
-                        <div class="blog-card__meta">
-                          <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>
-                          <span>·</span>
-                          <span>{formatReadingTime(post.estimatedReadingTime)}</span>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                })}
+                {regularBlogPosts.map((post) => <BlogPostCard post={post} />)}
               </div>
             )}
           </div>
