@@ -144,17 +144,19 @@ const proofQuotes = testimonials.slice(0, 3);
         <span class="invite-crumbs__sep">/</span>
         <span class="invite-crumbs__cur">Invite me</span>
       </nav>
-      <span class="ds-pill ds-pill--signal">
-        <span class="ds-dot ds-dot--pulse"></span>
-        Booking {bookingYears()} dates
-      </span>
-      {load.confirmed > 0 && (
-        <span class:list={['ds-pill', 'invite-load', `invite-load--${load.tone}`]}>
-          {load.label}: {load.confirmed} date{load.confirmed === 1 ? '' : 's'} confirmed
-          {load.tone === 'limited' && ' · filling up'}
-          {load.tone === 'booked' && ' · fully booked'}
+      <div class="invite-hero__pills">
+        <span class="ds-pill ds-pill--signal">
+          <span class="ds-dot ds-dot--pulse"></span>
+          Booking {bookingYears()} dates
         </span>
-      )}
+        {load.confirmed > 0 && (
+          <span class:list={['ds-pill', 'invite-load', `invite-load--${load.tone}`]}>
+            {load.label}: {load.confirmed} date{load.confirmed === 1 ? '' : 's'} confirmed
+            {load.tone === 'limited' && ' · filling up'}
+            {load.tone === 'booked' && ' · fully booked'}
+          </span>
+        )}
+      </div>
       <h1 class="invite-hero__title">
         Invite me to <span class="accent-word">your event</span>.
       </h1>
@@ -808,7 +810,13 @@ const proofQuotes = testimonials.slice(0, 3);
     font-size: 0.92rem;
   }
 
-  .invite-load { color: rgb(var(--ink-muted)); margin-left: 0.6rem; }
+  .invite-hero__pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .invite-load { color: rgb(var(--ink-muted)); }
   .invite-load--limited {
     color: rgb(var(--warn));
     border-color: rgb(var(--warn) / 0.4);
@@ -818,6 +826,16 @@ const proofQuotes = testimonials.slice(0, 3);
     color: rgb(var(--danger));
     border-color: rgb(var(--danger) / 0.4);
     background: rgb(var(--danger) / 0.08);
+  }
+  /* On narrow phones the load pill's copy is too long to sit on one line;
+     let it wrap inside the pill instead of forcing horizontal overflow. */
+  @media (max-width: 460px) {
+    .invite-hero__pills { align-items: flex-start; }
+    .invite-load {
+      white-space: normal;
+      border-radius: 14px;
+      line-height: 1.4;
+    }
   }
 
   .invite-crosslink {
