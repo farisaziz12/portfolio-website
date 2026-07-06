@@ -330,6 +330,12 @@ export const companiesQuery = groq`
 `;
 
 // Media
+// Just the image assets — used by the OG card renderer to pick a random
+// gallery photo for the footer avatar.
+export const galleryImagesQuery = groq`
+  *[_type == "media" && type == "photo" && defined(image)].image
+`;
+
 // Every photo for the /gallery walkthrough — grouped client-side by the
 // referenced event. Photos without an event still appear (last group).
 export const galleryPhotosQuery = groq`

@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../../lib/sanity/client';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import {
   allTalksQuery,
   allEventsQuery,
   allBlogPostsQuery,
   allWorkshopsQuery,
   speakingStatsQuery,
+  galleryImagesQuery,
 } from '../../lib/sanity/queries';
 import { renderOgCard, OG_HEADERS, type OgCard } from '../../lib/og';
 import { FALLBACK_SPEAKER_STATS } from '../../lib/proof';
@@ -50,13 +51,32 @@ interface SpeakingStats {
 }
 
 export async function getStaticPaths() {
-  const [talks, events, posts, workshops, stats] = await Promise.all([
+  const [talks, events, posts, workshops, stats, galleryImages] = await Promise.all([
     sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
     sanityFetch<EventItem[]>(allEventsQuery).catch(() => []),
     sanityFetch<BlogPost[]>(allBlogPostsQuery).catch(() => []),
     sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []),
     sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
+    sanityFetch<unknown[]>(galleryImagesQuery).catch(() => []),
   ]);
+
+  // Footer avatar: a random gallery photo per card, square-cropped by the
+  // Sanity CDN at 2× the rendered 52px box. Undefined → "FA" monogram fallback.
+  const randomAvatar = (): string | undefined => {
+    if (!galleryImages.length) return undefined;
+    const image = galleryImages[Math.floor(Math.random() * galleryImages.length)];
+    try {
+      return urlFor(image as Parameters<typeof urlFor>[0])
+        .width(104)
+        .height(104)
+        .fit('crop')
+        .quality(85)
+        .format('jpg')
+        .url();
+    } catch {
+      return undefined;
+    }
+  };
 
   const statLine = `${stats.totalEvents}+ talks across ${stats.countries} countries`;
 
@@ -154,7 +174,10 @@ export async function getStaticPaths() {
   };
 
   return [
-    ...Object.entries(staticCards).map(([slug, card]) => ({ params: { slug }, props: { card } })),
+    ...Object.entries(staticCards).map(([slug, card]) => ({
+      params: { slug },
+      props: { card: { ...card, avatarUrl: randomAvatar() } },
+    })),
     ...talks.map((t) => ({
       params: { slug: `talks/${t.slug}` },
       props: {
@@ -168,6 +191,7 @@ export async function getStaticPaths() {
           ]
             .filter(Boolean)
             .join(' · '),
+          avatarUrl: randomAvatar(),
         } satisfies OgCard,
       },
     })),
@@ -178,6 +202,7 @@ export async function getStaticPaths() {
           kicker: [mdDate(e.date), e.location?.isOnline ? 'Online' : e.location?.city].filter(Boolean).join(' · '),
           title: e.title,
           meta: e.conference ? `at ${e.conference}` : undefined,
+          avatarUrl: randomAvatar(),
         } satisfies OgCard,
       },
     })),
@@ -188,6 +213,7 @@ export async function getStaticPaths() {
           kicker: `Blog${p.estimatedReadingTime ? ` · ${p.estimatedReadingTime} min read` : ''}`,
           title: p.title,
           meta: mdDate(p.publishedAt),
+          avatarUrl: randomAvatar(),
         } satisfies OgCard,
       },
     })),
@@ -198,6 +224,7 @@ export async function getStaticPaths() {
           kicker: `Workshop${w.duration ? ` · ${w.duration}` : ''}${w.level ? ` · ${w.level}` : ''}`,
           title: w.title,
           meta: 'Hands-on training — bookable for teams & conferences.',
+          avatarUrl: randomAvatar(),
         } satisfies OgCard,
       },
     })),
