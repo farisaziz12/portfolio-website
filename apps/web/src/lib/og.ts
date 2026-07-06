@@ -52,6 +52,27 @@ export interface OgCard {
   meta?: string;
   /** Bottom-right context label, defaults to the site domain. */
   footer?: string;
+  /** Square photo URL for the footer avatar; falls back to the "FA" monogram. */
+  avatarUrl?: string;
+}
+
+// satori can't fetch remote images itself, so pull the avatar down at build
+// time and inline it as a data URI. Cached per URL — many cards share one photo.
+const avatarCache = new Map<string, Promise<string | null>>();
+
+function loadAvatar(url: string): Promise<string | null> {
+  let cached = avatarCache.get(url);
+  if (!cached) {
+    cached = fetch(url)
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const type = res.headers.get('content-type') || 'image/jpeg';
+        return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString('base64')}`;
+      })
+      .catch(() => null);
+    avatarCache.set(url, cached);
+  }
+  return cached;
 }
 
 // satori-html does not decode HTML entities in text nodes, so escaping would
@@ -69,6 +90,10 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array<ArrayBuffer
   const title = clamp(card.title, 90);
   // Scale the headline down as it gets longer so 3 lines always fit.
   const titleSize = title.length > 60 ? 56 : title.length > 34 ? 64 : 76;
+  const avatar = card.avatarUrl ? await loadAvatar(card.avatarUrl) : null;
+  const avatarBox = avatar
+    ? `<img src="${avatar}" width="52" height="52" style="width:52px; height:52px; border-radius:12px; border:1px solid ${EDGE}; object-fit:cover;" />`
+    : `<div style="display:flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:12px; background:${ACCENT}; color:#FFFFFF; font-family:'Space Grotesk'; font-weight:700; font-size:24px;">FA</div>`;
 
   const markup = html(`
     <div style="display:flex; width:1200px; height:630px; background:${BG}; padding:24px; font-family:'Hanken Grotesk';">
@@ -93,7 +118,7 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array<ArrayBuffer
         }
         <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid ${EDGE}; padding-top:32px;">
           <div style="display:flex; align-items:center; gap:18px;">
-            <div style="display:flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:12px; background:${ACCENT}; color:#FFFFFF; font-family:'Space Grotesk'; font-weight:700; font-size:24px;">FA</div>
+            ${avatarBox}
             <div style="display:flex; flex-direction:column;">
               <div style="display:flex; color:${INK}; font-family:'Space Grotesk'; font-weight:500; font-size:28px;">Faris Aziz</div>
               <div style="display:flex; color:${INK_FAINT}; font-size:22px;">Staff Software Engineer · Conference Speaker</div>
