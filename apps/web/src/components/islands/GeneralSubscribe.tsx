@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { identify, track } from '../../lib/analytics';
 
 interface Props {
   compact?: boolean;
@@ -23,8 +24,11 @@ export default function GeneralSubscribe({ compact = false }: Props) {
 
       if (!res.ok) throw new Error('Failed');
       setStatus('success');
+      identify(email, { newsletter_subscriber: true });
+      track('newsletter_subscribed', { source: 'website', placement: compact ? 'compact' : 'card' });
     } catch {
       setStatus('error');
+      track('form_submit_failed', { form: 'newsletter', reason: 'server' });
     }
   };
 

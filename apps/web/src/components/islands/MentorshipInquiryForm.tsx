@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { identify, track, trackFormStarted } from '../../lib/analytics';
 
 type Currency = 'chf' | 'eur' | 'usd';
 type BudgetTier = 's' | 'm' | 'l' | 'xl' | 'flex';
@@ -41,6 +42,7 @@ export default function MentorshipInquiryForm() {
   const [serverError, setServerError] = useState<string | null>(null);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
+    trackFormStarted('mentorship');
     setFields((f) => ({ ...f, [key]: value }));
     if (errors[key]) setErrors((e) => { const { [key]: _omit, ...rest } = e; return rest; });
   }
@@ -52,7 +54,10 @@ export default function MentorshipInquiryForm() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) next.email = true;
     if (!fields.goals.trim()) next.goals = true;
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      track('form_validation_failed', { form: 'mentorship', fields: Object.keys(next) });
+      return;
+    }
 
     setSubmitting(true);
     setServerError(null);
@@ -65,12 +70,20 @@ export default function MentorshipInquiryForm() {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
         setServerError(body.error || 'Something went wrong — try emailing instead.');
+        track('form_submit_failed', { form: 'mentorship', reason: 'server', status: res.status });
         return;
       }
       setSuccess(true);
-      try { (window as any).posthog?.capture('mentorship_inquiry_submitted'); } catch (_) {}
+      identify(fields.email, { name: fields.name.trim() });
+      track('mentorship_inquiry_submitted', {
+        budget: fields.budget,
+        currency: fields.currency,
+        timeline: fields.timeline,
+        cadence: fields.cadence,
+      });
     } catch (_err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
+      track('form_submit_failed', { form: 'mentorship', reason: 'network' });
     } finally {
       setSubmitting(false);
     }

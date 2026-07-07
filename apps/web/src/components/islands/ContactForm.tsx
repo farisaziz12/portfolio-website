@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { identify, track, trackFormStarted } from '../../lib/analytics';
 
 type Topic = 'role' | 'speaking' | 'consulting' | 'mentorship' | 'other';
 
@@ -56,6 +57,7 @@ export default function ContactForm() {
   }, []);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
+    trackFormStarted('contact');
     setFields((f) => ({ ...f, [key]: value }));
     if (errors[key]) setErrors((e) => { const { [key]: _, ...rest } = e; return rest; });
   }
@@ -67,7 +69,10 @@ export default function ContactForm() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) next.email = true;
     if (!fields.message.trim()) next.message = true;
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      track('form_validation_failed', { form: 'contact', fields: Object.keys(next) });
+      return;
+    }
 
     setSubmitting(true);
     setServerError(null);
@@ -80,12 +85,23 @@ export default function ContactForm() {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
         setServerError(body.error || 'Something went wrong — try again in a moment.');
+        track('form_submit_failed', { form: 'contact', reason: 'server', status: res.status });
         return;
       }
       setSuccess(true);
-      try { (window as any).posthog?.capture('contact_form_submitted', { topic: fields.topic }); } catch (_) {}
+      identify(fields.email, {
+        name: fields.name.trim(),
+        company: fields.company.trim() || undefined,
+        last_contact_topic: fields.topic,
+      });
+      track('contact_form_submitted', {
+        topic: fields.topic,
+        has_company: Boolean(fields.company.trim()),
+        message_length: fields.message.trim().length,
+      });
     } catch (err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
+      track('form_submit_failed', { form: 'contact', reason: 'network' });
     } finally {
       setSubmitting(false);
     }

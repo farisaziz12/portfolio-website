@@ -1,7 +1,24 @@
 ---
 // src/components/posthog.astro
+//
+// The entire client-side analytics layer lives here:
+//   1. PostHog loader snippet + init (person profiles for identified users,
+//      pageleave, dead clicks, exception capture, heatmaps via defaults).
+//   2. Session recording, armed but only *started* on conversion pages
+//      (docs/measurement.md) — once started it runs for the rest of the session.
+//   3. Sitewide auto-events: cta_click ([data-track]), outbound_link_click,
+//      scroll_depth milestones.
+//
+// React islands emit their own events via src/lib/analytics.ts. Event
+// vocabulary is documented in docs/measurement.md — keep it in sync.
+//
+// Key/host are overridable per-environment; the fallbacks are the production
+// EU project so the site keeps measuring even if the env vars are missing.
+const POSTHOG_KEY = import.meta.env.PUBLIC_POSTHOG_KEY || 'phc_XVJoOg4MSdLDEGn0wf9uzSOi1cg0Hz6PstGzNsFyU0r';
+const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com';
 ---
-<script is:inline type="text/javascript" id="posthog-js">
+<script is:inline define:vars={{ POSTHOG_KEY, POSTHOG_HOST }}>
+  // --- Official PostHog loader stub (queues calls until array.js arrives) ---
   !(function(t, e) {
     var o, n, p, r;
     e.__SV ||
@@ -31,7 +48,7 @@
           return u.toString(1) + '.people (stub)';
         };
         o =
-          'capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId'.split(
+          'init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric people.set people.set_once'.split(
             ' '
           );
         for (n = 0; n < o.length; n++) g(u, o[n]);
@@ -39,5 +56,137 @@
       }),
       (e.__SV = 1));
   })(document, window.posthog || []);
-  posthog.init('phc_XVJoOg4MSdLDEGn0wf9uzSOi1cg0Hz6PstGzNsFyU0r', { api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24' });
+
+  (function () {
+    // Local dev never pollutes production analytics.
+    var isDev = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+    if (isDev) {
+      console.debug('[posthog] disabled on ' + location.hostname);
+      return;
+    }
+
+    posthog.init(POSTHOG_KEY, {
+      api_host: POSTHOG_HOST,
+      // 2025-05-24 defaults: history_change pageviews (covers Astro
+      // ViewTransitions), heatmaps, rageclicks, sane autocapture.
+      defaults: '2025-05-24',
+      // Person profiles only for people we identify() (form submitters);
+      // anonymous traffic stays event-only and cheap.
+      person_profiles: 'identified_only',
+      capture_pageleave: true,
+      capture_dead_clicks: true,
+      // Client-side error tracking (PostHog "Error tracking" product).
+      capture_exceptions: true,
+      // Recording is opt-in per page: armed here, started by the gate below.
+      disable_session_recording: true,
+      session_recording: {
+        maskAllInputs: true,
+        maskTextSelector: '[data-ph-mask]',
+      },
+      loaded: function (ph) {
+        // Super-property on every event: which theme the visitor browses in.
+        ph.register({
+          theme: document.documentElement.getAttribute('data-theme') || 'dark',
+        });
+      },
+    });
+
+    window.addEventListener('themechange', function (e) {
+      try { posthog.register({ theme: (e.detail && e.detail.theme) || 'dark' }); } catch (_) {}
+    });
+
+    // --- Session recording gate ---------------------------------------------
+    // Record only sessions that touch a conversion page (docs/measurement.md):
+    // that's where watching friction pays off. startSessionRecording() is
+    // sticky, so a session that lands on /contact keeps recording afterwards.
+    var RECORD_PATHS = ['/invite', '/contact', '/consulting', '/mentorship'];
+    function maybeRecord() {
+      var p = location.pathname;
+      var hit = RECORD_PATHS.some(function (pre) {
+        return p === pre || p.indexOf(pre + '/') === 0;
+      });
+      if (hit) {
+        try { posthog.startSessionRecording(); } catch (_) {}
+      }
+    }
+    maybeRecord();
+    document.addEventListener('astro:after-swap', maybeRecord);
+
+    // --- Early identify: the moment an email lands in any field ---------------
+    // Blurring any input[type=email] with a valid address identifies the
+    // visitor right away — no need to finish the form. The submit-time
+    // identify() calls in the islands then enrich the same person (name,
+    // company, …). Also fires email_entered so "gave email but never
+    // submitted" is a queryable funnel step.
+    var lastIdentifiedEmail = null;
+    document.addEventListener('focusout', function (e) {
+      var el = e.target;
+      if (!el || el.tagName !== 'INPUT') return;
+      if (el.type !== 'email' && el.getAttribute('autocomplete') !== 'email') return;
+      var v = (el.value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || v === lastIdentifiedEmail) return;
+      lastIdentifiedEmail = v;
+      try {
+        posthog.identify(v, { email: v });
+        posthog.capture('email_entered', { path: location.pathname, field: el.id || el.name || undefined });
+      } catch (_) {}
+    });
+
+    // --- cta_click: any element with data-track ------------------------------
+    // One document-level listener — survives ViewTransitions swaps.
+    document.addEventListener('click', function (e) {
+      var el = e.target && e.target.closest ? e.target.closest('[data-track]') : null;
+      if (!el) return;
+      posthog.capture('cta_click', {
+        cta: el.getAttribute('data-track'),
+        label: el.getAttribute('data-track-label') || (el.textContent || '').trim().slice(0, 60),
+        href: el.getAttribute('href') || undefined,
+        path: location.pathname,
+      });
+    });
+
+    // --- outbound_link_click --------------------------------------------------
+    // cal.com is excluded: those clicks already fire discovery_call_opened.
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      var u;
+      try { u = new URL(a.href, location.href); } catch (_) { return; }
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') return;
+      if (u.hostname === location.hostname) return;
+      if (u.hostname === 'cal.com' || u.hostname.slice(-8) === '.cal.com') return;
+      posthog.capture('outbound_link_click', {
+        href: u.href,
+        domain: u.hostname,
+        label: (a.textContent || '').trim().slice(0, 60) || a.getAttribute('aria-label') || undefined,
+        path: location.pathname,
+      });
+    });
+
+    // --- scroll_depth ----------------------------------------------------------
+    // 25/50/75/100 milestones, each fired once per pageview. Resets on
+    // ViewTransitions navigation. rAF-throttled passive listener.
+    var MILESTONES = [25, 50, 75, 100];
+    var fired = {};
+    var ticking = false;
+    function resetDepth() { fired = {}; }
+    function measureDepth() {
+      ticking = false;
+      var doc = document.documentElement;
+      var scrollable = doc.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      var pct = Math.min(100, Math.round(((window.scrollY || doc.scrollTop || 0) / scrollable) * 100));
+      for (var i = 0; i < MILESTONES.length; i++) {
+        var m = MILESTONES[i];
+        if (pct >= m && !fired[m]) {
+          fired[m] = true;
+          posthog.capture('scroll_depth', { depth: m, path: location.pathname });
+        }
+      }
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(measureDepth); }
+    }, { passive: true });
+    document.addEventListener('astro:after-swap', resetDepth);
+  })();
 </script>

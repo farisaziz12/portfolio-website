@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { navigate } from 'astro:transitions/client';
+import { track } from '../../lib/analytics';
 
 /**
  * The hero terminal, made real. Renders exactly like the old static
@@ -102,6 +103,11 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     print({ kind: 'cmd', text: cmdLine });
 
     const [cmd, ...args] = cmdLine.toLowerCase().split(/\s+/);
+    track('terminal_command', {
+      command: cmd.slice(0, 24),
+      known: COMMAND_NAMES.includes(cmd) || ['sudo', 'konami', 'coffee', 'exit', 'hire-me', 'hiring'].includes(cmd),
+      mode,
+    });
 
     if (cmd === 'clear') {
       setLines([]);

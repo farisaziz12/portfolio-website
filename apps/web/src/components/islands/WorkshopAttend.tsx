@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { identify, track } from '../../lib/analytics';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -513,9 +514,12 @@ function GateView({
 
       const user = { name: name.trim(), email };
       storeUser(token, user);
+      identify(email, { name: name.trim(), workshop_attendee: true });
+      track('workshop_signed_up', { workshop: event, instance: token });
       onSuccess(user);
     } catch {
       setStatus('error');
+      track('form_submit_failed', { form: 'workshop-attend', reason: 'server' });
     }
   };
 
