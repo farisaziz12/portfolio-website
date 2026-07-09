@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { navigate } from 'astro:transitions/client';
+import { track } from '../../lib/analytics';
 
 type Cmd =
   | { group: string; label: string; icon: string; href: string; external?: boolean; keyHint?: string }
@@ -67,6 +68,7 @@ export default function CommandPalette() {
   useEffect(() => {
     if (!open) return;
     try { setRecentLabel(localStorage.getItem(RECENT_KEY)); } catch (_) {}
+    track('command_palette_opened', { path: window.location.pathname });
   }, [open]);
 
   const filtered = useMemo(() => {
@@ -119,6 +121,11 @@ export default function CommandPalette() {
 
   function run(cmd: Cmd) {
     try { localStorage.setItem(RECENT_KEY, cmd.label); } catch (_) {}
+    track('command_palette_action', {
+      command: cmd.label,
+      group: cmd.group,
+      href: 'href' in cmd ? cmd.href : undefined,
+    });
     if ('action' in cmd && cmd.action === 'copy') {
       try {
         navigator.clipboard?.writeText(cmd.text);

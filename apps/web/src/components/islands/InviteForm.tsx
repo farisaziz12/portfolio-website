@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { identify, track, trackFormStarted } from '../../lib/analytics';
 
 type Format = 'keynote' | 'talk' | 'workshop' | 'panel';
 type Size = 's' | 'm' | 'l' | 'xl';
@@ -57,6 +58,7 @@ export default function InviteForm() {
   }, []);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
+    trackFormStarted('invite');
     setFields((f) => ({ ...f, [key]: value }));
     if (errors[key]) setErrors((e) => { const { [key]: _, ...rest } = e; return rest; });
   }
@@ -68,7 +70,10 @@ export default function InviteForm() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) next.email = true;
     if (!fields.event.trim()) next.event = true;
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      track('form_validation_failed', { form: 'invite', fields: Object.keys(next) });
+      return;
+    }
 
     setSubmitting(true);
     setServerError(null);
@@ -81,12 +86,24 @@ export default function InviteForm() {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
         setServerError(body.error || 'Something went wrong — try emailing instead.');
+        track('form_submit_failed', { form: 'invite', reason: 'server', status: res.status });
         return;
       }
       setSuccess(true);
-      try { (window as any).posthog?.capture('invite_form_submitted', { format: fields.format }); } catch (_) {}
+      identify(fields.email, {
+        name: fields.name.trim(),
+        last_invite_event: fields.event.trim(),
+      });
+      track('invite_form_submitted', {
+        format: fields.format,
+        audience_size: fields.size,
+        event: fields.event.trim(),
+        has_date: Boolean(fields.date),
+        has_location: Boolean(fields.location.trim()),
+      });
     } catch (err) {
       setServerError("Couldn't reach the server. Try again in a moment.");
+      track('form_submit_failed', { form: 'invite', reason: 'network' });
     } finally {
       setSubmitting(false);
     }
