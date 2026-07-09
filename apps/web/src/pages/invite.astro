@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import InviteForm from '../components/islands/InviteForm';
-import HeadshotDownloader from '../components/islands/HeadshotDownloader';
+import HeadshotGallery from '../components/islands/HeadshotGallery';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import {
   pastEventsQuery,
@@ -62,7 +62,7 @@ const bios = [
   { id: 'full', label: 'Full', wordCount: '300+ words', text: portableTextToPlain(profile?.bioFull) },
 ].filter((b) => b.text);
 
-// ── Headshots — gallery + multi-resolution downloads ─────────────────────────
+// ── Headshots — crop-aware gallery + multi-resolution downloads ──────────────
 const styleLabels: Record<string, string> = {
   formal: 'Formal',
   casual: 'Casual',
@@ -70,33 +70,69 @@ const styleLabels: Record<string, string> = {
   headshot: 'Portrait',
 };
 
-const headshotResolutions = [
-  { name: 'Small', width: 400, label: 'S', tooltip: 'Small (400px) — social & thumbnails' },
-  { name: 'Medium', width: 800, label: 'M', tooltip: 'Medium (800px) — web use' },
-  { name: 'Large', width: 1200, label: 'L', tooltip: 'Large (1200px) — print & high-res' },
-  { name: 'Original', width: 0, label: 'XL', tooltip: 'Original — full resolution' },
+// Aspect-ratio presets organizers actually need. ratio = width / height;
+// 0 = keep the original frame. Sanity's CDN centers every crop on the image
+// hotspot (the face), so no manual crop uploads are needed.
+const headshotCrops = [
+  { id: 'full', label: 'Full', ratio: 0, hint: 'As shot — full frame' },
+  { id: 'square', label: '1:1', ratio: 1, hint: 'Avatars · socials · speaker cards' },
+  { id: 'portrait', label: '4:5', ratio: 4 / 5, hint: 'Portrait · LinkedIn · print programs' },
+  { id: 'wide', label: '16:9', ratio: 16 / 9, hint: 'Banners · slides · video thumbnails' },
+];
+
+const headshotSizes = [
+  { name: 'Small', width: 400, label: 'S', use: 'social & thumbnails' },
+  { name: 'Medium', width: 800, label: 'M', use: 'web use' },
+  { name: 'Large', width: 1200, label: 'L', use: 'print & high-res' },
+  { name: 'XL', width: 2000, label: 'XL', use: 'full resolution' },
 ];
 
 const downloadableHeadshots: Headshot[] = (profile?.headshots ?? []).filter(
   (h) => h.downloadable !== false
 );
 
-const headshotData = downloadableHeadshots.map((headshot, index) => ({
-  index,
-  style: headshot.style || 'headshot',
-  alt: headshot.alt || 'Faris Aziz speaker headshot',
-  previewUrl: urlFor(headshot.asset as never).width(400).height(400).url(),
-  fullUrl: urlFor(headshot.asset as never).width(1600).format('jpg').quality(95).url(),
-  resolutions: headshotResolutions.map((res) => ({
-    name: res.name,
-    label: res.label,
-    tooltip: res.tooltip,
-    url: res.width > 0
-      ? urlFor(headshot.asset as never).width(res.width).format('jpg').quality(95).url()
-      : urlFor(headshot.asset as never).format('jpg').url(),
-    filename: `faris-aziz-${headshot.style || 'headshot'}-${res.name.toLowerCase()}.jpg`,
-  })),
-}));
+const headshotData = downloadableHeadshots.map((headshot) => {
+  // Pass the whole image object (not just .asset) so urlFor keeps the
+  // hotspot/crop data — that's what makes ratio crops face-centered.
+  const image = headshot as never;
+  const style = headshot.style || 'headshot';
+
+  return {
+    styleLabel: styleLabels[style] || style,
+    alt: headshot.alt || 'Faris Aziz speaker headshot',
+    crops: headshotCrops.map((crop) => {
+      const isFullFrame = crop.ratio === 0;
+      const sized = (width: number) => {
+        const base = urlFor(image).width(width).format('jpg').quality(95);
+        return isFullFrame
+          ? base.url()
+          : base.height(Math.round(width / crop.ratio)).fit('crop').url();
+      };
+      return {
+        id: crop.id,
+        label: crop.label,
+        hint: crop.hint,
+        previewUrl: sized(600),
+        lightboxUrl: sized(1600),
+        resolutions: headshotSizes.map((size) => {
+          const isOriginalFile = isFullFrame && size.name === 'XL';
+          const height = Math.round(size.width / (crop.ratio || 1));
+          return {
+            name: size.name,
+            label: size.label,
+            tooltip: isOriginalFile
+              ? 'Original file — full resolution'
+              : `${size.name} — ${isFullFrame ? `${size.width}px wide` : `${size.width}×${height}px`} · ${size.use}`,
+            url: isOriginalFile ? urlFor(image).format('jpg').url() : sized(size.width),
+            filename: isOriginalFile
+              ? `faris-aziz-${style}-original.jpg`
+              : `faris-aziz-${style}${isFullFrame ? '' : `-${crop.id}`}-${size.width}w.jpg`,
+          };
+        }),
+      };
+    }),
+  };
+});
 
 // ── Availability — 12-month calendar from upcoming events ────────────────────
 const now = new Date();
@@ -376,58 +412,17 @@ const proofQuotes = testimonials.slice(0, 3);
         <header class="invite-section-head">
           <Kicker>Press kit · Headshots</Kicker>
           <h2 class="invite-h2">Headshots</h2>
-          <p class="invite-section-lead">High-resolution photos for event programs and promotion. Click to preview, pick a size to download.</p>
+          <p class="invite-section-lead">High-resolution photos for event programs and promotion. Pick a crop and a size — every ratio stays centered on the face automatically.</p>
         </header>
 
-        <div class="headshot-gallery">
-          {headshotData.map((data) => (
-            <article class="headshot-card" data-headshot-index={data.index} data-full-url={data.fullUrl}>
-              <button type="button" class="headshot-card__image" aria-label={`Preview ${styleLabels[data.style] || data.style} headshot`}>
-                <img src={data.previewUrl} alt={data.alt} loading="lazy" />
-                <span class="headshot-card__overlay">
-                  <span class="headshot-card__expand" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                    </svg>
-                  </span>
-                </span>
-              </button>
-              <div class="headshot-card__info">
-                <span class="headshot-card__style">{styleLabels[data.style] || data.style}</span>
-                <HeadshotDownloader
-                  client:load
-                  resolutions={data.resolutions}
-                  previewUrl={data.previewUrl}
-                />
-              </div>
-            </article>
-          ))}
-        </div>
+        <HeadshotGallery client:visible headshots={headshotData} />
 
         <p class="headshot-guide">
-          <span>Size guide:</span> S · social · M · web · L · print · XL · original
+          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
+          — need a different ratio or format? Mention it in the form above.
         </p>
       </div>
     </section>
-  )}
-
-  <!-- Lightbox (rendered only if headshots exist) -->
-  {headshotData.length > 0 && (
-    <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Headshot preview">
-      <button type="button" class="lightbox__btn lightbox__close" aria-label="Close preview">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <button type="button" class="lightbox__btn lightbox__prev" aria-label="Previous">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <button type="button" class="lightbox__btn lightbox__next" aria-label="Next">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <div class="lightbox__content">
-        <img class="lightbox__image" src="" alt="" />
-      </div>
-      <div class="lightbox__counter"></div>
-    </div>
   )}
 
   <!-- PROOF -->
@@ -510,52 +505,16 @@ const proofQuotes = testimonials.slice(0, 3);
         }, 1500);
       });
 
-      // ── Lightbox ──────────────────────────────────────────────────────────
-      const lightbox = document.getElementById('lightbox');
-      if (lightbox) {
-        const image = lightbox.querySelector('.lightbox__image') as HTMLImageElement | null;
-        const counter = lightbox.querySelector('.lightbox__counter') as HTMLElement | null;
-        const cards = Array.from(document.querySelectorAll('[data-headshot-index]'));
-        const urls = cards.map((el) => el.getAttribute('data-full-url') || '');
-        const alts = cards.map((el) => el.querySelector('img')?.getAttribute('alt') || '');
-        let current = 0;
-
-        const open = (i: number) => {
-          if (!image || !urls[i]) return;
-          current = i;
-          image.src = urls[i];
-          image.alt = alts[i] || '';
-          if (counter) counter.textContent = `${i + 1} / ${urls.length}`;
-          lightbox.classList.add('open');
-          lightbox.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
-        };
-        const close = () => {
-          lightbox.classList.remove('open');
-          lightbox.setAttribute('aria-hidden', 'true');
-          document.body.style.overflow = '';
-        };
-        const nav = (dir: number) => open((current + dir + urls.length) % urls.length);
-
-        cards.forEach((card) => {
-          card.querySelector('.headshot-card__image')?.addEventListener('click', () => {
-            const idx = parseInt(card.getAttribute('data-headshot-index') || '0', 10);
-            open(idx);
-          });
-        });
-        lightbox.querySelector('.lightbox__close')?.addEventListener('click', close);
-        lightbox.querySelector('.lightbox__prev')?.addEventListener('click', () => nav(-1));
-        lightbox.querySelector('.lightbox__next')?.addEventListener('click', () => nav(1));
-        lightbox.addEventListener('click', (e) => {
-          if (e.target === lightbox) close();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (!lightbox.classList.contains('open')) return;
-          if (e.key === 'Escape') close();
-          if (e.key === 'ArrowLeft') nav(-1);
-          if (e.key === 'ArrowRight') nav(1);
-        });
+      // Deep link: /invite?bio=medium#bios pre-selects a bio length so
+      // organizers land on exactly the bio they were sent.
+      const bioParam = new URLSearchParams(window.location.search).get('bio');
+      if (bioParam) {
+        const pill = document.querySelector<HTMLElement>(`.bio-pill[data-bio-id="${CSS.escape(bioParam)}"]`);
+        pill?.click();
       }
+
+      // (Headshot gallery + lightbox are handled by the HeadshotGallery island,
+      //  including the ?crop= deep link.)
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initInvite, { once: true });
@@ -688,6 +647,252 @@ const proofQuotes = testimonials.slice(0, 3);
   .invite-form__success-body {
     color: rgb(var(--ink-muted));
     margin-top: 0.5rem;
+  }
+
+  /* ── Headshot gallery (rendered by the HeadshotGallery React island, so these
+        styles must be global — Astro's scoped styles can't reach island markup) ── */
+  .headshot-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+  @media (min-width: 640px) {
+    .headshot-gallery { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+  }
+  .headshot-card {
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .headshot-card:hover { border-color: rgb(var(--edge-strong)); transform: translateY(-3px); }
+
+  .headshot-card__image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    background: rgb(var(--surface-3));
+    cursor: zoom-in;
+    overflow: hidden;
+  }
+  /* `contain` (not `cover`): the preview must show exactly what downloads —
+     square fills the frame, other ratios letterbox to reveal their true shape. */
+  .headshot-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .headshot-card:hover .headshot-card__image img { transform: scale(1.04); }
+  .headshot-card__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0);
+    transition: background 0.3s ease;
+  }
+  .headshot-card:hover .headshot-card__overlay { background: rgb(0 0 0 / 0.35); }
+  .headshot-card__expand {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    color: rgb(var(--ink));
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .headshot-card__expand svg { width: 18px; height: 18px; }
+  .headshot-card:hover .headshot-card__expand { opacity: 1; transform: scale(1); }
+
+  .headshot-card__info {
+    padding: 0.75rem 0.85rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .headshot-card__style {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* Crop ratio segmented control */
+  .headshot-card__crops {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+  }
+  .headshot-crop-pill {
+    flex: 1;
+    padding: 0.34rem 0.1rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: rgb(var(--ink-muted));
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .headshot-crop-pill:hover { color: rgb(var(--ink)); }
+  .headshot-crop-pill.active {
+    color: rgb(var(--ink));
+    background: rgb(var(--surface-1));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  }
+  .headshot-crop-pill:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 1px;
+  }
+
+  /* Reserve two lines so switching crops never reflows the card */
+  .headshot-card__hint {
+    margin: 0;
+    min-height: 2em;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.66rem;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* Desktop size picker / mobile save CTA */
+  .headshot-sizes { display: none; }
+  @media (min-width: 768px) {
+    .headshot-sizes {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .headshot-save { display: none; }
+  }
+  .headshot-sizes__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .headshot-sizes__label svg { width: 0.75rem; height: 0.75rem; }
+  .headshot-sizes__btns { display: flex; gap: 0.25rem; }
+  .headshot-size-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: rgb(var(--ink-muted));
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .headshot-size-btn:hover {
+    color: rgb(var(--accent-bright));
+    border-color: rgb(var(--accent));
+    background: rgb(var(--accent) / 0.1);
+  }
+  .headshot-size-btn.done {
+    color: rgb(var(--signal));
+    border-color: rgb(var(--signal) / 0.4);
+    background: rgb(var(--signal) / 0.15);
+  }
+  .headshot-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    background: rgb(var(--accent));
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .headshot-save:active { opacity: 0.9; }
+  .headshot-save svg { width: 1rem; height: 1rem; }
+
+  /* ── Lightbox (also island-rendered) ────────────────────────────────────── */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0.92);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .lightbox.open { opacity: 1; visibility: visible; }
+  .lightbox__btn {
+    position: absolute;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .lightbox__btn:hover { background: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.3); }
+  .lightbox__btn svg { width: 18px; height: 18px; }
+  .lightbox__close { top: 1.25rem; right: 1.25rem; }
+  .lightbox__prev { left: 1.25rem; top: 50%; transform: translateY(-50%); }
+  .lightbox__next { right: 1.25rem; top: 50%; transform: translateY(-50%); }
+  .lightbox__content { max-width: 90vw; max-height: 85vh; }
+  .lightbox__image {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,.7);
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lightbox.open .lightbox__image { transform: scale(1); }
+  .lightbox__counter {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.8rem;
+    color: rgb(255 255 255 / 0.7);
+    letter-spacing: 0.05em;
   }
 </style>
 
@@ -1183,83 +1388,6 @@ const proofQuotes = testimonials.slice(0, 3);
     background: rgb(var(--surface-1));
     padding-block: clamp(3.5rem, 7vw, 6rem);
   }
-  .headshot-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-    max-width: 52rem;
-    margin: 0 auto;
-  }
-  @media (min-width: 640px) {
-    .headshot-gallery { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-  }
-  .headshot-card {
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .headshot-card:hover { border-color: rgb(var(--edge-strong)); transform: translateY(-3px); }
-
-  .headshot-card__image {
-    position: relative;
-    display: block;
-    width: 100%;
-    aspect-ratio: 1;
-    padding: 0;
-    border: none;
-    background: rgb(var(--surface-3));
-    cursor: zoom-in;
-    overflow: hidden;
-  }
-  .headshot-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .headshot-card:hover .headshot-card__image img { transform: scale(1.05); }
-  .headshot-card__overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 0);
-    transition: background 0.3s ease;
-  }
-  .headshot-card:hover .headshot-card__overlay { background: rgb(0 0 0 / 0.35); }
-  .headshot-card__expand {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    border-radius: 50%;
-    color: rgb(var(--ink));
-    opacity: 0;
-    transform: scale(0.8);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  .headshot-card__expand svg { width: 18px; height: 18px; }
-  .headshot-card:hover .headshot-card__expand { opacity: 1; transform: scale(1); }
-
-  .headshot-card__info {
-    padding: 0.75rem 0.85rem 0.85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-  .headshot-card__style {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
   .headshot-guide {
     text-align: center;
     margin-top: 1.5rem;
@@ -1269,58 +1397,4 @@ const proofQuotes = testimonials.slice(0, 3);
     letter-spacing: 0.04em;
   }
   .headshot-guide span { color: rgb(var(--ink-muted)); margin-right: 0.4rem; }
-
-  /* ── Lightbox ───────────────────────────────────────────────────────────── */
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 0.92);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-  }
-  .lightbox.open { opacity: 1; visibility: visible; }
-  .lightbox__btn {
-    position: absolute;
-    width: 2.75rem;
-    height: 2.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(255 255 255 / 0.1);
-    border: 1px solid rgb(255 255 255 / 0.15);
-    border-radius: 50%;
-    color: white;
-    cursor: pointer;
-    transition: background 0.18s, border-color 0.18s;
-  }
-  .lightbox__btn:hover { background: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.3); }
-  .lightbox__btn svg { width: 18px; height: 18px; }
-  .lightbox__close { top: 1.25rem; right: 1.25rem; }
-  .lightbox__prev { left: 1.25rem; top: 50%; transform: translateY(-50%); }
-  .lightbox__next { right: 1.25rem; top: 50%; transform: translateY(-50%); }
-  .lightbox__content { max-width: 90vw; max-height: 85vh; }
-  .lightbox__image {
-    max-width: 100%;
-    max-height: 85vh;
-    border-radius: 12px;
-    box-shadow: 0 24px 60px -20px rgba(0,0,0,.7);
-    transform: scale(0.95);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .lightbox.open .lightbox__image { transform: scale(1); }
-  .lightbox__counter {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.8rem;
-    color: rgb(255 255 255 / 0.7);
-    letter-spacing: 0.05em;
-  }
 </style>

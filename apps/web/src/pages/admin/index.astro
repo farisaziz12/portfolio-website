@@ -6,7 +6,7 @@ import Kicker from '../../components/design/Kicker.astro';
 import Terminal from '../../components/design/Terminal.astro';
 import GridTexture from '../../components/design/GridTexture.astro';
 import { sanityFetch } from '../../lib/sanity/client';
-import { allWorkshopInstancesQuery } from '../../lib/sanity/queries';
+import { allWorkshopInstancesQuery, speakerProfileQuery } from '../../lib/sanity/queries';
 import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
 
 interface WorkshopInstanceRow {
@@ -28,6 +28,15 @@ interface AudienceContactCount {
   audienceId: string;
   count: number | null;
   error?: string;
+}
+
+interface AdminSpeakerProfile {
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    bluesky?: string;
+    github?: string;
+  };
 }
 
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
@@ -60,10 +69,14 @@ if (Astro.request.method === 'POST') {
 }
 
 let instances: WorkshopInstanceRow[] = [];
+let profile: AdminSpeakerProfile | null = null;
 const audienceCounts = new Map<string, AudienceContactCount>();
 
 if (isAuthenticated) {
-  instances = await sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []);
+  [instances, profile] = await Promise.all([
+    sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []),
+    sanityFetch<AdminSpeakerProfile | null>(speakerProfileQuery).catch(() => null),
+  ]);
 
   // Best-effort fetch of subscriber counts from Resend per audience (with timeout).
   if (RESEND_API_KEY) {
@@ -115,9 +128,37 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   closed: { label: 'Closed', color: 'var(--ink-faint)' },
   'force-closed': { label: 'Force closed', color: 'var(--danger)' },
 };
+
+// ── Press kit quicklinks — deep links into /invite for organizer emails ─────
+const SITE = 'https://faziz-dev.com';
+
+const bioQuicklinks = [
+  { label: 'Short bio', url: `${SITE}/invite?bio=short#bios` },
+  { label: 'Medium bio', url: `${SITE}/invite?bio=medium#bios` },
+  { label: 'Full bio', url: `${SITE}/invite?bio=full#bios` },
+];
+
+const cropQuicklinks = [
+  { label: 'Headshots', url: `${SITE}/invite#headshots` },
+  { label: 'Square 1:1', url: `${SITE}/invite?crop=square#headshots` },
+  { label: 'Portrait 4:5', url: `${SITE}/invite?crop=portrait#headshots` },
+  { label: 'Wide 16:9', url: `${SITE}/invite?crop=wide#headshots` },
+];
+
+const socialQuicklinks = [
+  { label: 'X', url: profile?.socialLinks?.twitter },
+  { label: 'LinkedIn', url: profile?.socialLinks?.linkedin },
+  { label: 'Bluesky', url: profile?.socialLinks?.bluesky },
+  { label: 'GitHub', url: profile?.socialLinks?.github },
+].filter((s): s is { label: string; url: string } => !!s.url);
+
+const socialsBlock = socialQuicklinks.map((s) => `${s.label}: ${s.url}`).join('\n');
+
+const copyOnClick =
+  "navigator.clipboard.writeText(this.dataset.url);const lbl=this.querySelector('.lbl');const prev=lbl.textContent;lbl.textContent='Copied';setTimeout(()=>{lbl.textContent=prev;},2000);";
 ---
 
-<BaseLayout title="Admin · Workshop dashboard" description="Workshop instance dashboard" pathname="/admin">
+<BaseLayout title="Admin · Dashboard" description="Admin dashboard" pathname="/admin">
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
   {!isAuthenticated ? (
@@ -154,9 +195,95 @@ const statusMeta: Record<string, { label: string; color: string }> = {
     <section class="admin-section">
       <div class="container">
         <div class="admin-head">
-          <Kicker>Admin · Workshops</Kicker>
+          <Kicker>Admin</Kicker>
           <div class="admin-head__row">
-            <h1 class="admin-head__title">Workshop instances</h1>
+            <h1 class="admin-head__title">Dashboard</h1>
+          </div>
+        </div>
+
+        <!-- PRESS KIT QUICKLINKS -->
+        <div class="admin-block">
+          <h2 class="admin-block__title">Press kit quicklinks</h2>
+          <p class="admin-head__body">Deep links into the <a href="/invite" class="ds-link">/invite</a> press kit — paste one into an organizer email and they land with the right bio or headshot crop pre-selected.</p>
+
+          <div class="quicklinks">
+            <div class="instance__row quicklinks__row">
+              <span class="instance__label">Bios</span>
+              <div class="quicklinks__chips">
+                {bioQuicklinks.map((l) => (
+                  <button class="instance__copy" data-url={l.url} title={l.url} onclick={copyOnClick}>
+                    <code>{l.label}</code>
+                    <span class="lbl">Copy</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div class="instance__row quicklinks__row">
+              <span class="instance__label">Headshots</span>
+              <div class="quicklinks__chips">
+                {cropQuicklinks.map((l) => (
+                  <button class="instance__copy" data-url={l.url} title={l.url} onclick={copyOnClick}>
+                    <code>{l.label}</code>
+                    <span class="lbl">Copy</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div class="instance__row quicklinks__row">
+              <span class="instance__label">Custom</span>
+              <div class="quicklinks__combo">
+                <select id="ql-bio" class="quicklinks__select" aria-label="Bio length">
+                  <option value="">No bio</option>
+                  <option value="short">Short bio</option>
+                  <option value="medium">Medium bio</option>
+                  <option value="full">Full bio</option>
+                </select>
+                <select id="ql-crop" class="quicklinks__select" aria-label="Headshot crop">
+                  <option value="">Any crop</option>
+                  <option value="square">Square 1:1</option>
+                  <option value="portrait">Portrait 4:5</option>
+                  <option value="wide">Wide 16:9</option>
+                </select>
+                <button class="instance__copy" id="ql-combo-copy" type="button">
+                  <code id="ql-combo-url">faziz-dev.com/invite</code>
+                  <span class="lbl">Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="instance__row quicklinks__row">
+              <span class="instance__label">Socials</span>
+              {socialQuicklinks.length > 0 ? (
+                <div class="quicklinks__chips">
+                  {socialQuicklinks.map((s) => (
+                    <button class="instance__copy" data-url={s.url} title={s.url} onclick={copyOnClick}>
+                      <code>{s.label}</code>
+                      <span class="lbl">Copy</span>
+                    </button>
+                  ))}
+                  <button class="instance__copy instance__copy--primary" data-url={socialsBlock} title="Copy all social links as a text block" onclick={copyOnClick}>
+                    <code>Copy all</code>
+                    <span class="lbl">Copy</span>
+                  </button>
+                </div>
+              ) : (
+                <div class="instance__audience instance__audience--empty">
+                  <span>No social links set.</span>
+                  <a href="https://faziz-dev.sanity.studio" target="_blank" rel="noopener noreferrer" class="ds-link">
+                    Add them in Sanity (Speaker Profile → Social Links)
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <!-- WORKSHOPS -->
+        <div class="admin-block">
+          <div class="admin-head__row">
+            <h2 class="admin-block__title">Workshop instances</h2>
             <div class="admin-head__meta">
               <span class="ds-dot"></span>
               <span>{instances.length} instance{instances.length !== 1 ? 's' : ''}</span>
@@ -288,6 +415,51 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   )}
 </BaseLayout>
 
+<script>
+  // Custom quicklink builder: combine a bio length and a headshot crop into
+  // one /invite deep link. Lands on #bios when a bio is chosen (headshot
+  // crop still applies further down the page), otherwise on #headshots.
+  function initAdminQuicklinks() {
+    const bioSel = document.getElementById('ql-bio') as HTMLSelectElement | null;
+    const cropSel = document.getElementById('ql-crop') as HTMLSelectElement | null;
+    const urlEl = document.getElementById('ql-combo-url');
+    const copyBtn = document.getElementById('ql-combo-copy');
+    if (!bioSel || !cropSel || !urlEl || !copyBtn) return;
+
+    const buildUrl = () => {
+      const params = new URLSearchParams();
+      if (bioSel.value) params.set('bio', bioSel.value);
+      if (cropSel.value) params.set('crop', cropSel.value);
+      const qs = params.toString();
+      const hash = bioSel.value ? '#bios' : cropSel.value ? '#headshots' : '';
+      return `https://faziz-dev.com/invite${qs ? `?${qs}` : ''}${hash}`;
+    };
+    const render = () => {
+      urlEl.textContent = buildUrl().replace('https://', '');
+    };
+
+    bioSel.addEventListener('change', render);
+    cropSel.addEventListener('change', render);
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(buildUrl());
+      const lbl = copyBtn.querySelector('.lbl');
+      if (!lbl) return;
+      const prev = lbl.textContent;
+      lbl.textContent = 'Copied';
+      window.setTimeout(() => {
+        lbl.textContent = prev;
+      }, 2000);
+    });
+    render();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminQuicklinks, { once: true });
+  } else {
+    initAdminQuicklinks();
+  }
+  document.addEventListener('astro:after-swap', initAdminQuicklinks);
+</script>
+
 <style>
   .auth-section {
     min-height: 80vh;
@@ -342,7 +514,54 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   .auth-card__input:focus { outline: none; border-color: rgb(var(--accent)); }
 
   .admin-section { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
-  .admin-head { max-width: 60rem; margin-bottom: 2.5rem; }
+  .admin-head { max-width: 60rem; margin-bottom: 2rem; }
+
+  .admin-block { max-width: 60rem; margin-bottom: 2.5rem; }
+  .admin-block__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: rgb(var(--ink));
+  }
+
+  .quicklinks {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-top: 1.2rem;
+  }
+  .quicklinks .quicklinks__row:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  .quicklinks__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .quicklinks__combo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .quicklinks__select {
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge-strong));
+    border-radius: 8px;
+    color: rgb(var(--ink));
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    font-family: inherit;
+  }
+  .quicklinks__select:focus { outline: none; border-color: rgb(var(--accent)); }
+  .instance__copy--primary code { color: rgb(var(--signal)); }
   .admin-head__row {
     display: flex;
     align-items: end;

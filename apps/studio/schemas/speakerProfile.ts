@@ -36,6 +36,8 @@ export default defineType({
       name: 'headshots',
       title: 'Headshots',
       type: 'array',
+      description:
+        'Important: open the hotspot editor on each photo and drag the circle onto the face. The /invite press kit generates 1:1, 4:5 and 16:9 crops centered on the hotspot — without it, crops cut from the image center and can chop the face off vertical shots.',
       of: [
         {
           type: 'image',
@@ -132,6 +134,7 @@ export default defineType({
       fields: [
         { name: 'twitter', title: 'Twitter/X', type: 'url' },
         { name: 'linkedin', title: 'LinkedIn', type: 'url' },
+        { name: 'bluesky', title: 'Bluesky', type: 'url' },
         { name: 'github', title: 'GitHub', type: 'url' },
         { name: 'email', title: 'Email', type: 'string' },
       ],
