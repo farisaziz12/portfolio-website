@@ -505,7 +505,16 @@ const proofQuotes = testimonials.slice(0, 3);
         }, 1500);
       });
 
-      // (Headshot gallery + lightbox are handled by the HeadshotGallery island.)
+      // Deep link: /invite?bio=medium#bios pre-selects a bio length so
+      // organizers land on exactly the bio they were sent.
+      const bioParam = new URLSearchParams(window.location.search).get('bio');
+      if (bioParam) {
+        const pill = document.querySelector<HTMLElement>(`.bio-pill[data-bio-id="${CSS.escape(bioParam)}"]`);
+        pill?.click();
+      }
+
+      // (Headshot gallery + lightbox are handled by the HeadshotGallery island,
+      //  including the ?crop= deep link.)
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initInvite, { once: true });

@@ -134,6 +134,7 @@ export default defineType({
       fields: [
         { name: 'twitter', title: 'Twitter/X', type: 'url' },
         { name: 'linkedin', title: 'LinkedIn', type: 'url' },
+        { name: 'bluesky', title: 'Bluesky', type: 'url' },
         { name: 'github', title: 'GitHub', type: 'url' },
         { name: 'email', title: 'Email', type: 'string' },
       ],
