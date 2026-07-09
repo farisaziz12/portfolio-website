@@ -12,8 +12,10 @@ in the PostHog UI (they can't be created from code).
 - `apps/web/src/lib/analytics.ts` — typed `track()` / `identify()` /
   `trackFormStarted()` wrappers used by React islands. The `AnalyticsEvent`
   union there is the canonical event list; keep it in sync with this doc.
-- Key/host come from `PUBLIC_POSTHOG_KEY` / `PUBLIC_POSTHOG_HOST` env vars,
-  falling back to the production EU project. Capture is disabled on
+- Key/host come from `PUBLIC_POSTHOG_KEY` / `PUBLIC_POSTHOG_HOST` env vars
+  (host defaults to the EU cloud). The key is never hardcoded — when
+  `PUBLIC_POSTHOG_KEY` is unset, analytics is silently disabled, so it must be
+  set in Vercel on **Production and Preview**. Capture is also disabled on
   `localhost` so dev never pollutes prod data.
 
 ### Init config highlights

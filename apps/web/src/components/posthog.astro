@@ -12,9 +12,10 @@
 // React islands emit their own events via src/lib/analytics.ts. Event
 // vocabulary is documented in docs/measurement.md — keep it in sync.
 //
-// Key/host are overridable per-environment; the fallbacks are the production
-// EU project so the site keeps measuring even if the env vars are missing.
-const POSTHOG_KEY = import.meta.env.PUBLIC_POSTHOG_KEY || 'phc_XVJoOg4MSdLDEGn0wf9uzSOi1cg0Hz6PstGzNsFyU0r';
+// The key comes exclusively from the environment — never hardcode it here.
+// Set PUBLIC_POSTHOG_KEY in Vercel (Production + Preview) and .env.local for
+// dev; without it, analytics is silently off. Host defaults to the EU cloud.
+const POSTHOG_KEY = import.meta.env.PUBLIC_POSTHOG_KEY || '';
 const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com';
 ---
 <script is:inline define:vars={{ POSTHOG_KEY, POSTHOG_HOST }}>
@@ -58,6 +59,10 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
   })(document, window.posthog || []);
 
   (function () {
+    if (!POSTHOG_KEY) {
+      console.debug('[posthog] PUBLIC_POSTHOG_KEY not set — analytics disabled');
+      return;
+    }
     // Local dev never pollutes production analytics.
     var isDev = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
     if (isDev) {
