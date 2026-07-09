@@ -39,6 +39,15 @@ export default function HeadshotGallery({ headshots }: HeadshotGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
 
+  // Deep link: /invite?crop=square#headshots pre-selects a crop on every card.
+  useEffect(() => {
+    const cropParam = new URLSearchParams(window.location.search).get('crop');
+    if (!cropParam) return;
+    const idx = headshots[0]?.crops.findIndex((c) => c.id === cropParam) ?? -1;
+    if (idx >= 0) setCropIndex(headshots.map(() => idx));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectedCrop = (card: number) =>
     headshots[card].crops[cropIndex[card]] || headshots[card].crops[0];
 
