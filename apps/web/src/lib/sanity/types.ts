@@ -41,3 +41,40 @@ export interface SocialPost {
   relatedTalk?: { title: string; slug: string };
   relatedEvent?: { title: string; slug: string; conference: string };
 }
+
+/** Result shape of `quarterActivityQuery` — one quarter of activity across content types. */
+export interface QuarterActivityEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  type?: string;
+  conference?: string;
+  date: string;
+  location?: { city?: string; country?: string; isOnline?: boolean };
+  videoUrl?: string;
+  featured?: boolean;
+}
+
+export interface QuarterActivityExternalPost {
+  _id: string;
+  title: string;
+  url: string;
+  type?: string;
+  publishedAt: string;
+  source?: string;
+}
+
+export interface QuarterActivityBlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  category?: string;
+  estimatedReadingTime?: number;
+}
+
+export interface QuarterActivity {
+  events: QuarterActivityEvent[];
+  external: QuarterActivityExternalPost[];
+  blogs: QuarterActivityBlogPost[];
+}

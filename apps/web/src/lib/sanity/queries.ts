@@ -530,6 +530,46 @@ export const externalPostsQuery = groq`
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Quarter activity roundup (home "This Quarter, Wrapped" section)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Everything dated inside one quarter, across content types. $qStart/$qEnd are
+// ISO date strings (start inclusive, end exclusive); string comparison works
+// for both `date` and `datetime` fields. Events include upcoming ones so the
+// section can surface what's still coming this quarter.
+export const quarterActivityQuery = groq`
+  {
+    "events": *[_type == "event" && date >= $qStart && date < $qEnd] | order(date desc) {
+      _id,
+      title,
+      "slug": slug.current,
+      type,
+      conference,
+      date,
+      location,
+      "videoUrl": links.videoUrl,
+      featured
+    },
+    "external": *[_type == "externalPost" && defined(publishedAt) && publishedAt >= $qStart && publishedAt < $qEnd] | order(publishedAt desc) {
+      _id,
+      title,
+      url,
+      type,
+      publishedAt,
+      source
+    },
+    "blogs": *[_type == "blogPost" && published == true && defined(publishedAt) && publishedAt >= $qStart && publishedAt < $qEnd] | order(publishedAt desc) {
+      _id,
+      title,
+      "slug": slug.current,
+      publishedAt,
+      category,
+      "estimatedReadingTime": round(length(pt::text(body)) / 5 / 200)
+    }
+  }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Blog Posts (Self-hosted)
 // ─────────────────────────────────────────────────────────────────────────────
 

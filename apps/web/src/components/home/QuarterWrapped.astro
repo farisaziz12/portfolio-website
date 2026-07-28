@@ -1,0 +1,396 @@
+---
+import Kicker from '../design/Kicker.astro';
+import type { QuarterActivity } from '../../lib/sanity/types';
+
+interface Props {
+  /** e.g. "Q3 2026" */
+  label: string;
+  activity: QuarterActivity | null;
+}
+
+const { label, activity } = Astro.props;
+
+const events = activity?.events ?? [];
+const external = activity?.external ?? [];
+const blogs = activity?.blogs ?? [];
+
+if (events.length + external.length + blogs.length === 0) return null;
+
+// Line-art icons (no emoji — house rule), keyed by item flavor.
+const ICONS: Record<string, string> = {
+  // microphone
+  podcast:
+    '<rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7"/>',
+  // play circle
+  video: '<circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z"/>',
+  // document
+  article:
+    '<path d="M7 2.5h7L19 7.5v14H7z"/><path d="M14 2.5v5h5M10 12h6M10 15.5h6"/>',
+  // pen nib
+  blog: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
+  // presentation board
+  event: '<path d="M3 4h18M5 4v11h14V4M12 15v3M8.5 21l3.5-3 3.5 3"/>',
+};
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  conference: 'Conference talk',
+  workshop: 'Workshop',
+  meetup: 'Meetup',
+  podcast: 'Podcast',
+  webinar: 'Webinar',
+  panel: 'Panel',
+  hosting: 'Hosting',
+  judging: 'Judging',
+  mentoring: 'Mentoring',
+  attending: 'Attending',
+};
+const EXTERNAL_TYPE_LABELS: Record<string, string> = {
+  article: 'Article',
+  podcast: 'Podcast',
+  video: 'Video',
+  panel: 'Panel',
+  interview: 'Interview',
+};
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+interface WrappedItem {
+  id: string;
+  badge: string;
+  icon: string;
+  title: string;
+  meta?: string;
+  date: string;
+  href: string;
+  external: boolean;
+  upcoming: boolean;
+  action: string;
+}
+
+const todayISO = new Date().toISOString().slice(0, 10);
+
+const eventItems: WrappedItem[] = events.map((e) => {
+  const upcoming = e.date.slice(0, 10) >= todayISO;
+  const isPodcast = e.type === 'podcast';
+  const place = e.location?.isOnline
+    ? 'Online'
+    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
+  return {
+    id: e._id,
+    badge: (e.type && EVENT_TYPE_LABELS[e.type]) || (e.type ? capitalize(e.type) : 'Event'),
+    icon: isPodcast ? ICONS.podcast : ICONS.event,
+    title: e.title,
+    meta: [e.conference, place].filter(Boolean).join(' · '),
+    date: e.date,
+    href: `/events/${e.slug}`,
+    external: false,
+    upcoming,
+    action: upcoming ? 'Details' : e.videoUrl ? 'Watch' : 'Recap',
+  };
+});
+
+const externalItems: WrappedItem[] = external.map((p) => {
+  const kind = p.type && EXTERNAL_TYPE_LABELS[p.type] ? p.type : 'article';
+  return {
+    id: p._id,
+    badge: EXTERNAL_TYPE_LABELS[kind] || capitalize(kind),
+    icon: ICONS[kind] || ICONS.article,
+    title: p.title,
+    meta: p.source,
+    date: p.publishedAt,
+    href: p.url,
+    external: true,
+    upcoming: false,
+    action: kind === 'podcast' ? 'Listen' : kind === 'video' ? 'Watch' : 'Read',
+  };
+});
+
+const blogItems: WrappedItem[] = blogs.map((b) => ({
+  id: b._id,
+  badge: 'Blog post',
+  icon: ICONS.blog,
+  title: b.title,
+  meta: [b.category ? capitalize(b.category.replace(/-/g, ' ')) : null, b.estimatedReadingTime ? `${b.estimatedReadingTime} min read` : null]
+    .filter(Boolean)
+    .join(' · '),
+  date: b.publishedAt,
+  href: `/blog/${b.slug}`,
+  external: false,
+  upcoming: false,
+  action: 'Read',
+}));
+
+// Newest first — upcoming events naturally float to the top of the quarter.
+const items = [...eventItems, ...externalItems, ...blogItems].sort((a, b) =>
+  b.date.localeCompare(a.date)
+);
+
+const MAX_VISIBLE = 12;
+const visible = items.slice(0, MAX_VISIBLE);
+const hiddenCount = items.length - visible.length;
+
+// Summary chips — only the non-zero ones.
+const podcastCount =
+  external.filter((p) => p.type === 'podcast').length +
+  events.filter((e) => e.type === 'podcast').length;
+const stageCount = events.filter((e) => e.type !== 'podcast').length;
+const pressCount = external.filter((p) => p.type !== 'podcast').length;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const chips = [
+  stageCount > 0 ? plural(stageCount, 'event', 'events') : null,
+  podcastCount > 0 ? plural(podcastCount, 'podcast', 'podcasts') : null,
+  pressCount > 0 ? plural(pressCount, 'article & interview', 'articles & interviews') : null,
+  blogs.length > 0 ? plural(blogs.length, 'blog post', 'blog posts') : null,
+].filter(Boolean) as string[];
+
+const formatDay = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return { day: String(d.getUTCDate()), month: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }) };
+};
+---
+
+<section class="qw-section" aria-labelledby="quarter-wrapped-title">
+  <div class="container">
+    <div class="qw-heading">
+      <Kicker class="ds-reveal">This quarter</Kicker>
+      <h2 class="qw-h2 ds-reveal" id="quarter-wrapped-title">
+        {label}, <span class="mark">wrapped</span>
+      </h2>
+      <p class="qw-lead ds-reveal">
+        Talks, podcasts, articles, and everything else from the past few months — plus what's still coming up.
+      </p>
+      {chips.length > 0 && (
+        <div class="qw-chips ds-reveal">
+          {chips.map((chip) => <span class="ds-tag">{chip}</span>)}
+        </div>
+      )}
+    </div>
+
+    <ol class="qw-list">
+      {visible.map((item) => {
+        const { day, month } = formatDay(item.date);
+        return (
+          <li class="ds-reveal">
+            <a
+              class="qw-item"
+              href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
+            >
+              <span class="qw-item__date" aria-hidden="true">
+                <b>{day}</b>
+                <span>{month}</span>
+              </span>
+              <span class="qw-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={item.icon} />
+              </span>
+              <span class="qw-item__body">
+                <span class="qw-item__tags">
+                  <span class="ds-tag">{item.badge}</span>
+                  {item.upcoming && (
+                    <span class="qw-item__upcoming">
+                      <span class="ds-dot ds-dot--pulse"></span>
+                      Upcoming
+                    </span>
+                  )}
+                </span>
+                <span class="qw-item__title">{item.title}</span>
+                {item.meta && <span class="qw-item__meta">{item.meta}</span>}
+              </span>
+              <span class="qw-item__action">
+                {item.action}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+
+    {hiddenCount > 0 && <p class="qw-more ds-reveal">+ {hiddenCount} more this quarter</p>}
+
+    <div class="qw-cta ds-reveal">
+      <a href="/speaking" class="ds-btn ds-btn-secondary">All speaking</a>
+      <a href="/blog" class="ds-btn ds-btn-secondary">All writing &amp; podcasts</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Section primitives mirror index.astro's .home-section — Astro scoped
+     styles don't cross component boundaries, so they're re-declared here. */
+  .qw-section {
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+  }
+  .qw-heading {
+    text-align: center;
+    margin-bottom: 2.4rem;
+  }
+  .qw-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    margin-top: 0.9rem;
+  }
+  .qw-lead {
+    color: rgb(var(--ink-muted));
+    max-width: 52ch;
+    margin: 1rem auto 0;
+  }
+  .qw-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.4rem;
+  }
+
+  .qw-list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 860px;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .qw-item {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 0.95rem 1.2rem;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    background: rgb(var(--surface-1));
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s;
+  }
+  .qw-item:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -18px rgb(var(--bg) / 0.9);
+  }
+  .qw-item__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    text-align: center;
+    min-width: 2.6rem;
+  }
+  .qw-item__date b {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    line-height: 1.1;
+  }
+  .qw-item__date span {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-item__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgb(var(--surface-2));
+    box-shadow: inset 0 0 0 1px rgb(var(--edge));
+    color: rgb(var(--accent-bright));
+    flex-shrink: 0;
+  }
+  .qw-item__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .qw-item__body {
+    display: grid;
+    gap: 0.28rem;
+    min-width: 0;
+  }
+  .qw-item__tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .qw-item__upcoming {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--signal));
+  }
+  .qw-item__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+  }
+  .qw-item__meta {
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+  }
+  .qw-item__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+  .qw-item__action svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qw-item:hover .qw-item__action {
+    color: rgb(var(--accent-bright));
+  }
+  .qw-item:hover .qw-item__action svg {
+    transform: translateX(3px);
+  }
+
+  .qw-more {
+    text-align: center;
+    margin: 1.2rem auto 0;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.8rem;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2.2rem;
+  }
+
+  @media (max-width: 640px) {
+    .qw-item {
+      grid-template-columns: auto 1fr;
+      gap: 0.85rem;
+      padding: 0.9rem 1rem;
+    }
+    .qw-item__icon,
+    .qw-item__action {
+      display: none;
+    }
+  }
+</style>

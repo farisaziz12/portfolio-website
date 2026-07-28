@@ -49,6 +49,36 @@ export function availabilityLabel(prefix = 'Available', opts: QuarterOpts = {}):
   return `${prefix} · ${formatQuarter(opts)}`;
 }
 
+/** The calendar quarter containing `now` — no lead time, unlike getNextBookableQuarter. */
+export function getCurrentQuarter(opts: { now?: Date } = {}): QuarterInfo {
+  const now = opts.now ?? new Date();
+  const quarter = (Math.floor(now.getMonth() / 3) + 1) as 1 | 2 | 3 | 4;
+  return { quarter, year: now.getFullYear() };
+}
+
+export interface QuarterRange extends QuarterInfo {
+  /** e.g. "Q3 2026" — same token format as formatQuarter(). */
+  label: string;
+  /** First day of the quarter, ISO date ("2026-07-01"). Inclusive. */
+  startISO: string;
+  /** First day of the NEXT quarter, ISO date ("2026-10-01"). Exclusive. */
+  endISO: string;
+}
+
+/**
+ * Date bounds for the current calendar quarter, as ISO date strings that
+ * compare correctly against both Sanity `date` and `datetime` fields in GROQ
+ * (`field >= $qStart && field < $qEnd`).
+ */
+export function currentQuarterRange(opts: { now?: Date } = {}): QuarterRange {
+  const { quarter, year } = getCurrentQuarter(opts);
+  const pad2 = (m: number) => String(m).padStart(2, '0');
+  const startMonth = (quarter - 1) * 3 + 1;
+  const startISO = `${year}-${pad2(startMonth)}-01`;
+  const endISO = quarter === 4 ? `${year + 1}-01-01` : `${year}-${pad2(startMonth + 3)}-01`;
+  return { quarter, year, label: `Q${quarter} ${year}`, startISO, endISO };
+}
+
 /**
  * "Current year & next year" token. Used in copy like
  * `Booking ${bookingYears()} dates` → `"Booking 2026 & 2027 dates"`.
