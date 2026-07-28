@@ -391,7 +391,11 @@ const chips = [
     align-items: center;
     gap: 0.45rem;
     align-self: flex-start;
-    margin-top: 0.7rem;
+    /* Pin to the card bottom so buttons line up across cards regardless of
+       how many lines the title/meta take. Cards stretch to equal row height
+       (grid default), the auto top-margin absorbs the leftover space, and the
+       card's flex `gap` keeps a minimum gap when a card is full. */
+    margin-top: auto;
     padding: 0.5rem 0.95rem;
     border-radius: 999px;
     background: rgb(var(--accent) / 0.16);
