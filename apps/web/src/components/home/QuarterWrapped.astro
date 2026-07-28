@@ -16,37 +16,6 @@ const blogs = activity?.blogs ?? [];
 
 if (events.length + external.length + blogs.length === 0) return null;
 
-// Line-art icons (no emoji — house rule), keyed by item flavor.
-const ICONS: Record<string, string> = {
-  // microphone
-  podcast:
-    '<rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7"/>',
-  // play circle
-  video: '<circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z"/>',
-  // document
-  article:
-    '<path d="M7 2.5h7L19 7.5v14H7z"/><path d="M14 2.5v5h5M10 12h6M10 15.5h6"/>',
-  // pen nib
-  blog: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
-  // presentation board
-  event: '<path d="M3 4h18M5 4v11h14V4M12 15v3M8.5 21l3.5-3 3.5 3"/>',
-};
-
-// Headphones — used for the podcast "Listen now" CTA.
-const HEADPHONES = '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4.5" height="7" rx="1.6"/><rect x="17" y="13.5" width="4.5" height="7" rx="1.6"/>';
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  conference: 'Conference talk',
-  workshop: 'Workshop',
-  meetup: 'Meetup',
-  podcast: 'Podcast',
-  webinar: 'Webinar',
-  panel: 'Panel',
-  hosting: 'Hosting',
-  judging: 'Judging',
-  mentoring: 'Mentoring',
-  attending: 'Attending',
-};
 const EXTERNAL_TYPE_LABELS: Record<string, string> = {
   article: 'Article',
   podcast: 'Podcast',
@@ -55,107 +24,108 @@ const EXTERNAL_TYPE_LABELS: Record<string, string> = {
   interview: 'Interview',
 };
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const todayISO = new Date().toISOString().slice(0, 10);
+const formatDay = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return { day: String(d.getUTCDate()), month: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }) };
+};
+const byDateDesc = <T extends { date: string }>(a: T, b: T) => b.date.localeCompare(a.date);
 
-interface WrappedItem {
+// ── Podcasts — pulled to the top, shown in full as feature cards ──────────────
+interface PodcastCard {
   id: string;
-  badge: string;
-  icon: string;
   title: string;
   meta?: string;
   date: string;
   href: string;
   external: boolean;
   upcoming: boolean;
-  podcast: boolean;
   action: string;
 }
+const podcasts: PodcastCard[] = [
+  ...external
+    .filter((p) => p.type === 'podcast')
+    .map((p) => ({
+      id: p._id,
+      title: p.title,
+      meta: p.source,
+      date: p.publishedAt,
+      href: p.url,
+      external: true,
+      upcoming: false,
+      action: 'Listen now',
+    })),
+  ...events
+    .filter((e) => e.type === 'podcast')
+    .map((e) => {
+      const upcoming = e.date.slice(0, 10) >= todayISO;
+      const place = e.location?.isOnline
+        ? 'Online'
+        : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
+      return {
+        id: e._id,
+        title: e.title,
+        meta: [e.conference, place].filter(Boolean).join(' · '),
+        date: e.date,
+        href: `/events/${e.slug}`,
+        external: false,
+        upcoming,
+        action: upcoming ? 'Coming up' : 'Listen now',
+      };
+    }),
+].sort(byDateDesc);
 
-const todayISO = new Date().toISOString().slice(0, 10);
-
-const eventItems: WrappedItem[] = events.map((e) => {
-  const upcoming = e.date.slice(0, 10) >= todayISO;
-  const isPodcast = e.type === 'podcast';
-  const place = e.location?.isOnline
-    ? 'Online'
-    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
-  return {
-    id: e._id,
-    badge: (e.type && EVENT_TYPE_LABELS[e.type]) || (e.type ? capitalize(e.type) : 'Event'),
-    icon: isPodcast ? ICONS.podcast : ICONS.event,
-    title: e.title,
-    meta: [e.conference, place].filter(Boolean).join(' · '),
-    date: e.date,
-    href: `/events/${e.slug}`,
+// ── Writing & press — blogs + non-podcast external posts, shown in full ───────
+interface ReadItem {
+  id: string;
+  badge: string;
+  title: string;
+  meta?: string;
+  date: string;
+  href: string;
+  external: boolean;
+  action: string;
+}
+const readItems: ReadItem[] = [
+  ...blogs.map((b) => ({
+    id: b._id,
+    badge: 'Blog post',
+    title: b.title,
+    meta: [b.category ? capitalize(b.category.replace(/-/g, ' ')) : null, b.estimatedReadingTime ? `${b.estimatedReadingTime} min read` : null]
+      .filter(Boolean)
+      .join(' · '),
+    date: b.publishedAt,
+    href: `/blog/${b.slug}`,
     external: false,
-    upcoming,
-    podcast: isPodcast,
-    action: isPodcast ? (upcoming ? 'Coming up' : 'Listen now') : upcoming ? 'Details' : e.videoUrl ? 'Watch' : 'Recap',
-  };
-});
+    action: 'Read',
+  })),
+  ...external
+    .filter((p) => p.type !== 'podcast')
+    .map((p) => {
+      const kind = p.type && EXTERNAL_TYPE_LABELS[p.type] ? p.type : 'article';
+      return {
+        id: p._id,
+        badge: EXTERNAL_TYPE_LABELS[kind] || capitalize(kind),
+        title: p.title,
+        meta: p.source,
+        date: p.publishedAt,
+        href: p.url,
+        external: true,
+        action: kind === 'video' ? 'Watch' : 'Read',
+      };
+    }),
+].sort(byDateDesc);
 
-const externalItems: WrappedItem[] = external.map((p) => {
-  const kind = p.type && EXTERNAL_TYPE_LABELS[p.type] ? p.type : 'article';
-  const isPodcast = kind === 'podcast';
-  return {
-    id: p._id,
-    badge: EXTERNAL_TYPE_LABELS[kind] || capitalize(kind),
-    icon: ICONS[kind] || ICONS.article,
-    title: p.title,
-    meta: p.source,
-    date: p.publishedAt,
-    href: p.url,
-    external: true,
-    upcoming: false,
-    podcast: isPodcast,
-    action: isPodcast ? 'Listen now' : kind === 'video' ? 'Watch' : 'Read',
-  };
-});
-
-const blogItems: WrappedItem[] = blogs.map((b) => ({
-  id: b._id,
-  badge: 'Blog post',
-  icon: ICONS.blog,
-  title: b.title,
-  meta: [b.category ? capitalize(b.category.replace(/-/g, ' ')) : null, b.estimatedReadingTime ? `${b.estimatedReadingTime} min read` : null]
-    .filter(Boolean)
-    .join(' · '),
-  date: b.publishedAt,
-  href: `/blog/${b.slug}`,
-  external: false,
-  upcoming: false,
-  podcast: false,
-  action: 'Read',
-}));
-
-// Newest first — upcoming events naturally float to the top of the quarter.
-const items = [...eventItems, ...externalItems, ...blogItems].sort((a, b) =>
-  b.date.localeCompare(a.date)
-);
-
-// Progressive disclosure: show the first slice, reveal the rest on demand.
-// The server renders every item; the collapse is applied only when JS is on
-// (html.js), so no-JS visitors still see the full list and no content is lost.
-const INITIAL_VISIBLE = 6;
-const overflowCount = Math.max(0, items.length - INITIAL_VISIBLE);
+// ── Talks & events — collapsed to a single count CTA ──────────────────────────
+const talkCount = events.filter((e) => e.type !== 'podcast').length;
 
 // Summary chips — only the non-zero ones.
-const podcastCount =
-  external.filter((p) => p.type === 'podcast').length +
-  events.filter((e) => e.type === 'podcast').length;
-const stageCount = events.filter((e) => e.type !== 'podcast').length;
-const pressCount = external.filter((p) => p.type !== 'podcast').length;
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const chips = [
-  stageCount > 0 ? plural(stageCount, 'event', 'events') : null,
-  podcastCount > 0 ? plural(podcastCount, 'podcast', 'podcasts') : null,
-  pressCount > 0 ? plural(pressCount, 'article & interview', 'articles & interviews') : null,
-  blogs.length > 0 ? plural(blogs.length, 'blog post', 'blog posts') : null,
+  talkCount > 0 ? plural(talkCount, 'talk & event', 'talks & events') : null,
+  podcasts.length > 0 ? plural(podcasts.length, 'podcast', 'podcasts') : null,
+  readItems.length > 0 ? plural(readItems.length, 'post & article', 'posts & articles') : null,
 ].filter(Boolean) as string[];
-
-const formatDay = (dateStr: string) => {
-  const d = new Date(dateStr);
-  return { day: String(d.getUTCDate()), month: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }) };
-};
 ---
 
 <section class="qw-section" aria-labelledby="quarter-wrapped-title">
@@ -167,7 +137,7 @@ const formatDay = (dateStr: string) => {
       </h2>
       <p class="qw-lead ds-reveal">
         Talks, podcasts, articles, and everything else from the past few months — plus what's still coming up.
-        {podcastCount > 0 && ' Tap any podcast to listen now.'}
+        {podcasts.length > 0 && ' Tap any podcast to listen now.'}
       </p>
       {chips.length > 0 && (
         <div class="qw-chips ds-reveal">
@@ -176,99 +146,106 @@ const formatDay = (dateStr: string) => {
       )}
     </div>
 
-    <ol class="qw-list" data-collapsed={overflowCount > 0 ? 'true' : undefined}>
-      {items.map((item, i) => {
-        const { day, month } = formatDay(item.date);
-        const overflow = i >= INITIAL_VISIBLE;
-        return (
-          <li class:list={['ds-reveal', 'qw-row', { 'qw-row--overflow': overflow }]}>
-            <a
-              class:list={['qw-item', { 'qw-item--podcast': item.podcast }]}
-              href={item.href}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noopener noreferrer' : undefined}
-            >
-              <span class="qw-item__date" aria-hidden="true">
-                <b>{day}</b>
-                <span>{month}</span>
-              </span>
-              <span class="qw-item__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={item.icon} />
-              </span>
-              <span class="qw-item__body">
-                <span class="qw-item__tags">
-                  <span class:list={['ds-tag', { 'qw-tag--podcast': item.podcast }]}>{item.badge}</span>
-                  {item.upcoming && (
-                    <span class="qw-item__upcoming">
-                      <span class="ds-dot ds-dot--pulse"></span>
-                      Upcoming
+    <div class="qw-wrap">
+      {podcasts.length > 0 && (
+        <div class="qw-group ds-reveal">
+          <div class="qw-group__head">
+            <h3 class="qw-group__title">Podcasts</h3>
+            <span class="qw-group__count">{podcasts.length}</span>
+          </div>
+          <div class="qw-pods">
+            {podcasts.map((pod) => {
+              const { day, month } = formatDay(pod.date);
+              return (
+                <a
+                  class="qw-pod"
+                  href={pod.href}
+                  target={pod.external ? '_blank' : undefined}
+                  rel={pod.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="qw-pod__top">
+                    <span class="qw-pod__badge">
+                      <span class="qw-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                      {pod.upcoming ? 'Upcoming' : 'On the mic'}
                     </span>
-                  )}
-                </span>
-                <span class="qw-item__title">{item.title}</span>
-                {item.meta && <span class="qw-item__meta">{item.meta}</span>}
-              </span>
-              {item.podcast ? (
-                <span class="qw-listen">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={HEADPHONES} />
-                  {item.action}
-                </span>
-              ) : (
-                <span class="qw-item__action">
-                  {item.action}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              )}
-            </a>
-          </li>
-        );
-      })}
-    </ol>
+                    <span class="qw-pod__date">{month} {day}</span>
+                  </span>
+                  <span class="qw-pod__title">{pod.title}</span>
+                  {pod.meta && <span class="qw-pod__meta">{pod.meta}</span>}
+                  <span class="qw-listen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="2.5" y="13.5" width="4.5" height="7" rx="1.6" /><rect x="17" y="13.5" width="4.5" height="7" rx="1.6" />
+                    </svg>
+                    {pod.action}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-    {overflowCount > 0 && (
-      <div class="qw-disclosure">
-        <button type="button" class="qw-toggle" aria-expanded="false" data-qw-toggle data-count={overflowCount}>
-          <span class="qw-toggle__label">Show {overflowCount} more</span>
-          <svg class="qw-toggle__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-      </div>
-    )}
+      {readItems.length > 0 && (
+        <div class="qw-group ds-reveal">
+          <div class="qw-group__head">
+            <h3 class="qw-group__title">Writing &amp; press</h3>
+            <span class="qw-group__count">{readItems.length}</span>
+          </div>
+          <ol class="qw-reads">
+            {readItems.map((item) => {
+              const { day, month } = formatDay(item.date);
+              return (
+                <li>
+                  <a
+                    class="qw-read"
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                  >
+                    <span class="qw-read__date" aria-hidden="true">
+                      <b>{day}</b><span>{month}</span>
+                    </span>
+                    <span class="qw-read__body">
+                      <span class="ds-tag">{item.badge}</span>
+                      <span class="qw-read__title">{item.title}</span>
+                      {item.meta && <span class="qw-read__meta">{item.meta}</span>}
+                    </span>
+                    <span class="qw-read__action">
+                      {item.action}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
 
-    <div class="qw-cta ds-reveal">
-      <a href="/speaking" class="ds-btn ds-btn-secondary">All speaking</a>
-      <a href="/blog" class="ds-btn ds-btn-secondary">All writing &amp; podcasts</a>
+      {talkCount > 0 && (
+        <a href="/speaking" class="qw-talks ds-reveal">
+          <span class="qw-talks__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 4h18M5 4v11h14V4M12 15v3M8.5 21l3.5-3 3.5 3" />
+            </svg>
+          </span>
+          <span class="qw-talks__text">
+            <b>{talkCount} {talkCount === 1 ? 'talk & event' : 'talks & events'} this quarter</b>
+            <span>Conferences, workshops, panels &amp; more — on stage and online</span>
+          </span>
+          <span class="qw-talks__cta">
+            See all speaking
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </a>
+      )}
     </div>
   </div>
 </section>
-
-<script>
-  // Progressive disclosure toggle. The list ships fully rendered; here we wire
-  // the "show more / show less" control that flips the [data-collapsed] flag.
-  document.querySelectorAll('[data-qw-toggle]').forEach((btn) => {
-    const section = btn.closest('.qw-section');
-    const list = section?.querySelector('.qw-list');
-    const label = btn.querySelector('.qw-toggle__label');
-    if (!list || !label) return;
-    const count = btn.getAttribute('data-count') ?? '';
-    btn.addEventListener('click', () => {
-      const collapsed = list.getAttribute('data-collapsed') === 'true';
-      if (collapsed) {
-        list.removeAttribute('data-collapsed');
-        btn.setAttribute('aria-expanded', 'true');
-        label.textContent = 'Show less';
-      } else {
-        list.setAttribute('data-collapsed', 'true');
-        btn.setAttribute('aria-expanded', 'false');
-        label.textContent = `Show ${count} more`;
-        section?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    });
-  });
-</script>
 
 <style>
   /* Section primitives mirror index.astro's .home-section — Astro scoped
@@ -278,7 +255,7 @@ const formatDay = (dateStr: string) => {
   }
   .qw-heading {
     text-align: center;
-    margin-bottom: 2.4rem;
+    margin-bottom: 2.6rem;
   }
   .qw-h2 {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
@@ -302,156 +279,122 @@ const formatDay = (dateStr: string) => {
     margin-top: 1.4rem;
   }
 
-  .qw-list {
-    list-style: none;
+  .qw-wrap {
+    max-width: 880px;
     margin: 0 auto;
-    padding: 0;
-    max-width: 860px;
     display: grid;
-    gap: 0.7rem;
+    gap: 2.4rem;
   }
-  /* Collapse overflow rows only when JS is available (html.js), so no-JS
-     visitors keep the full, server-rendered list. */
-  :global(html.js) .qw-list[data-collapsed='true'] .qw-row--overflow {
-    display: none;
+  .qw-group__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .qw-group__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(var(--ink));
+  }
+  .qw-group__count {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.8rem;
+    color: rgb(var(--ink-faint));
   }
 
-  .qw-item {
+  /* ── Podcasts — feature cards ──────────────────────────────────────── */
+  .qw-pods {
     display: grid;
-    grid-template-columns: auto auto 1fr auto;
-    align-items: center;
-    gap: 1.1rem;
-    padding: 0.95rem 1.2rem;
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    background: rgb(var(--surface-1));
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 0.9rem;
+  }
+  .qw-pod {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.2rem 1.3rem 1.3rem;
+    border-radius: 16px;
+    border: 1px solid rgb(var(--accent) / 0.3);
+    background: rgb(var(--accent) / 0.06);
     text-decoration: none;
     transition:
       border-color 0.2s,
       transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.2s;
   }
-  .qw-item:hover {
-    border-color: rgb(var(--edge-strong));
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px -18px rgb(var(--bg) / 0.9);
+  .qw-pod:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--accent) / 0.6);
+    box-shadow: 0 16px 40px -20px rgb(var(--accent) / 0.55);
   }
-  .qw-item__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-    text-align: center;
-    min-width: 2.6rem;
-  }
-  .qw-item__date b {
-    display: block;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-    line-height: 1.1;
-  }
-  .qw-item__date span {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: rgb(var(--ink-faint));
-  }
-  .qw-item__icon {
+  .qw-pod__top {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: rgb(var(--surface-2));
-    box-shadow: inset 0 0 0 1px rgb(var(--edge));
-    color: rgb(var(--accent-bright));
-    flex-shrink: 0;
+    justify-content: space-between;
+    gap: 0.75rem;
   }
-  .qw-item__icon svg {
-    width: 20px;
-    height: 20px;
-  }
-  .qw-item__body {
-    display: grid;
-    gap: 0.28rem;
-    min-width: 0;
-  }
-  .qw-item__tags {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-  }
-  .qw-item__upcoming {
+  .qw-pod__badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: rgb(var(--signal));
+    letter-spacing: 0.09em;
+    color: rgb(var(--accent-bright));
   }
-  .qw-item__title {
+  .qw-pod__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.72rem;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-pod__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
-    font-size: 1.02rem;
+    font-size: 1.08rem;
     line-height: 1.25;
     color: rgb(var(--ink));
+    margin-top: 0.15rem;
   }
-  .qw-item__meta {
+  .qw-pod__meta {
     font-size: 0.86rem;
     color: rgb(var(--ink-muted));
   }
-  .qw-item__action {
+
+  /* Animated "live" equalizer — the audio-is-here cue on every podcast card. */
+  .qw-eq {
     display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: rgb(var(--ink-faint));
-    white-space: nowrap;
-    transition: color 0.2s;
+    align-items: flex-end;
+    gap: 2px;
+    height: 13px;
   }
-  .qw-item__action svg {
-    width: 15px;
-    height: 15px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  .qw-eq span {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: rgb(var(--accent-bright));
+    transform-origin: bottom;
+    animation: qw-eq-bounce 0.9s ease-in-out infinite;
   }
-  .qw-item:hover .qw-item__action {
-    color: rgb(var(--accent-bright));
-  }
-  .qw-item:hover .qw-item__action svg {
-    transform: translateX(3px);
+  .qw-eq span:nth-child(1) { animation-delay: -0.2s; }
+  .qw-eq span:nth-child(2) { animation-delay: -0.5s; }
+  .qw-eq span:nth-child(3) { animation-delay: -0.1s; }
+  .qw-eq span:nth-child(4) { animation-delay: -0.7s; }
+  @keyframes qw-eq-bounce {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
   }
 
-  /* ── Podcast highlight ─────────────────────────────────────────────── */
-  .qw-item--podcast {
-    background: rgb(var(--accent) / 0.06);
-    border-color: rgb(var(--accent) / 0.3);
-  }
-  .qw-item--podcast:hover {
-    border-color: rgb(var(--accent) / 0.55);
-    box-shadow: 0 12px 34px -18px rgb(var(--accent) / 0.5);
-  }
-  .qw-item--podcast .qw-item__icon {
-    background: rgb(var(--accent) / 0.14);
-    color: rgb(var(--accent-bright));
-    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.35);
-  }
-  .qw-tag--podcast {
-    color: rgb(var(--accent-bright));
-    border-color: rgb(var(--accent) / 0.4);
-    background: rgb(var(--accent) / 0.1);
-  }
   .qw-listen {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    padding: 0.5rem 0.9rem;
+    align-self: flex-start;
+    margin-top: 0.7rem;
+    padding: 0.5rem 0.95rem;
     border-radius: 999px;
-    background: rgb(var(--accent) / 0.14);
+    background: rgb(var(--accent) / 0.16);
     border: 1px solid rgb(var(--accent) / 0.45);
     color: rgb(var(--accent-bright));
     font-family: var(--font-mono, 'IBM Plex Mono', monospace);
@@ -466,80 +409,176 @@ const formatDay = (dateStr: string) => {
     width: 15px;
     height: 15px;
   }
-  .qw-item--podcast:hover .qw-listen {
-    background: rgb(var(--accent) / 0.24);
+  .qw-pod:hover .qw-listen {
+    background: rgb(var(--accent) / 0.26);
     border-color: rgb(var(--accent) / 0.7);
   }
 
-  /* ── Disclosure toggle ─────────────────────────────────────────────── */
-  .qw-disclosure {
-    display: none;
-    justify-content: center;
-    margin-top: 1.4rem;
+  /* ── Writing & press — compact rows ────────────────────────────────── */
+  .qw-reads {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
   }
-  /* Only useful with JS — the list is fully rendered without it. */
-  :global(html.js) .qw-disclosure {
-    display: flex;
+  .qw-read {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 12px;
+    background: rgb(var(--surface-1));
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .qw-toggle {
+  .qw-read:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-2px);
+  }
+  .qw-read__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    text-align: center;
+    min-width: 2.4rem;
+  }
+  .qw-read__date b {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    line-height: 1.1;
+  }
+  .qw-read__date span {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-read__body {
+    display: grid;
+    gap: 0.28rem;
+    min-width: 0;
+  }
+  .qw-read__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+  }
+  .qw-read__meta {
+    font-size: 0.84rem;
+    color: rgb(var(--ink-muted));
+  }
+  .qw-read__action {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.1rem;
-    border-radius: 999px;
-    border: 1px solid rgb(var(--edge-strong));
-    background: transparent;
-    color: rgb(var(--ink-muted));
+    gap: 0.4rem;
     font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+    white-space: nowrap;
+    transition: color 0.2s;
   }
-  .qw-toggle:hover {
-    color: rgb(var(--ink));
-    border-color: rgb(var(--accent) / 0.5);
-    background: rgb(var(--surface-2));
-  }
-  .qw-toggle__chevron {
-    width: 16px;
-    height: 16px;
+  .qw-read__action svg {
+    width: 15px;
+    height: 15px;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .qw-toggle[aria-expanded='true'] .qw-toggle__chevron {
-    transform: rotate(180deg);
+  .qw-read:hover .qw-read__action {
+    color: rgb(var(--accent-bright));
+  }
+  .qw-read:hover .qw-read__action svg {
+    transform: translateX(3px);
   }
 
-  .qw-cta {
+  /* ── Talks & events — single count CTA ─────────────────────────────── */
+  .qw-talks {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.15rem 1.35rem;
+    border: 1px solid rgb(var(--edge-strong));
+    border-radius: 16px;
+    background: rgb(var(--surface-1));
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  }
+  .qw-talks:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--accent) / 0.5);
+    box-shadow: 0 12px 34px -20px rgb(var(--bg) / 0.9);
+  }
+  .qw-talks__icon {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 2.2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgb(var(--surface-2));
+    box-shadow: inset 0 0 0 1px rgb(var(--edge));
+    color: rgb(var(--accent-bright));
+    flex-shrink: 0;
+  }
+  .qw-talks__icon svg { width: 22px; height: 22px; }
+  .qw-talks__text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .qw-talks__text b {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: rgb(var(--ink));
+  }
+  .qw-talks__text span {
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+  }
+  .qw-talks__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgb(var(--accent-bright));
+    white-space: nowrap;
+  }
+  .qw-talks__cta svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qw-talks:hover .qw-talks__cta svg { transform: translateX(3px); }
+
+  @media (max-width: 600px) {
+    .qw-read {
+      grid-template-columns: auto 1fr;
+    }
+    .qw-read__action { display: none; }
+    .qw-talks {
+      grid-template-columns: auto 1fr;
+      row-gap: 0.7rem;
+    }
+    .qw-talks__cta {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
   }
 
-  @media (max-width: 640px) {
-    .qw-item {
-      grid-template-columns: auto 1fr;
-      gap: 0.85rem;
-      padding: 0.9rem 1rem;
-    }
-    /* Hide the decorative icon and subtle action on mobile — but keep the
-       podcast "Listen now" CTA, which is the whole point of the highlight. */
-    .qw-item__icon,
-    .qw-item__action {
-      display: none;
-    }
-    .qw-item--podcast {
-      grid-template-columns: auto 1fr auto;
-    }
-    .qw-listen {
-      padding: 0.4rem 0.7rem;
-      font-size: 0.68rem;
-    }
-    .qw-listen svg {
-      width: 13px;
-      height: 13px;
+  @media (prefers-reduced-motion: reduce) {
+    .qw-eq span {
+      animation: none;
+      transform: scaleY(0.6);
     }
   }
 </style>
