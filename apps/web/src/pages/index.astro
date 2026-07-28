@@ -11,13 +11,15 @@ import ContactPanel from '../components/design/ContactPanel.astro';
 import HeroTerminal from '../components/islands/HeroTerminal';
 import AudienceRouter from '../components/home/AudienceRouter.astro';
 import FeaturedTalk from '../components/home/FeaturedTalk.astro';
+import QuarterWrapped from '../components/home/QuarterWrapped.astro';
 import ReachMap from '../components/home/ReachMap.astro';
 import SocialWallIsland from '../components/islands/SocialWallIsland';
 import BlueskyFeed from '../components/islands/BlueskyFeed';
 import { isRealConference } from '../lib/conferences';
+import { currentQuarterRange } from '../lib/availability';
 import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
-import type { SocialPost } from '../lib/sanity/types';
+import type { SocialPost, QuarterActivity } from '../lib/sanity/types';
 import {
   upcomingEventsQuery,
   speakingStatsQuery,
@@ -27,6 +29,7 @@ import {
   featuredTalkQuery,
   reachMapDataQuery,
   pastEventsQuery,
+  quarterActivityQuery,
 } from '../lib/sanity/queries';
 
 interface UpcomingEvent {
@@ -60,7 +63,9 @@ interface FeaturedTalkData {
 }
 interface PastEvent { _id: string; conference?: string; featured?: boolean }
 
-const [upcomingEvents, stats, media, testimonials, socialPosts, featured, pastEvents, reachCities] = await Promise.all([
+const quarter = currentQuarterRange();
+
+const [upcomingEvents, stats, media, testimonials, socialPosts, featured, pastEvents, reachCities, quarterActivity] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
@@ -69,6 +74,7 @@ const [upcomingEvents, stats, media, testimonials, socialPosts, featured, pastEv
   sanityFetch<FeaturedTalkData | null>(featuredTalkQuery).catch(() => null),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
   sanityFetch<string[]>(reachMapDataQuery).catch(() => []),
+  sanityFetch<QuarterActivity>(quarterActivityQuery, { qStart: quarter.startISO, qEnd: quarter.endISO }).catch(() => null),
 ]);
 
 // Pre-process image URLs for the social wall React island (urlFor can't run client-side).
@@ -437,6 +443,9 @@ const formatEventDate = (dateStr: string) => {
 
   <!-- FEATURED TALK -->
   {featured && <FeaturedTalk talk={featured} />}
+
+  <!-- THIS QUARTER, WRAPPED -->
+  <QuarterWrapped label={quarter.label} activity={quarterActivity} />
 
   <!-- TOPICS -->
   <section class="home-section home-section--alt">

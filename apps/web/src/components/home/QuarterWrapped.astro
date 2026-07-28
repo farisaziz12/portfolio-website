@@ -1,0 +1,588 @@
+---
+import Kicker from '../design/Kicker.astro';
+import type { QuarterActivity } from '../../lib/sanity/types';
+
+interface Props {
+  /** e.g. "Q3 2026" */
+  label: string;
+  activity: QuarterActivity | null;
+}
+
+const { label, activity } = Astro.props;
+
+const events = activity?.events ?? [];
+const external = activity?.external ?? [];
+const blogs = activity?.blogs ?? [];
+
+if (events.length + external.length + blogs.length === 0) return null;
+
+const EXTERNAL_TYPE_LABELS: Record<string, string> = {
+  article: 'Article',
+  podcast: 'Podcast',
+  video: 'Video',
+  panel: 'Panel',
+  interview: 'Interview',
+};
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const todayISO = new Date().toISOString().slice(0, 10);
+const formatDay = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return { day: String(d.getUTCDate()), month: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }) };
+};
+const byDateDesc = <T extends { date: string }>(a: T, b: T) => b.date.localeCompare(a.date);
+
+// ── Podcasts — pulled to the top, shown in full as feature cards ──────────────
+interface PodcastCard {
+  id: string;
+  title: string;
+  meta?: string;
+  date: string;
+  href: string;
+  external: boolean;
+  upcoming: boolean;
+  action: string;
+}
+const podcasts: PodcastCard[] = [
+  ...external
+    .filter((p) => p.type === 'podcast')
+    .map((p) => ({
+      id: p._id,
+      title: p.title,
+      meta: p.source,
+      date: p.publishedAt,
+      href: p.url,
+      external: true,
+      upcoming: false,
+      action: 'Listen now',
+    })),
+  ...events
+    .filter((e) => e.type === 'podcast')
+    .map((e) => {
+      const upcoming = e.date.slice(0, 10) >= todayISO;
+      const place = e.location?.isOnline
+        ? 'Online'
+        : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
+      return {
+        id: e._id,
+        title: e.title,
+        meta: [e.conference, place].filter(Boolean).join(' · '),
+        date: e.date,
+        href: `/events/${e.slug}`,
+        external: false,
+        upcoming,
+        action: upcoming ? 'Coming up' : 'Listen now',
+      };
+    }),
+].sort(byDateDesc);
+
+// ── Writing & press — blogs + non-podcast external posts, shown in full ───────
+interface ReadItem {
+  id: string;
+  badge: string;
+  title: string;
+  meta?: string;
+  date: string;
+  href: string;
+  external: boolean;
+  action: string;
+}
+const readItems: ReadItem[] = [
+  ...blogs.map((b) => ({
+    id: b._id,
+    badge: 'Blog post',
+    title: b.title,
+    meta: [b.category ? capitalize(b.category.replace(/-/g, ' ')) : null, b.estimatedReadingTime ? `${b.estimatedReadingTime} min read` : null]
+      .filter(Boolean)
+      .join(' · '),
+    date: b.publishedAt,
+    href: `/blog/${b.slug}`,
+    external: false,
+    action: 'Read',
+  })),
+  ...external
+    .filter((p) => p.type !== 'podcast')
+    .map((p) => {
+      const kind = p.type && EXTERNAL_TYPE_LABELS[p.type] ? p.type : 'article';
+      return {
+        id: p._id,
+        badge: EXTERNAL_TYPE_LABELS[kind] || capitalize(kind),
+        title: p.title,
+        meta: p.source,
+        date: p.publishedAt,
+        href: p.url,
+        external: true,
+        action: kind === 'video' ? 'Watch' : 'Read',
+      };
+    }),
+].sort(byDateDesc);
+
+// ── Talks & events — collapsed to a single count CTA ──────────────────────────
+const talkCount = events.filter((e) => e.type !== 'podcast').length;
+
+// Summary chips — only the non-zero ones.
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const chips = [
+  talkCount > 0 ? plural(talkCount, 'talk & event', 'talks & events') : null,
+  podcasts.length > 0 ? plural(podcasts.length, 'podcast', 'podcasts') : null,
+  readItems.length > 0 ? plural(readItems.length, 'post & article', 'posts & articles') : null,
+].filter(Boolean) as string[];
+---
+
+<section class="qw-section" aria-labelledby="quarter-wrapped-title">
+  <div class="container">
+    <div class="qw-heading">
+      <Kicker class="ds-reveal">This quarter</Kicker>
+      <h2 class="qw-h2 ds-reveal" id="quarter-wrapped-title">
+        {label}, <span class="mark">wrapped</span>
+      </h2>
+      <p class="qw-lead ds-reveal">
+        Talks, podcasts, articles, and everything else from the past few months — plus what's still coming up.
+        {podcasts.length > 0 && ' Tap any podcast to listen now.'}
+      </p>
+      {chips.length > 0 && (
+        <div class="qw-chips ds-reveal">
+          {chips.map((chip) => <span class="ds-tag">{chip}</span>)}
+        </div>
+      )}
+    </div>
+
+    <div class="qw-wrap">
+      {podcasts.length > 0 && (
+        <div class="qw-group ds-reveal">
+          <div class="qw-group__head">
+            <h3 class="qw-group__title">Podcasts</h3>
+            <span class="qw-group__count">{podcasts.length}</span>
+          </div>
+          <div class="qw-pods">
+            {podcasts.map((pod) => {
+              const { day, month } = formatDay(pod.date);
+              return (
+                <a
+                  class="qw-pod"
+                  href={pod.href}
+                  target={pod.external ? '_blank' : undefined}
+                  rel={pod.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="qw-pod__top">
+                    <span class="qw-pod__badge">
+                      <span class="qw-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                      {pod.upcoming ? 'Upcoming' : 'On the mic'}
+                    </span>
+                    <span class="qw-pod__date">{month} {day}</span>
+                  </span>
+                  <span class="qw-pod__title">{pod.title}</span>
+                  {pod.meta && <span class="qw-pod__meta">{pod.meta}</span>}
+                  <span class="qw-listen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="2.5" y="13.5" width="4.5" height="7" rx="1.6" /><rect x="17" y="13.5" width="4.5" height="7" rx="1.6" />
+                    </svg>
+                    {pod.action}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {readItems.length > 0 && (
+        <div class="qw-group ds-reveal">
+          <div class="qw-group__head">
+            <h3 class="qw-group__title">Writing &amp; press</h3>
+            <span class="qw-group__count">{readItems.length}</span>
+          </div>
+          <ol class="qw-reads">
+            {readItems.map((item) => {
+              const { day, month } = formatDay(item.date);
+              return (
+                <li>
+                  <a
+                    class="qw-read"
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                  >
+                    <span class="qw-read__date" aria-hidden="true">
+                      <b>{day}</b><span>{month}</span>
+                    </span>
+                    <span class="qw-read__body">
+                      <span class="ds-tag">{item.badge}</span>
+                      <span class="qw-read__title">{item.title}</span>
+                      {item.meta && <span class="qw-read__meta">{item.meta}</span>}
+                    </span>
+                    <span class="qw-read__action">
+                      {item.action}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
+
+      {talkCount > 0 && (
+        <a href="/speaking" class="qw-talks ds-reveal">
+          <span class="qw-talks__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 4h18M5 4v11h14V4M12 15v3M8.5 21l3.5-3 3.5 3" />
+            </svg>
+          </span>
+          <span class="qw-talks__text">
+            <b>{talkCount} {talkCount === 1 ? 'talk & event' : 'talks & events'} this quarter</b>
+            <span>Conferences, workshops, panels &amp; more — on stage and online</span>
+          </span>
+          <span class="qw-talks__cta">
+            See all speaking
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </a>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Section primitives mirror index.astro's .home-section — Astro scoped
+     styles don't cross component boundaries, so they're re-declared here. */
+  .qw-section {
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+  }
+  .qw-heading {
+    text-align: center;
+    margin-bottom: 2.6rem;
+  }
+  .qw-h2 {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    margin-top: 0.9rem;
+  }
+  .qw-lead {
+    color: rgb(var(--ink-muted));
+    max-width: 52ch;
+    margin: 1rem auto 0;
+  }
+  .qw-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.4rem;
+  }
+
+  .qw-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2.4rem;
+  }
+  .qw-group__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .qw-group__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(var(--ink));
+  }
+  .qw-group__count {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.8rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* ── Podcasts — feature cards ──────────────────────────────────────── */
+  .qw-pods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 0.9rem;
+  }
+  .qw-pod {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.2rem 1.3rem 1.3rem;
+    border-radius: 16px;
+    border: 1px solid rgb(var(--accent) / 0.3);
+    background: rgb(var(--accent) / 0.06);
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s;
+  }
+  .qw-pod:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--accent) / 0.6);
+    box-shadow: 0 16px 40px -20px rgb(var(--accent) / 0.55);
+  }
+  .qw-pod__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .qw-pod__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: rgb(var(--accent-bright));
+  }
+  .qw-pod__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.72rem;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-pod__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.08rem;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+    margin-top: 0.15rem;
+  }
+  .qw-pod__meta {
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+  }
+
+  /* Animated "live" equalizer — the audio-is-here cue on every podcast card. */
+  .qw-eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 13px;
+  }
+  .qw-eq span {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: rgb(var(--accent-bright));
+    transform-origin: bottom;
+    animation: qw-eq-bounce 0.9s ease-in-out infinite;
+  }
+  .qw-eq span:nth-child(1) { animation-delay: -0.2s; }
+  .qw-eq span:nth-child(2) { animation-delay: -0.5s; }
+  .qw-eq span:nth-child(3) { animation-delay: -0.1s; }
+  .qw-eq span:nth-child(4) { animation-delay: -0.7s; }
+  @keyframes qw-eq-bounce {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
+  }
+
+  .qw-listen {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    align-self: flex-start;
+    /* Pin to the card bottom so buttons line up across cards regardless of
+       how many lines the title/meta take. Cards stretch to equal row height
+       (grid default), the auto top-margin absorbs the leftover space, and the
+       card's flex `gap` keeps a minimum gap when a card is full. */
+    margin-top: auto;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    background: rgb(var(--accent) / 0.16);
+    border: 1px solid rgb(var(--accent) / 0.45);
+    color: rgb(var(--accent-bright));
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.74rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .qw-listen svg {
+    width: 15px;
+    height: 15px;
+  }
+  .qw-pod:hover .qw-listen {
+    background: rgb(var(--accent) / 0.26);
+    border-color: rgb(var(--accent) / 0.7);
+  }
+
+  /* ── Writing & press — compact rows ────────────────────────────────── */
+  .qw-reads {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .qw-read {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid rgb(var(--edge));
+    border-radius: 12px;
+    background: rgb(var(--surface-1));
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qw-read:hover {
+    border-color: rgb(var(--edge-strong));
+    transform: translateY(-2px);
+  }
+  .qw-read__date {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    text-align: center;
+    min-width: 2.4rem;
+  }
+  .qw-read__date b {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    line-height: 1.1;
+  }
+  .qw-read__date span {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+  }
+  .qw-read__body {
+    display: grid;
+    gap: 0.28rem;
+    min-width: 0;
+  }
+  .qw-read__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+  }
+  .qw-read__meta {
+    font-size: 0.84rem;
+    color: rgb(var(--ink-muted));
+  }
+  .qw-read__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--ink-faint));
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+  .qw-read__action svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qw-read:hover .qw-read__action {
+    color: rgb(var(--accent-bright));
+  }
+  .qw-read:hover .qw-read__action svg {
+    transform: translateX(3px);
+  }
+
+  /* ── Talks & events — single count CTA ─────────────────────────────── */
+  .qw-talks {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.15rem 1.35rem;
+    border: 1px solid rgb(var(--edge-strong));
+    border-radius: 16px;
+    background: rgb(var(--surface-1));
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  }
+  .qw-talks:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--accent) / 0.5);
+    box-shadow: 0 12px 34px -20px rgb(var(--bg) / 0.9);
+  }
+  .qw-talks__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgb(var(--surface-2));
+    box-shadow: inset 0 0 0 1px rgb(var(--edge));
+    color: rgb(var(--accent-bright));
+    flex-shrink: 0;
+  }
+  .qw-talks__icon svg { width: 22px; height: 22px; }
+  .qw-talks__text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .qw-talks__text b {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: rgb(var(--ink));
+  }
+  .qw-talks__text span {
+    font-size: 0.86rem;
+    color: rgb(var(--ink-muted));
+  }
+  .qw-talks__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgb(var(--accent-bright));
+    white-space: nowrap;
+  }
+  .qw-talks__cta svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qw-talks:hover .qw-talks__cta svg { transform: translateX(3px); }
+
+  @media (max-width: 600px) {
+    .qw-read {
+      grid-template-columns: auto 1fr;
+    }
+    .qw-read__action { display: none; }
+    .qw-talks {
+      grid-template-columns: auto 1fr;
+      row-gap: 0.7rem;
+    }
+    .qw-talks__cta {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qw-eq span {
+      animation: none;
+      transform: scaleY(0.6);
+    }
+  }
+</style>
