@@ -25,25 +25,25 @@ export const GET: APIRoute = async () => {
   ]);
 
   const body = [
-    `# Faris Aziz — Staff Software Engineer & Conference Speaker`,
+    `# Faris Aziz: Staff Software Engineer & Conference Speaker`,
     ``,
     `> Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. ${stats.totalEvents}+ speaking engagements across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). He helps teams ship resilient frontend systems and payment integrations, and offers talks, workshops, consulting, and 1:1 mentorship. ${availabilityLabel('Available')}.`,
     ``,
     `## Site map (markdown mirrors for agents)`,
     ``,
     `- [About & bios](https://faziz-dev.com/about.md)`,
-    `- [Talk catalogue — bookable talks](https://faziz-dev.com/talks.md)`,
-    `- [Speaking schedule — upcoming & past](https://faziz-dev.com/events.md)`,
-    `- [Invite to speak — booking form, availability, practical details](https://faziz-dev.com/invite.md)`,
-    `- [Press kit — copy-paste bios, downloadable headshots](https://faziz-dev.com/press-kit)`,
+    `- [Talk catalogue](https://faziz-dev.com/talks.md): bookable talks`,
+    `- [Speaking schedule](https://faziz-dev.com/events.md): upcoming & past`,
+    `- [Invite to speak](https://faziz-dev.com/invite.md): booking form, availability, practical details`,
+    `- [Press kit](https://faziz-dev.com/press-kit): copy-paste bios, downloadable headshots`,
     `- [Consulting](https://faziz-dev.com/consulting.md)`,
     `- [Mentorship](https://faziz-dev.com/mentorship.md)`,
-    `- [Work with me — all contact routes](https://faziz-dev.com/contact.md)`,
+    `- [Work with me](https://faziz-dev.com/contact.md): all contact routes`,
     ``,
     upcoming.length
       ? `## Next up\n\n${upcoming
           .slice(0, 3)
-          .map((e) => `- ${mdDate(e.date)} — ${e.title}${e.conference ? ` at ${e.conference}` : ''}`)
+          .map((e) => `- ${mdDate(e.date)}: ${e.title}${e.conference ? ` at ${e.conference}` : ''}`)
           .join('\n')}`
       : '',
   ]

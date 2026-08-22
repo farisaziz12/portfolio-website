@@ -50,7 +50,7 @@ export const GET: APIRoute = async ({ params }) => {
       : '',
     deliveries.length
       ? `## Deliveries (${deliveries.length})\n\n${deliveries
-          .map((e) => `- ${mdDate(e.date)} — ${e.conference || e.title}${e.links?.videoUrl ? ` · [recording](${e.links.videoUrl})` : ''}`)
+          .map((e) => `- ${mdDate(e.date)}: ${e.conference || e.title}${e.links?.videoUrl ? ` · [recording](${e.links.videoUrl})` : ''}`)
           .join('\n')}`
       : '',
   ]

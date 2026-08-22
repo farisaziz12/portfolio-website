@@ -16,7 +16,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
   return (
     <Html>
       <Head />
-      <Preview>Thanks for joining {event} — quick feedback?</Preview>
+      <Preview>Thanks for joining {event} · quick feedback?</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
           <Section style={s.terminalHeader}>
@@ -52,7 +52,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
             </Section>
 
             <Hr style={s.divider} />
-            <Text style={s.signature}>— Faris Aziz</Text>
+            <Text style={s.signature}>– Faris Aziz</Text>
             <Text style={s.signatureLink}>
               <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
             </Text>

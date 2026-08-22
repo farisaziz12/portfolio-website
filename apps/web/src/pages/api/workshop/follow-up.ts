@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
       context: `follow-up:${instance.slug}`,
       from: FROM,
       to: contact.email,
-      subject: `Thanks for joining ${eventName} — quick feedback?`,
+      subject: `Thanks for joining ${eventName} · quick feedback?`,
       react: WorkshopFollowUpEmail({
         name: firstName,
         workshopTitle,

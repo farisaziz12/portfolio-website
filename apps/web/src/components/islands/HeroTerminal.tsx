@@ -16,13 +16,13 @@ interface Line {
 const HERO_LINES: Line[] = [
   { kind: 'cmd', text: 'whoami' },
   { kind: 'out', text: 'Staff Engineer & Speaker' },
-  { kind: 'cmt', text: "# this terminal works — try 'help'" },
+  { kind: 'cmt', text: "# this terminal works, try 'help'" },
 ];
 
 const NOTFOUND_LINES: Line[] = [
   { kind: 'cmd', text: 'open .' },
   { kind: 'err', text: 'command not found: 404' },
-  { kind: 'cmt', text: "# try 'ls', 'talks', or 'book' — this prompt works" },
+  { kind: 'cmt', text: "# try 'ls', 'talks', or 'book'; this prompt works" },
 ];
 
 const ROUTES: Record<string, { path: string; note: string }> = {
@@ -77,7 +77,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     setLines([
       { kind: 'cmd', text: `open ${path}` },
       { kind: 'err', text: `command not found: ${path}` },
-      { kind: 'cmt', text: "# try 'ls', 'talks', or 'book' — this prompt works" },
+      { kind: 'cmt', text: "# try 'ls', 'talks', or 'book'; this prompt works" },
     ]);
   }, [mode]);
   const [input, setInput] = useState('');
@@ -124,7 +124,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     }
     if (cmd === 'whoami') {
       print(
-        { kind: 'out', text: 'Faris Aziz — Staff Software Engineer & Conference Speaker, Geneva.' },
+        { kind: 'out', text: 'Faris Aziz · Staff Software Engineer & Conference Speaker, Geneva.' },
         { kind: 'out', text: 'Cofounder of ZurichJS · JSNation OSS Award winner.' },
         { kind: 'out', text: "React, Next.js & payments. Try 'talks' or 'book'." }
       );
@@ -146,7 +146,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
       print(
         { kind: 'out', text: 'open to: tech lead · staff/senior frontend · full-stack (frontend-leaning)' },
         { kind: 'out', text: 'payments · product engineering · founding engineer' },
-        { kind: 'out', text: "run 'contact' — the hire door opens a short form straight to my inbox." }
+        { kind: 'out', text: "run 'contact': the hire door opens a short form straight to my inbox." }
       );
       return;
     }
@@ -180,7 +180,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
       window.setTimeout(() => navigate(route.path), 500);
       return;
     }
-    print({ kind: 'err', text: `command not found: ${cmd} — try 'help'` });
+    print({ kind: 'err', text: `command not found: ${cmd}. try 'help'` });
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -248,7 +248,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             onFocus={() => setActive(true)}
-            aria-label="Interactive site terminal — type 'help' for commands"
+            aria-label="Interactive site terminal: type 'help' for commands"
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"

@@ -84,12 +84,12 @@ export async function getStaticPaths() {
     default: {
       kicker: 'Staff Software Engineer · Speaker',
       title: 'Faris Aziz',
-      meta: `React, Next.js & payment systems — ${statLine}. Talks, workshops, consulting & mentorship.`,
+      meta: `React, Next.js & payment systems. ${statLine}. Talks, workshops, consulting & mentorship.`,
     },
     home: {
       kicker: 'Staff Software Engineer · Speaker',
       title: 'Resilient frontends. Real stages.',
-      meta: `${statLine} — talks, workshops, consulting & mentorship.`,
+      meta: `${statLine}: talks, workshops, consulting & mentorship.`,
     },
     about: {
       kicker: 'About',
@@ -99,12 +99,12 @@ export async function getStaticPaths() {
     contact: {
       kicker: 'Work with me',
       title: 'Four doors, one inbox.',
-      meta: 'Speaking · consulting · mentorship · full-time roles — pick a door, replies within two days.',
+      meta: 'Speaking · consulting · mentorship · full-time roles: pick a door, replies within two days.',
     },
     invite: {
       kicker: 'Invite me to speak',
       title: 'Invite me to your event.',
-      meta: 'Keynotes, talks, panels & workshops — tailored to your audience. Replies within two days.',
+      meta: 'Keynotes, talks, panels & workshops, tailored to your audience. Replies within two days.',
     },
     'press-kit': {
       kicker: 'Speaker press kit',
@@ -119,7 +119,7 @@ export async function getStaticPaths() {
     events: {
       kicker: 'Speaking schedule',
       title: 'Every stage, in one place.',
-      meta: `Upcoming events and the full archive — ${statLine}.`,
+      meta: `Upcoming events and the full archive: ${statLine}.`,
     },
     workshops: {
       kicker: 'Workshops',
@@ -134,7 +134,7 @@ export async function getStaticPaths() {
     mentorship: {
       kicker: 'Mentorship',
       title: "You're closer than you think.",
-      meta: '1:1 coaching — career strategy, technical mastery & public speaking.',
+      meta: '1:1 coaching: career strategy, technical mastery & public speaking.',
     },
     blog: {
       kicker: 'Blog',
@@ -144,12 +144,12 @@ export async function getStaticPaths() {
     impact: {
       kicker: 'Impact',
       title: 'The track record, in numbers.',
-      meta: 'Community, product and leadership outcomes — measured.',
+      meta: 'Community, product and leadership outcomes, measured.',
     },
     media: {
       kicker: 'Media',
       title: 'Photos, videos & press.',
-      meta: 'Free for organizers and press to use — credit appreciated.',
+      meta: 'Free for organizers and press to use, credit appreciated.',
     },
     gallery: {
       kicker: 'Photo gallery',
@@ -223,7 +223,7 @@ export async function getStaticPaths() {
         card: {
           kicker: `Workshop${w.duration ? ` · ${w.duration}` : ''}${w.level ? ` · ${w.level}` : ''}`,
           title: w.title,
-          meta: 'Hands-on training — bookable for teams & conferences.',
+          meta: 'Hands-on training, bookable for teams & conferences.',
           avatarUrl: randomAvatar(),
         } satisfies OgCard,
       },

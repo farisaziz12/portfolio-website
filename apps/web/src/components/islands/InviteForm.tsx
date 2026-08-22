@@ -85,7 +85,7 @@ export default function InviteForm() {
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setServerError(body.error || 'Something went wrong — try emailing instead.');
+        setServerError(body.error || 'Something went wrong. Try emailing instead.');
         track('form_submit_failed', { form: 'invite', reason: 'server', status: res.status });
         return;
       }
@@ -118,7 +118,7 @@ export default function InviteForm() {
           </svg>
         </div>
         <h3 className="invite-form__success-title">Invitation sent</h3>
-        <p className="invite-form__success-body">Thanks — I'll get back to you within two days. Talk soon.</p>
+        <p className="invite-form__success-body">Thanks, I'll get back to you within two days. Talk soon.</p>
         <div className="invite-form__next">
           <span className="invite-form__next-label">While you wait, grab what you need:</span>
           <a href="/press-kit#bios">Bios</a>

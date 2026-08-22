@@ -101,7 +101,7 @@ export const POST: APIRoute = async ({ request }) => {
       context: 'workshop:welcome',
       from: FROM,
       to: email,
-      subject: `You're in — ${event || instanceTitle} materials`,
+      subject: `You're in: ${event || instanceTitle} materials`,
       react: WorkshopWelcomeEmail({
         name: firstName,
         event: event || '',

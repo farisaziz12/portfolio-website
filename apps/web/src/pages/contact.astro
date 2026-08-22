@@ -16,7 +16,7 @@ const upcoming = await sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch((
 const load = quarterLoad(upcoming.map((e) => e.date));
 const loadLine =
   load.tone === 'booked'
-    ? `${load.label} is fully booked — planning the next one`
+    ? `${load.label} is fully booked, planning the next one`
     : load.confirmed > 0
       ? `${load.label} · ${load.confirmed} date${load.confirmed === 1 ? '' : 's'} already confirmed${load.tone === 'limited' ? ' · filling up' : ''}`
       : null;
@@ -29,7 +29,7 @@ const doors = [
     href: '/invite',
     kicker: 'Conferences · meetups · internal events',
     title: 'Invite me to speak',
-    desc: 'Keynotes, talks, panels and full-day workshops. Tell me about your crowd and I’ll tailor something to fit — big stage or tiny meetup, I love both.',
+    desc: 'Keynotes, talks, panels and full-day workshops. Tell me about your crowd and I’ll tailor something to fit. Big stage or tiny meetup, I love both.',
     cta: 'Send an invite',
     icon: '<path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
     external: false,
@@ -38,7 +38,7 @@ const doors = [
     href: 'https://cal.com/farisaziz12/discovery-call',
     kicker: 'Teams · startups · agencies',
     title: 'Book a consulting call',
-    desc: 'A free 20-minute call about architecture, performance, payments or team enablement. No pitch, no obligation — just a chat about what’s slowing you down.',
+    desc: 'A free 20-minute call about architecture, performance, payments or team enablement. No pitch, no obligation, just a chat about what’s slowing you down.',
     cta: 'Pick a time',
     icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
     external: true,
@@ -57,7 +57,7 @@ const doors = [
     topic: 'role',
     kicker: 'Companies · full-time roles',
     title: 'Hire me full-time',
-    desc: 'Open to tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, and founding engineer roles — tell me what you’re shipping.',
+    desc: 'Open to tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, and founding engineer roles. Tell me what you’re shipping.',
     cta: 'Tell me about it',
     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
     external: false,
@@ -68,7 +68,7 @@ const doors = [
 const faq = [
   {
     question: "What's the difference between consulting and mentorship?",
-    answer: 'Consulting is project-focused — I work with your team on architecture, performance, and delivery. Mentorship is growth-focused — 1:1 coaching for an individual engineer\'s career and skills.',
+    answer: 'Consulting is project-focused: I work with your team on architecture, performance, and delivery. Mentorship is growth-focused: 1:1 coaching for an individual engineer\'s career and skills.',
     open: true,
   },
   {
@@ -78,7 +78,7 @@ const faq = [
   },
   {
     question: "What's your availability?",
-    answer: `I take on a few engagements at a time so each one gets real attention. Next availability opens in ${formatQuarter()} — worth reaching out early if you want in.`,
+    answer: `I take on a few engagements at a time so each one gets real attention. Next availability opens in ${formatQuarter()}, so it's worth reaching out early if you want in.`,
     open: false,
   },
   {
@@ -90,8 +90,8 @@ const faq = [
 ---
 
 <BaseLayout
-  title="Work with me — Faris Aziz"
-  description="Invite Faris to speak, book a consulting call, start a mentorship inquiry, or talk to him about a full-time role — one page, four doors."
+  title="Work with me | Faris Aziz"
+  description="Invite Faris to speak, book a consulting call, start a mentorship inquiry, or talk to him about a full-time role. One page, four doors."
   pathname="/contact"
   image="/og/contact.png"
   markdownAlternate="/contact.md"
@@ -123,7 +123,7 @@ const faq = [
       </div>
       <h1 class="page-hero__title">Four doors, <span class="accent-word">one inbox</span>.</h1>
       <p class="page-hero__lead">
-        Speaking, consulting, mentorship — or a full-time role. Pick your door: everything lands straight in my inbox, and I get back to you within two days.
+        Speaking, consulting, mentorship, or a full-time role. Pick your door: everything lands straight in my inbox, and I get back to you within two days.
       </p>
     </div>
   </header>
@@ -159,8 +159,8 @@ const faq = [
 
       <p class="contact-fallback ds-reveal">
         Not sure which door, or something else entirely?
-        <a href="#message" class="ds-link">Just send me a message below</a>
-        — or say hi on
+        <a href="#message" class="ds-link">Just send me a message below</a>,
+        or say hi on
         <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-link">LinkedIn</a>. We'll figure it out.
       </p>
     </div>
@@ -172,7 +172,7 @@ const faq = [
       <div class="page-section__heading">
         <Kicker class="ds-reveal">Direct line</Kicker>
         <h2 class="page-h2 ds-reveal">Send me a <span class="mark">message</span></h2>
-        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">Roles, ideas, questions — it all lands straight in my inbox, and I reply within two days.</p>
+        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">Roles, ideas, questions: it all lands straight in my inbox, and I reply within two days.</p>
       </div>
       <div class="contact-form-wrap">
         <ContactForm client:visible />

@@ -55,7 +55,7 @@ const styleLabels: Record<string, string> = {
 // 0 = keep the original frame. Sanity's CDN centers every crop on the image
 // hotspot (the face), so no manual crop uploads are needed.
 const headshotCrops = [
-  { id: 'full', label: 'Full', ratio: 0, hint: 'As shot — full frame' },
+  { id: 'full', label: 'Full', ratio: 0, hint: 'As shot, full frame' },
   { id: 'square', label: '1:1', ratio: 1, hint: 'Avatars · socials · speaker cards' },
   { id: 'portrait', label: '4:5', ratio: 4 / 5, hint: 'Portrait · LinkedIn · print programs' },
   { id: 'wide', label: '16:9', ratio: 16 / 9, hint: 'Banners · slides · video thumbnails' },
@@ -102,8 +102,8 @@ const headshotData = downloadableHeadshots.map((headshot) => {
             name: size.name,
             label: size.label,
             tooltip: isOriginalFile
-              ? 'Original file — full resolution'
-              : `${size.name} — ${isFullFrame ? `${size.width}px wide` : `${size.width}×${height}px`} · ${size.use}`,
+              ? 'Original file, full resolution'
+              : `${size.name}: ${isFullFrame ? `${size.width}px wide` : `${size.width}×${height}px`} · ${size.use}`,
             url: isOriginalFile ? urlFor(image).format('jpg').url() : sized(size.width),
             filename: isOriginalFile
               ? `faris-aziz-${style}-original.jpg`
@@ -124,7 +124,7 @@ const contents = [
 ---
 
 <BaseLayout
-  title="Press kit — Faris Aziz"
+  title="Press kit | Faris Aziz"
   description="Speaker press kit for Faris Aziz: copy-paste bios in three lengths, downloadable high-resolution headshots, and the practical details for hosting him at your event."
   pathname="/press-kit"
   image="/og/press-kit.png"
@@ -145,7 +145,7 @@ const contents = [
         Everything you need to <span class="accent-word">promote the talk</span>.
       </h1>
       <p class="page-hero__lead">
-        Copy-paste bios, downloadable headshots, and the practical details for hosting me — all on one page, free to use.
+        Copy-paste bios, downloadable headshots, and the practical details for hosting me, all on one page, free to use.
       </p>
       <div class="pk-contents">
         {contents.map((c) => (
@@ -216,14 +216,14 @@ const contents = [
         <div class="page-section__heading">
           <Kicker class="ds-reveal">Headshots</Kicker>
           <h2 class="page-h2 ds-reveal">High-res photos, four crops</h2>
-          <p class="pk-section-lead ds-reveal">Pick a crop and a size — every ratio stays centered on the face automatically.</p>
+          <p class="pk-section-lead ds-reveal">Pick a crop and a size; every ratio stays centered on the face automatically.</p>
         </div>
 
         <HeadshotGallery client:visible headshots={headshotData} />
 
         <p class="headshot-guide">
-          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
-          — need a different ratio or format? <a href="/invite" class="ds-link">Just ask</a>.
+          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original.
+          Need a different ratio or format? <a href="/invite" class="ds-link">Just ask</a>.
         </p>
       </div>
     </section>
@@ -235,25 +235,25 @@ const contents = [
       <div class="page-section__heading">
         <Kicker class="ds-reveal">Practical details</Kicker>
         <h2 class="page-h2 ds-reveal">Good to know before the event</h2>
-        <p class="pk-section-lead ds-reveal">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
+        <p class="pk-section-lead ds-reveal">None of this is a dealbreaker; it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
       </div>
 
       <div class="rider-grid wide">
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">Honorarium</h3>
-          <p class="rider-item__body">Let's talk — it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
+          <p class="rider-item__body">Let's talk: it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
         </div>
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">Travel &amp; lodging</h3>
-          <p class="rider-item__body">For in-person events outside the Geneva / Zurich area, I'll ask you to cover travel and a place to sleep. Economy is totally fine — direct routes are a nice bonus.</p>
+          <p class="rider-item__body">For in-person events outside the Geneva / Zurich area, I'll ask you to cover travel and a place to sleep. Economy is totally fine, and direct routes are a nice bonus.</p>
         </div>
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">Code of conduct</h3>
-          <p class="rider-item__body">I love events with a published, enforced code of conduct. Don't have one yet? No stress — I'm happy to point you at great templates.</p>
+          <p class="rider-item__body">I love events with a published, enforced code of conduct. Don't have one yet? No stress, I'm happy to point you at great templates.</p>
         </div>
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">Recording &amp; slides</h3>
-          <p class="rider-item__body">Please record it! Just send me the link after — I love sharing talks. Slides stay mine, but share them with your attendees as much as you like.</p>
+          <p class="rider-item__body">Please record it! Just send me the link after; I love sharing talks. Slides stay mine, but share them with your attendees as much as you like.</p>
         </div>
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">A/V setup</h3>
@@ -274,7 +274,7 @@ const contents = [
         <ContactPanel
           status={`Booking ${bookingYears()} dates`}
           title="Haven't sent the invite yet?"
-          body="Tell me about your event and audience — I'll tailor something to fit, and reply within two days."
+          body="Tell me about your event and audience. I'll tailor something to fit, and reply within two days."
           primaryHref="/invite"
           primaryLabel="Invite me to speak"
           secondaryHref="/invite#availability"

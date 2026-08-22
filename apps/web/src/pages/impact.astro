@@ -70,12 +70,12 @@ const heroHeadlineParts = pageSettings?.heroHeadline?.split(' ') || [];
 const useCmsHeadline = !!pageSettings?.heroHeadline;
 const heroSubheadline =
   pageSettings?.heroSubheadline ||
-  "Anyone can list stats. These are the results I'm proud of — across community, leadership, and product — each with the context, the approach, and what actually moved.";
+  "Anyone can list stats. These are the results I'm proud of (across community, leadership, and product), each with the context, the approach, and what actually moved.";
 
-const seoTitle = pageSettings?.seoTitle || 'Impact — Measurable Results | Faris Aziz';
+const seoTitle = pageSettings?.seoTitle || 'Impact: Measurable Results | Faris Aziz';
 const seoDescription =
   pageSettings?.seoDescription ||
-  'The track record: community growth, engineering leadership, and product results — with the context and approach behind each number.';
+  'The track record: community growth, engineering leadership, and product results, with the context and approach behind each number.';
 
 // ── Top stats: derive from speakingStats + Sanity metrics, fall back to hardcoded
 type TopStat = {
@@ -181,7 +181,7 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     bigSuffixSignal: true,
     tag: 'Product',
     title: 'Revenue growth in APAC after launching Alipay',
-    desc: "Local payment methods aren't a nice-to-have in Asia — they're the difference between converting and not. I led the frontend work to integrate Alipay and design a checkout that felt native to the region.",
+    desc: "Local payment methods aren't a nice-to-have in Asia; they're the difference between converting and not. I led the frontend work to integrate Alipay and design a checkout that felt native to the region.",
     rows: [
       { label: 'Context', body: "Western-built checkout was underperforming in APAC; card-first flows didn't match local behavior." },
       { label: 'Approach', body: 'Framework-agnostic payment orchestration, region-aware UX, and resilient fallbacks for flaky networks.' },
@@ -207,11 +207,11 @@ const fallbackCaseStudies: RenderedCaseStudy[] = [
     bigSuffixSignal: false,
     tag: 'Leadership',
     title: `Leading a cross-functional squad of ${PROOF.engineersLed}`,
-    desc: `The best leadership keeps you close to the work. I led ${PROOF.engineersLed} engineers across frontend and backend — plus the skip-level management in between — without losing the plot technically.`,
+    desc: `The best leadership keeps you close to the work. I led ${PROOF.engineersLed} engineers across frontend and backend (plus the skip-level management in between) without losing the plot technically.`,
     rows: [
       { label: 'Context', body: 'Two teams shipping a shared product surface, with coordination overhead slowing delivery.' },
       { label: 'Approach', body: 'Clear ownership, pragmatic architecture decisions, and mentoring engineers into more senior roles.' },
-      { label: 'Result', body: 'Faster, more predictable delivery — and several engineers leveled up along the way.' },
+      { label: 'Result', body: 'Faster, more predictable delivery, and several engineers leveled up along the way.' },
     ],
   },
 ];
@@ -221,7 +221,7 @@ const caseStudies: RenderedCaseStudy[] = cmsCaseStudies.length > 0 ? cmsCaseStud
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: 'Faris Aziz — Impact',
+  name: 'Faris Aziz | Impact',
   description: heroSubheadline,
   numberOfItems: caseStudies.length,
   itemListElement: caseStudies.map((c, i) => ({
@@ -328,7 +328,7 @@ const jsonLd = {
         <ContactPanel
           status={availabilityLabel('Available')}
           title="Let's add your numbers to this page"
-          body="Whether it's a payments problem, a performance ceiling, or a team that needs leveling up — let's talk."
+          body="Whether it's a payments problem, a performance ceiling, or a team that needs leveling up, let's talk."
           primaryHref="/contact"
           primaryLabel="Explore services"
           secondaryHref="/invite"

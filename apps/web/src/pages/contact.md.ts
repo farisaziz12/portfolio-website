@@ -6,7 +6,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Work with Faris Aziz`,
     ``,
-    `> ${availabilityLabel('Available')}. Four ways to work together — every route lands straight in Faris's inbox, and he replies within two days. He'd rather make something work than say no.`,
+    `> ${availabilityLabel('Available')}. Four ways to work together. Every route lands straight in Faris's inbox, and he replies within two days. He'd rather make something work than say no.`,
     ``,
     `## 1. Invite him to speak`,
     ``,
@@ -18,7 +18,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## 3. Get mentored`,
     ``,
-    `1:1 coaching for engineers — career strategy, skills, confidence. Send an inquiry: https://faziz-dev.com/mentorship`,
+    `1:1 coaching for engineers: career strategy, skills, confidence. Send an inquiry: https://faziz-dev.com/mentorship`,
     ``,
     `## 4. Hire him full-time`,
     ``,

@@ -562,7 +562,7 @@ function GateView({
                 className="mt-1 rounded"
               />
               <span className="text-xs text-[rgb(var(--ink-muted))] leading-relaxed">
-                I agree to receive updates about future workshops and conference appearances. No spam — unsubscribe anytime.
+                I agree to receive updates about future workshops and conference appearances. No spam, unsubscribe anytime.
               </span>
             </label>
 
@@ -575,7 +575,7 @@ function GateView({
             </button>
 
             {status === 'error' && (
-              <p className="text-sm text-danger text-center">Something went wrong — try again.</p>
+              <p className="text-sm text-danger text-center">Something went wrong. Try again.</p>
             )}
           </form>
         </div>
@@ -906,7 +906,7 @@ export default function WorkshopAttend({
               You've completed all sections!
             </h3>
             <p className="text-sm text-[rgb(var(--ink-muted))] mb-4">
-              One last thing — your overall feedback helps me improve future workshops.
+              One last thing: your overall feedback helps me improve future workshops.
             </p>
             <a
               href={overallFeedbackUrl}

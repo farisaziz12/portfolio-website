@@ -15,7 +15,7 @@ interface Props {
   message?: string
 }
 
-const dash = '—'
+const dash = '–'
 
 export function MentorshipAdminEmail({
   name, email, budgetLine, timeline, cadence, goals, message,
@@ -69,7 +69,7 @@ export function MentorshipAdminEmail({
 
             <Hr style={s.divider} />
             <Text style={s.footerText}>
-              Reply directly — this email's reply-to is set to the sender.
+              Reply directly; this email's reply-to is set to the sender.
             </Text>
           </Section>
         </Container>

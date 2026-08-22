@@ -9,7 +9,7 @@ export const GET: APIRoute = async () => {
   const offers = await sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []);
 
   const body = [
-    `# Consulting — Faris Aziz`,
+    `# Consulting · Faris Aziz`,
     ``,
     `> Hands-on technical consulting for teams and startups: architecture reviews, performance optimization, technical strategy, and implementation support. Specializes in React, Next.js, and payment systems. Free 20-minute discovery call: https://cal.com/farisaziz12/discovery-call`,
     ``,
@@ -45,11 +45,11 @@ export const GET: APIRoute = async () => {
               .join('\n\n')
           )
           .join('\n\n')}`
-      : `## Engagement formats\n\nFrom one-time architecture reviews to ongoing advisory — scoped per engagement. Start with the free discovery call.`,
+      : `## Engagement formats\n\nFrom one-time architecture reviews to ongoing advisory, scoped per engagement. Start with the free discovery call.`,
     ``,
     `## How to start`,
     ``,
-    `Book a free 20-minute discovery call: https://cal.com/farisaziz12/discovery-call — no pitch, no obligation, just a chat about what's slowing the team down.`,
+    `Book a free 20-minute discovery call (no pitch, no obligation, just a chat about what's slowing the team down): https://cal.com/farisaziz12/discovery-call`,
   ]
     .filter(Boolean)
     .join('\n');

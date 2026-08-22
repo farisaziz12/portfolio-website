@@ -46,7 +46,7 @@ const COMMANDS: Cmd[] = [
     label: 'Copy short bio',
     icon: ICON.pen,
     action: 'copy',
-    text: 'Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and cofounded ZurichJS — winner of the JSNation Open Source Award.',
+    text: 'Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and cofounded ZurichJS, winner of the JSNation Open Source Award.',
     keyHint: 'for organizers',
   },
   { group: 'Actions', label: 'Message me', icon: ICON.mail, href: '/contact#message' },
