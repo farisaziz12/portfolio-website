@@ -121,9 +121,9 @@ export default function InviteForm() {
         <p className="invite-form__success-body">Thanks — I'll get back to you within two days. Talk soon.</p>
         <div className="invite-form__next">
           <span className="invite-form__next-label">While you wait, grab what you need:</span>
-          <a href="#bios">Bios</a>
-          <a href="#headshots">Headshots</a>
-          <a href="#rider">Rider</a>
+          <a href="/press-kit#bios">Bios</a>
+          <a href="/press-kit#headshots">Headshots</a>
+          <a href="/press-kit#rider">Practical details</a>
           <a href="#availability">Availability</a>
         </div>
         <p className="invite-form__success-body">

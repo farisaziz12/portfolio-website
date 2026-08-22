@@ -102,9 +102,14 @@ export async function getStaticPaths() {
       meta: 'Speaking · consulting · mentorship · full-time roles — pick a door, replies within two days.',
     },
     invite: {
-      kicker: 'Speaker press kit',
+      kicker: 'Invite me to speak',
       title: 'Invite me to your event.',
-      meta: 'Keynotes, talks, panels & workshops — tailored to your audience. Bios, headshots & availability inside.',
+      meta: 'Keynotes, talks, panels & workshops — tailored to your audience. Replies within two days.',
+    },
+    'press-kit': {
+      kicker: 'Speaker press kit',
+      title: 'Bios, headshots & practical details.',
+      meta: 'Copy-paste bios in three lengths, high-res headshots in four crops, and everything worth knowing before the event.',
     },
     talks: {
       kicker: 'Talk catalogue',
@@ -120,11 +125,6 @@ export async function getStaticPaths() {
       kicker: 'Workshops',
       title: 'Build it, then ship it.',
       meta: 'Hands-on, full-day training for engineering teams.',
-    },
-    services: {
-      kicker: 'Services',
-      title: "Let's work together.",
-      meta: 'Consulting for teams · 1:1 mentorship for engineers.',
     },
     consulting: {
       kicker: 'Consulting',

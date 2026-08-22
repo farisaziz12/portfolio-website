@@ -1,0 +1,774 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/design/Kicker.astro';
+import GridTexture from '../components/design/GridTexture.astro';
+import ContactPanel from '../components/design/ContactPanel.astro';
+import HeadshotGallery from '../components/islands/HeadshotGallery';
+import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { speakerProfileQuery } from '../lib/sanity/queries';
+import { bookingYears } from '../lib/availability';
+
+interface Headshot {
+  _key?: string;
+  asset: unknown;
+  style?: 'formal' | 'casual' | 'speaking' | 'headshot';
+  downloadable?: boolean;
+  alt?: string;
+}
+
+interface PortableTextChild { text?: string }
+interface PortableTextBlock { _type?: string; children?: PortableTextChild[] }
+
+interface SpeakerProfile {
+  bioShort?: string;
+  bioMedium?: string;
+  bioFull?: PortableTextBlock[];
+  headshots?: Headshot[];
+}
+
+const profile = await sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null);
+
+// ── Bios — three lengths, easy-copy ──────────────────────────────────────────
+function portableTextToPlain(blocks: PortableTextBlock[] | undefined): string {
+  if (!blocks) return '';
+  return blocks
+    .filter((b) => b._type === 'block')
+    .map((b) => b.children?.map((c) => c.text || '').join('') || '')
+    .join('\n\n');
+}
+
+const bios = [
+  { id: 'short', label: 'Short', wordCount: '~50 words', text: profile?.bioShort || '' },
+  { id: 'medium', label: 'Medium', wordCount: '~150 words', text: profile?.bioMedium || '' },
+  { id: 'full', label: 'Full', wordCount: '300+ words', text: portableTextToPlain(profile?.bioFull) },
+].filter((b) => b.text);
+
+// ── Headshots — crop-aware gallery + multi-resolution downloads ──────────────
+const styleLabels: Record<string, string> = {
+  formal: 'Formal',
+  casual: 'Casual',
+  speaking: 'Speaking',
+  headshot: 'Portrait',
+};
+
+// Aspect-ratio presets organizers actually need. ratio = width / height;
+// 0 = keep the original frame. Sanity's CDN centers every crop on the image
+// hotspot (the face), so no manual crop uploads are needed.
+const headshotCrops = [
+  { id: 'full', label: 'Full', ratio: 0, hint: 'As shot — full frame' },
+  { id: 'square', label: '1:1', ratio: 1, hint: 'Avatars · socials · speaker cards' },
+  { id: 'portrait', label: '4:5', ratio: 4 / 5, hint: 'Portrait · LinkedIn · print programs' },
+  { id: 'wide', label: '16:9', ratio: 16 / 9, hint: 'Banners · slides · video thumbnails' },
+];
+
+const headshotSizes = [
+  { name: 'Small', width: 400, label: 'S', use: 'social & thumbnails' },
+  { name: 'Medium', width: 800, label: 'M', use: 'web use' },
+  { name: 'Large', width: 1200, label: 'L', use: 'print & high-res' },
+  { name: 'XL', width: 2000, label: 'XL', use: 'full resolution' },
+];
+
+const downloadableHeadshots: Headshot[] = (profile?.headshots ?? []).filter(
+  (h) => h.downloadable !== false
+);
+
+const headshotData = downloadableHeadshots.map((headshot) => {
+  // Pass the whole image object (not just .asset) so urlFor keeps the
+  // hotspot/crop data — that's what makes ratio crops face-centered.
+  const image = headshot as never;
+  const style = headshot.style || 'headshot';
+
+  return {
+    styleLabel: styleLabels[style] || style,
+    alt: headshot.alt || 'Faris Aziz speaker headshot',
+    crops: headshotCrops.map((crop) => {
+      const isFullFrame = crop.ratio === 0;
+      const sized = (width: number) => {
+        const base = urlFor(image).width(width).format('jpg').quality(95);
+        return isFullFrame
+          ? base.url()
+          : base.height(Math.round(width / crop.ratio)).fit('crop').url();
+      };
+      return {
+        id: crop.id,
+        label: crop.label,
+        hint: crop.hint,
+        previewUrl: sized(600),
+        lightboxUrl: sized(1600),
+        resolutions: headshotSizes.map((size) => {
+          const isOriginalFile = isFullFrame && size.name === 'XL';
+          const height = Math.round(size.width / (crop.ratio || 1));
+          return {
+            name: size.name,
+            label: size.label,
+            tooltip: isOriginalFile
+              ? 'Original file — full resolution'
+              : `${size.name} — ${isFullFrame ? `${size.width}px wide` : `${size.width}×${height}px`} · ${size.use}`,
+            url: isOriginalFile ? urlFor(image).format('jpg').url() : sized(size.width),
+            filename: isOriginalFile
+              ? `faris-aziz-${style}-original.jpg`
+              : `faris-aziz-${style}${isFullFrame ? '' : `-${crop.id}`}-${size.width}w.jpg`,
+          };
+        }),
+      };
+    }),
+  };
+});
+
+// What's on this page — quick jump links in the hero.
+const contents = [
+  { href: '#bios', label: 'Bios' },
+  ...(headshotData.length > 0 ? [{ href: '#headshots', label: 'Headshots' }] : []),
+  { href: '#rider', label: 'Practical details' },
+];
+---
+
+<BaseLayout
+  title="Press kit — Faris Aziz"
+  description="Speaker press kit for Faris Aziz: copy-paste bios in three lengths, downloadable high-resolution headshots, and the practical details for hosting him at your event."
+  pathname="/press-kit"
+  image="/og/press-kit.png"
+>
+  <!-- HERO -->
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb">
+        <a href="/speaking">Speaking</a>
+        <span class="page-crumbs__sep">/</span>
+        <a href="/invite">Invite me</a>
+        <span class="page-crumbs__sep">/</span>
+        <span class="page-crumbs__cur">Press kit</span>
+      </nav>
+      <Kicker>Press kit · for organizers</Kicker>
+      <h1 class="page-hero__title">
+        Everything you need to <span class="accent-word">promote the talk</span>.
+      </h1>
+      <p class="page-hero__lead">
+        Copy-paste bios, downloadable headshots, and the practical details for hosting me — all on one page, free to use.
+      </p>
+      <div class="pk-contents">
+        {contents.map((c) => (
+          <a href={c.href} class="ds-pill">{c.label}</a>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <!-- BIOS -->
+  {bios.length > 0 && (
+    <section class="page-section anchor-target" id="bios">
+      <div class="container">
+        <div class="page-section__heading">
+          <Kicker class="ds-reveal">Bios</Kicker>
+          <h2 class="page-h2 ds-reveal">Copy-paste a bio</h2>
+          <p class="pk-section-lead ds-reveal">Three lengths for programs, websites, and intros. One click to copy.</p>
+        </div>
+
+        <div class="bio-card">
+          <div class="bio-header">
+            <div class="bio-pills" role="tablist" aria-label="Bio length">
+              {bios.map((bio, i) => (
+                <button
+                  type="button"
+                  class={`bio-pill ${i === 0 ? 'active' : ''}`}
+                  data-bio-id={bio.id}
+                  role="tab"
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                >
+                  {bio.label}
+                  <span class="bio-pill__count">{bio.wordCount}</span>
+                </button>
+              ))}
+            </div>
+            <button type="button" class="bio-copy" id="bio-copy-btn" data-text={bios[0].text}>
+              <svg class="bio-copy__icon bio-copy__icon--copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <svg class="bio-copy__icon bio-copy__icon--check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="bio-copy__label">Copy</span>
+            </button>
+          </div>
+
+          <div class="bio-content">
+            {bios.map((bio, i) => (
+              <div
+                class={`bio-text ${i === 0 ? 'active' : ''}`}
+                data-bio-content={bio.id}
+                data-text={bio.text}
+              >
+                <p>{bio.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- HEADSHOTS -->
+  {headshotData.length > 0 && (
+    <section class="page-section page-section--alt anchor-target" id="headshots">
+      <div class="container">
+        <div class="page-section__heading">
+          <Kicker class="ds-reveal">Headshots</Kicker>
+          <h2 class="page-h2 ds-reveal">High-res photos, four crops</h2>
+          <p class="pk-section-lead ds-reveal">Pick a crop and a size — every ratio stays centered on the face automatically.</p>
+        </div>
+
+        <HeadshotGallery client:visible headshots={headshotData} />
+
+        <p class="headshot-guide">
+          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
+          — need a different ratio or format? <a href="/invite" class="ds-link">Just ask</a>.
+        </p>
+      </div>
+    </section>
+  )}
+
+  <!-- PRACTICAL DETAILS -->
+  <section class="page-section anchor-target" id="rider">
+    <div class="container">
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Practical details</Kicker>
+        <h2 class="page-h2 ds-reveal">Good to know before the event</h2>
+        <p class="pk-section-lead ds-reveal">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
+      </div>
+
+      <div class="rider-grid wide">
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Honorarium</h3>
+          <p class="rider-item__body">Let's talk — it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Travel &amp; lodging</h3>
+          <p class="rider-item__body">For in-person events outside the Geneva / Zurich area, I'll ask you to cover travel and a place to sleep. Economy is totally fine — direct routes are a nice bonus.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Code of conduct</h3>
+          <p class="rider-item__body">I love events with a published, enforced code of conduct. Don't have one yet? No stress — I'm happy to point you at great templates.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Recording &amp; slides</h3>
+          <p class="rider-item__body">Please record it! Just send me the link after — I love sharing talks. Slides stay mine, but share them with your attendees as much as you like.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">A/V setup</h3>
+          <p class="rider-item__body">HDMI or USB-C and we're good. For workshops, a lapel or headset mic and solid attendee Wi-Fi make everything ten times better.</p>
+        </div>
+        <div class="ds-card rider-item">
+          <h3 class="rider-item__title">Promotion</h3>
+          <p class="rider-item__body">I'll shout about your event to my audience before and after. Tag me in your posts and I'll amplify them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status={`Booking ${bookingYears()} dates`}
+          title="Haven't sent the invite yet?"
+          body="Tell me about your event and audience — I'll tailor something to fit, and reply within two days."
+          primaryHref="/invite"
+          primaryLabel="Invite me to speak"
+          secondaryHref="/invite#availability"
+          secondaryLabel="Check my availability"
+        />
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initPressKit() {
+      // ── Bio pills ─────────────────────────────────────────────────────────
+      const copyBtn = document.getElementById('bio-copy-btn');
+      document.querySelectorAll('.bio-pill').forEach((pill) => {
+        pill.addEventListener('click', () => {
+          const bioId = pill.getAttribute('data-bio-id');
+          if (!bioId) return;
+          document.querySelectorAll('.bio-pill').forEach((p) => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          document.querySelectorAll('.bio-text').forEach((t) => t.classList.remove('active'));
+          const active = document.querySelector(`[data-bio-content="${bioId}"]`);
+          active?.classList.add('active');
+          const text = active?.getAttribute('data-text') || '';
+          if (copyBtn) copyBtn.setAttribute('data-text', text);
+        });
+      });
+
+      // ── Copy button ───────────────────────────────────────────────────────
+      copyBtn?.addEventListener('click', async () => {
+        const text = copyBtn.getAttribute('data-text') || '';
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          // Fallback: textarea trick for older browsers
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch { /* ignore */ }
+          document.body.removeChild(ta);
+        }
+        const label = copyBtn.querySelector('.bio-copy__label');
+        if (!label) return;
+        const original = label.textContent;
+        label.textContent = 'Copied';
+        copyBtn.classList.add('bio-copy--done');
+        window.setTimeout(() => {
+          label.textContent = original;
+          copyBtn.classList.remove('bio-copy--done');
+        }, 1500);
+      });
+
+      // Deep link: /press-kit?bio=medium#bios pre-selects a bio length so
+      // organizers land on exactly the bio they were sent.
+      const bioParam = new URLSearchParams(window.location.search).get('bio');
+      if (bioParam) {
+        const pill = document.querySelector<HTMLElement>(`.bio-pill[data-bio-id="${CSS.escape(bioParam)}"]`);
+        pill?.click();
+      }
+
+      // (Headshot gallery + lightbox are handled by the HeadshotGallery island,
+      //  including the ?crop= deep link.)
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPressKit, { once: true });
+    } else {
+      initPressKit();
+    }
+    document.addEventListener('astro:after-swap', initPressKit);
+  </script>
+</BaseLayout>
+
+<style is:global>
+  /* ── Headshot gallery (rendered by the HeadshotGallery React island, so these
+        styles must be global — Astro's scoped styles can't reach island markup) ── */
+  .headshot-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+  @media (min-width: 640px) {
+    .headshot-gallery { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+  }
+  .headshot-card {
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .headshot-card__image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    background: rgb(var(--surface-3));
+    cursor: zoom-in;
+    overflow: hidden;
+  }
+  /* `contain` (not `cover`): the preview must show exactly what downloads —
+     square fills the frame, other ratios letterbox to reveal their true shape. */
+  .headshot-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* Zoom/overlay affordances are scoped to the lightbox button itself, not the
+     whole card — hovering the crop/size controls shouldn't light up the image. */
+  .headshot-card__image:hover img { transform: scale(1.04); }
+  .headshot-card__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0);
+    transition: background 0.3s ease;
+  }
+  .headshot-card__image:hover .headshot-card__overlay { background: rgb(0 0 0 / 0.35); }
+  .headshot-card__expand {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    color: rgb(var(--ink));
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .headshot-card__expand svg { width: 18px; height: 18px; }
+  .headshot-card__image:hover .headshot-card__expand { opacity: 1; transform: scale(1); }
+
+  .headshot-card__info {
+    padding: 0.75rem 0.85rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .headshot-card__style {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* Crop ratio segmented control */
+  .headshot-card__crops {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+  }
+  .headshot-crop-pill {
+    flex: 1;
+    padding: 0.34rem 0.1rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: rgb(var(--ink-muted));
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .headshot-crop-pill:hover { color: rgb(var(--ink)); }
+  .headshot-crop-pill.active {
+    color: rgb(var(--ink));
+    background: rgb(var(--surface-1));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  }
+  .headshot-crop-pill:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 1px;
+  }
+
+  /* Reserve two lines so switching crops never reflows the card */
+  .headshot-card__hint {
+    margin: 0;
+    min-height: 2em;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.66rem;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: rgb(var(--ink-faint));
+  }
+
+  /* Desktop size picker / mobile save CTA */
+  .headshot-sizes { display: none; }
+  @media (min-width: 768px) {
+    .headshot-sizes {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .headshot-save { display: none; }
+  }
+  .headshot-sizes__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
+  }
+  .headshot-sizes__label svg { width: 0.75rem; height: 0.75rem; }
+  .headshot-sizes__btns { display: flex; gap: 0.25rem; }
+  .headshot-size-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: rgb(var(--ink-muted));
+    background: rgb(var(--surface-1));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .headshot-size-btn:hover {
+    color: rgb(var(--accent-bright));
+    border-color: rgb(var(--accent));
+    background: rgb(var(--accent) / 0.1);
+  }
+  .headshot-size-btn.done {
+    color: rgb(var(--signal));
+    border-color: rgb(var(--signal) / 0.4);
+    background: rgb(var(--signal) / 0.15);
+  }
+  .headshot-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    background: rgb(var(--accent));
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .headshot-save:active { opacity: 0.9; }
+  .headshot-save svg { width: 1rem; height: 1rem; }
+
+  /* ── Lightbox (also island-rendered) ────────────────────────────────────── */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0.92);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .lightbox.open { opacity: 1; visibility: visible; }
+  .lightbox__btn {
+    position: absolute;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .lightbox__btn:hover { background: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.3); }
+  .lightbox__btn svg { width: 18px; height: 18px; }
+  .lightbox__close { top: 1.25rem; right: 1.25rem; }
+  .lightbox__prev { left: 1.25rem; top: 50%; transform: translateY(-50%); }
+  .lightbox__next { right: 1.25rem; top: 50%; transform: translateY(-50%); }
+  .lightbox__content { max-width: 90vw; max-height: 85vh; }
+  .lightbox__image {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,.7);
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lightbox.open .lightbox__image { transform: scale(1); }
+  .lightbox__counter {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.8rem;
+    color: rgb(255 255 255 / 0.7);
+    letter-spacing: 0.05em;
+  }
+</style>
+
+<style>
+  /* Hero jump links */
+  .pk-contents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.6rem;
+  }
+  .pk-contents .ds-pill { transition: border-color 0.15s, color 0.15s; }
+  .pk-contents .ds-pill:hover {
+    border-color: rgb(var(--accent) / 0.5);
+    color: rgb(var(--accent-bright));
+  }
+
+  .pk-section-lead {
+    color: rgb(var(--ink-muted));
+    margin-top: 0.8rem;
+    line-height: 1.55;
+  }
+
+  /* ── Bios ───────────────────────────────────────────────────────────────── */
+  .bio-card {
+    max-width: 760px;
+    margin: 0 auto;
+    background: rgb(var(--surface-2));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 16px;
+    padding: clamp(1.5rem, 3vw, 2rem);
+  }
+  .bio-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-bottom: 1.4rem;
+  }
+  @media (min-width: 560px) {
+    .bio-header { flex-direction: row; align-items: center; justify-content: space-between; }
+  }
+  .bio-pills {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge));
+    border-radius: 10px;
+    width: fit-content;
+  }
+  .bio-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .bio-pill:hover { color: rgb(var(--ink)); }
+  .bio-pill.active {
+    color: rgb(var(--ink));
+    background: rgb(var(--surface-1));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  }
+  .bio-pill__count {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.68rem;
+    color: rgb(var(--ink-faint));
+    font-weight: 400;
+  }
+  .bio-pill.active .bio-pill__count { color: rgb(var(--ink-muted)); }
+
+  .bio-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgb(var(--ink-muted));
+    background: rgb(var(--surface-3));
+    border: 1px solid rgb(var(--edge-strong));
+    border-radius: 10px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bio-copy:hover {
+    color: rgb(var(--accent-bright));
+    border-color: rgb(var(--accent) / 0.5);
+  }
+  .bio-copy__icon { width: 14px; height: 14px; flex-shrink: 0; }
+  /* Icon morph: copy icon swaps for a checkmark that pops in with a small spring */
+  .bio-copy__icon--check { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--copy { display: none; }
+  .bio-copy.bio-copy--done .bio-copy__icon--check {
+    display: block;
+    animation: bioCheckPop 0.32s cubic-bezier(0.16, 1.4, 0.3, 1);
+  }
+  @keyframes bioCheckPop {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .bio-copy.bio-copy--done {
+    color: rgb(var(--signal));
+    border-color: rgb(var(--signal) / 0.5);
+    background: rgb(var(--signal) / 0.1);
+    transform: scale(1.03);
+  }
+  .bio-copy { will-change: transform; }
+  .bio-copy:active { transform: scale(0.97); }
+
+  .bio-content { position: relative; min-height: 80px; }
+  .bio-text { display: none; }
+  .bio-text.active {
+    display: block;
+    animation: bioFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bio-text p {
+    color: rgb(var(--ink-muted));
+    line-height: 1.65;
+    white-space: pre-line;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  @keyframes bioFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Practical details ──────────────────────────────────────────────────── */
+  .rider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-inline: auto;
+  }
+  @media (max-width: 900px) {
+    .rider-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .rider-grid { grid-template-columns: 1fr; }
+  }
+  .rider-item { padding: 1.5rem 1.4rem; }
+  .rider-item__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: rgb(var(--ink));
+    margin-bottom: 0.45rem;
+  }
+  .rider-item__body {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
+
+  /* ── Headshot size guide ────────────────────────────────────────────────── */
+  .headshot-guide {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    color: rgb(var(--ink-faint));
+    letter-spacing: 0.04em;
+  }
+  .headshot-guide span { color: rgb(var(--ink-muted)); margin-right: 0.4rem; }
+</style>

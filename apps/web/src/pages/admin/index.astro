@@ -129,20 +129,20 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   'force-closed': { label: 'Force closed', color: 'var(--danger)' },
 };
 
-// ── Press kit quicklinks — deep links into /invite for organizer emails ─────
+// ── Press kit quicklinks — deep links into /press-kit for organizer emails ──
 const SITE = 'https://faziz-dev.com';
 
 const bioQuicklinks = [
-  { label: 'Short bio', url: `${SITE}/invite?bio=short#bios` },
-  { label: 'Medium bio', url: `${SITE}/invite?bio=medium#bios` },
-  { label: 'Full bio', url: `${SITE}/invite?bio=full#bios` },
+  { label: 'Short bio', url: `${SITE}/press-kit?bio=short#bios` },
+  { label: 'Medium bio', url: `${SITE}/press-kit?bio=medium#bios` },
+  { label: 'Full bio', url: `${SITE}/press-kit?bio=full#bios` },
 ];
 
 const cropQuicklinks = [
-  { label: 'Headshots', url: `${SITE}/invite#headshots` },
-  { label: 'Square 1:1', url: `${SITE}/invite?crop=square#headshots` },
-  { label: 'Portrait 4:5', url: `${SITE}/invite?crop=portrait#headshots` },
-  { label: 'Wide 16:9', url: `${SITE}/invite?crop=wide#headshots` },
+  { label: 'Headshots', url: `${SITE}/press-kit#headshots` },
+  { label: 'Square 1:1', url: `${SITE}/press-kit?crop=square#headshots` },
+  { label: 'Portrait 4:5', url: `${SITE}/press-kit?crop=portrait#headshots` },
+  { label: 'Wide 16:9', url: `${SITE}/press-kit?crop=wide#headshots` },
 ];
 
 const socialQuicklinks = [

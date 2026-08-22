@@ -44,7 +44,8 @@ export const GET: APIRoute = async () => {
     `- Community: cofounder of ZurichJS (https://zurichjs.com) — built in under two years into an award-winning community and one of Europe's most in-demand conferences`,
     `- Awards: JSNation Open Source Award, for building the ZurichJS community`,
     `- Topics: React, Next.js, frontend architecture, payment systems, developer experience, engineering leadership`,
-    `- Speaker press kit (bios, headshots, availability): https://faziz-dev.com/invite`,
+    `- Speaker press kit (bios, headshots, practical details): https://faziz-dev.com/press-kit`,
+    `- Availability & speaking invitations: https://faziz-dev.com/invite`,
     `- Open to full-time roles: tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, founding engineer — https://faziz-dev.com/contact?topic=role#message`,
   ]
     .filter(Boolean)

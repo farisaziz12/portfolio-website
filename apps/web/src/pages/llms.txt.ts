@@ -38,7 +38,8 @@ To book: speaking invitations at https://faziz-dev.com/invite (form; replies wit
 
 - [Talk catalogue](https://faziz-dev.com/talks.md): every bookable talk with abstracts and delivery history
 - [Schedule](https://faziz-dev.com/events.md): upcoming and past engagements
-- [Invite & press kit](https://faziz-dev.com/invite.md): logistics, speaker rider, bios, availability
+- [Invite me](https://faziz-dev.com/invite.md): booking form, availability, practical details
+- [Press kit](https://faziz-dev.com/press-kit): copy-paste bios, downloadable headshots, practical details
 
 ## Services
 

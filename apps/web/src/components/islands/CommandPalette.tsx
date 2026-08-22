@@ -40,6 +40,7 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
   { group: 'Actions', label: 'Work with me', icon: ICON.mail, href: '/contact', keyHint: 'CTA' },
   { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite' },
+  { group: 'Pages', label: 'Press kit', icon: ICON.img, href: '/press-kit' },
   {
     group: 'Actions',
     label: 'Copy short bio',

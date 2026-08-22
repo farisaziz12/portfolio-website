@@ -41,7 +41,7 @@ export const GET: APIRoute = async () => {
     `- Ideal notice: 4–6 weeks`,
     `- Booking form: https://faziz-dev.com/invite`,
     ``,
-    `## Speaker rider — "the stuff I love to know"`,
+    `## Practical details ("the stuff I love to know") — full press kit at https://faziz-dev.com/press-kit`,
     ``,
     `None of this is a dealbreaker; Faris prefers to make events work. Highlights:`,
     ``,
@@ -60,7 +60,7 @@ export const GET: APIRoute = async () => {
     ``,
     profile?.bioMedium ? `### Medium\n\n${profile.bioMedium}` : '',
     ``,
-    `Headshots: https://faziz-dev.com/invite (press kit section — crop ratios incl. square 1:1, portrait 4:5, wide 16:9, multiple resolutions, free to use with credit)`,
+    `Headshots: https://faziz-dev.com/press-kit (crop ratios incl. square 1:1, portrait 4:5, wide 16:9, multiple resolutions, free to use with credit)`,
     ``,
     upcoming.length
       ? `## Currently confirmed\n\n${upcoming
