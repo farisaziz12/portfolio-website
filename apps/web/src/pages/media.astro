@@ -245,7 +245,9 @@ const press = media.filter((m) => m.type === 'press');
     object-fit: cover;
     transition: transform 0.5s ease;
   }
-  .media-card:hover .media-card__media img { transform: scale(1.04); }
+  /* Zoom only on cards that are actually links (ds-card-interactive is gated
+     on videoUrl above) — a plain div card shouldn't imply a click. */
+  .media-card.ds-card-interactive:hover .media-card__media img { transform: scale(1.04); }
   .media-card__placeholder {
     width: 100%;
     height: 100%;

@@ -571,13 +571,9 @@
     }
   }
 
+  /* Decorative, not clickable — no hover zoom. */
   .hero-mosaic-grid__item img {
     @apply w-full h-full object-cover;
-    @apply transition-transform duration-500;
-  }
-
-  .hero-mosaic-grid__item:hover img {
-    @apply scale-105;
   }
 
   /* Hide extra items on smaller screens */

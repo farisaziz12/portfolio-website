@@ -124,6 +124,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     if (cmd === 'whoami') {
       print(
         { kind: 'out', text: 'Faris Aziz — Staff Software Engineer & Conference Speaker, Geneva.' },
+        { kind: 'out', text: 'Cofounder of ZurichJS · JSNation OSS Award winner.' },
         { kind: 'out', text: "React, Next.js & payments. Try 'talks' or 'book'." }
       );
       return;
