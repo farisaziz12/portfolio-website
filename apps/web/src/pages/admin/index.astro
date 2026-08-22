@@ -129,20 +129,20 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   'force-closed': { label: 'Force closed', color: 'var(--danger)' },
 };
 
-// ── Press kit quicklinks — deep links into /invite for organizer emails ─────
+// ── Press kit quicklinks — deep links into /press-kit for organizer emails ──
 const SITE = 'https://faziz-dev.com';
 
 const bioQuicklinks = [
-  { label: 'Short bio', url: `${SITE}/invite?bio=short#bios` },
-  { label: 'Medium bio', url: `${SITE}/invite?bio=medium#bios` },
-  { label: 'Full bio', url: `${SITE}/invite?bio=full#bios` },
+  { label: 'Short bio', url: `${SITE}/press-kit?bio=short#bios` },
+  { label: 'Medium bio', url: `${SITE}/press-kit?bio=medium#bios` },
+  { label: 'Full bio', url: `${SITE}/press-kit?bio=full#bios` },
 ];
 
 const cropQuicklinks = [
-  { label: 'Headshots', url: `${SITE}/invite#headshots` },
-  { label: 'Square 1:1', url: `${SITE}/invite?crop=square#headshots` },
-  { label: 'Portrait 4:5', url: `${SITE}/invite?crop=portrait#headshots` },
-  { label: 'Wide 16:9', url: `${SITE}/invite?crop=wide#headshots` },
+  { label: 'Headshots', url: `${SITE}/press-kit#headshots` },
+  { label: 'Square 1:1', url: `${SITE}/press-kit?crop=square#headshots` },
+  { label: 'Portrait 4:5', url: `${SITE}/press-kit?crop=portrait#headshots` },
+  { label: 'Wide 16:9', url: `${SITE}/press-kit?crop=wide#headshots` },
 ];
 
 const socialQuicklinks = [
@@ -204,7 +204,7 @@ const copyOnClick =
         <!-- PRESS KIT QUICKLINKS -->
         <div class="admin-block">
           <h2 class="admin-block__title">Press kit quicklinks</h2>
-          <p class="admin-head__body">Deep links into the <a href="/invite" class="ds-link">/invite</a> press kit — paste one into an organizer email and they land with the right bio or headshot crop pre-selected.</p>
+          <p class="admin-head__body">Deep links into the <a href="/invite" class="ds-link">/invite</a> press kit. Paste one into an organizer email and they land with the right bio or headshot crop pre-selected.</p>
 
           <div class="quicklinks">
             <div class="instance__row quicklinks__row">
@@ -380,7 +380,7 @@ const copyOnClick =
                         </div>
                       ) : (
                         <div class="instance__audience instance__audience--empty">
-                          <span>Not set — broadcasts go to the global audience only.</span>
+                          <span>Not set, so broadcasts go to the global audience only.</span>
                           <a href={sanityEditUrl} target="_blank" rel="noopener noreferrer" class="ds-link">
                             Add ID in Sanity
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -629,7 +629,6 @@ const copyOnClick =
     overflow: hidden;
     transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .instance:hover { border-color: rgb(var(--edge-strong)); }
   .instance__status { width: 4px; flex-shrink: 0; }
   .instance__body { padding: 1.6rem; flex: 1; min-width: 0; }
   .instance__head {

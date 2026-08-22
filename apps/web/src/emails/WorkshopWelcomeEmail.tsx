@@ -17,7 +17,7 @@ export function WorkshopWelcomeEmail({ name, event, workshopTitle, repoUrl, atte
   return (
     <Html>
       <Head />
-      <Preview>You're in — {workshopTitle} materials</Preview>
+      <Preview>You're in: {workshopTitle} materials</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
           <Section style={s.terminalHeader}>
@@ -46,7 +46,7 @@ export function WorkshopWelcomeEmail({ name, event, workshopTitle, repoUrl, atte
             </Section>
 
             <Hr style={s.divider} />
-            <Text style={s.signature}>— Faris Aziz</Text>
+            <Text style={s.signature}>– Faris Aziz</Text>
             <Text style={s.signatureLink}>
               <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
             </Text>

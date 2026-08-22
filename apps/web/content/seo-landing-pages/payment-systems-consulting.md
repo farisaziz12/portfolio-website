@@ -38,7 +38,7 @@ Payment Systems That Scale
 Build Checkout Flows That Convert and Payment Systems That Don't Break at 3 AM
 
 **heroSubheadline**:
-Payment code is unforgiving. A bug means lost revenue, angry customers, and compliance headaches. I help teams build robust payment systems using Stripe and modern payment orchestration—systems that handle edge cases gracefully and scale with your business.
+Payment code is unforgiving. A bug means lost revenue, angry customers, and compliance headaches. I help teams build robust payment systems using Stripe and modern payment orchestration: systems that handle edge cases gracefully and scale with your business.
 
 **heroPrimaryCta**:
 - text: Book a Discovery Call
@@ -61,13 +61,13 @@ Payment Integration Is Harder Than It Looks
    Description: Your checkout flow has friction. Users drop off at payment. Error messages are confusing. You're leaving money on the table but don't know exactly where.
 
 2. Title: Subscription Logic Is a Mess
-   Description: Proration, upgrades, downgrades, cancellations, dunning—subscription billing has infinite edge cases. Your current implementation handles the happy path but breaks on everything else.
+   Description: Proration, upgrades, downgrades, cancellations, dunning. Subscription billing has infinite edge cases. Your current implementation handles the happy path but breaks on everything else.
 
 3. Title: You're Nervous About Payment Code
    Description: Nobody wants to touch the payment code. It works (mostly), but it's held together with duct tape. Refunds are manual. Webhooks sometimes fail silently. Testing is... aspirational.
 
 4. Title: Compliance and Security Concerns
-   Description: PCI compliance, Strong Customer Authentication (SCA), tax calculation—the regulatory landscape is complex. You need payment infrastructure that handles compliance without constant manual intervention.
+   Description: PCI compliance, Strong Customer Authentication (SCA), tax calculation. The regulatory landscape is complex. You need payment infrastructure that handles compliance without constant manual intervention.
 
 ---
 
@@ -79,7 +79,7 @@ Payment Challenges I Solve
 **expertiseAreas** (add each as an item):
 
 1. Title: Stripe Integration Architecture
-   Description: Design and implement Stripe integrations that handle real-world complexity. Payment Intents, Setup Intents, Checkout Sessions, Customer Portal—I help you choose the right approach for your needs.
+   Description: Design and implement Stripe integrations that handle real-world complexity. Payment Intents, Setup Intents, Checkout Sessions, Customer Portal. I help you choose the right approach for your needs.
    Icon: 💳
 
 2. Title: Checkout Flow Optimization
@@ -241,7 +241,7 @@ Book Discovery Call
 https://cal.com/farisaziz12/discovery-call
 
 **ctaSecondaryText**:
-Processing over $10M annually? Mention it when booking—I prioritize high-volume payment consultations.
+Processing over $10M annually? Mention it when booking. I prioritize high-volume payment consultations.
 
 ---
 

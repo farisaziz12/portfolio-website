@@ -104,7 +104,7 @@ const breadcrumbSchema = {
 const videoSchema = event.links?.videoUrl
   ? {
       '@type': 'VideoObject',
-      name: `${event.talk?.title || event.title} — ${event.conference}`,
+      name: `${event.talk?.title || event.title} · ${event.conference}`,
       description: event.talk?.abstract?.split('\n')[0] || event.description || event.title,
       uploadDate: event.date,
       contentUrl: event.links.videoUrl,
@@ -117,10 +117,10 @@ const extraSchema = [eventSchema, breadcrumbSchema, ...(videoSchema ? [videoSche
 
 <BaseLayout
   title={`${event.title} | ${event.conference || 'Event'} | Faris Aziz`}
-  description={event.description || `${event.title} — ${event.conference} · ${dateStr}`}
+  description={event.description || `${event.title} · ${event.conference} · ${dateStr}`}
   pathname={`/events/${slug}`}
   image={`/og/events/${slug}.png`}
-  imageAlt={`${event.title} — Faris Aziz speaking engagement`}
+  imageAlt={`${event.title} · Faris Aziz speaking engagement`}
   extraSchema={extraSchema}
 >
   <header class="page-hero">

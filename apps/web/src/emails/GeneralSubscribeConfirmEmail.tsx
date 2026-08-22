@@ -35,7 +35,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
               <strong style={{ color: s.inkStrong }}>What to expect:</strong>
             </Text>
             <Text style={s.paragraph}>
-              Occasional updates about upcoming workshops, conference talks, and new content. No spam — ever.
+              Occasional updates about upcoming workshops, conference talks, and new content. No spam, ever.
             </Text>
 
             <Section style={s.buttonSection}>
@@ -43,7 +43,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
             </Section>
 
             <Hr style={s.divider} />
-            <Text style={s.signature}>— Faris Aziz</Text>
+            <Text style={s.signature}>– Faris Aziz</Text>
             <Text style={s.signatureLink}>
               <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
             </Text>

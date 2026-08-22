@@ -38,7 +38,7 @@ Hands-On React Training
 Workshops That Level Up Your Entire Team in Days, Not Months
 
 **heroSubheadline**:
-Theory is easy to forget. Skills you practice stick. My workshops combine focused instruction with hands-on exercises using real-world patterns. Your team leaves with working code and shared understanding—ready to apply what they learned immediately.
+Theory is easy to forget. Skills you practice stick. My workshops combine focused instruction with hands-on exercises using real-world patterns. Your team leaves with working code and shared understanding, ready to apply what they learned immediately.
 
 **heroPrimaryCta**:
 - text: Inquire About Workshops
@@ -58,7 +58,7 @@ Why Team Workshops Work
 **painPoints** (add each as an item):
 
 1. Title: Shared Language
-   Description: After a workshop, your whole team speaks the same language. No more debates about the "right way"—everyone has seen the patterns demonstrated and practiced them together.
+   Description: After a workshop, your whole team speaks the same language. No more debates about the "right way". Everyone has seen the patterns demonstrated and practiced them together.
 
 2. Title: Immediate Application
    Description: Everything taught is practical. Your team can apply workshop content to their actual codebase the next day.

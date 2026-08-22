@@ -25,7 +25,7 @@ export const GET: APIRoute = async () => {
 
   const body = `# Faris Aziz
 
-> Staff Software Engineer and conference speaker based in Geneva, Switzerland. ${stats.totalEvents}+ speaking engagements across ${stats.countries} countries. Speaks and consults on React, Next.js, frontend architecture, payment systems, developer experience, and engineering leadership. Available for keynotes, talks, workshops, consulting, and 1:1 mentorship.
+> Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. ${stats.totalEvents}+ speaking engagements across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). Speaks and consults on React, Next.js, frontend architecture, payment systems, developer experience, and engineering leadership. Available for keynotes, talks, workshops, consulting, and 1:1 mentorship.
 
 To book: speaking invitations at https://faziz-dev.com/invite (form; replies within two days), consulting discovery calls at https://cal.com/farisaziz12/discovery-call, mentorship inquiries at https://faziz-dev.com/mentorship.
 
@@ -38,7 +38,8 @@ To book: speaking invitations at https://faziz-dev.com/invite (form; replies wit
 
 - [Talk catalogue](https://faziz-dev.com/talks.md): every bookable talk with abstracts and delivery history
 - [Schedule](https://faziz-dev.com/events.md): upcoming and past engagements
-- [Invite & press kit](https://faziz-dev.com/invite.md): logistics, speaker rider, bios, availability
+- [Invite me](https://faziz-dev.com/invite.md): booking form, availability, practical details
+- [Press kit](https://faziz-dev.com/press-kit): copy-paste bios, downloadable headshots, practical details
 
 ## Services
 

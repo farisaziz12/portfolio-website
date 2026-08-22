@@ -37,7 +37,7 @@ Technical Partner for Founders
 The Technical Expertise Your Startup Needs, Without the Full-Time Hire
 
 **heroSubheadline**:
-You're moving fast, making bets, and building with a lean team. You need technical guidance from someone who's been there—someone who can help you make smart architectural decisions, avoid costly mistakes, and scale your engineering as you grow. That's what I do.
+You're moving fast, making bets, and building with a lean team. You need technical guidance from someone who's been there, someone who can help you make smart architectural decisions, avoid costly mistakes, and scale your engineering as you grow. That's what I do.
 
 **heroPrimaryCta**:
 - text: Book Discovery Call
@@ -63,7 +63,7 @@ The Startup Technical Challenge
    Description: Your MVP is working but the codebase is getting messy. You're hiring engineers but not sure how to structure the team or the code for what's next.
 
 3. Title: Expensive Mistakes Loom
-   Description: Every architectural decision feels high-stakes. Choosing the wrong tech stack, over-engineering too early, or under-engineering before scale—these mistakes are expensive to fix.
+   Description: Every architectural decision feels high-stakes. Choosing the wrong tech stack, over-engineering too early, or under-engineering before scale. These mistakes are expensive to fix.
 
 4. Title: Investor Questions You Can't Answer
    Description: VCs are asking about your technical architecture, scalability plans, and engineering roadmap. You need help articulating and validating your technical strategy.
@@ -188,10 +188,10 @@ Not Your Typical Consultant
    Label: I still write code daily
 
 2. Value: Startup
-   Label: Context—no enterprise solutions for startup problems
+   Label: Context: no enterprise solutions for startup problems
 
 3. Value: Flexible
-   Label: Engagement—from hours to fractional
+   Label: Engagement: from hours to fractional
 
 4. Value: Straight Talk
    Label: No upselling, no padding hours

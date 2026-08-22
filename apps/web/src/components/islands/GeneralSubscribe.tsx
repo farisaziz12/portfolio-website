@@ -74,11 +74,11 @@ export default function GeneralSubscribe({ compact = false }: Props) {
             className="mt-0.5 rounded border-[var(--color-edge)]"
           />
           <span className="text-xs text-[var(--color-ink-faint)] leading-relaxed">
-            I agree to receive updates about future workshops and conference appearances from Faris Aziz. No spam — unsubscribe anytime.
+            I agree to receive updates about future workshops and conference appearances from Faris Aziz. No spam, unsubscribe anytime.
           </span>
         </label>
         {status === 'error' && (
-          <p className="text-xs text-danger">Something went wrong — try again.</p>
+          <p className="text-xs text-danger">Something went wrong. Try again.</p>
         )}
       </form>
     );
@@ -113,7 +113,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
             className="mt-1 rounded border-[var(--color-edge)]"
           />
           <span className="text-xs text-[var(--color-ink-muted)] leading-relaxed">
-            I agree to receive updates about future workshops and conference appearances from Faris Aziz. No spam — unsubscribe anytime.
+            I agree to receive updates about future workshops and conference appearances from Faris Aziz. No spam, unsubscribe anytime.
           </span>
         </label>
 
@@ -127,7 +127,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
 
         {status === 'error' && (
           <p className="text-sm text-danger text-center">
-            Something went wrong — try again.
+            Something went wrong. Try again.
           </p>
         )}
       </form>

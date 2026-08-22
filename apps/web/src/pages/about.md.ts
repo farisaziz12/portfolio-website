@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# About Faris Aziz`,
     ``,
-    `> Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva, Switzerland. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, organizes the ZurichJS community, and is available for keynotes, talks, workshops, technical consulting, and 1:1 mentorship.`,
+    `> Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and is available for keynotes, talks, workshops, technical consulting, and 1:1 mentorship.`,
     ``,
     `## Short bio (~50 words)`,
     ``,
@@ -41,10 +41,12 @@ export const GET: APIRoute = async () => {
     `- Role: Staff Software Engineer`,
     `- Based in: Geneva, Switzerland`,
     `- Speaking: ${stats.totalEvents}+ engagements, ${stats.countries} countries, ${stats.cities} cities`,
-    `- Community: organizer of ZurichJS (https://zurichjs.com)`,
+    `- Community: cofounder of ZurichJS (https://zurichjs.com), built in under two years into an award-winning community and one of Europe's most in-demand conferences`,
+    `- Awards: JSNation Open Source Award, for building the ZurichJS community`,
     `- Topics: React, Next.js, frontend architecture, payment systems, developer experience, engineering leadership`,
-    `- Speaker press kit (bios, headshots, availability): https://faziz-dev.com/invite`,
-    `- Open to full-time roles: tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, founding engineer — https://faziz-dev.com/contact?topic=role#message`,
+    `- Speaker press kit (bios, headshots, practical details): https://faziz-dev.com/press-kit`,
+    `- Availability & speaking invitations: https://faziz-dev.com/invite`,
+    `- Open to full-time roles: tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, founding engineer: https://faziz-dev.com/contact?topic=role#message`,
   ]
     .filter(Boolean)
     .join('\n');

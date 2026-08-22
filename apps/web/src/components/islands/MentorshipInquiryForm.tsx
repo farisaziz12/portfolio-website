@@ -69,7 +69,7 @@ export default function MentorshipInquiryForm() {
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setServerError(body.error || 'Something went wrong — try emailing instead.');
+        setServerError(body.error || 'Something went wrong. Try emailing instead.');
         track('form_submit_failed', { form: 'mentorship', reason: 'server', status: res.status });
         return;
       }
@@ -98,7 +98,7 @@ export default function MentorshipInquiryForm() {
           </svg>
         </div>
         <h3 className="invite-form__success-title">Inquiry sent</h3>
-        <p className="invite-form__success-body">Thanks — I'll review this and get back to you within two days.</p>
+        <p className="invite-form__success-body">Thanks, I'll review this and get back to you within two days.</p>
       </div>
     );
   }
@@ -139,7 +139,7 @@ export default function MentorshipInquiryForm() {
             className="invite-form__input invite-form__textarea"
             value={fields.goals}
             onChange={(e) => set('goals', e.target.value)}
-            placeholder="A few sentences on what you'd like to get out of mentorship — career, technical, public speaking, anything."
+            placeholder="A few sentences on what you'd like to get out of mentorship: career, technical, public speaking, anything."
             rows={4}
             required
           />

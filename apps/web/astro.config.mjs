@@ -7,6 +7,11 @@ import vercel from '@astrojs/vercel';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://faziz-dev.com',
+  // /services (the old services hub) merged into /contact ("Work with me").
+  // The CMS-driven /services/[slug] landing pages still live under /services/.
+  redirects: {
+    '/services': '/contact',
+  },
   integrations: [
     tailwind(),
     sitemap({

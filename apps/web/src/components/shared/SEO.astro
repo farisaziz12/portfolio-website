@@ -55,7 +55,7 @@ const siteUrl = propSiteUrl || import.meta.env.SITE || 'https://faziz-dev.com';
 const canonicalUrl = new URL(pathname, siteUrl).href;
 const imageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).href;
 const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
-const ogImageAlt = imageAlt || `${fullTitle} — social card`;
+const ogImageAlt = imageAlt || `${fullTitle} (social card)`;
 
 // Entity graph. Stable @id anchors so every page reinforces the same Person
 // entity — this is what lets search engines and AI answer engines resolve
@@ -70,6 +70,7 @@ const sameAs = [
   socialLinks?.twitterUrl || 'https://twitter.com/farisaziz12',
   socialLinks?.youtube || 'https://www.youtube.com/@faziz-dev',
   'https://mentorcruise.com/mentor/farisaziz/',
+  'https://zurichjs.com',
 ].filter(Boolean);
 
 const person: Record<string, unknown> = {
@@ -78,8 +79,16 @@ const person: Record<string, unknown> = {
   name: personName,
   url: siteUrl,
   jobTitle: jobTitle,
+  address: { '@type': 'PostalAddress', addressLocality: 'Geneva', addressCountry: 'CH' },
   description:
-    'Staff Software Engineer and conference speaker based in Geneva. Speaks on React, Next.js, payment systems, developer experience, and engineering leadership. Available for talks, workshops, consulting, and mentorship.',
+    'Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva. Cofounder of ZurichJS, winner of the JSNation Open Source Award. Speaks on React, Next.js, payment systems, developer experience, and engineering leadership. Available for talks, workshops, consulting, and mentorship.',
+  award: 'JSNation Open Source Award, for building the ZurichJS community',
+  affiliation: {
+    '@type': 'Organization',
+    name: 'ZurichJS',
+    url: 'https://zurichjs.com',
+    description: 'Award-winning JavaScript community and conference in Zurich, cofounded by Faris Aziz.',
+  },
   knowsAbout: [
     'React',
     'Next.js',
@@ -90,6 +99,7 @@ const person: Record<string, unknown> = {
     'Developer experience',
     'Engineering leadership',
     'Public speaking',
+    'Community building',
   ],
   sameAs,
 };

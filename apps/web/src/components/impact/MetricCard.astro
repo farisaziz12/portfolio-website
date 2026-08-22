@@ -171,15 +171,12 @@ const hasProof = metric.proofItems && metric.proofItems.length > 0;
 </div>
 
 <style>
+  /* Informational card — no hover affordances (it isn't clickable; only the
+     source link and proof button inside it are). */
   .metric-card {
     position: relative;
     border-radius: 0.75rem;
     cursor: default;
-    transition: transform 0.3s ease;
-  }
-
-  .metric-card:hover {
-    transform: translateY(-2px);
   }
 
   .metric-card__border {
@@ -188,15 +185,10 @@ const hasProof = metric.proofItems && metric.proofItems.length > 0;
     border-radius: 0.75rem;
     padding: 2px;
     opacity: 0;
-    transition: opacity 0.3s ease;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-  }
-
-  .metric-card:hover .metric-card__border {
-    opacity: 1;
   }
 
   .metric-card__inner {
@@ -209,13 +201,6 @@ const hasProof = metric.proofItems && metric.proofItems.length > 0;
     flex-direction: column;
     gap: 0.5rem;
     height: 100%;
-    transition: all 0.3s ease;
-  }
-
-  .metric-card:hover .metric-card__inner {
-    background: rgb(var(--surface-overlay));
-    border-color: rgb(var(--edge-strong));
-    box-shadow: 0 8px 30px -10px rgb(var(--accent) / 0.1);
   }
 
   .metric-card__category {
@@ -333,11 +318,5 @@ const hasProof = metric.proofItems && metric.proofItems.length > 0;
   .metric-card__proof-btn:hover {
     background: rgb(var(--accent) / 0.2);
     border-color: rgb(var(--accent) / 0.4);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .metric-card:hover {
-      transform: none;
-    }
   }
 </style>

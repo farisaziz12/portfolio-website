@@ -84,7 +84,7 @@ export default function ContactForm() {
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setServerError(body.error || 'Something went wrong — try again in a moment.');
+        setServerError(body.error || 'Something went wrong. Try again in a moment.');
         track('form_submit_failed', { form: 'contact', reason: 'server', status: res.status });
         return;
       }
@@ -116,7 +116,7 @@ export default function ContactForm() {
           </svg>
         </div>
         <h3 className="invite-form__success-title">Message sent</h3>
-        <p className="invite-form__success-body">Thanks — it's in my inbox. I'll get back to you within two days.</p>
+        <p className="invite-form__success-body">Thanks, it's in my inbox. I'll get back to you within two days.</p>
       </div>
     );
   }

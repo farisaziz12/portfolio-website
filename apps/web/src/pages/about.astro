@@ -75,24 +75,24 @@ const linkedinUrl = pageContent?.aboutHero?.linkedinUrl || 'https://linkedin.com
 const sanityMilestones = pageContent?.aboutJourney?.milestones || [];
 const fallbackTimeline = [
   {
-    year: '2015 — 2019',
+    year: '2015–2019',
     title: 'Learning to ship',
-    desc: 'Cut my teeth building frontend systems where reliability wasn\'t optional. Learned that the hard problems live at the edges — the failures, the retries, the 3am pages.',
+    desc: 'Cut my teeth building frontend systems where reliability wasn\'t optional. Learned that the hard problems live at the edges: the failures, the retries, the 3am pages.',
   },
   {
-    year: '2019 — 2022',
+    year: '2019–2022',
     title: 'Payments at scale',
     desc: 'Moved into fintech, building and scaling payment infrastructure across regions. Launched Alipay in APAC and watched local payment methods move real revenue.',
   },
   {
-    year: '2022 — 2024',
+    year: '2022–2024',
     title: 'Leading teams',
-    desc: `Led a cross-functional squad of ${PROOF.engineersLed} engineers across two teams — frontend, backend, and the skip-level management in between.`,
+    desc: `Led a cross-functional squad of ${PROOF.engineersLed} engineers across two teams: frontend, backend, and the skip-level management in between.`,
   },
   {
-    year: '2024 — now',
+    year: '2024–now',
     title: 'Staff, stages & community',
-    desc: `Staff Engineer by day; speaker, mentor, and ZurichJS organizer the rest of the time. ${PROOF.communityMembers} new community members and counting.`,
+    desc: `Staff Engineer by day; speaker, mentor, and ZurichJS cofounder the rest of the time. In under two years, ZurichJS grew into an award-winning community (JSNation Open Source Award) and one of Europe's most in-demand conferences.`,
   },
 ];
 
@@ -102,7 +102,7 @@ const timelineItems =
     : fallbackTimeline;
 
 const fallbackTestimonials: Testimonial[] = [
-  { _id: 'tk', quote: "Faris is one of the best speakers I've seen recently. An honor and delight to meet him — the guy is going places.", author: 'Tejas Kumar', role: 'DevRel', company: 'Conference host' },
+  { _id: 'tk', quote: "Faris is one of the best speakers I've seen recently. An honor and delight to meet him. The guy is going places.", author: 'Tejas Kumar', role: 'DevRel', company: 'Conference host' },
   { _id: 'hh', quote: 'Whenever I need guidance about my career, there is one person I always turn to. He\'s been a mentor and a constant source of insight.', author: 'Hammad Hassan', role: 'Full-Stack Engineer' },
   { _id: 'rg', quote: 'An incredible engineer and human. I had the chance to meet Faris during the speaker session at ReactSummit.', author: 'Rajni Gediya', role: 'Staff Engineer', company: 'Mobile' },
 ];
@@ -154,16 +154,16 @@ const heroLocation = pageContent?.aboutHero?.location || 'Geneva';
 const ctaContent = {
   status: pageContent?.aboutCta?.statusText || availabilityLabel('Available'),
   title: pageContent?.aboutCta?.title || "Let's build something",
-  body: pageContent?.aboutCta?.description || "Speaking, consulting, or mentorship — if it involves shipping resilient software, I'm interested.",
+  body: pageContent?.aboutCta?.description || "Speaking, consulting, or mentorship: if it involves shipping resilient software, I'm interested.",
   primaryHref: pageContent?.aboutCta?.primaryCtaUrl || '/invite',
   primaryLabel: pageContent?.aboutCta?.primaryCtaText || 'Invite me to speak',
-  secondaryHref: pageContent?.aboutCta?.secondaryCtaUrl || '/services',
-  secondaryLabel: pageContent?.aboutCta?.secondaryCtaText || 'Explore services',
+  secondaryHref: pageContent?.aboutCta?.secondaryCtaUrl || '/contact',
+  secondaryLabel: pageContent?.aboutCta?.secondaryCtaText || 'Work with me',
 };
 ---
 
 <BaseLayout
-  title={seo?.metaTitle || 'About — Faris Aziz'}
+  title={seo?.metaTitle || 'About | Faris Aziz'}
   description={seo?.metaDescription || `Staff Software Engineer and Conference Speaker based in ${heroLocation}, specializing in resilient frontend systems and payment integrations.`}
   pathname="/about"
   image="/og/about.png"
@@ -181,7 +181,7 @@ const ctaContent = {
         </h1>
         <p class="about-hero__lead">
           {headlineBio ||
-            `I'm a ${headlineRole || 'Staff Software Engineer'} based in ${heroLocation}. For a decade I've built resilient frontend systems and payment integrations — the kind where a dropped request means real money lost. Speaking came later: I had things worth saying because I'd shipped them.`}
+            `I'm a ${headlineRole || 'Staff Software Engineer'} based in ${heroLocation}. For a decade I've built resilient frontend systems and payment integrations, the kind where a dropped request means real money lost. Speaking came later: I had things worth saying because I'd shipped them.`}
         </p>
         <p class="about-hero__body">
           Today I split my time between deep engineering work, mentoring engineers who want to grow, and talking on stages around the world about what actually works in production.
@@ -189,10 +189,11 @@ const ctaContent = {
         {/* Declarative entity block — quotable facts for humans, search engines, and AI assistants alike. */}
         <p class="about-hero__facts">
           In numbers: {stats.totalEvents}+ speaking engagements across {stats.countries} countries,
-          organizer of ZurichJS, and available for keynotes, workshops, consulting, and 1:1 mentorship.
+          cofounder of the award-winning ZurichJS community (JSNation Open Source Award), and
+          available for keynotes, workshops, consulting, and 1:1 mentorship.
         </p>
         <div class="about-hero__actions">
-          <a href="/services" class="ds-btn ds-btn-primary">
+          <a href="/contact" class="ds-btn ds-btn-primary">
             Work with me
             <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />

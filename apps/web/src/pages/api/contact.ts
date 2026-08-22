@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
     `New contact message\n\n` +
     `From: ${name} <${email}>\n` +
     `Topic: ${topicLabel}\n` +
-    `Company: ${company || '—'}\n\n` +
+    `Company: ${company || '–'}\n\n` +
     `Message:\n${message}\n`
 
   // 1) Notification to Faris — primary critical path. Failure → 502.
@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
     context: 'contact:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks — I'll reply within two days`,
+    subject: `Thanks · I'll reply within two days`,
     react: ContactConfirmationEmail({ name: firstName }),
   })
 

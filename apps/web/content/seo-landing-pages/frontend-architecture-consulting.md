@@ -91,7 +91,7 @@ Architecture Challenges I Solve
    Icon: 🎯
 
 4. Title: Micro-Frontend Architecture
-   Description: When (and when not) to use micro-frontends. Module federation, runtime integration, shared dependencies—I help teams navigate this complex space.
+   Description: When (and when not) to use micro-frontends. Module federation, runtime integration, shared dependencies. I help teams navigate this complex space.
    Icon: 🧩
 
 5. Title: API Layer Design
@@ -170,7 +170,7 @@ Who This Is For
    Icon: 🛠️
 
 3. Title: Tech Leads at Inflection Points
-   Description: You're facing a major architectural decision—monorepo migration, design system rebuild, or micro-frontend adoption. You want validation and expertise before committing.
+   Description: You're facing a major architectural decision: monorepo migration, design system rebuild, or micro-frontend adoption. You want validation and expertise before committing.
    Icon: 🔀
 
 4. Title: Startups Pre-Scale
@@ -216,7 +216,7 @@ Frequently Asked Questions
 2. Question: How long does an architecture assessment take?
    Answer: Typically 1-2 weeks from kickoff to final report, depending on codebase complexity and team availability for interviews.
 
-3. Question: We're a small team—do we need architecture consulting?
+3. Question: We're a small team. Do we need architecture consulting?
    Answer: Small teams often benefit most from getting architecture right early. It's much easier to set good patterns with 5 engineers than to fix them with 50.
 
 4. Question: What technologies do you work with?

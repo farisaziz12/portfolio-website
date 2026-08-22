@@ -86,7 +86,7 @@ function fmtDate(d?: string) {
 
 <BaseLayout
   title="Gallery | Faris Aziz"
-  description="Photos from conferences, meetups, and workshops around the world — grouped by event."
+  description="Photos from conferences, meetups, and workshops around the world, grouped by event."
   pathname="/gallery"
   image="/og/gallery.png"
 >
@@ -98,7 +98,7 @@ function fmtDate(d?: string) {
         Stages, hallways, and the <span class="accent-word">bits in between</span>.
       </h1>
       <p class="page-hero__lead">
-        A walk through the events — every strip is one event, scroll sideways to relive it. All shots free for organizers to reuse, credit appreciated.
+        A walk through the events: every strip is one event, scroll sideways to relive it. All shots free for organizers to reuse, credit appreciated.
       </p>
     </div>
   </header>
@@ -128,7 +128,7 @@ function fmtDate(d?: string) {
                     class="gallery-shot"
                     data-gallery-index={p.idx}
                     data-full-url={p.full}
-                    data-caption={[p.title || p.description, g.title !== 'Elsewhere' ? g.title : '', p.credit ? `📷 ${p.credit}` : ''].filter(Boolean).join(' — ')}
+                    data-caption={[p.title || p.description, g.title !== 'Elsewhere' ? g.title : '', p.credit ? `📷 ${p.credit}` : ''].filter(Boolean).join(' · ')}
                   >
                     <img src={p.thumb} alt={p.title || p.description || g.title} loading="lazy" decoding="async" />
                   </button>
@@ -152,7 +152,7 @@ function fmtDate(d?: string) {
         <ContactPanel
           status="Cameras welcome"
           title="Want shots like these from your event?"
-          body="Invite me to speak and I'll happily coordinate photos — tag me when you publish and I'll add them here."
+          body="Invite me to speak and I'll happily coordinate photos. Tag me when you publish and I'll add them here."
           primaryHref="/invite"
           primaryLabel="Invite me to speak"
           secondaryHref="/media"

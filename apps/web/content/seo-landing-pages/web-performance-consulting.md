@@ -35,10 +35,10 @@ Expert web performance consulting for React and Next.js applications. Improve Co
 Performance That Moves the Needle
 
 **heroHeadline**:
-Turn Your Slow React App Into a Fast One—With Metrics to Prove It
+Turn Your Slow React App Into a Fast One, With Metrics to Prove It
 
 **heroSubheadline**:
-Slow websites lose users and revenue. Google penalizes poor Core Web Vitals. But performance optimization isn't about random tweaks—it's about systematic diagnosis and targeted fixes. I help teams achieve measurable performance improvements that impact real business metrics.
+Slow websites lose users and revenue. Google penalizes poor Core Web Vitals. But performance optimization isn't about random tweaks; it's about systematic diagnosis and targeted fixes. I help teams achieve measurable performance improvements that impact real business metrics.
 
 **heroPrimaryCta**:
 - text: Book Performance Audit
@@ -79,7 +79,7 @@ Performance Challenges I Solve
 **expertiseAreas** (add each as an item):
 
 1. Title: Core Web Vitals Optimization
-   Description: Systematic improvement of LCP, CLS, and INP. I identify the specific causes of poor scores and implement targeted fixes—not generic best practices, but solutions for your specific bottlenecks.
+   Description: Systematic improvement of LCP, CLS, and INP. I identify the specific causes of poor scores and implement targeted fixes: not generic best practices, but solutions for your specific bottlenecks.
    Icon: 📊
 
 2. Title: Bundle Size Reduction

@@ -13,7 +13,7 @@ export function ContactConfirmationEmail({ name }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>Thanks — I'll reply within two days</Preview>
+      <Preview>Thanks · I'll reply within two days</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
           <Section style={s.terminalHeader}>
@@ -23,7 +23,7 @@ export function ContactConfirmationEmail({ name }: Props) {
           </Section>
 
           <Section style={s.content}>
-            <Heading style={s.heading}>Thanks — got it</Heading>
+            <Heading style={s.heading}>Thanks, got it</Heading>
 
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
@@ -33,11 +33,11 @@ export function ContactConfirmationEmail({ name }: Props) {
             </Text>
 
             <Text style={s.paragraph}>
-              If it's time-sensitive, mention that in a follow-up — otherwise, talk soon.
+              If it's time-sensitive, mention that in a follow-up. Otherwise, talk soon.
             </Text>
 
             <Hr style={s.divider} />
-            <Text style={s.signature}>— Faris</Text>
+            <Text style={s.signature}>– Faris</Text>
             <Text style={s.signatureLink}>
               <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
             </Text>

@@ -13,7 +13,7 @@ interface Props {
   message: string
 }
 
-const dash = '—'
+const dash = '–'
 
 export function ContactAdminEmail({ name, email, topic, company, message }: Props) {
   return (
@@ -54,7 +54,7 @@ export function ContactAdminEmail({ name, email, topic, company, message }: Prop
 
             <Hr style={s.divider} />
             <Text style={s.footerText}>
-              Reply directly — this email's reply-to is set to the sender.
+              Reply directly; this email's reply-to is set to the sender.
             </Text>
           </Section>
         </Container>

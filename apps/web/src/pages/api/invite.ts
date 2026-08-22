@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const subject = `Speaking invite · ${event}`
-  const text = `New speaking invitation\n\nFrom: ${name} <${email}>\nEvent: ${event}\nDate: ${date || '—'}\nLocation: ${location || '—'}\nFormat: ${format || '—'}\nAudience size: ${size || '—'}\n\n${message || '(no additional details)'}\n`
+  const text = `New speaking invitation\n\nFrom: ${name} <${email}>\nEvent: ${event}\nDate: ${date || '–'}\nLocation: ${location || '–'}\nFormat: ${format || '–'}\nAudience size: ${size || '–'}\n\n${message || '(no additional details)'}\n`
 
   // 1) Notification to Faris — primary critical path. Failure → 502.
   const adminRes = await sendOrLog({
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request }) => {
     context: 'invite:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks — I'll reply within two days`,
+    subject: `Thanks · I'll reply within two days`,
     react: InviteConfirmationEmail({ name: firstName, event: event.trim() }),
   })
 

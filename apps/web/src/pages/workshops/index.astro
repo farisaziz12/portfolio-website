@@ -4,7 +4,6 @@ import Kicker from '../../components/design/Kicker.astro';
 import GridTexture from '../../components/design/GridTexture.astro';
 import IconChip from '../../components/design/IconChip.astro';
 import ContactPanel from '../../components/design/ContactPanel.astro';
-import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopsQuery } from '../../lib/sanity/queries';
 import { availabilityLabel } from '../../lib/availability';
@@ -26,7 +25,7 @@ const bookable = workshops.filter((w) => w.isBookable !== false);
 const benefits = [
   {
     title: 'Hands-on learning',
-    desc: 'Build real projects during the session — guided exercises, working code by the end.',
+    desc: 'Build real projects during the session: guided exercises, working code by the end.',
     icon: '<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
     signal: false,
   },
@@ -52,7 +51,7 @@ const topics = [
   { title: 'Resilient patterns', desc: 'Retries, circuit breakers, graceful degradation.', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
   { title: 'Engineering leadership', desc: 'Reviews, prioritisation, growing senior engineers.', icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>' },
   { title: 'SDLC best practices', desc: 'Branching, CI/CD discipline, fast feedback loops.', icon: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>' },
-  { title: 'Career growth', desc: 'From mid to senior to staff — what actually moves the needle.', icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>' },
+  { title: 'Career growth', desc: 'From mid to senior to staff: what actually moves the needle.', icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>' },
 ];
 ---
 
@@ -70,7 +69,7 @@ const topics = [
         Build it, then <span class="accent-word">ship it</span>.
       </h1>
       <p class="page-hero__lead">
-        Interactive sessions where participants learn by building. Available for conferences, corporate training, and bootcamps — full-day or half-day formats.
+        Interactive sessions where participants learn by building. Available for conferences, corporate training, and bootcamps, in full-day or half-day formats.
       </p>
       <div class="page-hero__actions">
         <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -172,7 +171,7 @@ const topics = [
       <div class="page-section__heading">
         <Kicker class="ds-reveal">Workshop topics</Kicker>
         <h2 class="page-h2 ds-reveal">Areas I run <span class="mark">deep sessions</span> in</h2>
-        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">From production engineering to career growth — pick what fits your audience.</p>
+        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">From production engineering to career growth, pick what fits your audience.</p>
       </div>
       <div class="workshop-topics wide">
         {topics.map((t) => (
@@ -191,14 +190,7 @@ const topics = [
     </div>
   </section>
 
-  <!-- SUBSCRIBE -->
-  <section class="page-section">
-    <div class="container">
-      <div style="max-width:42rem;margin:0 auto;">
-        <GeneralSubscribe client:load />
-      </div>
-    </div>
-  </section>
+  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — no page copy needed. -->
 
   <!-- CTA -->
   <section class="page-section page-section--contact">
@@ -207,7 +199,7 @@ const topics = [
         <ContactPanel
           status={availabilityLabel('Custom workshops')}
           title="Need a custom workshop?"
-          body="Tailored sessions for your team or event — pick a topic, tell me about your audience's level, and I'll build it for you."
+          body="Tailored sessions for your team or event: pick a topic, tell me about your audience's level, and I'll build it for you."
           primaryHref="/invite"
           primaryLabel="Get in touch"
           secondaryHref="/talks"

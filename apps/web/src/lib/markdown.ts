@@ -17,7 +17,7 @@ const FOOTER = `
 
 ---
 
-Faris Aziz — Staff Software Engineer & Conference Speaker, Geneva.
+Faris Aziz: Staff Software Engineer & Conference Speaker, Geneva.
 Site: https://faziz-dev.com · Invite to speak: https://faziz-dev.com/invite · Consulting: https://cal.com/farisaziz12/discovery-call · Mentorship: https://faziz-dev.com/mentorship
 LinkedIn: https://linkedin.com/in/farisaziz12 · GitHub: https://github.com/farisaziz12 · Bluesky: https://bsky.app/profile/farisaziz.com
 `;

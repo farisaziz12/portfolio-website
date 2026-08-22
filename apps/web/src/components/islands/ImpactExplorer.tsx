@@ -743,7 +743,7 @@ function ProofItemDisplay({
     return (
       <div className="bg-surface-overlay rounded-lg p-3 border-l-2 border-accent">
         <p className="text-sm text-ink italic">"{item.quote}"</p>
-        {item.quoteAuthor && <p className="text-xs text-ink-muted mt-1">— {item.quoteAuthor}</p>}
+        {item.quoteAuthor && <p className="text-xs text-ink-muted mt-1">– {item.quoteAuthor}</p>}
       </div>
     );
   }

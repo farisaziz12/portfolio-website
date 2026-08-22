@@ -3,12 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import InviteForm from '../components/islands/InviteForm';
-import HeadshotGallery from '../components/islands/HeadshotGallery';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
+import { sanityFetch } from '../lib/sanity/client';
 import {
   pastEventsQuery,
   featuredTestimonialsQuery,
-  speakerProfileQuery,
   upcomingEventsQuery,
 } from '../lib/sanity/queries';
 import { topConferences } from '../lib/conferences';
@@ -17,135 +15,37 @@ import { bookingYears, quarterLoad } from '../lib/availability';
 interface PastEvent { _id: string; conference?: string }
 interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string }
 
-interface Headshot {
-  _key?: string;
-  asset: unknown;
-  style?: 'formal' | 'casual' | 'speaking' | 'headshot';
-  downloadable?: boolean;
-  alt?: string;
+interface UpcomingEvent {
+  _id: string;
+  date: string;
+  title?: string;
+  slug?: string;
+  conference?: string;
+  location?: { city?: string; country?: string; isOnline?: boolean };
 }
 
-interface PortableTextChild { text?: string }
-interface PortableTextBlock { _type?: string; children?: PortableTextChild[] }
-
-interface SpeakerProfile {
-  bioShort?: string;
-  bioMedium?: string;
-  bioFull?: PortableTextBlock[];
-  headshots?: Headshot[];
-}
-
-interface UpcomingEvent { _id: string; date: string }
-
-const [pastEvents, testimonials, profile, upcomingEvents] = await Promise.all([
+const [pastEvents, testimonials, upcomingEvents] = await Promise.all([
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
   sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
-  sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
 ]);
 
 // Honest urgency for the hero — how full the next bookable quarter really is.
 const load = quarterLoad(upcomingEvents.map((e) => e.date));
 
-// ── Bios — three lengths, easy-copy ──────────────────────────────────────────
-function portableTextToPlain(blocks: PortableTextBlock[] | undefined): string {
-  if (!blocks) return '';
-  return blocks
-    .filter((b) => b._type === 'block')
-    .map((b) => b.children?.map((c) => c.text || '').join('') || '')
-    .join('\n\n');
-}
-
-const bios = [
-  { id: 'short', label: 'Short', wordCount: '~50 words', text: profile?.bioShort || '' },
-  { id: 'medium', label: 'Medium', wordCount: '~150 words', text: profile?.bioMedium || '' },
-  { id: 'full', label: 'Full', wordCount: '300+ words', text: portableTextToPlain(profile?.bioFull) },
-].filter((b) => b.text);
-
-// ── Headshots — crop-aware gallery + multi-resolution downloads ──────────────
-const styleLabels: Record<string, string> = {
-  formal: 'Formal',
-  casual: 'Casual',
-  speaking: 'Speaking',
-  headshot: 'Portrait',
-};
-
-// Aspect-ratio presets organizers actually need. ratio = width / height;
-// 0 = keep the original frame. Sanity's CDN centers every crop on the image
-// hotspot (the face), so no manual crop uploads are needed.
-const headshotCrops = [
-  { id: 'full', label: 'Full', ratio: 0, hint: 'As shot — full frame' },
-  { id: 'square', label: '1:1', ratio: 1, hint: 'Avatars · socials · speaker cards' },
-  { id: 'portrait', label: '4:5', ratio: 4 / 5, hint: 'Portrait · LinkedIn · print programs' },
-  { id: 'wide', label: '16:9', ratio: 16 / 9, hint: 'Banners · slides · video thumbnails' },
-];
-
-const headshotSizes = [
-  { name: 'Small', width: 400, label: 'S', use: 'social & thumbnails' },
-  { name: 'Medium', width: 800, label: 'M', use: 'web use' },
-  { name: 'Large', width: 1200, label: 'L', use: 'print & high-res' },
-  { name: 'XL', width: 2000, label: 'XL', use: 'full resolution' },
-];
-
-const downloadableHeadshots: Headshot[] = (profile?.headshots ?? []).filter(
-  (h) => h.downloadable !== false
-);
-
-const headshotData = downloadableHeadshots.map((headshot) => {
-  // Pass the whole image object (not just .asset) so urlFor keeps the
-  // hotspot/crop data — that's what makes ratio crops face-centered.
-  const image = headshot as never;
-  const style = headshot.style || 'headshot';
-
-  return {
-    styleLabel: styleLabels[style] || style,
-    alt: headshot.alt || 'Faris Aziz speaker headshot',
-    crops: headshotCrops.map((crop) => {
-      const isFullFrame = crop.ratio === 0;
-      const sized = (width: number) => {
-        const base = urlFor(image).width(width).format('jpg').quality(95);
-        return isFullFrame
-          ? base.url()
-          : base.height(Math.round(width / crop.ratio)).fit('crop').url();
-      };
-      return {
-        id: crop.id,
-        label: crop.label,
-        hint: crop.hint,
-        previewUrl: sized(600),
-        lightboxUrl: sized(1600),
-        resolutions: headshotSizes.map((size) => {
-          const isOriginalFile = isFullFrame && size.name === 'XL';
-          const height = Math.round(size.width / (crop.ratio || 1));
-          return {
-            name: size.name,
-            label: size.label,
-            tooltip: isOriginalFile
-              ? 'Original file — full resolution'
-              : `${size.name} — ${isFullFrame ? `${size.width}px wide` : `${size.width}×${height}px`} · ${size.use}`,
-            url: isOriginalFile ? urlFor(image).format('jpg').url() : sized(size.width),
-            filename: isOriginalFile
-              ? `faris-aziz-${style}-original.jpg`
-              : `faris-aziz-${style}${isFullFrame ? '' : `-${crop.id}`}-${size.width}w.jpg`,
-          };
-        }),
-      };
-    }),
-  };
-});
-
-// ── Availability — 12-month calendar from upcoming events ────────────────────
+// ── Availability — 12-month list from upcoming events ────────────────────────
 const now = new Date();
 const months = Array.from({ length: 12 }, (_, i) => {
   const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-  const count = upcomingEvents.filter((e) => {
+  const events = upcomingEvents.filter((e) => {
     const d = new Date(e.date);
     return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
-  }).length;
+  });
   return {
     name: date.toLocaleString('en-US', { month: 'short' }),
     year: date.getFullYear(),
-    count,
+    events,
+    count: events.length,
   };
 });
 
@@ -153,10 +53,13 @@ const months = Array.from({ length: 12 }, (_, i) => {
 // so the calendar isn't a wall of green.
 type AvailabilityTone = 'open' | 'limited' | 'booked';
 function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: string } {
-  if (count <= 2) return { tone: 'open', label: 'Open' };
+  if (count <= 1) return { tone: 'open', label: 'Open' };
   if (count <= 4) return { tone: 'limited', label: 'Limited' };
   return { tone: 'booked', label: 'Booked' };
 }
+
+const eventDay = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 // Top 6 conferences for the proof logo wall — shared aggregation (lib/conferences.ts).
 const conferenceWall = topConferences(pastEvents);
@@ -167,7 +70,7 @@ const proofQuotes = testimonials.slice(0, 3);
 ---
 
 <BaseLayout
-  title="Invite me to speak — Faris Aziz"
+  title="Invite me to speak | Faris Aziz"
   description="Book Faris Aziz for your conference, meetup, or internal tech talk. Talks and workshops on production, scale, web performance, and engineering leadership."
   pathname="/invite"
   image="/og/invite.png"
@@ -199,7 +102,7 @@ const proofQuotes = testimonials.slice(0, 3);
         Invite me to <span class="accent-word">your event</span>.
       </h1>
       <p class="invite-hero__lead">
-        Conferences, meetups, internal tech talks, workshops — tell me about your audience and I'll tailor something to fit. I reply within two days.
+        Conferences, meetups, internal tech talks, workshops: tell me about your audience and I'll tailor something to fit. I reply within two days.
       </p>
     </div>
   </header>
@@ -216,7 +119,7 @@ const proofQuotes = testimonials.slice(0, 3);
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <div>
               <b>A talk tailored to your audience</b>
-              <span>Not a canned deck — I adapt the case studies and depth to your crowd.</span>
+              <span>Not a canned deck: I adapt the case studies and depth to your crowd.</span>
             </div>
           </li>
           <li>
@@ -231,6 +134,13 @@ const proofQuotes = testimonials.slice(0, 3);
             <div>
               <b>Promotion to my audience</b>
               <span>I'll share your event with engineers across my channels.</span>
+            </div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <div>
+              <b>An organizer on your side of the table</b>
+              <span>I cofounded ZurichJS and grew it into an award-winning community, so I know what you're juggling.</span>
             </div>
           </li>
           <li>
@@ -283,27 +193,59 @@ const proofQuotes = testimonials.slice(0, 3);
       <header class="invite-section-head">
         <Kicker variant="signal">Booking calendar</Kicker>
         <h2 class="invite-h2">When I'm available</h2>
-        <p class="invite-section-lead">Twelve months ahead. Tighter dates may still work — just ask.</p>
+        <p class="invite-section-lead">Twelve months ahead. Tighter dates may still work, just ask.</p>
       </header>
 
-      <div class="cal-grid">
+      <div class="cal-list">
         {months.map((m) => {
           const { tone, label } = getAvailabilityTone(m.count);
-          return (
-            <div class={`cal-month cal-month--${tone}`}>
-              <div class="cal-month__top">
-                <span class="cal-month__name">{m.name}</span>
-                <span class="cal-month__year">{m.year}</span>
-              </div>
-              {tone !== 'open' && (
-                <span class={`cal-month__status cal-month__status--${tone}`}>
-                  <span class="cal-month__dot"></span>
-                  {label}
+          return m.count > 0 ? (
+            <details class="cal-row">
+              <summary class="cal-row__head">
+                <span class="cal-row__month">
+                  {m.name} <span class="cal-row__year">{m.year}</span>
                 </span>
-              )}
-              {m.count > 0 && (
-                <span class="cal-month__count">{m.count} event{m.count > 1 ? 's' : ''}</span>
-              )}
+                <span class="cal-row__meta">
+                  {tone !== 'open' && (
+                    <span class={`cal-row__badge cal-row__badge--${tone}`}>
+                      <span class="cal-row__dot"></span>
+                      {label}
+                    </span>
+                  )}
+                  <span class="cal-row__count">{m.count} event{m.count > 1 ? 's' : ''}</span>
+                  <svg class="cal-row__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </summary>
+              <ul class="cal-row__events">
+                {m.events.map((e) => {
+                  const name = e.title || e.conference || 'Confirmed event';
+                  const loc = e.location?.isOnline
+                    ? 'Online'
+                    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
+                  return (
+                    <li>
+                      <span class="cal-row__edate">{eventDay(e.date)}</span>
+                      {e.slug ? (
+                        <a href={`/events/${e.slug}`} class="cal-row__ename">{name}</a>
+                      ) : (
+                        <span class="cal-row__ename">{name}</span>
+                      )}
+                      {loc && <span class="cal-row__eloc">{loc}</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          ) : (
+            <div class="cal-row cal-row--free">
+              <span class="cal-row__month">
+                {m.name} <span class="cal-row__year">{m.year}</span>
+              </span>
+              <span class="cal-row__meta">
+                <span class="cal-row__free-mark" aria-hidden="true"></span>
+              </span>
             </div>
           );
         })}
@@ -312,117 +254,24 @@ const proofQuotes = testimonials.slice(0, 3);
     </div>
   </section>
 
-  <!-- BIOS -->
-  {bios.length > 0 && (
-    <section class="invite-bios" id="bios">
-      <div class="container">
-        <header class="invite-section-head">
-          <Kicker>Press kit · Bios</Kicker>
-          <h2 class="invite-h2">Copy-paste a bio</h2>
-          <p class="invite-section-lead">Three lengths for programs, websites, and intros. One click to copy.</p>
-        </header>
-
-        <div class="bio-card">
-          <div class="bio-header">
-            <div class="bio-pills" role="tablist" aria-label="Bio length">
-              {bios.map((bio, i) => (
-                <button
-                  type="button"
-                  class={`bio-pill ${i === 0 ? 'active' : ''}`}
-                  data-bio-id={bio.id}
-                  role="tab"
-                  aria-selected={i === 0 ? 'true' : 'false'}
-                >
-                  {bio.label}
-                  <span class="bio-pill__count">{bio.wordCount}</span>
-                </button>
-              ))}
-            </div>
-            <button type="button" class="bio-copy" id="bio-copy-btn" data-text={bios[0].text}>
-              <svg class="bio-copy__icon bio-copy__icon--copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect x="9" y="9" width="13" height="13" rx="2"/>
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-              </svg>
-              <svg class="bio-copy__icon bio-copy__icon--check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
-                <path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="bio-copy__label">Copy</span>
-            </button>
-          </div>
-
-          <div class="bio-content">
-            {bios.map((bio, i) => (
-              <div
-                class={`bio-text ${i === 0 ? 'active' : ''}`}
-                data-bio-content={bio.id}
-                data-text={bio.text}
-              >
-                <p>{bio.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- SPEAKER RIDER -->
-  <section class="invite-rider anchor-target" id="rider">
+  <!-- PRESS KIT CROSS-LINK — bios, headshots & practical details live on /press-kit -->
+  <section class="invite-presskit">
     <div class="container">
-      <header class="invite-section-head">
-        <Kicker>Press kit · Rider</Kicker>
-        <h2 class="invite-h2">The stuff I love to know</h2>
-        <p class="invite-section-lead">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
-      </header>
-
-      <div class="rider-grid wide">
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">Honorarium</h3>
-          <p class="rider-item__body">Let's talk — it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
+      <a href="/press-kit" class="ds-card ds-card-interactive pk-banner ds-reveal">
+        <div class="pk-banner__text">
+          <span class="pk-banner__kicker">Press kit</span>
+          <h2 class="pk-banner__title">Bios, headshots &amp; practical details</h2>
+          <p class="pk-banner__desc">Copy-paste bios in three lengths, high-res headshots in four crops, and everything worth knowing before the event, on one page.</p>
         </div>
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">Travel &amp; lodging</h3>
-          <p class="rider-item__body">For in-person events outside the Geneva / Zurich area, I'll ask you to cover travel and a place to sleep. Economy is totally fine — direct routes are a nice bonus.</p>
-        </div>
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">Code of conduct</h3>
-          <p class="rider-item__body">I love events with a published, enforced code of conduct. Don't have one yet? No stress — I'm happy to point you at great templates.</p>
-        </div>
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">Recording &amp; slides</h3>
-          <p class="rider-item__body">Please record it! Just send me the link after — I love sharing talks. Slides stay mine, but share them with your attendees as much as you like.</p>
-        </div>
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">A/V setup</h3>
-          <p class="rider-item__body">HDMI or USB-C and we're good. For workshops, a lapel or headset mic and solid attendee Wi-Fi make everything ten times better.</p>
-        </div>
-        <div class="ds-card rider-item">
-          <h3 class="rider-item__title">Promotion</h3>
-          <p class="rider-item__body">I'll shout about your event to my audience before and after. Tag me in your posts and I'll amplify them.</p>
-        </div>
-      </div>
+        <span class="pk-banner__go">
+          Open the press kit
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </a>
     </div>
   </section>
-
-  <!-- HEADSHOTS -->
-  {headshotData.length > 0 && (
-    <section class="invite-headshots" id="headshots">
-      <div class="container">
-        <header class="invite-section-head">
-          <Kicker>Press kit · Headshots</Kicker>
-          <h2 class="invite-h2">Headshots</h2>
-          <p class="invite-section-lead">High-resolution photos for event programs and promotion. Pick a crop and a size — every ratio stays centered on the face automatically.</p>
-        </header>
-
-        <HeadshotGallery client:visible headshots={headshotData} />
-
-        <p class="headshot-guide">
-          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
-          — need a different ratio or format? Mention it in the form above.
-        </p>
-      </div>
-    </section>
-  )}
 
   <!-- PROOF -->
   {(conferenceWall.length > 0 || proofQuotes.length > 0) && (
@@ -453,74 +302,19 @@ const proofQuotes = testimonials.slice(0, 3);
   )}
 
   <script>
-    function initInvite() {
-      // (.ds-reveal is armed by the global initializer in BaseLayout.)
-
-      // ── Bio pills ─────────────────────────────────────────────────────────
-      const copyBtn = document.getElementById('bio-copy-btn');
-      document.querySelectorAll('.bio-pill').forEach((pill) => {
-        pill.addEventListener('click', () => {
-          const bioId = pill.getAttribute('data-bio-id');
-          if (!bioId) return;
-          document.querySelectorAll('.bio-pill').forEach((p) => {
-            p.classList.remove('active');
-            p.setAttribute('aria-selected', 'false');
-          });
-          pill.classList.add('active');
-          pill.setAttribute('aria-selected', 'true');
-          document.querySelectorAll('.bio-text').forEach((t) => t.classList.remove('active'));
-          const active = document.querySelector(`[data-bio-content="${bioId}"]`);
-          active?.classList.add('active');
-          const text = active?.getAttribute('data-text') || '';
-          if (copyBtn) copyBtn.setAttribute('data-text', text);
-        });
-      });
-
-      // ── Copy button ───────────────────────────────────────────────────────
-      copyBtn?.addEventListener('click', async () => {
-        const text = copyBtn.getAttribute('data-text') || '';
-        if (!text) return;
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch {
-          // Fallback: textarea trick for older browsers
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); } catch { /* ignore */ }
-          document.body.removeChild(ta);
-        }
-        const label = copyBtn.querySelector('.bio-copy__label');
-        if (!label) return;
-        const original = label.textContent;
-        label.textContent = 'Copied';
-        copyBtn.classList.add('bio-copy--done');
-        window.setTimeout(() => {
-          label.textContent = original;
-          copyBtn.classList.remove('bio-copy--done');
-        }, 1500);
-      });
-
-      // Deep link: /invite?bio=medium#bios pre-selects a bio length so
-      // organizers land on exactly the bio they were sent.
-      const bioParam = new URLSearchParams(window.location.search).get('bio');
-      if (bioParam) {
-        const pill = document.querySelector<HTMLElement>(`.bio-pill[data-bio-id="${CSS.escape(bioParam)}"]`);
-        pill?.click();
+    // Legacy deep links: the press kit (bios / rider / headshots) moved to
+    // /press-kit — forward old shared links, preserving query + hash.
+    function forwardLegacyPressKitLinks() {
+      const hash = window.location.hash.slice(1);
+      const params = new URLSearchParams(window.location.search);
+      const legacyHash = ['bios', 'rider', 'headshots'].includes(hash);
+      const legacyParam = params.has('bio') || params.has('crop');
+      if (legacyHash || legacyParam) {
+        window.location.replace(`/press-kit${window.location.search}${window.location.hash}`);
       }
-
-      // (Headshot gallery + lightbox are handled by the HeadshotGallery island,
-      //  including the ?crop= deep link.)
     }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initInvite, { once: true });
-    } else {
-      initInvite();
-    }
-    document.addEventListener('astro:after-swap', initInvite);
+    forwardLegacyPressKitLinks();
+    document.addEventListener('astro:after-swap', forwardLegacyPressKitLinks);
   </script>
 </BaseLayout>
 
@@ -648,251 +442,6 @@ const proofQuotes = testimonials.slice(0, 3);
     margin-top: 0.5rem;
   }
 
-  /* ── Headshot gallery (rendered by the HeadshotGallery React island, so these
-        styles must be global — Astro's scoped styles can't reach island markup) ── */
-  .headshot-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-    max-width: 52rem;
-    margin: 0 auto;
-  }
-  @media (min-width: 640px) {
-    .headshot-gallery { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
-  }
-  .headshot-card {
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .headshot-card:hover { border-color: rgb(var(--edge-strong)); transform: translateY(-3px); }
-
-  .headshot-card__image {
-    position: relative;
-    display: block;
-    width: 100%;
-    aspect-ratio: 1;
-    padding: 0;
-    border: none;
-    background: rgb(var(--surface-3));
-    cursor: zoom-in;
-    overflow: hidden;
-  }
-  /* `contain` (not `cover`): the preview must show exactly what downloads —
-     square fills the frame, other ratios letterbox to reveal their true shape. */
-  .headshot-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .headshot-card:hover .headshot-card__image img { transform: scale(1.04); }
-  .headshot-card__overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 0);
-    transition: background 0.3s ease;
-  }
-  .headshot-card:hover .headshot-card__overlay { background: rgb(0 0 0 / 0.35); }
-  .headshot-card__expand {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    border-radius: 50%;
-    color: rgb(var(--ink));
-    opacity: 0;
-    transform: scale(0.8);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  .headshot-card__expand svg { width: 18px; height: 18px; }
-  .headshot-card:hover .headshot-card__expand { opacity: 1; transform: scale(1); }
-
-  .headshot-card__info {
-    padding: 0.75rem 0.85rem 0.85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-  .headshot-card__style {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-
-  /* Crop ratio segmented control */
-  .headshot-card__crops {
-    display: flex;
-    gap: 0.25rem;
-    padding: 0.2rem;
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 8px;
-  }
-  .headshot-crop-pill {
-    flex: 1;
-    padding: 0.34rem 0.1rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    letter-spacing: 0.02em;
-    color: rgb(var(--ink-muted));
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: color 0.15s, background 0.15s;
-  }
-  .headshot-crop-pill:hover { color: rgb(var(--ink)); }
-  .headshot-crop-pill.active {
-    color: rgb(var(--ink));
-    background: rgb(var(--surface-1));
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
-  }
-  .headshot-crop-pill:focus-visible {
-    outline: 2px solid rgb(var(--accent));
-    outline-offset: 1px;
-  }
-
-  /* Reserve two lines so switching crops never reflows the card */
-  .headshot-card__hint {
-    margin: 0;
-    min-height: 2em;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.66rem;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-    color: rgb(var(--ink-faint));
-  }
-
-  /* Desktop size picker / mobile save CTA */
-  .headshot-sizes { display: none; }
-  @media (min-width: 768px) {
-    .headshot-sizes {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-    .headshot-save { display: none; }
-  }
-  .headshot-sizes__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .headshot-sizes__label svg { width: 0.75rem; height: 0.75rem; }
-  .headshot-sizes__btns { display: flex; gap: 0.25rem; }
-  .headshot-size-btn {
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.74rem;
-    font-weight: 600;
-    color: rgb(var(--ink-muted));
-    background: rgb(var(--surface-1));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 8px;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
-  }
-  .headshot-size-btn:hover {
-    color: rgb(var(--accent-bright));
-    border-color: rgb(var(--accent));
-    background: rgb(var(--accent) / 0.1);
-  }
-  .headshot-size-btn.done {
-    color: rgb(var(--signal));
-    border-color: rgb(var(--signal) / 0.4);
-    background: rgb(var(--signal) / 0.15);
-  }
-  .headshot-save {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.6rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: white;
-    background: rgb(var(--accent));
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  .headshot-save:active { opacity: 0.9; }
-  .headshot-save svg { width: 1rem; height: 1rem; }
-
-  /* ── Lightbox (also island-rendered) ────────────────────────────────────── */
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 0.92);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-  }
-  .lightbox.open { opacity: 1; visibility: visible; }
-  .lightbox__btn {
-    position: absolute;
-    width: 2.75rem;
-    height: 2.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(255 255 255 / 0.1);
-    border: 1px solid rgb(255 255 255 / 0.15);
-    border-radius: 50%;
-    color: white;
-    cursor: pointer;
-    transition: background 0.18s, border-color 0.18s;
-  }
-  .lightbox__btn:hover { background: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.3); }
-  .lightbox__btn svg { width: 18px; height: 18px; }
-  .lightbox__close { top: 1.25rem; right: 1.25rem; }
-  .lightbox__prev { left: 1.25rem; top: 50%; transform: translateY(-50%); }
-  .lightbox__next { right: 1.25rem; top: 50%; transform: translateY(-50%); }
-  .lightbox__content { max-width: 90vw; max-height: 85vh; }
-  .lightbox__image {
-    max-width: 100%;
-    max-height: 85vh;
-    border-radius: 12px;
-    box-shadow: 0 24px 60px -20px rgba(0,0,0,.7);
-    transform: scale(0.95);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .lightbox.open .lightbox__image { transform: scale(1); }
-  .lightbox__counter {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.8rem;
-    color: rgb(255 255 255 / 0.7);
-    letter-spacing: 0.05em;
-  }
 </style>
 
 <style>
@@ -1140,234 +689,182 @@ const proofQuotes = testimonials.slice(0, 3);
     background: rgb(var(--surface-1));
     padding-block: clamp(3.5rem, 7vw, 6rem);
   }
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.9rem;
-    max-width: 56rem;
+  .cal-list {
+    max-width: 40rem;
     margin: 0 auto;
-  }
-  @media (max-width: 768px) { .cal-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 480px) { .cal-grid { grid-template-columns: repeat(2, 1fr); } }
-
-  .cal-month {
     background: rgb(var(--surface-2));
     border: 1px solid rgb(var(--edge));
     border-radius: 14px;
-    padding: 1.1rem 1rem;
-    text-align: center;
+    overflow: hidden;
   }
-  .cal-month__top {
+  .cal-row { border-bottom: 1px solid rgb(var(--edge)); }
+  .cal-row:last-child { border-bottom: none; }
+
+  /* Every month is the same slim row; only the right-side indicator changes. */
+  .cal-row--free,
+  .cal-row__head {
     display: flex;
-    flex-direction: column;
-    margin-bottom: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2.9rem;
+    padding: 0.55rem 1.1rem;
   }
-  .cal-month__name {
+  .cal-row__head {
+    cursor: pointer;
+    list-style: none;
+    transition: background 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cal-row__head::-webkit-details-marker { display: none; }
+  .cal-row__head:hover { background: rgb(var(--surface-3)); }
+  .cal-row__head:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: -2px;
+  }
+
+  .cal-row__month {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: rgb(var(--ink));
   }
-  .cal-month__year {
+  .cal-row--free .cal-row__month { color: rgb(var(--ink-muted)); font-weight: 500; }
+  .cal-row__year {
     font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
+    font-weight: 400;
     color: rgb(var(--ink-faint));
     letter-spacing: 0.04em;
+    margin-left: 0.25rem;
   }
-  .cal-month__status {
+
+  .cal-row__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .cal-row__badge {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.32rem 0.7rem;
-    border-radius: 999px;
     font-size: 0.74rem;
     font-weight: 600;
-    border: 1px solid transparent;
   }
-  .cal-month__status--limited {
-    color: rgb(var(--warn));
-    background: rgb(var(--warn) / 0.1);
-    border-color: rgb(var(--warn) / 0.3);
-  }
-  .cal-month__status--booked {
-    color: rgb(var(--danger));
-    background: rgb(var(--danger) / 0.1);
-    border-color: rgb(var(--danger) / 0.3);
-  }
-  .cal-month__dot {
+  .cal-row__badge--limited { color: rgb(var(--warn)); }
+  .cal-row__badge--booked { color: rgb(var(--danger)); }
+  .cal-row__dot {
     width: 0.45rem;
     height: 0.45rem;
     border-radius: 50%;
     background: currentColor;
   }
-  .cal-month__count {
-    display: block;
+  .cal-row__count {
     font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     color: rgb(var(--ink-faint));
-    margin-top: 0.55rem;
+    letter-spacing: 0.02em;
+  }
+  .cal-row__free-mark {
+    display: block;
+    width: 0.9rem;
+    height: 1px;
+    background: rgb(var(--edge-strong));
+  }
+  .cal-row__chev {
+    width: 14px;
+    height: 14px;
+    color: rgb(var(--ink-faint));
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cal-row[open] .cal-row__chev { transform: rotate(180deg); }
+  .cal-row[open] .cal-row__head { background: rgb(var(--surface-3)); }
+
+  .cal-row__events {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem 1.1rem 0.9rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .cal-row__events li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: 0.88rem;
+    min-width: 0;
+  }
+  .cal-row__edate {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    color: rgb(var(--ink-faint));
+    flex-shrink: 0;
+    min-width: 3.2rem;
+  }
+  .cal-row__ename { color: rgb(var(--ink)); min-width: 0; }
+  a.cal-row__ename:hover { color: rgb(var(--accent-bright)); }
+  .cal-row__eloc {
+    color: rgb(var(--ink-faint));
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* ── Speaker rider ─────────────────────────────────────────────────────── */
-  .invite-rider {
+  /* ── Press kit cross-link banner ────────────────────────────────────────── */
+  .invite-presskit {
     padding-block: clamp(3.5rem, 7vw, 6rem);
     border-top: 1px solid rgb(var(--edge));
   }
-  .rider-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-    margin-inline: auto;
+  .pk-banner {
+    max-width: 52rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    color: inherit;
   }
-  @media (max-width: 900px) {
-    .rider-grid { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 700px) {
+    .pk-banner { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
   }
-  @media (max-width: 560px) {
-    .rider-grid { grid-template-columns: 1fr; }
+  .pk-banner__kicker {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-faint));
   }
-  .rider-item { padding: 1.5rem 1.4rem; }
-  .rider-item__title {
+  .pk-banner__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.02rem;
     font-weight: 600;
+    font-size: 1.25rem;
     color: rgb(var(--ink));
-    margin-bottom: 0.45rem;
+    margin-top: 0.35rem;
   }
-  .rider-item__body {
+  .pk-banner__desc {
     font-size: 0.92rem;
     line-height: 1.55;
     color: rgb(var(--ink-muted));
+    margin-top: 0.4rem;
+    max-width: 48ch;
   }
-
-  /* ── Bios ───────────────────────────────────────────────────────────────── */
-  .invite-bios {
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-  }
-  .bio-card {
-    max-width: 760px;
-    margin: 0 auto;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 16px;
-    padding: clamp(1.5rem, 3vw, 2rem);
-  }
-  .bio-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    margin-bottom: 1.4rem;
-  }
-  @media (min-width: 560px) {
-    .bio-header { flex-direction: row; align-items: center; justify-content: space-between; }
-  }
-  .bio-pills {
-    display: inline-flex;
-    gap: 0.25rem;
-    padding: 0.25rem;
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 10px;
-    width: fit-content;
-  }
-  .bio-pill {
+  .pk-banner__go {
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.45rem 0.85rem;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: rgb(var(--ink-muted));
-    background: transparent;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: color 0.15s, background 0.15s;
-  }
-  .bio-pill:hover { color: rgb(var(--ink)); }
-  .bio-pill.active {
-    color: rgb(var(--ink));
-    background: rgb(var(--surface-1));
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
-  }
-  .bio-pill__count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    color: rgb(var(--ink-faint));
-    font-weight: 400;
-  }
-  .bio-pill.active .bio-pill__count { color: rgb(var(--ink-muted)); }
-
-  .bio-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.55rem 0.95rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: rgb(var(--ink-muted));
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge-strong));
-    border-radius: 10px;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .bio-copy:hover {
     color: rgb(var(--accent-bright));
-    border-color: rgb(var(--accent) / 0.5);
-  }
-  .bio-copy__icon { width: 14px; height: 14px; flex-shrink: 0; }
-  /* Icon morph: copy icon swaps for a checkmark that pops in with a small spring */
-  .bio-copy__icon--check { display: none; }
-  .bio-copy.bio-copy--done .bio-copy__icon--copy { display: none; }
-  .bio-copy.bio-copy--done .bio-copy__icon--check {
-    display: block;
-    animation: bioCheckPop 0.32s cubic-bezier(0.16, 1.4, 0.3, 1);
-  }
-  @keyframes bioCheckPop {
-    0% { transform: scale(0.4); opacity: 0; }
-    60% { transform: scale(1.18); opacity: 1; }
-    100% { transform: scale(1); }
-  }
-  .bio-copy.bio-copy--done {
-    color: rgb(var(--signal));
-    border-color: rgb(var(--signal) / 0.5);
-    background: rgb(var(--signal) / 0.1);
-    transform: scale(1.03);
-  }
-  .bio-copy { will-change: transform; }
-  .bio-copy:active { transform: scale(0.97); }
-
-  .bio-content { position: relative; min-height: 80px; }
-  .bio-text { display: none; }
-  .bio-text.active {
-    display: block;
-    animation: bioFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .bio-text p {
-    color: rgb(var(--ink-muted));
-    line-height: 1.65;
-    white-space: pre-line;
-    margin: 0;
-    font-size: 0.95rem;
-  }
-  @keyframes bioFade {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── Headshots ──────────────────────────────────────────────────────────── */
-  .invite-headshots {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-  }
-  .headshot-guide {
-    text-align: center;
-    margin-top: 1.5rem;
     font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
-  .headshot-guide span { color: rgb(var(--ink-muted)); margin-right: 0.4rem; }
+  .pk-banner__go svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pk-banner:hover .pk-banner__go svg { transform: translateX(3px); }
+
 </style>

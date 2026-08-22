@@ -52,9 +52,9 @@ export const POST: APIRoute = async ({ request }) => {
   const text =
     `New mentorship inquiry\n\n` +
     `From: ${name} <${email}>\n` +
-    `Budget: ${budgetLine || '—'}\n` +
-    `Timeline: ${timeline || '—'}\n` +
-    `Preferred cadence: ${cadence || '—'}\n\n` +
+    `Budget: ${budgetLine || '–'}\n` +
+    `Timeline: ${timeline || '–'}\n` +
+    `Preferred cadence: ${cadence || '–'}\n\n` +
     `Goals:\n${goals}\n\n` +
     `${message ? `Additional notes:\n${message}\n` : ''}`
 
@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
     context: 'mentorship:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks — I'll reply within two days`,
+    subject: `Thanks · I'll reply within two days`,
     react: MentorshipConfirmationEmail({ name: firstName }),
   })
 

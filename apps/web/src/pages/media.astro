@@ -42,7 +42,8 @@ const press = media.filter((m) => m.type === 'press');
         Photos, videos, and <span class="accent-word">press</span>.
       </h1>
       <p class="page-hero__lead">
-        Visual record from conferences, meetups, and speaking engagements around the world. Free for organizers and press to use — credit appreciated.
+        Visual record from conferences, meetups, and speaking engagements around the world. Free for organizers and press to use, credit appreciated.
+        Looking for bios and headshots? They're in the <a href="/press-kit" class="ds-link">press kit</a>.
       </p>
 
       <div class="page-hero__stats">
@@ -158,7 +159,7 @@ const press = media.filter((m) => m.type === 'press');
                 );
               })}
             </div>
-            <p class="photos-grid__note">Tap any photo to open the full-resolution version in a new tab. All photos free to use with credit — tag me on Bluesky or LinkedIn so I can share back.</p>
+            <p class="photos-grid__note">Tap any photo to open the full-resolution version in a new tab. All photos free to use with credit; tag me on Bluesky or LinkedIn so I can share back.</p>
           </div>
         </section>
       )}
@@ -213,7 +214,7 @@ const press = media.filter((m) => m.type === 'press');
         <ContactPanel
           status="Need pro shots?"
           title="Need professional photos at your event?"
-          body="Happy to coordinate a photographer at conferences. Just tell me where to send them — and tag me if you publish anything."
+          body="Happy to coordinate a photographer at conferences. Just tell me where to send them, and tag me if you publish anything."
           primaryHref="/invite"
           primaryLabel="Invite me to your event"
           secondaryHref={null}
@@ -245,7 +246,9 @@ const press = media.filter((m) => m.type === 'press');
     object-fit: cover;
     transition: transform 0.5s ease;
   }
-  .media-card:hover .media-card__media img { transform: scale(1.04); }
+  /* Zoom only on cards that are actually links (ds-card-interactive is gated
+     on videoUrl above) — a plain div card shouldn't imply a click. */
+  .media-card.ds-card-interactive:hover .media-card__media img { transform: scale(1.04); }
   .media-card__placeholder {
     width: 100%;
     height: 100%;

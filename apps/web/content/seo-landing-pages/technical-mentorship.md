@@ -38,7 +38,7 @@ Level Up Your Engineering Career
 1-on-1 Mentorship That Accelerates Your Growth as a Software Engineer
 
 **heroSubheadline**:
-Whether you're aiming for senior, navigating a career transition, or wanting to become a better technical leader—I provide the guidance, accountability, and real-world perspective that accelerates growth. No generic advice, just focused support tailored to your specific situation.
+Whether you're aiming for senior, navigating a career transition, or wanting to become a better technical leader, I provide the guidance, accountability, and real-world perspective that accelerates growth. No generic advice, just focused support tailored to your specific situation.
 
 **heroPrimaryCta**:
 - text: Book Intro Call
@@ -215,7 +215,7 @@ Frequently Asked Questions
    Answer: That's fine! We'll figure it out together. Many mentees start with a vague sense of "I want to grow" and we clarify specific goals in our first few sessions.
 
 3. Question: How is this different from coaching?
-   Answer: I'm a mentor, not a coach. I share my experience and perspective, give advice when asked, and sometimes just tell you what I'd do. Coaches tend to ask questions to help you find your own answers—I do that too, but I'm also happy to be more directive.
+   Answer: I'm a mentor, not a coach. I share my experience and perspective, give advice when asked, and sometimes just tell you what I'd do. Coaches tend to ask questions to help you find your own answers. I do that too, but I'm also happy to be more directive.
 
 4. Question: Can you help with technical interview prep?
    Answer: Yes, especially for frontend/React roles. We can do mock interviews, review your approach to system design questions, and work on how you communicate your thinking.

@@ -19,7 +19,7 @@ export const GET: APIRoute = async () => {
   const deliveries = talks.reduce((sum, t) => sum + (t.eventCount || 0), 0);
 
   const body = [
-    `# Talk catalogue — Faris Aziz`,
+    `# Talk catalogue · Faris Aziz`,
     ``,
     `> ${talks.length} talks, delivered ${deliveries} times. Every talk is adaptable in depth and length; most have a hands-on workshop version. Book any of them: https://faziz-dev.com/invite`,
     ``,

@@ -38,7 +38,7 @@ Engaging Tech Talks That Resonate
 Conference Speaker for React, Performance, and Real-World Engineering Challenges
 
 **heroSubheadline**:
-I deliver talks that combine deep technical content with practical takeaways. No death by slides, no abstract theory—just battle-tested insights that help attendees ship better software. 60+ talks across 12+ countries, from intimate meetups to 1000+ person conferences.
+I deliver talks that combine deep technical content with practical takeaways. No death by slides, no abstract theory, just battle-tested insights that help attendees ship better software. 60+ talks across 12+ countries, from intimate meetups to 1000+ person conferences.
 
 **heroPrimaryCta**:
 - text: Invite Me to Speak
@@ -67,7 +67,7 @@ Finding the Right Speaker Matters
    Description: Inspiration is nice, but attendees want to leave with concrete things they can apply Monday morning. Abstract talks don't move the needle.
 
 4. Title: Last-Minute Cancellations
-   Description: You need reliable speakers who prepare thoroughly, communicate clearly, and show up ready to deliver—even when things go wrong.
+   Description: You need reliable speakers who prepare thoroughly, communicate clearly, and show up ready to deliver, even when things go wrong.
 
 ---
 
