@@ -15,7 +15,7 @@ const isActive = (prefix: string) => {
 
 // "Speaking" lights up for talks/events/workshops/invite too
 const speakingActive = ['/speaking', '/talks', '/events', '/workshops', '/invite'].some(isActive);
-const servicesActive = ['/services', '/consulting', '/mentorship', '/impact', '/contact'].some(isActive);
+const servicesActive = ['/consulting', '/mentorship', '/impact', '/contact'].some(isActive);
 
 // Context-aware CTA: on the speaking silo the primary action is the speaker
 // invite; everywhere else it routes to the /contact "work with me" hub so
@@ -63,7 +63,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
       </div>
 
       <div class="site-nav__item nav-mega-item">
-        <a href="/services" class:list={['site-nav__link', { 'is-active': servicesActive }]} aria-current={servicesActive ? 'page' : undefined}>
+        <a href="/contact" class:list={['site-nav__link', { 'is-active': servicesActive }]} aria-current={servicesActive ? 'page' : undefined}>
           Services
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
@@ -136,7 +136,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
       <a href="/invite">Invite me</a>
     </div>
 
-    <a class="mobile-drawer__link" href="/services">Services</a>
+    <a class="mobile-drawer__link" href="/contact">Services</a>
     <div class="mobile-drawer__sublinks">
       <a href="/consulting">Consulting</a>
       <a href="/mentorship">Mentorship</a>
@@ -151,7 +151,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
       <span class="ds-dot ds-dot--pulse"></span>{availLabel}
     </span>
     <a href={ctaHref} class="ds-btn ds-btn-primary ds-btn-lg" style="width:100%;">
-      {speakingActive ? 'Invite me to speak' : 'Work with me'}
+      {ctaLabel}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>

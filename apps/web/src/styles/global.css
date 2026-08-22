@@ -264,11 +264,6 @@
 
   .mosaic__item img {
     @apply w-full h-full object-cover;
-    @apply transition-transform duration-500;
-  }
-
-  .mosaic__item:hover img {
-    @apply scale-105;
   }
 
   /* Bento grid positions */
@@ -318,11 +313,6 @@
 
   .featured-gallery__item img {
     @apply w-full h-full object-cover;
-    @apply transition-transform duration-500;
-  }
-
-  .featured-gallery__item:hover img {
-    @apply scale-105;
   }
 
   /* Gallery positions - horizontal/landscape emphasis */
@@ -442,11 +432,6 @@
 
   .hero-mosaic__item img {
     @apply w-full h-full object-cover;
-    @apply transition-all duration-700;
-  }
-
-  .hero-mosaic__item:hover img {
-    @apply scale-110;
   }
 
   /* Specific positions for dynamic layout */
@@ -768,36 +753,9 @@
   .animate-in-delay-4 { animation-delay: 0.4s; }
   .animate-in-delay-5 { animation-delay: 0.5s; }
 
-  /* Hover lift effect */
-  .hover-lift {
-    @apply transition-transform duration-300;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-4px);
-  }
-
-  /* Hover glow effect */
-  .hover-glow {
-    @apply transition-shadow duration-300;
-  }
-
-  .hover-glow:hover {
-    box-shadow: 0 0 20px rgb(var(--accent) / 0.3);
-  }
-
   /* Pulse animation for attention */
   .animate-pulse-accent {
     animation: pulseAccent 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  /* Scale on hover */
-  .hover-scale {
-    @apply transition-transform duration-300;
-  }
-
-  .hover-scale:hover {
-    transform: scale(1.02);
   }
 
   /* Magnetic effect for buttons */
@@ -820,16 +778,6 @@
   /* Float animation */
   .animate-float {
     animation: float 3s ease-in-out infinite;
-  }
-
-  /* Bounce on hover */
-  .hover-bounce:hover {
-    animation: bounce 0.5s ease;
-  }
-
-  /* Wiggle on hover */
-  .hover-wiggle:hover {
-    animation: wiggle 0.5s ease;
   }
 
   /* Text reveal animation */
@@ -971,119 +919,14 @@
   }
 }
 
-/* Interactive button animations */
+/* Event row hover (v1 leftovers removed — the ds-* classes are the live system) */
 @layer components {
-  .btn-primary {
-    @apply relative overflow-hidden;
-  }
-
-  .btn-primary::before {
-    content: '';
-    @apply absolute inset-0;
-    background: linear-gradient(
-      120deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-  }
-
-  .btn-primary:hover::before {
-    transform: translateX(100%);
-  }
-
-  /* Card hover animations */
-  .card-interactive {
-    @apply transition-all duration-300;
-  }
-
-  .card-interactive:hover {
-    transform: translateY(-4px);
-  }
-
-  /* Social link hover */
-  .social-link {
-    @apply transition-all duration-200;
-  }
-
-  .social-link:hover {
-    transform: translateY(-2px) scale(1.1);
-  }
-
-  /* Event row hover */
   .event-row:hover .event-row__title {
     transform: translateX(4px);
   }
 
   .event-row__title {
     @apply transition-all duration-200;
-  }
-
-  /* Mosaic item animations */
-  .mosaic__item {
-    animation: fadeInScale 0.6s ease-out forwards;
-    opacity: 0;
-  }
-
-  .mosaic__item:nth-child(1) { animation-delay: 0.1s; }
-  .mosaic__item:nth-child(2) { animation-delay: 0.2s; }
-  .mosaic__item:nth-child(3) { animation-delay: 0.3s; }
-  .mosaic__item:nth-child(4) { animation-delay: 0.4s; }
-  .mosaic__item:nth-child(5) { animation-delay: 0.5s; }
-  .mosaic__item:nth-child(6) { animation-delay: 0.6s; }
-
-  /* Stats counter animation */
-  .stat__value {
-    animation: slideInFromBottom 0.8s ease-out forwards;
-  }
-
-  .stat:nth-child(1) .stat__value { animation-delay: 0.1s; }
-  .stat:nth-child(2) .stat__value { animation-delay: 0.2s; }
-  .stat:nth-child(3) .stat__value { animation-delay: 0.3s; }
-  .stat:nth-child(4) .stat__value { animation-delay: 0.4s; }
-
-  /* Link arrow animation */
-  .link-arrow {
-    @apply relative;
-  }
-
-  .link-arrow::after {
-    @apply transition-all duration-200;
-  }
-
-  .link-arrow:hover::after {
-    transform: translateX(6px);
-  }
-
-  /* Tag hover animation */
-  .tag {
-    @apply transition-all duration-200;
-  }
-
-  .tag:hover {
-    transform: scale(1.05);
-  }
-
-  /* Pill interactive hover */
-  .pill-interactive:hover {
-    transform: translateY(-2px);
-  }
-
-  /* Nav link underline animation */
-  .nav-link::after {
-    @apply transition-all duration-300 origin-left;
-    transform: scaleX(0);
-  }
-
-  .nav-link[aria-current="page"]::after,
-  .nav-link.active::after {
-    transform: scaleX(1);
-  }
-
-  .nav-link:hover::after {
-    transform: scaleX(1);
   }
 }
 

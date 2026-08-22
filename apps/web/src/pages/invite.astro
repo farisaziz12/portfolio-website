@@ -359,17 +359,27 @@ const proofQuotes = testimonials.slice(0, 3);
     </div>
   </section>
 
-  <!-- BIOS -->
-  {bios.length > 0 && (
-    <section class="invite-bios" id="bios">
-      <div class="container">
-        <header class="invite-section-head">
-          <Kicker>Press kit · Bios</Kicker>
-          <h2 class="invite-h2">Copy-paste a bio</h2>
-          <p class="invite-section-lead">Three lengths for programs, websites, and intros. One click to copy.</p>
-        </header>
+  <!-- PRESS KIT — bios, rider, and headshots in one compact accordion section -->
+  <section class="invite-presskit" id="press-kit">
+    <div class="container">
+      <header class="invite-section-head">
+        <Kicker>Press kit</Kicker>
+        <h2 class="invite-h2">Everything organizers need</h2>
+        <p class="invite-section-lead">Bios, my speaker rider, and downloadable headshots — expand what you need.</p>
+      </header>
 
-        <div class="bio-card">
+      <div class="pk-list">
+        {bios.length > 0 && (
+          <details class="pk-item anchor-target" id="bios">
+            <summary class="pk-item__head">
+              <span class="pk-item__title">Copy-paste bios</span>
+              <span class="pk-item__hint">Three lengths · one click to copy</span>
+              <svg class="pk-item__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="pk-item__body">
+              <div class="bio-card">
           <div class="bio-header">
             <div class="bio-pills" role="tablist" aria-label="Bio length">
               {bios.map((bio, i) => (
@@ -408,21 +418,22 @@ const proofQuotes = testimonials.slice(0, 3);
               </div>
             ))}
           </div>
-        </div>
-      </div>
-    </section>
-  )}
+              </div>
+            </div>
+          </details>
+        )}
 
-  <!-- SPEAKER RIDER -->
-  <section class="invite-rider anchor-target" id="rider">
-    <div class="container">
-      <header class="invite-section-head">
-        <Kicker>Press kit · Rider</Kicker>
-        <h2 class="invite-h2">The stuff I love to know</h2>
-        <p class="invite-section-lead">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
-      </header>
-
-      <div class="rider-grid wide">
+        <details class="pk-item anchor-target" id="rider">
+          <summary class="pk-item__head">
+            <span class="pk-item__title">Speaker rider</span>
+            <span class="pk-item__hint">Honorarium · travel · A/V · recording</span>
+            <svg class="pk-item__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </summary>
+          <div class="pk-item__body">
+            <p class="pk-item__note">None of this is a dealbreaker — it just saves us a round of emails. If something doesn't fit your event, tell me and we'll figure it out.</p>
+            <div class="rider-grid">
         <div class="ds-card rider-item">
           <h3 class="rider-item__title">Honorarium</h3>
           <p class="rider-item__body">Let's talk — it scales with the event and your budget. Community meetups are usually on the house, and if budget is tight, just say so. I'd rather make it work than miss a great event.</p>
@@ -447,29 +458,32 @@ const proofQuotes = testimonials.slice(0, 3);
           <h3 class="rider-item__title">Promotion</h3>
           <p class="rider-item__body">I'll shout about your event to my audience before and after. Tag me in your posts and I'll amplify them.</p>
         </div>
+            </div>
+          </div>
+        </details>
+
+        {headshotData.length > 0 && (
+          <details class="pk-item anchor-target" id="headshots">
+            <summary class="pk-item__head">
+              <span class="pk-item__title">Headshots</span>
+              <span class="pk-item__hint">High-res downloads · four crops</span>
+              <svg class="pk-item__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="pk-item__body">
+              <p class="pk-item__note">Pick a crop and a size — every ratio stays centered on the face automatically.</p>
+              <HeadshotGallery client:visible headshots={headshotData} />
+              <p class="headshot-guide">
+                <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
+                — need a different ratio or format? Mention it in the form above.
+              </p>
+            </div>
+          </details>
+        )}
       </div>
     </div>
   </section>
-
-  <!-- HEADSHOTS -->
-  {headshotData.length > 0 && (
-    <section class="invite-headshots" id="headshots">
-      <div class="container">
-        <header class="invite-section-head">
-          <Kicker>Press kit · Headshots</Kicker>
-          <h2 class="invite-h2">Headshots</h2>
-          <p class="invite-section-lead">High-resolution photos for event programs and promotion. Pick a crop and a size — every ratio stays centered on the face automatically.</p>
-        </header>
-
-        <HeadshotGallery client:visible headshots={headshotData} />
-
-        <p class="headshot-guide">
-          <span>Sizes:</span> S 400px · M 800px · L 1200px · XL 2000px / original
-          — need a different ratio or format? Mention it in the form above.
-        </p>
-      </div>
-    </section>
-  )}
 
   <!-- PROOF -->
   {(conferenceWall.length > 0 || proofQuotes.length > 0) && (
@@ -551,10 +565,24 @@ const proofQuotes = testimonials.slice(0, 3);
         }, 1500);
       });
 
+      // Deep links: #bios / #rider / #headshots open the matching press-kit
+      // panel (they're collapsed <details> by default) — on load and on
+      // in-page anchor clicks (e.g. the links under the invite form).
+      const openPanelFromHash = () => {
+        const hash = window.location.hash.slice(1);
+        if (!hash) return;
+        const panel = document.getElementById(hash);
+        if (panel instanceof HTMLDetailsElement) panel.open = true;
+      };
+      openPanelFromHash();
+      window.addEventListener('hashchange', openPanelFromHash);
+
       // Deep link: /invite?bio=medium#bios pre-selects a bio length so
       // organizers land on exactly the bio they were sent.
       const bioParam = new URLSearchParams(window.location.search).get('bio');
       if (bioParam) {
+        const biosPanel = document.getElementById('bios');
+        if (biosPanel instanceof HTMLDetailsElement) biosPanel.open = true;
         const pill = document.querySelector<HTMLElement>(`.bio-pill[data-bio-id="${CSS.escape(bioParam)}"]`);
         pill?.click();
       }
@@ -1307,11 +1335,75 @@ const proofQuotes = testimonials.slice(0, 3);
     text-overflow: ellipsis;
   }
 
-  /* ── Speaker rider ─────────────────────────────────────────────────────── */
-  .invite-rider {
+  /* ── Press kit (bios · rider · headshots as collapsed panels) ──────────── */
+  .invite-presskit {
     padding-block: clamp(3.5rem, 7vw, 6rem);
     border-top: 1px solid rgb(var(--edge));
   }
+  .pk-list {
+    max-width: 52rem;
+    margin: 0 auto;
+    display: grid;
+    gap: 0.8rem;
+  }
+  .pk-item {
+    border: 1px solid rgb(var(--edge));
+    border-radius: 14px;
+    background: rgb(var(--surface-2));
+    overflow: hidden;
+  }
+  .pk-item__head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.05rem 1.3rem;
+    cursor: pointer;
+    list-style: none;
+    transition: background 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pk-item__head::-webkit-details-marker { display: none; }
+  .pk-item__head:hover { background: rgb(var(--surface-3)); }
+  .pk-item__head:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: -2px;
+  }
+  .pk-item__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: rgb(var(--ink));
+  }
+  .pk-item__hint {
+    margin-left: auto;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: rgb(var(--ink-faint));
+  }
+  @media (max-width: 560px) {
+    .pk-item__hint { display: none; }
+    .pk-item__chev { margin-left: auto; }
+  }
+  .pk-item__chev {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: rgb(var(--ink-faint));
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pk-item[open] .pk-item__chev { transform: rotate(180deg); }
+  .pk-item__body {
+    padding: 0.4rem 1.3rem 1.5rem;
+  }
+  .pk-item__note {
+    max-width: 60ch;
+    margin: 0 auto 1.3rem;
+    text-align: center;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
+
   .rider-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1339,9 +1431,6 @@ const proofQuotes = testimonials.slice(0, 3);
   }
 
   /* ── Bios ───────────────────────────────────────────────────────────────── */
-  .invite-bios {
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-  }
   .bio-card {
     max-width: 760px;
     margin: 0 auto;
@@ -1455,11 +1544,6 @@ const proofQuotes = testimonials.slice(0, 3);
   }
 
   /* ── Headshots ──────────────────────────────────────────────────────────── */
-  .invite-headshots {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-  }
   .headshot-guide {
     text-align: center;
     margin-top: 1.5rem;

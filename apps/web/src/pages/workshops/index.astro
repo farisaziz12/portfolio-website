@@ -4,7 +4,6 @@ import Kicker from '../../components/design/Kicker.astro';
 import GridTexture from '../../components/design/GridTexture.astro';
 import IconChip from '../../components/design/IconChip.astro';
 import ContactPanel from '../../components/design/ContactPanel.astro';
-import GeneralSubscribe from '../../components/islands/GeneralSubscribe';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopsQuery } from '../../lib/sanity/queries';
 import { availabilityLabel } from '../../lib/availability';
@@ -191,14 +190,7 @@ const topics = [
     </div>
   </section>
 
-  <!-- SUBSCRIBE -->
-  <section class="page-section">
-    <div class="container">
-      <div style="max-width:42rem;margin:0 auto;">
-        <GeneralSubscribe client:load />
-      </div>
-    </div>
-  </section>
+  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — no page copy needed. -->
 
   <!-- CTA -->
   <section class="page-section page-section--contact">

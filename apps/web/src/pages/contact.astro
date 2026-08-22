@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
-import { availabilityLabel, quarterLoad } from '../lib/availability';
+import { availabilityLabel, quarterLoad, formatQuarter } from '../lib/availability';
 import ContactForm from '../components/islands/ContactForm';
 import { sanityFetch } from '../lib/sanity/client';
 import { upcomingEventsQuery } from '../lib/sanity/queries';
@@ -63,6 +63,30 @@ const doors = [
     external: false,
   },
 ];
+
+// FAQ — moved here from the old /services hub when the two router pages merged.
+const faq = [
+  {
+    question: "What's the difference between consulting and mentorship?",
+    answer: 'Consulting is project-focused — I work with your team on architecture, performance, and delivery. Mentorship is growth-focused — 1:1 coaching for an individual engineer\'s career and skills.',
+    open: true,
+  },
+  {
+    question: 'How do I know which door is right for me?',
+    answer: "If you have a team or product challenge, start with consulting. If you're an engineer who wants to level up, choose mentorship. Not sure? Book a free 20-minute call and we'll figure it out together.",
+    open: false,
+  },
+  {
+    question: "What's your availability?",
+    answer: `I take on a few engagements at a time so each one gets real attention. Next availability opens in ${formatQuarter()} — worth reaching out early if you want in.`,
+    open: false,
+  },
+  {
+    question: 'Do you offer refunds?',
+    answer: "Yes. If the first session isn't valuable, you don't pay for it. Simple as that.",
+    open: false,
+  },
+];
 ---
 
 <BaseLayout
@@ -72,6 +96,18 @@ const doors = [
   image="/og/contact.png"
   markdownAlternate="/contact.md"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    })} />
+  </Fragment>
+
   <header class="page-hero">
     <GridTexture />
     <div class="container page-hero__inner">
@@ -140,6 +176,24 @@ const doors = [
       </div>
       <div class="contact-form-wrap">
         <ContactForm client:visible />
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="page-section">
+    <div class="container">
+      <div class="page-section__heading">
+        <Kicker class="ds-reveal">Questions</Kicker>
+        <h2 class="page-h2 ds-reveal">Frequently asked</h2>
+      </div>
+      <div class="svc-faq ds-reveal">
+        {faq.map((item) => (
+          <details open={item.open}>
+            <summary>{item.question}</summary>
+            <div class="svc-faq__ans">{item.answer}</div>
+          </details>
+        ))}
       </div>
     </div>
   </section>
@@ -264,5 +318,47 @@ const doors = [
 
   @media (max-width: 860px) {
     .contact-doors { grid-template-columns: 1fr; }
+  }
+
+  /* FAQ — same .svc-faq visual as /mentorship */
+  .svc-faq {
+    max-width: 760px;
+    margin-inline: auto;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .svc-faq details {
+    border: 1px solid rgb(var(--edge));
+    border-radius: 10px;
+    background: rgb(var(--surface-2));
+    overflow: hidden;
+  }
+  .svc-faq summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.1rem 1.3rem;
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: rgb(var(--ink));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .svc-faq summary::-webkit-details-marker { display: none; }
+  .svc-faq summary::after {
+    content: '+';
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    color: rgb(var(--accent-bright));
+    font-size: 1.3rem;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .svc-faq details[open] summary::after { transform: rotate(45deg); }
+  .svc-faq__ans {
+    padding: 0 1.3rem 1.2rem;
+    color: rgb(var(--ink-muted));
+    font-size: 0.96rem;
+    line-height: 1.6;
   }
 </style>

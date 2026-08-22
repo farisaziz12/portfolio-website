@@ -29,7 +29,6 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'Talks', icon: ICON.play, href: '/talks' },
   { group: 'Pages', label: 'Events', icon: ICON.cal, href: '/events' },
   { group: 'Pages', label: 'Workshops', icon: ICON.book, href: '/workshops' },
-  { group: 'Pages', label: 'Services', icon: ICON.book, href: '/services' },
   { group: 'Pages', label: 'Consulting', icon: ICON.chart, href: '/consulting' },
   { group: 'Pages', label: 'Mentorship', icon: ICON.user, href: '/mentorship' },
   { group: 'Pages', label: 'Impact', icon: ICON.chart, href: '/impact' },

@@ -6,12 +6,20 @@ import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { consultingOffersQuery } from '../lib/sanity/queries';
+import { consultingOffersQuery, allServiceLandingPagesQuery } from '../lib/sanity/queries';
 import { availabilityLabel } from '../lib/availability';
 import type { ServiceOffer } from '../lib/sanity/types';
 
+interface ServiceLandingPageLink {
+  _id: string;
+  title: string;
+  slug: string;
+}
 
-const offers = await sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []);
+const [offers, landingPages] = await Promise.all([
+  sanityFetch<ServiceOffer[]>(consultingOffersQuery).catch(() => []),
+  sanityFetch<ServiceLandingPageLink[]>(allServiceLandingPagesQuery).catch(() => []),
+]);
 
 const expertise = [
   {
@@ -89,7 +97,7 @@ const audiences = [
     <GridTexture />
     <div class="container page-hero__inner">
       <nav class="page-crumbs" aria-label="Breadcrumb">
-        <a href="/services">Services</a>
+        <a href="/contact">Work with me</a>
         <span class="page-crumbs__sep">/</span>
         <span class="page-crumbs__cur">Consulting</span>
       </nav>
@@ -150,6 +158,18 @@ const audiences = [
           <a href="https://cal.com/farisaziz12/discovery-call" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Book a discovery call</a>
         </div>
       )}
+
+      {landingPages.length > 0 && (
+        <div class="svc-landing-links">
+          <span class="svc-landing-links__label">Focused offerings:</span>
+          {landingPages.map((lp) => (
+            <a href={`/services/${lp.slug}`} class="ds-link">
+              {lp.title}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   </section>
 
@@ -196,6 +216,17 @@ const audiences = [
 </BaseLayout>
 
 <style>
+  /* Focused-offering SEO landing pages (moved here from the old /services hub) */
+  .svc-landing-links {
+    margin-top: 1.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem 1.6rem;
+    font-size: 0.92rem;
+  }
+  .svc-landing-links__label { color: rgb(var(--ink-faint)); }
+
   /* workshop-topics / workshop-topic styles are already defined on /workshops index;
      we re-use the same names here for visual consistency. Inline a fallback in case the user
      navigates straight to /consulting and that page's styles aren't loaded — Astro scopes,
