@@ -149,6 +149,8 @@ const months = Array.from({ length: 12 }, (_, i) => {
   };
 });
 
+// Open months render without a badge — only scarcity states get a label,
+// so the calendar isn't a wall of green.
 type AvailabilityTone = 'open' | 'limited' | 'booked';
 function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: string } {
   if (count <= 2) return { tone: 'open', label: 'Open' };
@@ -293,10 +295,12 @@ const proofQuotes = testimonials.slice(0, 3);
                 <span class="cal-month__name">{m.name}</span>
                 <span class="cal-month__year">{m.year}</span>
               </div>
-              <span class={`cal-month__status cal-month__status--${tone}`}>
-                <span class="cal-month__dot"></span>
-                {label}
-              </span>
+              {tone !== 'open' && (
+                <span class={`cal-month__status cal-month__status--${tone}`}>
+                  <span class="cal-month__dot"></span>
+                  {label}
+                </span>
+              )}
               {m.count > 0 && (
                 <span class="cal-month__count">{m.count} event{m.count > 1 ? 's' : ''}</span>
               )}
@@ -305,11 +309,6 @@ const proofQuotes = testimonials.slice(0, 3);
         })}
       </div>
 
-      <div class="cal-legend">
-        <span class="cal-legend__item cal-legend__item--open"><span class="cal-month__dot"></span>Open (0–2)</span>
-        <span class="cal-legend__item cal-legend__item--limited"><span class="cal-month__dot"></span>Limited (3–4)</span>
-        <span class="cal-legend__item cal-legend__item--booked"><span class="cal-month__dot"></span>Booked (5+)</span>
-      </div>
     </div>
   </section>
 
@@ -1157,10 +1156,7 @@ const proofQuotes = testimonials.slice(0, 3);
     border-radius: 14px;
     padding: 1.1rem 1rem;
     text-align: center;
-    transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .cal-month:hover { border-color: rgb(var(--edge-strong)); transform: translateY(-2px); }
   .cal-month__top {
     display: flex;
     flex-direction: column;
@@ -1188,11 +1184,6 @@ const proofQuotes = testimonials.slice(0, 3);
     font-weight: 600;
     border: 1px solid transparent;
   }
-  .cal-month__status--open {
-    color: rgb(var(--signal));
-    background: rgb(var(--signal) / 0.1);
-    border-color: rgb(var(--signal) / 0.3);
-  }
   .cal-month__status--limited {
     color: rgb(var(--warn));
     background: rgb(var(--warn) / 0.1);
@@ -1216,24 +1207,6 @@ const proofQuotes = testimonials.slice(0, 3);
     color: rgb(var(--ink-faint));
     margin-top: 0.55rem;
   }
-
-  .cal-legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.4rem;
-    margin-top: 2rem;
-  }
-  .cal-legend__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: rgb(var(--ink-muted));
-  }
-  .cal-legend__item--open { color: rgb(var(--signal)); }
-  .cal-legend__item--limited { color: rgb(var(--warn)); }
-  .cal-legend__item--booked { color: rgb(var(--danger)); }
 
   /* ── Speaker rider ─────────────────────────────────────────────────────── */
   .invite-rider {
