@@ -147,7 +147,7 @@ export async function getStaticPaths() {
       meta: 'Community, product and leadership outcomes — measured.',
     },
     media: {
-      kicker: 'Media & press kit',
+      kicker: 'Media',
       title: 'Photos, videos & press.',
       meta: 'Free for organizers and press to use — credit appreciated.',
     },

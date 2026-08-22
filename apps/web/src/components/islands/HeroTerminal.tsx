@@ -32,6 +32,7 @@ const ROUTES: Record<string, { path: string; note: string }> = {
   book: { path: '/invite', note: 'opening the booking form…' },
   invite: { path: '/invite', note: 'opening the booking form…' },
   workshops: { path: '/workshops', note: 'loading workshops…' },
+  presskit: { path: '/press-kit', note: 'grabbing bios & headshots…' },
   consulting: { path: '/consulting', note: 'loading consulting…' },
   mentorship: { path: '/mentorship', note: 'loading mentorship…' },
   contact: { path: '/contact', note: 'opening all the doors…' },

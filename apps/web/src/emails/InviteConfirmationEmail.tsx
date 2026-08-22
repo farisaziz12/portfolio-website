@@ -38,6 +38,12 @@ export function InviteConfirmationEmail({ name, event }: Props) {
               about your audience and format so I can tailor the talk to your room.
             </Text>
 
+            <Text style={s.paragraph}>
+              In the meantime, everything you need to announce the talk — copy-paste bios, high-res headshots,
+              and the practical details — is in my{' '}
+              <Link href="https://faziz-dev.com/press-kit" style={s.link}>press kit</Link>.
+            </Text>
+
             <Hr style={s.divider} />
             <Text style={s.signature}>— Faris</Text>
             <Text style={s.signatureLink}>
