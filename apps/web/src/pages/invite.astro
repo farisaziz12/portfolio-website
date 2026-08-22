@@ -53,7 +53,7 @@ const months = Array.from({ length: 12 }, (_, i) => {
 // so the calendar isn't a wall of green.
 type AvailabilityTone = 'open' | 'limited' | 'booked';
 function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: string } {
-  if (count <= 2) return { tone: 'open', label: 'Open' };
+  if (count <= 1) return { tone: 'open', label: 'Open' };
   if (count <= 4) return { tone: 'limited', label: 'Limited' };
   return { tone: 'booked', label: 'Booked' };
 }
