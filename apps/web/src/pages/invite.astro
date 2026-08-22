@@ -41,7 +41,7 @@ interface UpcomingEvent {
   title?: string;
   slug?: string;
   conference?: string;
-  location?: string;
+  location?: { city?: string; country?: string; isOnline?: boolean };
 }
 
 const [pastEvents, testimonials, profile, upcomingEvents] = await Promise.all([
@@ -328,7 +328,10 @@ const proofQuotes = testimonials.slice(0, 3);
               </summary>
               <ul class="cal-row__events">
                 {m.events.map((e) => {
-                  const name = e.conference || e.title || 'Confirmed event';
+                  const name = e.title || e.conference || 'Confirmed event';
+                  const loc = e.location?.isOnline
+                    ? 'Online'
+                    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
                   return (
                     <li>
                       <span class="cal-row__edate">{eventDay(e.date)}</span>
@@ -337,7 +340,7 @@ const proofQuotes = testimonials.slice(0, 3);
                       ) : (
                         <span class="cal-row__ename">{name}</span>
                       )}
-                      {e.location && <span class="cal-row__eloc">{e.location}</span>}
+                      {loc && <span class="cal-row__eloc">{loc}</span>}
                     </li>
                   );
                 })}
