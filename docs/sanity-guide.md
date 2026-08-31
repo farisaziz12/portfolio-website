@@ -51,8 +51,9 @@ an upcoming appearance as a talk.
 | `/appreciation` | `socialPost` (all), `testimonial` (all) | |
 | `/invite` | `speakerProfile` (bios, headshots), `event` (for the availability calendar) | |
 | `/about` | `page` (about), `company` | |
-| `/blog` | `blogPost` (self-hosted), `externalPost` | External posts are categorized by type |
-| `/media` | `media`, `event` videos | |
+| `/blog` | `blogPost` (self-hosted), `externalPost` (type=article) | Writing only — spoken/video types render on /media |
+| `/media` (Watch & listen) | `media` (videos, photos, press), `externalPost` (podcast/interview/video/panel) | Spoken & video content hub — moved off /blog |
+| `/podcasts/[slug]` | `externalPost` with Episode deep-dive filled | Player + chapters + takeaways + quotes; needs `slug` + `keyTakeaways` |
 | `/gallery` | `media` (type=photo) grouped by `event` reference | One filmstrip per event; ungrouped photos land in "Elsewhere" |
 | `/projects` | `project` | |
 
@@ -137,6 +138,68 @@ surface updates.
    (photographer, shown as 📷), `date`.
 3. Photos without an event still show, in the trailing "Elsewhere" group.
    Throw in as many as you like — strips scroll horizontally.
+
+### Turn a podcast episode into a deep-dive page
+
+External Posts of type Podcast/Interview normally render as link-out cards on
+`/media`. Fill the **Episode deep-dive** tab and the episode gets its own page
+at `/podcasts/[slug]` — embedded player (Spotify/YouTube/Apple, click-to-load),
+jumpable chapters, key takeaways, pull quotes — plus its own OG card and an
+agent-readable markdown mirror at `/podcasts/[slug].md`.
+
+#### Option 1: Automated pipeline (recommended)
+
+Run the enrichment script to automatically process all unenriched episodes:
+
+```bash
+# Preview what would be enriched (no changes)
+pnpm enrich-podcasts --dry-run
+
+# Process all unenriched episodes
+pnpm enrich-podcasts
+
+# Process a specific episode by Sanity ID
+pnpm enrich-podcasts --id=abc123
+```
+
+The script:
+1. Fetches episodes missing deep-dive content from Sanity
+2. Extracts transcripts from YouTube (auto-captions)
+3. Uses Claude to generate summary, takeaways, chapters, and quotes
+4. Updates the Sanity documents automatically
+
+**Requirements:** Set `ANTHROPIC_API_KEY` in your `.env` file.
+
+**Limitations:** Currently only works with YouTube-hosted episodes (has
+auto-captions). For Spotify-only episodes, use the manual process below.
+
+#### Option 2: Manual enrichment
+
+1. Studio → **External Post** → your episode → **Episode deep-dive** tab.
+2. Set the `slug`. That alone doesn't publish the page — takeaways do.
+3. Get a transcript (most players expose one; otherwise YouTube auto-captions
+   or a tool like Whisper), and run it through Claude/ChatGPT with the prompt
+   below. Paste the results into `summary`, `keyTakeaways`, `chapters`, and
+   `quotes`.
+4. Set **Related talk** if the conversation maps to a bookable talk — the
+   episode page and talk page cross-link automatically.
+5. Homepage "From the mic" and the `/media` podcast cards automatically prefer
+   the on-site episode page once takeaways exist ("Key takeaways inside").
+
+**Extraction prompt** (paste with the transcript):
+
+> Below is a podcast transcript of an episode I appeared on. Extract, in my
+> casual first-person voice:
+> 1. SUMMARY: 2–4 sentences on what we actually talked about — no hype.
+> 2. TAKEAWAYS: 5–7 one-sentence learnings a listener leaves with. Concrete
+>    over generic; keep any specific numbers or war stories.
+> 3. CHAPTERS: 5–10 sections as `mm:ss — title — one-line note`, using the
+>    transcript timestamps.
+> 4. QUOTES: the 2–3 most quotable lines I said, verbatim, with timestamps.
+> Output them under those four headings, nothing else.
+
+Chapter timestamps must be `mm:ss` or `hh:mm:ss`. On YouTube embeds they seek
+in place; on Spotify/Apple they deep-link to the platform at that moment.
 
 ### Update bios / headshots (speaker kit)
 

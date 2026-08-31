@@ -7,6 +7,7 @@ import {
   allWorkshopsQuery,
   speakingStatsQuery,
   galleryImagesQuery,
+  podcastEpisodesQuery,
 } from '../../lib/sanity/queries';
 import { renderOgCard, OG_HEADERS, type OgCard } from '../../lib/og';
 import { FALLBACK_SPEAKER_STATS } from '../../lib/proof';
@@ -50,14 +51,23 @@ interface SpeakingStats {
   countries: number;
 }
 
+interface Episode {
+  title: string;
+  slug: string;
+  source?: string;
+  publishedAt?: string;
+  type?: string;
+}
+
 export async function getStaticPaths() {
-  const [talks, events, posts, workshops, stats, galleryImages] = await Promise.all([
+  const [talks, events, posts, workshops, stats, galleryImages, episodes] = await Promise.all([
     sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
     sanityFetch<EventItem[]>(allEventsQuery).catch(() => []),
     sanityFetch<BlogPost[]>(allBlogPostsQuery).catch(() => []),
     sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []),
     sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
     sanityFetch<unknown[]>(galleryImagesQuery).catch(() => []),
+    sanityFetch<Episode[]>(podcastEpisodesQuery).catch(() => []),
   ]);
 
   // Footer avatar: a random gallery photo per card, square-cropped by the
@@ -147,9 +157,9 @@ export async function getStaticPaths() {
       meta: 'Community, product and leadership outcomes, measured.',
     },
     media: {
-      kicker: 'Media',
-      title: 'Photos, videos & press.',
-      meta: 'Free for organizers and press to use, credit appreciated.',
+      kicker: 'Watch & listen',
+      title: 'Talks, podcasts & press.',
+      meta: 'Recordings, podcast episodes, interviews & photos — in one place.',
     },
     gallery: {
       kicker: 'Photo gallery',
@@ -214,6 +224,16 @@ export async function getStaticPaths() {
           title: p.title,
           meta: mdDate(p.publishedAt),
           avatarUrl: randomAvatar(),
+        } satisfies OgCard,
+      },
+    })),
+    ...episodes.map((e) => ({
+      params: { slug: `podcasts/${e.slug}` },
+      props: {
+        card: {
+          kicker: [e.type === 'interview' ? 'Interview' : 'Podcast', e.source].filter(Boolean).join(' · '),
+          title: e.title,
+          meta: e.publishedAt ? mdDate(e.publishedAt) : 'Listen + key takeaways inside.',
         } satisfies OgCard,
       },
     })),

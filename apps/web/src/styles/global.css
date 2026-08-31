@@ -503,8 +503,14 @@
   }
 
   .hero-split-mosaic__content {
-    @apply relative z-10 flex items-center;
-    @apply py-12 md:py-16 lg:py-0;
+    @apply relative z-10 flex;
+    /* `safe` centering: the column is vertically centered in a 100vh grid, and
+       on shorter laptop viewports (14" MacBook ≈ 870px) plain centering let the
+       tall content overflow upward until the terminal touched the navbar.
+       `safe` falls back to start-alignment when space runs out, and the lg
+       padding guarantees breathing room below the header either way. */
+    align-items: safe center;
+    @apply py-12 md:py-16 lg:py-10;
     @apply px-5 sm:px-8 lg:px-12 xl:px-16;
     order: 1;
   }

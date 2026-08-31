@@ -6,6 +6,7 @@ import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
 import { externalPostsQuery, allBlogPostsQuery } from '../lib/sanity/queries';
 import { formatDate, formatReadingTime } from 'shared/utils';
+import BlogPostCard from '../components/blog/BlogPostCard.astro';
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 
 interface SanityImage { asset?: SanityImageSource; alt?: string }
@@ -32,15 +33,12 @@ const other = externalPosts.filter((p) => !['article', 'podcast', 'interview'].i
 const featuredBlogPosts = blogPosts.filter((p) => p.featured);
 const regularBlogPosts = blogPosts.filter((p) => !p.featured);
 
-const totalPosts = externalPosts.length + blogPosts.length;
+const totalPosts = blogPosts.length + articles.length;
 
-const contentTypes = [
-  { name: 'Blog', code: 'blog', count: blogPosts.length, anchor: '#blog' },
-  { name: 'Articles', code: 'articles', count: articles.length, anchor: '#articles' },
-  { name: 'Podcasts', code: 'podcasts', count: podcasts.length, anchor: '#podcasts' },
-  { name: 'Interviews', code: 'interviews', count: interviews.length, anchor: '#interviews' },
-  { name: 'Other', code: 'other', count: other.length, anchor: '#other' },
-].filter((t) => t.count > 0);
+// /blog is writing-only: podcasts, interviews, panels and other spoken/video
+// appearances live on /media (Watch & listen). Keep the counts for the
+// cross-link pill.
+const spokenCount = podcasts.length + interviews.length + other.length;
 
 const categoryLabels: Record<string, string> = {
   tutorial: 'Tutorial',
@@ -60,7 +58,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 
 <BaseLayout
   title="Writing & content | Faris Aziz"
-  description="Articles, podcasts, and external content by Faris Aziz on React, Next.js, payments, and software development."
+  description="Essays and articles by Faris Aziz on React, Next.js, payments, and engineering life."
   pathname="/blog"
   image="/og/blog.png"
 >
@@ -69,20 +67,18 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
     <div class="container page-hero__inner">
       <Kicker>Writing · {totalPosts} pieces</Kicker>
       <h1 class="page-hero__title">
-        Essays, talks, and <span class="accent-word">conversations</span>.
+        Notes from <span class="accent-word">production</span>.
       </h1>
       <p class="page-hero__lead">
-        Self-hosted blog posts plus everything else I've written, recorded, or guested on across the web.
+        Long-form posts from this site plus articles I've written around the web. For podcasts and recordings, head to Watch & listen.
       </p>
 
-      {contentTypes.length > 0 && (
-        <div class="blog-anchors">
-          {contentTypes.map((t) => (
-            <a href={t.anchor} class="ds-pill">
-              {t.name}
-              <span class="blog-anchors__count">{t.count}</span>
-            </a>
-          ))}
+      {spokenCount > 0 && (
+        <div class="blog-crosslink">
+          <a href="/media#podcasts" class="ds-pill">
+            Podcasts &amp; interviews moved to Watch &amp; listen
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
       )}
 
@@ -155,36 +151,7 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 
             {regularBlogPosts.length > 0 && (
               <div class="page-grid-3 blog-grid">
-                {regularBlogPosts.map((post) => {
-                  const cover = safeImg(post.coverImage, 600, 340);
-                  return (
-                    <a href={`/blog/${post.slug}`} class="ds-card ds-card-interactive blog-card ds-reveal">
-                      <div class="blog-card__media">
-                        {cover ? (
-                          <img src={cover} alt={post.title} loading="lazy" />
-                        ) : (
-                          <div class="blog-card__placeholder">
-                            <span class="ds-tag">Post</span>
-                          </div>
-                        )}
-                        {post.category && (
-                          <span class="blog-card__category">
-                            {categoryLabels[post.category] || post.category}
-                          </span>
-                        )}
-                      </div>
-                      <div class="blog-card__body">
-                        <h3 class="blog-card__title">{post.title}</h3>
-                        <p class="blog-card__excerpt">{post.excerpt}</p>
-                        <div class="blog-card__meta">
-                          <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>
-                          <span>·</span>
-                          <span>{formatReadingTime(post.estimatedReadingTime)}</span>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                })}
+                {regularBlogPosts.map((post) => <BlogPostCard post={post} />)}
               </div>
             )}
           </div>
@@ -235,123 +202,6 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
         </section>
       )}
 
-      {/* PODCASTS */}
-      {podcasts.length > 0 && (
-        <section id="podcasts" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>Listen in</Kicker>
-                <h2 class="page-h2">Podcast appearances</h2>
-              </div>
-              <span class="ds-pill">{podcasts.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {podcasts.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card blog-card--podcast ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Podcast</span>
-                        </div>
-                      )}
-                      <div class="blog-card__play">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
-                      <span class="blog-card__category">Podcast</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* INTERVIEWS */}
-      {interviews.length > 0 && (
-        <section id="interviews" class="page-section page-section--alt">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>On the record</Kicker>
-                <h2 class="page-h2">Interviews</h2>
-              </div>
-              <span class="ds-pill">{interviews.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {interviews.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Interview</span>
-                        </div>
-                      )}
-                      <span class="blog-card__category">Interview</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* OTHER */}
-      {other.length > 0 && (
-        <section id="other" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>More</Kicker>
-                <h2 class="page-h2">Everything else</h2>
-              </div>
-              <span class="ds-pill">{other.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {other.map((post) => (
-                <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card-min ds-reveal">
-                  <span class="ds-tag" style="margin-bottom:0.8rem;">{post.type}</span>
-                  {post.source && <p class="blog-card__source">{post.source}</p>}
-                  <h3 class="blog-card__title">{post.title}</h3>
-                  {post.publishedAt && (
-                    <p class="blog-card__meta">{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</p>
-                  )}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   )}
 
@@ -373,18 +223,20 @@ function safeImg(image: SanityImage | undefined, w: number, h: number): string |
 </BaseLayout>
 
 <style>
-  .blog-anchors {
-    display: flex;
+  .blog-crosslink { margin-top: 1.6rem; }
+  .blog-crosslink .ds-pill {
+    display: inline-flex;
+    align-items: center;
+    /* The base .ds-pill is nowrap for short labels; this one carries a whole
+       sentence and must wrap instead of running off small screens. */
+    white-space: normal;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.6rem;
+    max-width: 100%;
+    line-height: 1.45;
+    text-align: left;
+    border-radius: 16px;
   }
-  .blog-anchors__count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    margin-left: 0.25rem;
-  }
+  .blog-crosslink svg { width: 0.9em; height: 0.9em; margin-left: 0.35rem; flex-shrink: 0; }
 
   /* Featured blog posts */
   .blog-featured {

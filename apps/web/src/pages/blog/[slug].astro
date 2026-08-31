@@ -8,6 +8,7 @@ import TableOfContents from '../../components/blog/TableOfContents.astro';
 import { sanityFetch, urlFor } from '../../lib/sanity/client';
 import { allBlogPostSlugsQuery, blogPostBySlugQuery } from '../../lib/sanity/queries';
 import { formatDate, formatReadingTime } from 'shared/utils';
+import BlogPostCard from '../../components/blog/BlogPostCard.astro';
 import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 
@@ -159,36 +160,13 @@ const categoryLabel = post.category ? (categoryLabels[post.category] || post.cat
     <section class="page-section">
       <div class="container">
         <div class="page-section__head">
-          <Kicker>Keep reading</Kicker>
-          <h2 class="page-h2">More posts</h2>
+          <div>
+            <Kicker>Keep reading</Kicker>
+            <h2 class="page-h2">More posts</h2>
+          </div>
         </div>
         <div class="page-grid-3">
-          {post.relatedPosts.map((rp) => {
-            const cover = rp.coverImage?.asset ? urlFor(rp.coverImage).width(600).height(340).url() : null;
-            return (
-              <a href={`/blog/${rp.slug}`} class="ds-card ds-card-interactive blog-card ds-reveal">
-                <div class="blog-card__media">
-                  {cover ? (
-                    <img src={cover} alt={rp.title} loading="lazy" />
-                  ) : (
-                    <div class="blog-card__placeholder"><span class="ds-tag">Post</span></div>
-                  )}
-                  {rp.category && (
-                    <span class="blog-card__category">{categoryLabels[rp.category] || rp.category}</span>
-                  )}
-                </div>
-                <div class="blog-card__body">
-                  <h3 class="blog-card__title">{rp.title}</h3>
-                  <p class="blog-card__excerpt">{rp.excerpt}</p>
-                  <div class="blog-card__meta">
-                    <span>{formatDate(rp.publishedAt, { month: 'short', year: 'numeric' })}</span>
-                    <span>·</span>
-                    <span>{formatReadingTime(rp.estimatedReadingTime)}</span>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
+          {post.relatedPosts.map((rp) => <BlogPostCard post={rp} />)}
         </div>
       </div>
     </section>
