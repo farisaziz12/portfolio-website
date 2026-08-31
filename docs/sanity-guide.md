@@ -147,6 +147,34 @@ at `/podcasts/[slug]` — embedded player (Spotify/YouTube/Apple, click-to-load)
 jumpable chapters, key takeaways, pull quotes — plus its own OG card and an
 agent-readable markdown mirror at `/podcasts/[slug].md`.
 
+#### Option 1: Automated pipeline (recommended)
+
+Run the enrichment script to automatically process all unenriched episodes:
+
+```bash
+# Preview what would be enriched (no changes)
+pnpm enrich-podcasts --dry-run
+
+# Process all unenriched episodes
+pnpm enrich-podcasts
+
+# Process a specific episode by Sanity ID
+pnpm enrich-podcasts --id=abc123
+```
+
+The script:
+1. Fetches episodes missing deep-dive content from Sanity
+2. Extracts transcripts from YouTube (auto-captions)
+3. Uses Claude to generate summary, takeaways, chapters, and quotes
+4. Updates the Sanity documents automatically
+
+**Requirements:** Set `ANTHROPIC_API_KEY` in your `.env` file.
+
+**Limitations:** Currently only works with YouTube-hosted episodes (has
+auto-captions). For Spotify-only episodes, use the manual process below.
+
+#### Option 2: Manual enrichment
+
 1. Studio → **External Post** → your episode → **Episode deep-dive** tab.
 2. Set the `slug`. That alone doesn't publish the page — takeaways do.
 3. Get a transcript (most players expose one; otherwise YouTube auto-captions
