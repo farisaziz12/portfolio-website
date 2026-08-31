@@ -378,6 +378,19 @@ export const allMediaQuery = groq`
   }
 `;
 
+export const eventsWithVideoQuery = groq`
+  *[_type == "event" && defined(links.videoUrl)] | order(date desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    conference,
+    date,
+    location,
+    "videoUrl": links.videoUrl,
+    "thumbnailImage": talk->assets.thumbnailImage
+  }
+`;
+
 export const featuredMediaQuery = groq`
   *[_type == "media" && featured == true] | order(date desc)[0...12] {
     _id,
