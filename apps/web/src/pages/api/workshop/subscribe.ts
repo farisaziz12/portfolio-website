@@ -106,7 +106,6 @@ export const POST: APIRoute = async ({ request }) => {
         name: firstName,
         event: event || '',
         workshopTitle: instanceTitle,
-        repoUrl: '',
         attendUrl: `https://faziz-dev.com/workshops/attend/${instanceSlug}`,
       }),
     })

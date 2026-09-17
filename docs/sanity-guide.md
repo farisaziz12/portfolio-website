@@ -119,8 +119,9 @@ surface updates.
 
 1. Create the **Workshop** template once (agenda, outcomes, duration).
 2. For each delivery, create a **Workshop Instance**: reference the template,
-   set `event`, `workshopDate`, `token` (gates the attend page),
-   `repoUrl`, `accessDurationDays`.
+   set `event`, `workshopDate`, `token` (gates the attend page) and
+   `accessDurationDays`. `repoUrl` is optional — leave it empty for a
+   workshop with no code repo and the "Open GitHub Repo" button is hidden.
 3. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
    (create the audience in Resend first). Attendees who subscribe get the
    welcome email and join that audience.

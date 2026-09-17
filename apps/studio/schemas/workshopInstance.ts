@@ -78,7 +78,7 @@ export default defineType({
       name: 'repoUrl',
       title: 'GitHub Repo URL',
       type: 'url',
-      validation: Rule => Rule.required()
+      description: 'Optional — leave empty for workshops with no code repo. The "Open GitHub Repo" button is hidden when this is blank.'
     }),
     defineField({
       name: 'overallFeedbackUrl',
