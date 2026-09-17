@@ -9,7 +9,7 @@ interface Props {
   name: string
   event: string
   workshopTitle: string
-  repoUrl: string
+  repoUrl?: string
   attendUrl: string
 }
 
