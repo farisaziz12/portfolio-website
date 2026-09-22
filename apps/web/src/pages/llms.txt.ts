@@ -36,6 +36,7 @@ To book: speaking invitations at https://faziz-dev.com/invite (form; replies wit
 
 ## Speaking
 
+- [Speaking hub](https://faziz-dev.com/speaking.md): what I speak about, how to book, paste-ready bio
 - [Talk catalogue](https://faziz-dev.com/talks.md): every bookable talk with abstracts and delivery history
 - [Schedule](https://faziz-dev.com/events.md): upcoming and past engagements
 - [Invite me](https://faziz-dev.com/invite.md): booking form, availability, practical details

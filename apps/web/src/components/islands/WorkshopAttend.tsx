@@ -569,7 +569,7 @@ function GateView({
             <button
               type="submit"
               disabled={!consent || !name.trim() || !email || status === 'loading'}
-              className="w-full px-6 py-3 rounded-lg font-medium text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {status === 'loading' ? 'Loading...' : 'Access Workshop'}
             </button>
@@ -623,7 +623,7 @@ function ScheduleView({
             href={repoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
           >
             Open GitHub Repo
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -778,7 +778,7 @@ function SectionView({
           <button
             type="button"
             onClick={onNext}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
           >
             Next
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -789,7 +789,7 @@ function SectionView({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-signal hover:bg-signal-deep transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-ink-on-signal bg-signal hover:bg-signal-deep transition-colors"
           >
             Back to schedule
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -914,7 +914,7 @@ export default function WorkshopAttend({
               href={overallFeedbackUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
             >
               Share Feedback
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

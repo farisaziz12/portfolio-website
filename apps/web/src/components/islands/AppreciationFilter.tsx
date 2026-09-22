@@ -122,7 +122,7 @@ export default function AppreciationFilter({
             <span className={`
               flex items-center justify-center w-8 h-8 rounded-lg transition-colors
               ${activeTab === 'social'
-                ? 'bg-accent text-white'
+                ? 'bg-accent-deep text-ink-on-accent'
                 : 'bg-surface-3 text-ink-muted'
               }
             `}>
@@ -156,7 +156,7 @@ export default function AppreciationFilter({
             <span className={`
               flex items-center justify-center w-8 h-8 rounded-lg transition-colors
               ${activeTab === 'testimonials'
-                ? 'bg-accent text-white'
+                ? 'bg-accent-deep text-ink-on-accent'
                 : 'bg-surface-3 text-ink-muted'
               }
             `}>
@@ -334,7 +334,7 @@ export default function AppreciationFilter({
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${testimonialFilter === 'mentorcruise'
-                    ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                    ? 'bg-accent-deep text-ink-on-accent shadow-lg shadow-accent/25'
                     : 'bg-surface-2 text-ink-muted border border-edge hover:border-edge-strong'
                   }
                 `}

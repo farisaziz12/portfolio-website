@@ -185,7 +185,7 @@ export default function TalksFilter({ talks }: TalksFilterProps) {
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent-deep text-ink-on-accent'
                   : 'text-ink-muted hover:text-ink'
               }`}
               title="Grid view"
@@ -203,7 +203,7 @@ export default function TalksFilter({ talks }: TalksFilterProps) {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent-deep text-ink-on-accent'
                   : 'text-ink-muted hover:text-ink'
               }`}
               title="List view"
@@ -298,7 +298,7 @@ export default function TalksFilter({ talks }: TalksFilterProps) {
                 onClick={() => toggleTopic(topic)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   selectedTopics.includes(topic)
-                    ? 'bg-accent text-white'
+                    ? 'bg-accent-deep text-ink-on-accent'
                     : 'bg-surface-overlay text-ink-muted border border-edge hover:border-edge-strong hover:text-ink'
                 }`}
               >

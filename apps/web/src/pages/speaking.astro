@@ -2,8 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
-import IconChip from '../components/design/IconChip.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
+import Faq from '../components/design/Faq.astro';
+import Quote from '../components/design/Quote.astro';
+import Bio from '../components/design/Bio.astro';
 import { EventRow } from '../components/events/EventRow';
 import { sanityFetch } from '../lib/sanity/client';
 import {
@@ -11,6 +13,9 @@ import {
   pastEventsQuery,
   speakingStatsQuery,
   allTalksQuery,
+  featuredSocialPostsQuery,
+  featuredTestimonialsQuery,
+  speakerProfileQuery,
 } from '../lib/sanity/queries';
 import { topConferences } from '../lib/conferences';
 import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
@@ -53,47 +58,79 @@ interface TalkListItem {
   latestEvent?: { conference?: string; location?: string };
 }
 
-const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
+interface SocialPost {
+  _id: string;
+  author: string;
+  authorHandle?: string;
+  authorRole?: string;
+  content: string;
+  url?: string;
+}
+
+interface Testimonial {
+  _id: string;
+  quote: string;
+  author: string;
+  role?: string;
+  company?: string;
+}
+
+interface SpeakerProfile {
+  bioShort?: string;
+}
+
+const [upcomingEvents, pastEvents, stats, talks, socialPosts, testimonials, profile] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
+  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
+  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
+  sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
 ]);
 
 const upcomingCount = upcomingEvents.length;
-
-// Top 3 past talks for the carousel — prefer ones with conference set, ordered by date.
-const featuredPastTalks = talks.slice(0, 3);
-
-// Conferences logo wall — shared aggregation (see lib/conferences.ts).
 const conferenceWall = topConferences(pastEvents);
-
-const topics = [
-  {
-    title: 'React & Next.js',
-    desc: 'Performance & architecture at scale.',
-    icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
-  },
-  {
-    title: 'Payments & Fintech',
-    desc: 'Resilience & scaling money globally.',
-    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
-  },
-  {
-    title: 'Developer Experience',
-    desc: 'Tooling & workflows that scale teams.',
-    icon: '<path d="M4.5 16.5 3 21l4.5-1.5M14 6l4 4M9.5 14.5 16 8a3.5 3.5 0 0 0 0-5 3.5 3.5 0 0 0-5 0l-6.5 6.5"/>',
-  },
-  {
-    title: 'Career & Community',
-    desc: 'Growth, speaking & building community.',
-    icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
-  },
-];
-
-// The hub shows a teaser of the next three engagements — the full, filterable
-// upcoming + past schedule lives on /events.
 const nextThree = upcomingEvents.slice(0, 3);
+
+function talksFor(needles: string[], fallback: TalkListItem[]) {
+  const hit = talks.filter((t) =>
+    (t.topics || []).some((topic) => needles.some((n) => topic.toLowerCase().includes(n)))
+  );
+  return (hit.length ? hit : fallback).slice(0, 2);
+}
+
+const leftover = talks.slice();
+const reactTalks = talksFor(['react', 'next'], leftover);
+const paymentTalks = talksFor(['payment', 'fintech', 'money'], leftover.filter((t) => !reactTalks.includes(t)));
+const dxTalks = talksFor(['experience', 'dx', 'tooling', 'workflow', 'performance'], leftover.filter((t) => !reactTalks.includes(t) && !paymentTalks.includes(t)));
+const communityTalks = talksFor(['career', 'community', 'speaking', 'leadership'], leftover.filter((t) => !reactTalks.includes(t) && !paymentTalks.includes(t) && !dxTalks.includes(t)));
+
+const topicBlocks = [
+  { title: 'React and Next.js', desc: 'Performance and architecture at scale — React is home base, not a religion.', talks: reactTalks },
+  { title: 'Payments and fintech', desc: 'Resilience and scaling money globally, from the systems I have shipped.', talks: paymentTalks },
+  { title: 'Developer experience', desc: 'Tooling and workflows that make a team faster without making it fragile.', talks: dxTalks },
+  { title: 'Career and community', desc: 'Growth, speaking, and building rooms people want to come back to.', talks: communityTalks },
+].filter((block) => block.talks.length > 0 || talks.length === 0);
+
+const quotes: { quote: string; author: string; handle?: string; role?: string; href?: string }[] =
+  socialPosts.length > 0
+    ? socialPosts.slice(0, 3).map((p) => ({
+        quote: p.content,
+        author: p.author,
+        handle: p.authorHandle,
+        role: p.authorRole,
+        href: p.url,
+      }))
+    : testimonials.slice(0, 3).map((t) => ({
+        quote: t.quote,
+        author: t.author,
+        role: [t.role, t.company].filter(Boolean).join(', '),
+      }));
+
+const shortBio =
+  profile?.bioShort ||
+  `Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and talks about resilient frontend systems and payment integrations.`;
 ---
 
 <BaseLayout
@@ -101,33 +138,20 @@ const nextThree = upcomingEvents.slice(0, 3);
   description={`Book Faris Aziz to speak: ${stats.totalEvents} talks across ${stats.countries} countries. Production-grade engineering, framework-agnostic, drawn from real case studies.`}
   pathname="/speaking"
   image="/og/speaking.png"
+  markdownAlternate="/speaking.md"
 >
-  <!-- HERO -->
   <header class="speaking-hero">
     <GridTexture />
     <div class="container speaking-hero__inner">
-      <Kicker>Speaking · framework-agnostic</Kicker>
-      <h1 class="speaking-hero__title">
-        Real-world engineering, for people who <span class="accent-word">love the web</span>.
-      </h1>
+      <Kicker>Booking {bookingYears()}</Kicker>
+      <h1 class="speaking-hero__title heading-sentence">Invite me to speak.</h1>
       <p class="speaking-hero__lead">
         I speak about production and scale: the pragmatic decisions and leadership calls behind real systems, drawn from case studies rather than theory. React and Next.js are home base, but I'm framework-agnostic at heart. What I actually care about is the web, incredible UX, and lifting up the engineers who build it.
       </p>
-
-      <div class="speaking-hero__stats">
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.totalEvents}</div>
-          <div class="ds-stat__label">Events</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.countries}</div>
-          <div class="ds-stat__label">Countries</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.cities}</div>
-          <div class="ds-stat__label">Cities</div>
-        </div>
-      </div>
+      <p class="ds-proof">
+        <b>{stats.totalEvents}</b> events across <b>{stats.countries}</b> countries
+        and <b>{stats.cities}</b> cities.
+      </p>
 
       <div class="speaking-hero__actions">
         <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
@@ -136,19 +160,15 @@ const nextThree = upcomingEvents.slice(0, 3);
             <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </a>
-        <a href="#talks" class="ds-btn ds-btn-secondary ds-btn-lg">Watch past talks</a>
+        <a href="#book" class="ds-btn ds-btn-secondary ds-btn-lg">How booking works</a>
       </div>
     </div>
   </header>
 
-  <!-- UPCOMING EVENTS -->
   <section class="speaking-section">
     <div class="container wide">
       <div class="speaking-section__head">
-        <div>
-          <Kicker>On the calendar</Kicker>
-          <h2 class="speaking-h2">Next up</h2>
-        </div>
+        <h2 class="speaking-h2">What's next on the calendar.</h2>
         {upcomingCount > 0 && (
           <span class="ds-pill ds-pill--signal">
             <span class="ds-dot ds-dot--pulse"></span>
@@ -162,11 +182,10 @@ const nextThree = upcomingEvents.slice(0, 3);
           <div class="events-list">
             {nextThree.map((e, i) => <EventRow event={e} index={i} />)}
           </div>
-
           <div class="speaking-events__toggle">
             <a href="/events" class="ds-btn ds-btn-secondary">
               View the full schedule
-              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1em;height:1em;" aria-hidden="true">
+              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </a>
@@ -181,68 +200,71 @@ const nextThree = upcomingEvents.slice(0, 3);
     </div>
   </section>
 
-  <!-- TOPICS -->
-  <section class="speaking-section speaking-section--alt">
+  <section class="speaking-section" id="about-talks">
     <div class="container">
-      <div class="speaking-section__heading">
-        <Kicker class="ds-reveal">Topics</Kicker>
-        <h2 class="speaking-h2 ds-reveal">What I bring to <span class="mark">your stage</span></h2>
-      </div>
-      <div class="speaking-topics wide">
-        {topics.map((topic) => (
-          <a href="/talks" class="ds-card ds-card-interactive speaking-topic ds-reveal">
-            <IconChip>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={topic.icon} />
-            </IconChip>
-            <h3 class="speaking-topic__title">{topic.title}</h3>
-            <p class="speaking-topic__desc">{topic.desc}</p>
-          </a>
+      <Faq question="What do I speak about?">
+        <p>Four lanes, all from work I have actually shipped. Each one links to a talk you can book.</p>
+        {topicBlocks.map((block) => (
+          <div class="speaking-topic-block">
+            <h3 class="speaking-topic-block__title">{block.title}</h3>
+            <p>{block.desc}</p>
+            {block.talks.length > 0 && (
+              <ul class="ds-faq__evidence">
+                {block.talks.map((t) => (
+                  <li>
+                    <a href={`/talks/${t.slug}`}>{t.title}</a>
+                    {t.latestEvent?.conference && <span> · {t.latestEvent.conference}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         ))}
-      </div>
+        <p>
+          <a href="/talks" class="ds-link">
+            Browse the full catalogue
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </p>
+      </Faq>
+
+      {quotes.length > 0 && (
+        <Faq question="What is a talk of mine like?" class="speaking-faq-follow">
+          <p>I would rather you hear it from the room.</p>
+          <div class="ds-quotes speaking-quotes">
+            {quotes.map((q) => (
+              <Quote quote={q.quote} author={q.author} handle={q.handle} role={q.role} href={q.href} />
+            ))}
+          </div>
+        </Faq>
+      )}
+
+      <Faq question="How do you book me?" class="speaking-faq-follow anchor-target" id="book">
+        <p>
+          Email is slower than the form. Send the date, the city, the audience size, the topic you want, and how long the slot is. I reply within two days with a straight yes or no, and a number if the event needs one. Community meetups are usually on the house.
+        </p>
+        <p>
+          <a href="/invite" class="ds-btn ds-btn-primary">
+            Send an invite
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </p>
+      </Faq>
+
+      {shortBio && (
+        <div class="speaking-faq-follow">
+          <Bio text={shortBio} />
+        </div>
+      )}
     </div>
   </section>
 
-  <!-- PAST TALKS -->
-  {featuredPastTalks.length > 0 && (
-    <section class="speaking-section anchor-target" id="talks">
-      <div class="container">
-        <div class="speaking-section__head">
-          <div>
-            <Kicker>Recorded</Kicker>
-            <h2 class="speaking-h2">Past talks</h2>
-          </div>
-          <a href="https://www.youtube.com/@faziz-dev" class="ds-link" target="_blank" rel="noopener noreferrer">
-            All on YouTube
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
-        </div>
-        <div class="speaking-talks wide">
-          {featuredPastTalks.map((t) => (
-            <a href={`/talks/${t.slug}`} class="ds-card ds-card-interactive speaking-talkcard ds-reveal">
-              <div class="speaking-talkcard__media">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-              </div>
-              <div class="speaking-talkcard__body">
-                <h3 class="speaking-talkcard__title">{t.title}</h3>
-                {t.abstract && <p class="speaking-talkcard__abstract">{t.abstract.split('\n')[0].slice(0, 120)}{t.abstract.length > 120 ? '…' : ''}</p>}
-                <div class="speaking-talkcard__meta">
-                  {t.latestEvent?.conference || 'Conference'}
-                  {t.duration && ` · ${t.duration} min`}
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-        <div style="text-align:center;margin-top:2rem;">
-          <a href="/talks" class="ds-btn ds-btn-secondary">Browse all talks</a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- LOGO WALL -->
   {conferenceWall.length > 0 && (
-    <section class="speaking-section-sm speaking-logos-wrap">
+    <section class="speaking-section-sm">
       <div class="container">
         <p class="speaking-logos__label">Stages I've shared</p>
         <div class="speaking-logos">
@@ -252,7 +274,6 @@ const nextThree = upcomingEvents.slice(0, 3);
     </section>
   )}
 
-  <!-- INVITE CTA -->
   <section class="speaking-section anchor-target" id="invite">
     <div class="container">
       <div class="wide ds-reveal">
@@ -276,32 +297,16 @@ const nextThree = upcomingEvents.slice(0, 3);
     position: relative;
     overflow: hidden;
     border-bottom: 1px solid rgb(var(--edge));
-    padding-block: clamp(4rem, 9vw, 7rem);
+    padding-block: clamp(3.25rem, 7vw, 5.5rem);
   }
   .speaking-hero__inner { position: relative; }
-  .speaking-hero__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    line-height: 0.98;
-    letter-spacing: -0.025em;
-    font-size: clamp(2.8rem, 7vw, 5rem);
-    color: rgb(var(--ink));
-    max-width: 17ch;
-    margin-top: 1.2rem;
-    text-wrap: balance;
-  }
+  .speaking-hero__title { margin-top: 1.1rem; }
   .speaking-hero__lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
+    font-size: 1.0625rem;
+    line-height: 1.7;
     color: rgb(var(--ink-muted));
-    max-width: 62ch;
-    margin-top: 1.5rem;
-  }
-  .speaking-hero__stats {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
+    max-width: 68ch;
+    margin-top: 1.25rem;
   }
   .speaking-hero__actions {
     display: flex;
@@ -310,13 +315,8 @@ const nextThree = upcomingEvents.slice(0, 3);
     margin-top: 2rem;
   }
 
-  .speaking-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
-  .speaking-section-sm { padding-block: clamp(2.5rem, 5vw, 4rem); }
-  .speaking-section--alt {
-    background: rgb(var(--surface-1));
-    border-top: 1px solid rgb(var(--edge));
-    border-bottom: 1px solid rgb(var(--edge));
-  }
+  .speaking-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
+  .speaking-section-sm { padding-block: clamp(2.25rem, 5vw, 3.5rem); }
   .speaking-section__head {
     display: flex;
     align-items: center;
@@ -325,30 +325,17 @@ const nextThree = upcomingEvents.slice(0, 3);
     gap: 0.75rem;
     margin-bottom: 1.4rem;
   }
-  .speaking-section__heading {
-    text-align: center;
-    margin-bottom: 2.4rem;
-  }
-  .speaking-section__heading .kicker { justify-content: center; }
   .speaking-h2 {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    line-height: 1.1;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    line-height: 1.2;
     letter-spacing: -0.015em;
     color: rgb(var(--ink));
-    margin-top: 0.7rem;
   }
 
-  .events-list {
-    display: grid;
-    gap: 0.2rem;
-  }
-
-  .speaking-events__toggle {
-    text-align: center;
-    margin-top: 1.6rem;
-  }
+  .events-list { display: grid; gap: 0.2rem; }
+  .speaking-events__toggle { text-align: center; margin-top: 1.6rem; }
   .speaking-empty {
     text-align: center;
     color: rgb(var(--ink-muted));
@@ -357,110 +344,23 @@ const nextThree = upcomingEvents.slice(0, 3);
     border-radius: 14px;
   }
 
-  /* Topics */
-  .speaking-topics {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-  }
-  @media (max-width: 1024px) {
-    .speaking-topics { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 560px) {
-    .speaking-topics { grid-template-columns: 1fr; }
-  }
-  .speaking-topic {
-    padding: 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .speaking-topic__title {
+  .speaking-faq-follow { margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+  .speaking-topic-block { margin-top: 1.4rem; }
+  .speaking-topic-block__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     color: rgb(var(--ink));
-    margin-top: 0.5rem;
+    margin-bottom: 0.35rem;
   }
-  .speaking-topic__desc {
-    font-size: 0.88rem;
-    color: rgb(var(--ink-muted));
-  }
+  .speaking-quotes { margin-top: 1.25rem; }
 
-  /* Talks */
-  .speaking-talks {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-  }
-  @media (max-width: 900px) {
-    .speaking-talks { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 560px) {
-    .speaking-talks { grid-template-columns: 1fr; }
-  }
-  .speaking-talkcard {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    color: inherit;
-  }
-  .speaking-talkcard__media {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    background: rgb(var(--surface-3));
-    border-bottom: 1px solid rgb(var(--edge));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .speaking-talkcard__media svg {
-    width: 40px;
-    height: 40px;
-    color: rgb(var(--ink-faint));
-  }
-  .speaking-talkcard__body {
-    padding: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-  .speaking-talkcard__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.05rem;
-    line-height: 1.25;
-    color: rgb(var(--ink));
-  }
-  .speaking-talkcard__abstract {
-    font-size: 0.88rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.5rem;
-    flex: 1;
-  }
-  .speaking-talkcard__meta {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    color: rgb(var(--ink-faint));
-    text-transform: uppercase;
-    margin-top: 0.7rem;
-  }
-
-  /* Logo wall */
-  .speaking-logos-wrap {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-  }
   .speaking-logos__label {
     text-align: center;
-    margin-bottom: 1.6rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
+    margin-bottom: 1.4rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: rgb(var(--ink-muted));
   }
   .speaking-logos {
     display: flex;
@@ -468,12 +368,11 @@ const nextThree = upcomingEvents.slice(0, 3);
     align-items: center;
     flex-wrap: wrap;
     gap: clamp(1.5rem, 4vw, 3.5rem);
-    opacity: 0.72;
   }
   .speaking-logos span {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     color: rgb(var(--ink-muted));
   }
 </style>
