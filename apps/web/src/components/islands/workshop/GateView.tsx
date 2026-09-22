@@ -19,9 +19,11 @@ export function GateView({
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
 
+  const canSubmit = Boolean(consent && name.trim() && email) && status !== 'loading';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!consent || !email || !name.trim()) return;
+    if (!canSubmit) return;
 
     setStatus('loading');
     try {
@@ -48,6 +50,9 @@ export function GateView({
     }
   };
 
+  const fieldClass =
+    'w-full px-4 py-3 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] text-[rgb(var(--ink))] placeholder-[rgb(var(--ink-faint))] focus:outline-none focus:border-[rgb(var(--accent))] transition-colors';
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-5">
       <div className="w-full max-w-md">
@@ -62,32 +67,57 @@ export function GateView({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              required
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] text-[rgb(var(--ink))] placeholder-[rgb(var(--ink-faint))] focus:outline-none focus:border-[rgb(var(--accent))] transition-colors"
-            />
-            <input
-              type="email"
-              required
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] text-[rgb(var(--ink))] placeholder-[rgb(var(--ink-faint))] focus:outline-none focus:border-[rgb(var(--accent))] transition-colors"
-            />
-
-            <label className="flex items-start gap-3 cursor-pointer">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="workshop-gate-name" className="text-sm font-medium text-[rgb(var(--ink-muted))]">
+                Name
+              </label>
               <input
+                id="workshop-gate-name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="workshop-gate-email" className="text-sm font-medium text-[rgb(var(--ink-muted))]">
+                Email
+              </label>
+              <input
+                id="workshop-gate-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
+
+            <label
+              htmlFor="workshop-gate-consent"
+              className="flex items-start gap-3 cursor-pointer rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] px-4 py-3 has-[:focus-visible]:border-[rgb(var(--accent))]"
+            >
+              <input
+                id="workshop-gate-consent"
+                name="consent"
                 type="checkbox"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
-                className="mt-1 rounded"
+                tabIndex={0}
+                aria-required="true"
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-[rgb(var(--edge))] accent-[rgb(var(--accent))]"
               />
-              <span className="text-xs text-[rgb(var(--ink-muted))] leading-relaxed">
-                I agree to receive updates about future workshops and conference appearances. No spam, unsubscribe anytime.
+              <span className="text-xs text-[rgb(var(--ink-muted))] leading-relaxed pt-0.5">
+                I agree to receive updates about future workshops and conference appearances. No spam,
+                unsubscribe anytime.
               </span>
             </label>
 
@@ -101,8 +131,13 @@ export function GateView({
 
             <button
               type="submit"
-              disabled={!consent || !name.trim() || !email || status === 'loading'}
-              className="w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-disabled={!canSubmit}
+              onClick={(e) => {
+                if (!canSubmit) e.preventDefault();
+              }}
+              className={`w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors ${
+                !canSubmit ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {status === 'loading' ? 'Loading...' : 'Access Workshop'}
             </button>
@@ -116,4 +151,3 @@ export function GateView({
     </div>
   );
 }
-

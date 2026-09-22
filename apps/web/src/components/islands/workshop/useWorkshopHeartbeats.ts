@@ -2,15 +2,20 @@ import { useEffect, useRef } from 'react';
 import { track } from '../../../lib/analytics';
 import type { WorkshopSection, WorkshopUser } from './types';
 
-function isTabActive(): boolean {
-  return document.visibilityState === 'visible' && document.hasFocus();
+function isTabVisible(): boolean {
+  return document.visibilityState === 'visible';
 }
+
+type Flush = 'queue' | 'beacon';
 
 /**
  * Emit workshop_heartbeat while phase is live and the attendee is signed in.
- * Sends on section change, visibility/focus change, and a short interval.
- * Away events flush immediately so PostHog doesn't hold them until the tab
- * is foregrounded again.
+ *
+ * Presence is `document.visibilityState` only — `document.hasFocus()` / window
+ * blur fire whenever the instructor looks at the admin tab, and pairing that
+ * with send_instantly dropped every heartbeat from a background attend tab
+ * (empty roster). Regular beats stay in the PostHog batch; sendBeacon is only
+ * for hide/unload so the last "away" actually leaves the device.
  */
 export function useWorkshopHeartbeats({
   phase,
@@ -34,14 +39,15 @@ export function useWorkshopHeartbeats({
   userRef.current = user;
   sectionsRef.current = sections;
 
-  const sendRef = useRef((_opts?: { instant?: boolean; focused?: boolean }) => {});
+  const sendRef = useRef((_opts?: { flush?: Flush; focused?: boolean }) => {});
   sendRef.current = (opts) => {
     const u = userRef.current;
     if (!u) return;
     const idx = activeRef.current;
     const sectionKey = idx != null ? sectionsRef.current[idx]?._key || '' : '';
-    const focused = opts?.focused ?? isTabActive();
-    const instant = Boolean(opts?.instant) || !focused;
+    const focused = opts?.focused ?? isTabVisible();
+    const captureOpts =
+      opts?.flush === 'beacon' ? { send_instantly: true, transport: 'sendBeacon' as const } : undefined;
     track(
       'workshop_heartbeat',
       {
@@ -52,7 +58,7 @@ export function useWorkshopHeartbeats({
         focused: focused ? 1 : 0,
         name: u.name,
       },
-      instant ? { send_instantly: true } : undefined
+      captureOpts
     );
   };
 
@@ -69,24 +75,22 @@ export function useWorkshopHeartbeats({
     const interval = window.setInterval(() => sendRef.current(), 5000);
 
     const onVis = () => {
-      const hidden = document.visibilityState !== 'visible';
-      sendRef.current({ instant: hidden, focused: hidden ? false : isTabActive() });
+      if (document.visibilityState !== 'visible') {
+        sendRef.current({ flush: 'beacon', focused: false });
+        return;
+      }
+      sendRef.current({ focused: true });
     };
-    const onFocusChange = () => sendRef.current();
-    const onHide = () => sendRef.current({ instant: true, focused: false });
+    const onHide = () => sendRef.current({ flush: 'beacon', focused: false });
 
     document.addEventListener('visibilitychange', onVis);
-    window.addEventListener('focus', onFocusChange);
-    window.addEventListener('blur', onFocusChange);
     window.addEventListener('pagehide', onHide);
 
     return () => {
       window.clearInterval(interval);
       document.removeEventListener('visibilitychange', onVis);
-      window.removeEventListener('focus', onFocusChange);
-      window.removeEventListener('blur', onFocusChange);
       window.removeEventListener('pagehide', onHide);
-      sendRef.current({ instant: true, focused: false });
+      sendRef.current({ focused: false });
     };
   }, [phase, user, token, event]);
 }

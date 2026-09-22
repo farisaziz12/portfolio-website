@@ -34,6 +34,7 @@ type Props = Record<string, unknown>;
 /** Passed through to posthog-js `capture` (e.g. flush on tab hide). */
 export type CaptureOptions = {
   send_instantly?: boolean;
+  transport?: 'sendBeacon';
 };
 
 function ph(): any | undefined {

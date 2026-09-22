@@ -66,7 +66,7 @@ project settings).
 | `contact_form_submitted` | General contact form success (`/contact`) | `topic` (`role` / `speaking` / `consulting` / `mentorship` / `other`), `has_company`, `message_length` |
 | `newsletter_subscribed` | Conference-schedule subscribe success | `source`, `placement` (`compact` / `card`) |
 | `workshop_signed_up` | Workshop attend gate completed | `workshop`, `instance` |
-| `workshop_heartbeat` | Attend tab heartbeat while phase is **live** (~5s + section/visibility change) | `instance`, `workshop`, `section_key` (empty string on the schedule), `section_index` (`-1` on the schedule), `focused` (`1`/`0`), `name`. Away heartbeats use `send_instantly` so they are not stuck in the batch queue while the tab is hidden. |
+| `workshop_heartbeat` | Attend tab heartbeat while phase is **live** (~5s + section/visibility change) | `instance`, `workshop`, `section_key` (empty string on the schedule), `section_index` (`-1` on the schedule), `focused` (`1`/`0` from `visibilityState`, not `hasFocus`), `name`. Interval beats stay batched so a background attend tab still lands. `sendBeacon` + `send_instantly` only on hide/unload. |
 | `workshop_section_viewed` | Attendee opens a section | `instance`, `workshop`, `section_key`, `section_index` |
 | `workshop_section_completed` | Section first marked visited (local progress) | `instance`, `workshop`, `section_key`, `section_index` |
 | `discovery_call_opened` | A cal.com link opened as the on-site modal | `path` |
@@ -87,7 +87,7 @@ project settings).
 2. **Consulting:** `$pageview` of `/consulting` or `/services` → `discovery_call_opened`. (The booking itself completes inside cal.com — reconcile counts against cal.com's dashboard monthly.)
 3. **Mentorship:** `$pageview` of `/mentorship` → `form_started` (`form=mentorship`) → `mentorship_inquiry_submitted`.
 4. **Hiring / general:** `cta_click` where `cta = contact-door` (breakdown by `label`) → `form_started` (`form=contact`) → `contact_form_submitted` (breakdown by `topic`).
-5. **Workshop live (in-person):** `workshop_signed_up` → `workshop_section_viewed` (breakdown by `section_key` / `instance`) → optional `workshop_section_completed`. Use a HogQL insight or `/admin/live` for near-live `workshop_heartbeat` presence (last 45s); do not treat heartbeats as a conversion funnel step.
+5. **Workshop live (in-person):** `workshop_signed_up` → `workshop_section_viewed` (breakdown by `section_key` / `instance`) → optional `workshop_section_completed`. Use a HogQL insight or `/admin/live` for near-live `workshop_heartbeat` presence (last 2 minutes); do not treat heartbeats as a conversion funnel step.
 
 The `form_started` step is the abandonment probe: a big drop between
 `form_started` and `*_submitted` means friction inside the form — go watch
