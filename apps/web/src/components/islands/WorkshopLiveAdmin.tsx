@@ -42,22 +42,33 @@ function relativeAgo(iso: string | null, nowMs: number): string {
 }
 
 export default function WorkshopLiveAdmin({
-  token,
+  token: _token,
   sections,
   attendPath,
   event,
+  pollPath,
+  actionPath,
+  initialData,
 }: {
+  /** Workshop access token (kept for callers; paths are passed explicitly). */
   token: string;
   sections: SectionMeta[];
   attendPath: string;
   event: string;
+  /** Same-origin page route that returns JSON (`?format=json`). Avoid nested /api on Vercel. */
+  pollPath: string;
+  /** Same page route for End/Reopen live POSTs. */
+  actionPath: string;
+  initialData?: LiveSnapshot | null;
 }) {
-  const [data, setData] = useState<LiveSnapshot | null>(null);
+  const [data, setData] = useState<LiveSnapshot | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<FilterMode>('all');
   const [copied, setCopied] = useState(false);
-  const [lastFetchAt, setLastFetchAt] = useState<number | null>(null);
+  const [lastFetchAt, setLastFetchAt] = useState<number | null>(
+    initialData ? Date.now() : null
+  );
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [confirmEnd, setConfirmEnd] = useState(false);
 
@@ -72,7 +83,7 @@ export default function WorkshopLiveAdmin({
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch(`/api/workshop/admin/live?token=${encodeURIComponent(token)}`);
+      const res = await fetch(pollPath, { credentials: 'same-origin' });
       const body = (await res.json().catch(() => ({}))) as LiveSnapshot & {
         error?: string;
         detail?: string;
@@ -86,10 +97,11 @@ export default function WorkshopLiveAdmin({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load roster');
     }
-  }, [token]);
+  }, [pollPath]);
 
   useEffect(() => {
-    refresh();
+    // SSR already painted initialData; still poll immediately for freshness.
+    void refresh();
     const tick = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(tick);
   }, [refresh]);
@@ -114,10 +126,11 @@ export default function WorkshopLiveAdmin({
     setBusy(true);
     setConfirmEnd(false);
     try {
-      const res = await fetch('/api/workshop/admin/live', {
+      const res = await fetch(actionPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action }),
+        credentials: 'same-origin',
+        body: JSON.stringify({ action }),
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
       if (!res.ok) {

@@ -3,8 +3,10 @@ export const prerender = false
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Kicker from '../../../components/design/Kicker.astro';
+import { queryWorkshopRoster } from '../../../lib/posthog-query';
 import { sanityFetch } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
+import { getSanityWriteClient } from '../../../lib/sanity/write-client';
 import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
 import {
   ADMIN_SESSION_COOKIE,
@@ -24,26 +26,141 @@ interface WorkshopInstanceData {
   sections?: { _key: string; title: string; emoji?: string }[];
 }
 
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
 const isAuthenticated = verifyAdminSessionCookie(
   Astro.cookies.get(ADMIN_SESSION_COOKIE)?.value
 );
 
 if (!isAuthenticated) {
+  if (Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST') {
+    return json({ error: 'Unauthorized' }, 401);
+  }
   return Astro.redirect('/admin');
 }
 
 const { token } = Astro.params;
 const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(
-  () => null
+  (err) => {
+    console.error('[admin/live] Sanity lookup failed:', err);
+    return null;
+  }
 );
 
 if (!instance) {
+  if (Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST') {
+    return json({ error: 'Workshop not found' }, 404);
+  }
   return Astro.redirect('/admin');
 }
 
-const phase = getAccessPhase(instance);
-const closeDate = getCloseDate(instance);
+const accessInput = {
+  workshopDate: instance.workshopDate,
+  accessDurationDays: instance.accessDurationDays ?? 7,
+  forceClose: Boolean(instance.forceClose),
+  liveEndedAt: instance.liveEndedAt,
+};
+const phase = getAccessPhase(accessInput);
+const closeDate = getCloseDate(accessInput);
+
+// ── JSON poll + End/Reopen live (same route that already works as HTML) ──
+if (Astro.request.method === 'POST') {
+  try {
+    const body = (await Astro.request.json()) as { action?: string };
+    const action = body.action || 'end-live';
+    if (action !== 'end-live' && action !== 'reopen-live') {
+      return json({ error: 'Unknown action' }, 400);
+    }
+    const writeClient = getSanityWriteClient();
+    if (!writeClient) {
+      return json(
+        {
+          error: 'SANITY_API_TOKEN required to end/reopen live (Editor+ token with write access)',
+        },
+        500
+      );
+    }
+    if (action === 'end-live') {
+      await writeClient.patch(instance._id).set({ liveEndedAt: new Date().toISOString() }).commit();
+    } else {
+      await writeClient.patch(instance._id).unset(['liveEndedAt']).commit();
+    }
+    return json({ success: true, action });
+  } catch (err) {
+    console.error('[admin/live] POST failed:', err);
+    return json(
+      { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
+      500
+    );
+  }
+}
+
+if (Astro.url.searchParams.get('format') === 'json') {
+  try {
+    let rows: Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'] = [];
+    let rosterError: string | undefined;
+    if (phase === 'live') {
+      const roster = await queryWorkshopRoster(instance.token);
+      rows = roster.rows;
+      rosterError = roster.error;
+    }
+    return json({
+      phase,
+      title: instance.title,
+      event: instance.event,
+      token: instance.token,
+      liveEndedAt: instance.liveEndedAt || null,
+      closeDateISO: closeDate.toISOString(),
+      onlineCount: rows.filter((r) => r.focused).length,
+      totalRecent: rows.length,
+      rows,
+      rosterError,
+    });
+  } catch (err) {
+    console.error('[admin/live] JSON failed:', err);
+    return json(
+      { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
+      500
+    );
+  }
+}
+
 const attendPath = `/workshops/attend/${instance.token}`;
+
+// First paint: include a roster snapshot so the page is useful even if polling fails.
+let initialSnapshot = {
+  phase,
+  title: instance.title,
+  event: instance.event,
+  token: instance.token,
+  liveEndedAt: instance.liveEndedAt || null,
+  closeDateISO: closeDate.toISOString(),
+  onlineCount: 0,
+  totalRecent: 0,
+  rows: [] as Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'],
+  rosterError: undefined as string | undefined,
+};
+if (phase === 'live') {
+  const roster = await queryWorkshopRoster(instance.token).catch((err) => ({
+    rows: [] as Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'],
+    error: err instanceof Error ? err.message : 'roster failed',
+  }));
+  initialSnapshot = {
+    ...initialSnapshot,
+    rows: roster.rows,
+    onlineCount: roster.rows.filter((r) => r.focused).length,
+    totalRecent: roster.rows.length,
+    rosterError: roster.error,
+  };
+}
 ---
 
 <BaseLayout
@@ -77,6 +194,9 @@ const attendPath = `/workshops/attend/${instance.token}`;
         token={instance.token}
         event={instance.event}
         attendPath={attendPath}
+        pollPath={`/admin/live/${instance.token}?format=json`}
+        actionPath={`/admin/live/${instance.token}`}
+        initialData={initialSnapshot}
         sections={(instance.sections || []).map((s) => ({
           _key: s._key,
           title: s.title,
