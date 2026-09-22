@@ -1,10 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
-import Faq from '../components/design/Faq.astro';
-import Quote from '../components/design/Quote.astro';
 import Bio from '../components/design/Bio.astro';
 import { EventRow } from '../components/events/EventRow';
 import { sanityFetch } from '../lib/sanity/client';
@@ -13,8 +10,6 @@ import {
   pastEventsQuery,
   speakingStatsQuery,
   allTalksQuery,
-  featuredSocialPostsQuery,
-  featuredTestimonialsQuery,
   speakerProfileQuery,
 } from '../lib/sanity/queries';
 import { topConferences } from '../lib/conferences';
@@ -54,38 +49,19 @@ interface TalkListItem {
   slug: string;
   abstract?: string;
   duration?: number;
-  topics?: string[];
+  eventCount?: number;
   latestEvent?: { conference?: string; location?: string };
-}
-
-interface SocialPost {
-  _id: string;
-  author: string;
-  authorHandle?: string;
-  authorRole?: string;
-  content: string;
-  url?: string;
-}
-
-interface Testimonial {
-  _id: string;
-  quote: string;
-  author: string;
-  role?: string;
-  company?: string;
 }
 
 interface SpeakerProfile {
   bioShort?: string;
 }
 
-const [upcomingEvents, pastEvents, stats, talks, socialPosts, testimonials, profile] = await Promise.all([
+const [upcomingEvents, pastEvents, stats, talks, profile] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
-  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
-  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
   sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
 ]);
 
@@ -93,40 +69,15 @@ const upcomingCount = upcomingEvents.length;
 const conferenceWall = topConferences(pastEvents);
 const nextThree = upcomingEvents.slice(0, 3);
 
-function talksFor(needles: string[], fallback: TalkListItem[]) {
-  const hit = talks.filter((t) =>
-    (t.topics || []).some((topic) => needles.some((n) => topic.toLowerCase().includes(n)))
-  );
-  return (hit.length ? hit : fallback).slice(0, 2);
+function firstLine(abstract?: string) {
+  if (!abstract) return '';
+  const line = abstract.split('\n')[0].replace(/\s+/g, ' ').trim();
+  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
 }
 
-const leftover = talks.slice();
-const reactTalks = talksFor(['react', 'next'], leftover);
-const paymentTalks = talksFor(['payment', 'fintech', 'money'], leftover.filter((t) => !reactTalks.includes(t)));
-const dxTalks = talksFor(['experience', 'dx', 'tooling', 'workflow', 'performance'], leftover.filter((t) => !reactTalks.includes(t) && !paymentTalks.includes(t)));
-const communityTalks = talksFor(['career', 'community', 'speaking', 'leadership'], leftover.filter((t) => !reactTalks.includes(t) && !paymentTalks.includes(t) && !dxTalks.includes(t)));
-
-const topicBlocks = [
-  { title: 'React and Next.js', desc: 'Performance and architecture at scale — React is home base, not a religion.', talks: reactTalks },
-  { title: 'Payments and fintech', desc: 'Resilience and scaling money globally, from the systems I have shipped.', talks: paymentTalks },
-  { title: 'Developer experience', desc: 'Tooling and workflows that make a team faster without making it fragile.', talks: dxTalks },
-  { title: 'Career and community', desc: 'Growth, speaking, and building rooms people want to come back to.', talks: communityTalks },
-].filter((block) => block.talks.length > 0 || talks.length === 0);
-
-const quotes: { quote: string; author: string; handle?: string; role?: string; href?: string }[] =
-  socialPosts.length > 0
-    ? socialPosts.slice(0, 3).map((p) => ({
-        quote: p.content,
-        author: p.author,
-        handle: p.authorHandle,
-        role: p.authorRole,
-        href: p.url,
-      }))
-    : testimonials.slice(0, 3).map((t) => ({
-        quote: t.quote,
-        author: t.author,
-        role: [t.role, t.company].filter(Boolean).join(', '),
-      }));
+const featuredTalks = [...talks]
+  .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
+  .slice(0, 3);
 
 const shortBio =
   profile?.bioShort ||
@@ -141,7 +92,6 @@ const shortBio =
   markdownAlternate="/speaking.md"
 >
   <header class="speaking-hero">
-    <GridTexture />
     <div class="container speaking-hero__inner">
       <Kicker>Booking {bookingYears()}</Kicker>
       <h1 class="speaking-hero__title heading-sentence">Invite me to speak.</h1>
@@ -160,7 +110,7 @@ const shortBio =
             <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </a>
-        <a href="#book" class="ds-btn ds-btn-secondary ds-btn-lg">How booking works</a>
+        <a href="#talks" class="ds-btn ds-btn-secondary ds-btn-lg">See the talks</a>
       </div>
     </div>
   </header>
@@ -182,105 +132,78 @@ const shortBio =
           <div class="events-list">
             {nextThree.map((e, i) => <EventRow event={e} index={i} />)}
           </div>
-          <div class="speaking-events__toggle">
-            <a href="/events" class="ds-btn ds-btn-secondary">
-              View the full schedule
-              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <p class="speaking-more">
+            <a href="/events" class="ds-link">
+              Full schedule
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </a>
-          </div>
+          </p>
         </>
       ) : (
         <div class="speaking-empty">
           <p>No upcoming events confirmed yet. Check back soon, or invite me directly.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Invite me to speak</a>
+          <a href="/invite" class="ds-btn ds-btn-primary speaking-empty__cta">Invite me to speak</a>
         </div>
       )}
     </div>
   </section>
 
-  <section class="speaking-section" id="about-talks">
-    <div class="container">
-      <Faq question="What do I speak about?">
-        <p>Four lanes, all from work I have actually shipped. Each one links to a talk you can book.</p>
-        {topicBlocks.map((block) => (
-          <div class="speaking-topic-block">
-            <h3 class="speaking-topic-block__title">{block.title}</h3>
-            <p>{block.desc}</p>
-            {block.talks.length > 0 && (
-              <ul class="ds-faq__evidence">
-                {block.talks.map((t) => (
-                  <li>
-                    <a href={`/talks/${t.slug}`}>{t.title}</a>
-                    {t.latestEvent?.conference && <span> · {t.latestEvent.conference}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-        <p>
+  {featuredTalks.length > 0 && (
+    <section class="speaking-section anchor-target" id="talks">
+      <div class="container">
+        <h2 class="speaking-h2">A few talks I give.</h2>
+        <p class="speaking-lead">
+          These are the ones I get asked for most. Every talk is adapted to the room; the catalogue has the rest.
+        </p>
+        <ul class="speaking-talks">
+          {featuredTalks.map((t) => (
+            <li>
+              <a href={`/talks/${t.slug}`} class="speaking-talk">
+                <span class="speaking-talk__title">{t.title}</span>
+                {firstLine(t.abstract) && <span class="speaking-talk__desc">{firstLine(t.abstract)}</span>}
+                {(t.latestEvent?.conference || t.duration) && (
+                  <span class="speaking-talk__meta">
+                    {[t.latestEvent?.conference, t.duration ? `${t.duration} min` : null].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="speaking-more">
           <a href="/talks" class="ds-link">
-            Browse the full catalogue
+            All bookable talks
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </a>
         </p>
-      </Faq>
-
-      {quotes.length > 0 && (
-        <Faq question="What is a talk of mine like?" class="speaking-faq-follow">
-          <p>I would rather you hear it from the room.</p>
-          <div class="ds-quotes speaking-quotes">
-            {quotes.map((q) => (
-              <Quote quote={q.quote} author={q.author} handle={q.handle} role={q.role} href={q.href} />
-            ))}
-          </div>
-        </Faq>
-      )}
-
-      <Faq question="How do you book me?" class="speaking-faq-follow anchor-target" id="book">
-        <p>
-          Email is slower than the form. Send the date, the city, the audience size, the topic you want, and how long the slot is. I reply within two days with a straight yes or no, and a number if the event needs one. Community meetups are usually on the house.
-        </p>
-        <p>
-          <a href="/invite" class="ds-btn ds-btn-primary">
-            Send an invite
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </p>
-      </Faq>
-
-      {shortBio && (
-        <div class="speaking-faq-follow">
-          <Bio text={shortBio} />
-        </div>
-      )}
-    </div>
-  </section>
-
-  {conferenceWall.length > 0 && (
-    <section class="speaking-section-sm">
-      <div class="container">
-        <p class="speaking-logos__label">Stages I've shared</p>
-        <div class="speaking-logos">
-          {conferenceWall.map((c) => <span>{c}</span>)}
-        </div>
       </div>
     </section>
   )}
 
-  <section class="speaking-section anchor-target" id="invite">
+  {shortBio && (
+    <section class="speaking-section">
+      <div class="container">
+        <Bio text={shortBio} />
+        {conferenceWall.length > 0 && (
+          <p class="speaking-stages">
+            Stages I've shared: {conferenceWall.slice(0, 8).join(', ')}.
+          </p>
+        )}
+      </div>
+    </section>
+  )}
+
+  <section class="speaking-section speaking-section--contact anchor-target" id="invite">
     <div class="container">
-      <div class="wide ds-reveal">
+      <div class="wide">
         <ContactPanel
           status={`Booking ${bookingYears()} dates now`}
           title="Invite me to your event"
-          body="Conferences, meetups, internal tech talks, workshops: tell me about your audience and I'll tailor a talk to fit. I reply within two days."
+          body="Send the date, the city, the audience, and the slot. I reply within two days. Community meetups are usually on the house."
           primaryHref="/invite"
           primaryLabel="Send an invite"
           secondaryHref="/talks"
@@ -295,7 +218,6 @@ const shortBio =
 <style>
   .speaking-hero {
     position: relative;
-    overflow: hidden;
     border-bottom: 1px solid rgb(var(--edge));
     padding-block: clamp(3.25rem, 7vw, 5.5rem);
   }
@@ -316,7 +238,7 @@ const shortBio =
   }
 
   .speaking-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
-  .speaking-section-sm { padding-block: clamp(2.25rem, 5vw, 3.5rem); }
+  .speaking-section--contact { padding-top: 0; }
   .speaking-section__head {
     display: flex;
     align-items: center;
@@ -333,46 +255,71 @@ const shortBio =
     letter-spacing: -0.015em;
     color: rgb(var(--ink));
   }
-
-  .events-list { display: grid; gap: 0.2rem; }
-  .speaking-events__toggle { text-align: center; margin-top: 1.6rem; }
-  .speaking-empty {
-    text-align: center;
+  .speaking-lead {
+    font-size: 1.0625rem;
+    line-height: 1.7;
     color: rgb(var(--ink-muted));
-    padding: 3rem 1rem;
-    border: 1px dashed rgb(var(--edge));
-    border-radius: 14px;
+    max-width: 68ch;
+    margin-top: 0.75rem;
   }
 
-  .speaking-faq-follow { margin-top: clamp(2.5rem, 5vw, 3.5rem); }
-  .speaking-topic-block { margin-top: 1.4rem; }
-  .speaking-topic-block__title {
+  .events-list { display: grid; gap: 0.2rem; }
+  .speaking-more { margin-top: 1.4rem; }
+  .speaking-empty {
+    color: rgb(var(--ink-muted));
+    max-width: 68ch;
+  }
+  .speaking-empty__cta { margin-top: 1rem; }
+
+  .speaking-talks {
+    list-style: none;
+    margin: 1.6rem 0 0;
+    padding: 0;
+    max-width: 68ch;
+    border-top: 1px solid rgb(var(--edge));
+  }
+  .speaking-talk {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.15rem 0.1rem;
+    border-bottom: 1px solid rgb(var(--edge));
+    min-height: 44px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .speaking-talk:hover .speaking-talk__title,
+  .speaking-talk:focus-visible .speaking-talk__title {
+    color: rgb(var(--accent-bright));
+  }
+  .speaking-talk:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+  .speaking-talk__title {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
     font-size: 1.15rem;
+    line-height: 1.35;
     color: rgb(var(--ink));
-    margin-bottom: 0.35rem;
+    letter-spacing: -0.015em;
+    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .speaking-quotes { margin-top: 1.25rem; }
+  .speaking-talk__desc {
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: rgb(var(--ink-muted));
+  }
+  .speaking-talk__meta {
+    font-size: 0.875rem;
+    color: rgb(var(--ink-faint));
+  }
 
-  .speaking-logos__label {
-    text-align: center;
-    margin-bottom: 1.4rem;
+  .speaking-stages {
+    margin-top: 1.75rem;
     font-size: 1.0625rem;
-    line-height: 1.6;
+    line-height: 1.7;
     color: rgb(var(--ink-muted));
-  }
-  .speaking-logos {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-  }
-  .speaking-logos span {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.05rem;
-    color: rgb(var(--ink-muted));
+    max-width: 68ch;
   }
 </style>
