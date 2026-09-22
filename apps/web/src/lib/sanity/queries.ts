@@ -1441,6 +1441,7 @@ export const workshopAttendQuery = groq`
     workshopDate,
     accessDurationDays,
     forceClose,
+    liveEndedAt,
     repoUrl,
     overallFeedbackUrl,
     emailCaptureEnabled,
@@ -1464,6 +1465,7 @@ export const allWorkshopInstancesQuery = groq`
     workshopDate,
     accessDurationDays,
     forceClose,
+    liveEndedAt,
     repoUrl,
     overallFeedbackUrl,
     emailCaptureEnabled,
@@ -1471,8 +1473,7 @@ export const allWorkshopInstancesQuery = groq`
   }
 `;
 
-// Look up a workshopInstance by slug — used server-side by the subscribe API
-// to read the resendAudienceId so we never trust a client-supplied audience ID.
+// Look up a workshopInstance by slug — used by follow-up API (admin supplies slug).
 export const workshopInstanceBySlugQuery = groq`
   *[_type == "workshopInstance" && slug.current == $slug][0] {
     _id,
@@ -1480,6 +1481,22 @@ export const workshopInstanceBySlugQuery = groq`
     event,
     "slug": slug.current,
     "token": token.current,
+    resendAudienceId
+  }
+`;
+
+// Look up by attend token — used by subscribe/session so we never trust audience IDs from the client.
+export const workshopInstanceByTokenQuery = groq`
+  *[_type == "workshopInstance" && token.current == $token][0] {
+    _id,
+    title,
+    event,
+    "slug": slug.current,
+    "token": token.current,
+    workshopDate,
+    accessDurationDays,
+    forceClose,
+    liveEndedAt,
     resendAudienceId
   }
 `;

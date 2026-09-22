@@ -7,7 +7,14 @@ import Terminal from '../../components/design/Terminal.astro';
 import GridTexture from '../../components/design/GridTexture.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery, speakerProfileQuery } from '../../lib/sanity/queries';
-import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
+import { getAccessPhase, getCloseDate } from '../../lib/workshop-access';
+import {
+  ADMIN_SESSION_COOKIE,
+  adminCookieOptions,
+  createAdminSessionCookie,
+  verifyAdminSessionCookie,
+} from '../../lib/workshop-session';
+import { env } from '../../lib/email';
 
 interface WorkshopInstanceRow {
   _id: string;
@@ -18,6 +25,7 @@ interface WorkshopInstanceRow {
   workshopDate: string;
   accessDurationDays: number;
   forceClose: boolean;
+  liveEndedAt?: string | null;
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
@@ -39,30 +47,26 @@ interface AdminSpeakerProfile {
   };
 }
 
-const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-const RESEND_API_KEY = import.meta.env.RESEND_API_KEY;
+const ADMIN_PASSWORD = env('ADMIN_PASSWORD');
+const RESEND_API_KEY = env('RESEND_API_KEY');
 
 let authError = '';
-let isAuthenticated = false;
-
-const sessionCookie = Astro.cookies.get('admin_session')?.value;
-if (sessionCookie === 'valid') {
-  isAuthenticated = true;
-}
+let isAuthenticated = verifyAdminSessionCookie(
+  Astro.cookies.get(ADMIN_SESSION_COOKIE)?.value
+);
 
 if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   const password = formData.get('password')?.toString() || '';
 
   if (ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
-    Astro.cookies.set('admin_session', 'valid', {
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'strict',
-      maxAge: 28800,
-      path: '/',
-    });
-    isAuthenticated = true;
+    const cookieValue = createAdminSessionCookie(28800);
+    if (!cookieValue) {
+      authError = 'WORKSHOP_SESSION_SECRET or ADMIN_PASSWORD required to sign session';
+    } else {
+      Astro.cookies.set(ADMIN_SESSION_COOKIE, cookieValue, adminCookieOptions(28800));
+      isAuthenticated = true;
+    }
   } else {
     authError = ADMIN_PASSWORD ? 'Incorrect password' : 'ADMIN_PASSWORD env var not set';
   }
@@ -123,7 +127,8 @@ const formatDate = (dateStr: string) => {
 };
 
 const statusMeta: Record<string, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'var(--signal)' },
+  live: { label: 'Live', color: 'var(--signal)' },
+  readonly: { label: 'Read-only', color: 'var(--accent-bright)' },
   upcoming: { label: 'Upcoming', color: 'var(--accent-bright)' },
   closed: { label: 'Closed', color: 'var(--ink-faint)' },
   'force-closed': { label: 'Force closed', color: 'var(--danger)' },
@@ -306,9 +311,9 @@ const copyOnClick =
         ) : (
           <div class="instance-list">
             {instances.map((instance) => {
-              const status = getAccessStatus(instance);
+              const status = getAccessPhase(instance);
               const close = getCloseDate(instance);
-              const meta = statusMeta[status];
+              const meta = statusMeta[status] || statusMeta.closed;
               const audienceCount = instance.resendAudienceId ? audienceCounts.get(instance.resendAudienceId) : undefined;
               const sanityEditUrl = `https://faziz-dev.sanity.studio/structure/workshopInstance;${instance._id}`;
               const resendDashboardUrl = instance.resendAudienceId
@@ -392,6 +397,11 @@ const copyOnClick =
                     </div>
 
                     <footer class="instance__actions">
+                      {(status === 'live' || status === 'readonly') && (
+                        <a href={`/admin/live/${instance.token}`} class="ds-btn ds-btn-primary">
+                          Live room
+                        </a>
+                      )}
                       <a href={`/workshops/attend/${instance.token}`} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
                         Preview
                       </a>

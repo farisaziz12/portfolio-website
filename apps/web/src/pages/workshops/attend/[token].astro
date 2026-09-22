@@ -4,7 +4,7 @@ export const prerender = false
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
-import { getAccessStatus, getCloseDate } from '../../../lib/workshop-access';
+import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
 import WorkshopAttend from '../../../components/islands/WorkshopAttend';
 
 interface Section {
@@ -23,6 +23,7 @@ interface WorkshopInstanceData {
   workshopDate: string;
   accessDurationDays: number;
   forceClose: boolean;
+  liveEndedAt?: string | null;
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
@@ -36,8 +37,9 @@ if (!instance) {
   return Astro.redirect('/404');
 }
 
-const status = getAccessStatus(instance);
+const phase = getAccessPhase(instance);
 const closeDate = getCloseDate(instance);
+const materialsOpen = phase === 'live' || phase === 'readonly';
 
 const formatDateLong = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -53,7 +55,7 @@ const formatDateLong = (dateStr: string) => {
   description={`Workshop materials for ${instance.title}`}
   pathname={`/workshops/attend/${token}`}
 >
-  {status === 'upcoming' && (
+  {phase === 'upcoming' && (
     <section class="min-h-[80vh] flex items-center">
       <div class="container py-20 md:py-32">
         <div class="max-w-3xl mx-auto text-center">
@@ -81,7 +83,7 @@ const formatDateLong = (dateStr: string) => {
     </section>
   )}
 
-  {(status === 'closed' || status === 'force-closed') && (
+  {(phase === 'closed' || phase === 'force-closed') && (
     <section class="min-h-[80vh] flex items-center">
       <div class="container py-20 md:py-32">
         <div class="max-w-3xl mx-auto text-center">
@@ -101,12 +103,13 @@ const formatDateLong = (dateStr: string) => {
     </section>
   )}
 
-  {status === 'open' && (
+  {materialsOpen && (
     <WorkshopAttend
       client:load
       title={instance.title}
       event={instance.event}
       token={instance.token}
+      phase={phase === 'live' ? 'live' : 'readonly'}
       repoUrl={instance.repoUrl}
       overallFeedbackUrl={instance.overallFeedbackUrl}
       sections={instance.sections || []}

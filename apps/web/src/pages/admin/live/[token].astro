@@ -1,0 +1,84 @@
+---
+export const prerender = false
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Kicker from '../../../components/design/Kicker.astro';
+import { sanityFetch } from '../../../lib/sanity/client';
+import { workshopAttendQuery } from '../../../lib/sanity/queries';
+import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionCookie,
+} from '../../../lib/workshop-session';
+import WorkshopLiveAdmin from '../../../components/islands/WorkshopLiveAdmin';
+
+interface WorkshopInstanceData {
+  _id: string;
+  title: string;
+  event: string;
+  token: string;
+  workshopDate: string;
+  accessDurationDays: number;
+  forceClose: boolean;
+  liveEndedAt?: string | null;
+  sections?: { _key: string; title: string; emoji?: string }[];
+}
+
+const isAuthenticated = verifyAdminSessionCookie(
+  Astro.cookies.get(ADMIN_SESSION_COOKIE)?.value
+);
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin');
+}
+
+const { token } = Astro.params;
+const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(
+  () => null
+);
+
+if (!instance) {
+  return Astro.redirect('/admin');
+}
+
+const phase = getAccessPhase(instance);
+const closeDate = getCloseDate(instance);
+---
+
+<BaseLayout
+  title={`Live · ${instance.title}`}
+  description="Workshop live roster"
+  pathname={`/admin/live/${token}`}
+>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <section class="admin-section" style="padding-block: clamp(3rem, 8vw, 5rem);">
+    <div class="container" style="max-width: 960px;">
+      <div class="admin-head" style="margin-bottom: 1.5rem;">
+        <Kicker>Admin · Live</Kicker>
+        <div class="admin-head__row" style="display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <h1 class="admin-head__title" style="font-size:clamp(1.75rem,4vw,2.25rem);font-family:var(--font-display);font-weight:700;">
+              {instance.title}
+            </h1>
+            <p class="admin-head__body" style="color:rgb(var(--ink-muted));margin-top:0.35rem;">
+              {instance.event} · materials until {closeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              · SSR phase <strong>{phase}</strong>
+            </p>
+          </div>
+          <a href="/admin" class="ds-btn ds-btn-secondary">← Dashboard</a>
+        </div>
+      </div>
+
+      <WorkshopLiveAdmin
+        client:load
+        token={instance.token}
+        sections={(instance.sections || []).map((s) => ({
+          _key: s._key,
+          title: s.title,
+          emoji: s.emoji,
+        }))}
+      />
+    </div>
+  </section>
+</BaseLayout>

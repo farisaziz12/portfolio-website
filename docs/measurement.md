@@ -66,6 +66,9 @@ project settings).
 | `contact_form_submitted` | General contact form success (`/contact`) | `topic` (`role` / `speaking` / `consulting` / `mentorship` / `other`), `has_company`, `message_length` |
 | `newsletter_subscribed` | Conference-schedule subscribe success | `source`, `placement` (`compact` / `card`) |
 | `workshop_signed_up` | Workshop attend gate completed | `workshop`, `instance` |
+| `workshop_heartbeat` | Attend tab heartbeat while phase is **live** (~10s + visibility) | `instance`, `workshop`, `section_key`, `focused`, `name` |
+| `workshop_section_viewed` | Attendee opens a section | `instance`, `workshop`, `section_key`, `section_index` |
+| `workshop_section_completed` | Section first marked visited (local progress) | `instance`, `workshop`, `section_key`, `section_index` |
 | `discovery_call_opened` | A cal.com link opened as the on-site modal | `path` |
 | `email_entered` | A valid email is blurred in any email field (also identifies the visitor) | `path`, `field` |
 | `form_started` | First interaction with a form (once per page lifetime) | `form` (`contact` / `invite` / `mentorship`) |
@@ -84,6 +87,7 @@ project settings).
 2. **Consulting:** `$pageview` of `/consulting` or `/services` → `discovery_call_opened`. (The booking itself completes inside cal.com — reconcile counts against cal.com's dashboard monthly.)
 3. **Mentorship:** `$pageview` of `/mentorship` → `form_started` (`form=mentorship`) → `mentorship_inquiry_submitted`.
 4. **Hiring / general:** `cta_click` where `cta = contact-door` (breakdown by `label`) → `form_started` (`form=contact`) → `contact_form_submitted` (breakdown by `topic`).
+5. **Workshop live (in-person):** `workshop_signed_up` → `workshop_section_viewed` (breakdown by `section_key` / `instance`) → optional `workshop_section_completed`. Use a HogQL insight or `/admin/live` for near-live `workshop_heartbeat` presence (last 45s); do not treat heartbeats as a conversion funnel step.
 
 The `form_started` step is the abandonment probe: a big drop between
 `form_started` and `*_submitted` means friction inside the form — go watch
@@ -98,6 +102,8 @@ the session recordings for that page.
 - `scroll_depth` ≥75 on `/talks`, `/consulting`, `/mentorship` — is the long-form content read or skipped?
 - `outbound_link_click` by `domain` — where the site leaks attention (GitHub, LinkedIn, YouTube…).
 - `terminal_command` where `known = false` — what people *try* to type is a feature wishlist.
+- `workshop_heartbeat` unique `distinct_id` by `instance` during a workshop day — attendance proxy; compare to Resend audience size.
+- `workshop_section_viewed` breakdown by `section_key` for a given `instance` — where the room spends time.
 - Referrer breakdown filtered to AI surfaces (`chatgpt.com`, `perplexity.ai`, `claude.ai`, `copilot.microsoft.com`) — low volume, disproportionate intent; watch conversion rate per source.
 - Session recordings on `/invite`, `/contact`, `/consulting`, `/mentorship` (the gate only records these) — watch a handful weekly for friction.
 - Error tracking (`$exception`) — a spike after a deploy is a regression on a real visitor's browser.

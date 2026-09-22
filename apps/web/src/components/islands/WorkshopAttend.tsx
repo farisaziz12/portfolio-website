@@ -78,6 +78,8 @@ interface WorkshopAttendProps {
   title: string;
   event: string;
   token: string;
+  /** live = heartbeats on; readonly = materials only */
+  phase: 'live' | 'readonly';
   repoUrl?: string;
   overallFeedbackUrl?: string;
   sections: Section[];
@@ -482,10 +484,12 @@ function SectionFeedback({ url }: { url: string }) {
 function GateView({
   event,
   token,
+  phase,
   onSuccess,
 }: {
   event: string;
   token: string;
+  phase: 'live' | 'readonly';
   onSuccess: (user: UserInfo) => void;
 }) {
   const [name, setName] = useState('');
@@ -499,22 +503,21 @@ function GateView({
 
     setStatus('loading');
     try {
-      const res = await fetch('/api/workshop/subscribe', {
+      const res = await fetch('/api/workshop/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
+          name: name.trim(),
           email,
-          source: 'workshop-attend',
-          instanceSlug: token,
+          token,
           event,
         }),
       });
       if (!res.ok) throw new Error('Failed');
 
-      const user = { name: name.trim(), email };
+      const user = { name: name.trim(), email: email.trim().toLowerCase() };
       storeUser(token, user);
-      identify(email, { name: name.trim(), workshop_attendee: true });
+      identify(user.email, { name: user.name, workshop_attendee: true });
       track('workshop_signed_up', { workshop: event, instance: token });
       onSuccess(user);
     } catch {
@@ -565,6 +568,14 @@ function GateView({
                 I agree to receive updates about future workshops and conference appearances. No spam, unsubscribe anytime.
               </span>
             </label>
+
+            {phase === 'live' && (
+              <p className="text-xs text-[rgb(var(--ink-faint))] leading-relaxed">
+                During the live session, your name, current section, and whether this tab is active
+                are visible to the instructor. Live presence stops when the session ends; materials
+                stay available afterward.
+              </p>
+            )}
 
             <button
               type="submit"
@@ -808,6 +819,7 @@ export default function WorkshopAttend({
   title,
   event,
   token,
+  phase,
   repoUrl,
   overallFeedbackUrl,
   sections,
@@ -819,36 +831,122 @@ export default function WorkshopAttend({
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState<number | null>(null);
   const [visited, setVisited] = useState<Set<string>>(new Set());
+  const activeSectionRef = useRef<number | null>(null);
+  const userRef = useRef<UserInfo | null>(null);
 
-  // Hydrate from localStorage
   useEffect(() => {
-    setMounted(true);
-    const stored = getStoredUser(token);
-    if (stored) setUser(stored);
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
 
-    // Restore visited sections
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  // Hydrate from cookie session (preferred) or localStorage cache
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/workshop/session?token=${encodeURIComponent(token)}`);
+        if (res.ok) {
+          const data = (await res.json()) as { authenticated?: boolean; user?: UserInfo };
+          if (!cancelled && data.authenticated && data.user) {
+            storeUser(token, data.user);
+            setUser(data.user);
+            setMounted(true);
+            return;
+          }
+        }
+      } catch { /* fall through */ }
+
+      if (cancelled) return;
+      const stored = getStoredUser(token);
+      if (stored) setUser(stored);
+
+      try {
+        const raw = localStorage.getItem(`workshop-visited-${token}`);
+        if (raw) setVisited(new Set(JSON.parse(raw)));
+      } catch { /* ignore */ }
+      setMounted(true);
+    })();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  // Restore visited even when cookie auth succeeds
+  useEffect(() => {
     try {
       const raw = localStorage.getItem(`workshop-visited-${token}`);
       if (raw) setVisited(new Set(JSON.parse(raw)));
     } catch { /* ignore */ }
   }, [token]);
 
-  // Mark section as visited when entering it
+  // Heartbeats while live + signed in
+  useEffect(() => {
+    if (phase !== 'live' || !user) return;
+
+    const send = (focused: boolean) => {
+      const u = userRef.current;
+      if (!u) return;
+      const idx = activeSectionRef.current;
+      const sectionKey = idx != null ? sections[idx]?._key : null;
+      track('workshop_heartbeat', {
+        instance: token,
+        workshop: event,
+        section_key: sectionKey,
+        focused,
+        name: u.name,
+      });
+    };
+
+    send(!document.hidden);
+
+    const interval = window.setInterval(() => {
+      if (!document.hidden) send(true);
+    }, 10000);
+
+    const onVis = () => send(!document.hidden);
+    const onFocus = () => send(true);
+    const onBlur = () => send(false);
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('blur', onBlur);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('blur', onBlur);
+      send(false);
+    };
+  }, [phase, user, token, event, sections]);
+
   const openSection = useCallback((index: number) => {
     setActiveSection(index);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const key = sections[index]?._key;
     if (key) {
+      track('workshop_section_viewed', {
+        instance: token,
+        workshop: event,
+        section_key: key,
+        section_index: index,
+      });
       setVisited((prev) => {
         if (prev.has(key)) return prev;
         const next = new Set(prev);
         next.add(key);
         localStorage.setItem(`workshop-visited-${token}`, JSON.stringify([...next]));
+        track('workshop_section_completed', {
+          instance: token,
+          workshop: event,
+          section_key: key,
+          section_index: index,
+        });
         return next;
       });
     }
-  }, [sections, token]);
+  }, [sections, token, event]);
 
   const goToSchedule = useCallback(() => {
     setActiveSection(null);
@@ -861,18 +959,22 @@ export default function WorkshopAttend({
     year: 'numeric',
   }), [closeDateISO]);
 
-  // Loading state (SSR → hydration)
   if (!mounted) return null;
 
-  // Gate: require name + email
   if (!user) {
-    return <GateView event={event} token={token} onSuccess={setUser} />;
+    return <GateView event={event} token={token} phase={phase} onSuccess={setUser} />;
   }
 
-  // Section detail view
+  const readonlyBanner = phase === 'readonly' ? (
+    <div className="max-w-3xl mx-auto mb-8 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] px-4 py-3 text-sm text-[rgb(var(--ink-muted))]">
+      Live session has ended — materials are read-only until {closeDate}. Presence is no longer shared with the instructor.
+    </div>
+  ) : null;
+
   if (activeSection !== null && sections[activeSection]) {
     return (
       <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
+        {readonlyBanner}
         <SectionView
           section={sections[activeSection]}
           index={activeSection}
@@ -887,9 +989,9 @@ export default function WorkshopAttend({
     );
   }
 
-  // Schedule (root) view
   return (
     <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
+      {readonlyBanner}
       <ScheduleView
         userName={user.name.split(' ')[0]}
         title={title}
@@ -900,7 +1002,6 @@ export default function WorkshopAttend({
         onSelectSection={openSection}
       />
 
-      {/* Overall feedback at bottom */}
       {overallFeedbackUrl && visited.size >= sections.length && (
         <div className="max-w-3xl mx-auto mt-16">
           <div className="rounded-xl border border-[rgb(var(--edge))] bg-[rgb(var(--surface-raised))] p-6 text-center">
@@ -925,7 +1026,6 @@ export default function WorkshopAttend({
         </div>
       )}
 
-      {/* Footer */}
       <p className="text-xs text-[rgb(var(--ink-faint))] text-center mt-12">
         Materials available until {closeDate}.
       </p>
