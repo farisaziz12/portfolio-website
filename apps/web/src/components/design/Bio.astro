@@ -1,0 +1,72 @@
+---
+interface Props {
+  text: string;
+  heading?: string;
+}
+
+const { text, heading = 'If you need a bio' } = Astro.props;
+---
+
+<section class="ds-bio">
+  <div class="ds-bio__head">
+    <h2 class="ds-bio__title">{heading}</h2>
+    <button
+      type="button"
+      class="ds-btn ds-btn-secondary ds-bio__copy"
+      data-text={text}
+      aria-label="Copy short bio"
+    >
+      Copy short bio
+    </button>
+  </div>
+  <p class="ds-bio__text">{text}</p>
+  <p class="ds-bio__more">
+    <a href="/press-kit" class="ds-link">
+      Full press kit
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
+  </p>
+  <p class="sr-only" aria-live="polite" data-bio-live></p>
+</section>
+
+<script>
+  function initBioCopy() {
+    document.querySelectorAll<HTMLButtonElement>('.ds-bio__copy').forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', async () => {
+        const text = btn.getAttribute('data-text') || '';
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch { /* ignore */ }
+          document.body.removeChild(ta);
+        }
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        const live = btn.closest('.ds-bio')?.querySelector<HTMLElement>('[data-bio-live]');
+        if (live) live.textContent = 'Short bio copied to clipboard';
+        window.setTimeout(() => {
+          btn.textContent = original;
+          if (live) live.textContent = '';
+        }, 1600);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBioCopy, { once: true });
+  } else {
+    initBioCopy();
+  }
+  document.addEventListener('astro:after-swap', initBioCopy);
+</script>

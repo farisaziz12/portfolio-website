@@ -361,6 +361,16 @@ const proofQuotes = testimonials.slice(0, 3);
   .invite-form__input:focus { outline: none; border-color: rgb(var(--accent)); }
   .invite-form__input::placeholder { color: rgb(var(--ink-faint)); }
   .invite-form__textarea { resize: vertical; min-height: 120px; }
+  select.invite-form__input {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B97A6' stroke-width='2'><path d='M6 9l6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.4rem;
+    cursor: pointer;
+  }
+  select.invite-form__input--empty { color: rgb(var(--ink-faint)); }
+  select.invite-form__input option { color: rgb(var(--ink)); }
   .invite-form__field--error .invite-form__input {
     border-color: rgb(var(--danger));
   }

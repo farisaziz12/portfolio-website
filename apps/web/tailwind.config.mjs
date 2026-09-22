@@ -27,13 +27,16 @@ export default {
           DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
           muted: 'rgb(var(--ink-muted) / <alpha-value>)',
           faint: 'rgb(var(--ink-faint) / <alpha-value>)',
+          'on-accent': 'rgb(var(--ink-on-accent) / <alpha-value>)',
+          'on-signal': 'rgb(var(--ink-on-signal) / <alpha-value>)',
         },
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
           bright: 'rgb(var(--accent-bright) / <alpha-value>)',
           deep: 'rgb(var(--accent-deep) / <alpha-value>)',
+          press: 'rgb(var(--accent-press) / <alpha-value>)',
           // Back-compat
-          hover: 'rgb(var(--accent-deep) / <alpha-value>)',
+          hover: 'rgb(var(--accent-press) / <alpha-value>)',
           muted: 'rgb(var(--accent-bright) / 0.1)',
         },
         signal: {

@@ -1,10 +1,10 @@
 ---
-description: Design System v2 — tokens, ds-* classes, a11y, no emojis
+description: Design System v2.1 — tokens, ds-* classes, a11y, no emojis
 globs: apps/web/**/*.{astro,css,tsx,jsx}
 alwaysApply: false
 ---
 
-Token source of truth is `apps/web/src/styles/global.css`, not memorized palettes. UX rulebook: `docs/ui-rules.md` (if a token name there disagrees with `global.css`, `global.css` wins).
+Token source of truth is `apps/web/src/styles/global.css`, not memorized palettes. UX rulebook: `docs/ui-rules.md` (if a token name there disagrees with `global.css`, `global.css` wins). Taste / page grammar: `docs/taste.md`.
 
 - Colors: `bg`, `surface-1/2/3`, `ink`, `ink-muted`, `ink-faint`, `edge`, `edge-strong`, `accent`, `accent-bright`, `accent-deep`, `signal`, `danger`, `warn`. Use `rgb(var(--token) / <alpha>)` or `ds-*` utilities.
 - Fonts: Space Grotesk (headings), Hanken Grotesk (body), IBM Plex Mono (terminal/kicker). Not Inter.

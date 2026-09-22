@@ -4,15 +4,15 @@
   "src/components/islands/EventsFilter.tsx": 1568,
   "src/components/islands/ImpactExplorer.tsx": 848,
   "src/components/islands/TalksFilter.tsx": 500,
-  "src/components/islands/WorkshopAttend.tsx": 934,
+  "src/components/islands/WorkshopLiveAdmin.tsx": 431,
   "src/components/layout/Header.astro": 351,
-  "src/lib/sanity/queries.ts": 1509,
-  "src/pages/admin/index.astro": 775,
+  "src/lib/sanity/queries.ts": 1542,
+  "src/pages/admin/index.astro": 827,
   "src/pages/blog.astro": 560,
   "src/pages/impact.astro": 533,
-  "src/pages/index.astro": 706,
-  "src/pages/invite.astro": 870,
+  "src/pages/index.astro": 578,
+  "src/pages/invite.astro": 880,
   "src/pages/press-kit.astro": 774,
   "src/pages/talks/[slug].astro": 837,
-  "src/styles/global.css": 2007
+  "src/styles/global.css": 2190
 }

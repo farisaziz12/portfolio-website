@@ -25,13 +25,14 @@ export const GET: APIRoute = async () => {
   ]);
 
   const body = [
-    `# Faris Aziz: Staff Software Engineer & Conference Speaker`,
+    `# I'm Faris Aziz`,
     ``,
-    `> Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. ${stats.totalEvents}+ speaking engagements across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). He helps teams ship resilient frontend systems and payment integrations, and offers talks, workshops, consulting, and 1:1 mentorship. ${availabilityLabel('Available')}.`,
+    `> I'm Faris Aziz, and I ship resilient frontend and payment systems, then I go talk about how on stage. I also build ZurichJS. Staff Software Engineer and conference speaker based in Geneva. ${stats.totalEvents} events across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). Talks, workshops, consulting, and 1:1 mentorship. ${availabilityLabel('Available')}.`,
     ``,
     `## Site map (markdown mirrors for agents)`,
     ``,
     `- [About & bios](https://faziz-dev.com/about.md)`,
+    `- [Speaking](https://faziz-dev.com/speaking.md): what I speak about, how to book, paste-ready bio`,
     `- [Talk catalogue](https://faziz-dev.com/talks.md): bookable talks`,
     `- [Speaking schedule](https://faziz-dev.com/events.md): upcoming & past`,
     `- [Invite to speak](https://faziz-dev.com/invite.md): booking form, availability, practical details`,

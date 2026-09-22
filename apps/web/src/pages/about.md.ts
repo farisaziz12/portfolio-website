@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# About Faris Aziz`,
     ``,
-    `> Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and is available for keynotes, talks, workshops, technical consulting, and 1:1 mentorship.`,
+    `> Engineer first. Speaker because of it. Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and is available for keynotes, talks, workshops, technical consulting, and 1:1 mentorship.`,
     ``,
     `## Short bio (~50 words)`,
     ``,

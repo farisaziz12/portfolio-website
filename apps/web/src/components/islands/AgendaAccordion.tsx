@@ -120,7 +120,7 @@ export default function AgendaAccordion({ items }: AgendaAccordionProps) {
                 className="flex-shrink-0 w-[4.5rem] min-h-[5rem] flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg, rgb(var(--signal)), rgb(var(--signal-deep)))' }}
               >
-                <span className="text-[1.75rem] font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+                <span className="text-[1.75rem] font-bold text-ink-on-signal" style={{ fontFamily: 'var(--font-display)' }}>
                   {String(index + 1).padStart(2, '0')}
                 </span>
               </div>

@@ -61,7 +61,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
           <button
             type="submit"
             disabled={!consent || status === 'loading'}
-            className="px-4 py-2 text-sm rounded-lg font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            className="px-4 py-2 text-sm rounded-lg font-medium text-ink-on-accent bg-accent-deep hover:bg-accent-press disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
           >
             {status === 'loading' ? '...' : 'Follow Along'}
           </button>
@@ -120,7 +120,7 @@ export default function GeneralSubscribe({ compact = false }: Props) {
         <button
           type="submit"
           disabled={!consent || status === 'loading'}
-          className="w-full px-6 py-3 rounded-lg font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-accent-deep hover:bg-accent-press disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {status === 'loading' ? 'Subscribing...' : 'Follow Along'}
         </button>

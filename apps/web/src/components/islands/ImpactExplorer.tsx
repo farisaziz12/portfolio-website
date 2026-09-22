@@ -271,7 +271,7 @@ export default function ImpactExplorer({
               onKeyDown={(e) => handleTabKeyDown(e, index)}
               className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent ${
                 domain === d.id
-                  ? 'bg-accent text-white shadow-lg'
+                  ? 'bg-accent-deep text-ink-on-accent shadow-lg'
                   : 'bg-surface-overlay text-ink-muted hover:bg-surface-raised hover:text-ink border border-edge'
               }`}
             >

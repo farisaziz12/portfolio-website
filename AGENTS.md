@@ -10,7 +10,7 @@ This file is the always-on map. Do **not** copy long guides into chat — open t
 |---|---|---|
 | Astro 5 + React islands | `apps/web` | Vercel. Homepage is ISR (`prerender = false`); everything else is prerendered. |
 | Sanity v3 | `apps/studio` | Content. GROQ in `apps/web/src/lib/sanity/queries.ts`. |
-| Design System v2 | `apps/web/src/styles/global.css` | Tokens + `ds-*` classes. Guardrails: `apps/web/scripts/ui-guardrails.mjs`. |
+| Design System v2.1 | `apps/web/src/styles/global.css` | Tokens + `ds-*` classes. Guardrails: `apps/web/scripts/ui-guardrails.mjs`. Taste: `docs/taste.md`. |
 | Resend + React Email | `apps/web/src/emails`, `apps/web/src/pages/api` | No `mailto:` on the site. Spec: `apps/web/CLAUDE.md`. |
 | PostHog (EU) | `apps/web/src/components/posthog.astro`, `apps/web/src/lib/analytics.ts` | Inventory: `docs/measurement.md`. |
 

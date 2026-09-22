@@ -1,0 +1,25 @@
+---
+interface Props {
+  quote: string;
+  author: string;
+  handle?: string;
+  role?: string;
+  href?: string;
+}
+
+const { quote, author, handle, role, href } = Astro.props;
+const meta = [handle, role].filter(Boolean).join(' · ');
+---
+
+<figure class="ds-quote">
+  <blockquote>{quote}</blockquote>
+  <figcaption>
+    <b>{author}</b>
+    {meta && <span>{meta}</span>}
+    {href && (
+      <a href={href} class="ds-link" target="_blank" rel="noopener noreferrer">
+        View source
+      </a>
+    )}
+  </figcaption>
+</figure>

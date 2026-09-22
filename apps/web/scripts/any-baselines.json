@@ -17,6 +17,5 @@
   "src/pages/projects/index.astro": 1,
   "src/pages/services/[slug].astro": 2,
   "src/pages/talks/[slug].astro": 1,
-  "src/pages/workshops/[slug].astro": 1,
-  "src/pages/workshops/attend/[token].astro": 1
+  "src/pages/workshops/[slug].astro": 1
 }
