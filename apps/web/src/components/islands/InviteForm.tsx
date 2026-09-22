@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { identify, track, trackFormStarted } from '../../lib/analytics';
 
 type Format = 'keynote' | 'talk' | 'workshop' | 'panel';
-type Size = 's' | 'm' | 'l' | 'xl';
 
 interface Fields {
   name: string;
@@ -10,8 +9,8 @@ interface Fields {
   event: string;
   date: string;
   location: string;
-  format: Format;
-  size: Size;
+  format: Format | '';
+  size: string;
   message: string;
 }
 
@@ -21,8 +20,8 @@ const initial: Fields = {
   event: '',
   date: '',
   location: '',
-  format: 'talk',
-  size: 'm',
+  format: '',
+  size: '',
   message: '',
 };
 
@@ -34,9 +33,6 @@ export default function InviteForm() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  // Date/location/format/size live behind "Add details" — three fields is a
-  // first touch, eight is a chore. Deep links that prefill a format auto-open it.
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Prefill from query params so "Book this talk" / "Book a workshop" CTAs land
   // in a contextual form: /invite?format=workshop&talk=<title>&workshop=<title>
@@ -45,7 +41,6 @@ export default function InviteForm() {
     const format = params.get('format');
     const talk = params.get('talk');
     const workshop = params.get('workshop');
-    if (FORMATS.includes(format as Format)) setDetailsOpen(true);
     setFields((f) => ({
       ...f,
       format: FORMATS.includes(format as Format) ? (format as Format) : f.format,
@@ -175,88 +170,51 @@ export default function InviteForm() {
           />
         </Field>
 
-        <button
-          type="button"
-          className="invite-form__details-toggle"
-          aria-expanded={detailsOpen}
-          onClick={() => setDetailsOpen((o) => !o)}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            aria-hidden
-            style={{ transform: detailsOpen ? 'rotate(90deg)' : undefined }}
-          >
-            <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {detailsOpen ? 'Hide details' : 'Add details (optional)'}
-          {!detailsOpen && <span className="invite-form__details-hint">date · location · format · audience size</span>}
-        </button>
-
-        {detailsOpen && (
-        <>
-        <Field label="Date" htmlFor="date">
+        <Field label="When" htmlFor="date">
           <input
             id="date"
             className="invite-form__input"
             value={fields.date}
             onChange={(e) => set('date', e.target.value)}
-            placeholder="e.g. 12 Jun 2026"
+            placeholder="12 Jun 2026, or a range"
           />
         </Field>
 
-        <Field label="Location" htmlFor="location">
+        <Field label="Where" htmlFor="location">
           <input
             id="location"
             className="invite-form__input"
             value={fields.location}
             onChange={(e) => set('location', e.target.value)}
-            placeholder="Amsterdam / Remote"
+            placeholder="Amsterdam, or remote"
           />
         </Field>
 
-        <Field label="Format" full>
-          <div className="invite-form__seg">
+        <Field label="The slot" htmlFor="format">
+          <select
+            id="format"
+            className={`invite-form__input${fields.format ? '' : ' invite-form__input--empty'}`}
+            value={fields.format}
+            onChange={(e) => set('format', e.target.value as Format | '')}
+          >
+            <option value="">Talk, keynote, workshop, panel…</option>
             {FORMATS.map((opt) => (
-              <label key={opt}>
-                <input
-                  type="radio"
-                  name="format"
-                  value={opt}
-                  checked={fields.format === opt}
-                  onChange={() => set('format', opt)}
-                />
-                <span>{opt.charAt(0).toUpperCase() + opt.slice(1)}</span>
-              </label>
+              <option key={opt} value={opt}>
+                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+              </option>
             ))}
-          </div>
+          </select>
         </Field>
 
-        <Field label="Audience size" full>
-          <div className="invite-form__seg">
-            {([
-              { v: 's', l: '< 100' },
-              { v: 'm', l: '100–500' },
-              { v: 'l', l: '500–2k' },
-              { v: 'xl', l: '2k+' },
-            ] as { v: Size; l: string }[]).map((opt) => (
-              <label key={opt.v}>
-                <input
-                  type="radio"
-                  name="size"
-                  value={opt.v}
-                  checked={fields.size === opt.v}
-                  onChange={() => set('size', opt.v)}
-                />
-                <span>{opt.l}</span>
-              </label>
-            ))}
-          </div>
+        <Field label="How many people?" htmlFor="size">
+          <input
+            id="size"
+            className="invite-form__input"
+            value={fields.size}
+            onChange={(e) => set('size', e.target.value)}
+            placeholder="about 200, or a meetup of 40"
+          />
         </Field>
-        </>
-        )}
 
         <Field label="What's the event about?" htmlFor="msg" full>
           <textarea
@@ -264,7 +222,7 @@ export default function InviteForm() {
             className="invite-form__input invite-form__textarea"
             value={fields.message}
             onChange={(e) => set('message', e.target.value)}
-            placeholder="Audience, theme, what you're hoping I'll cover…"
+            placeholder="Theme, the room, what you'd like me to cover…"
             rows={4}
           />
         </Field>

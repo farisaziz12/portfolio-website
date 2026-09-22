@@ -1,0 +1,16 @@
+---
+interface Props {
+  question: string;
+  class?: string;
+  id?: string;
+}
+
+const { question, class: className = '', id } = Astro.props;
+---
+
+<section class:list={['ds-faq', className]} id={id}>
+  <h2 class="ds-faq__q">{question}</h2>
+  <div class="ds-faq__a">
+    <slot />
+  </div>
+</section>

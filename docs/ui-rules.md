@@ -1,308 +1,205 @@
-# UI Design System Rules
+# UI Design System Rules (DS v2.1)
 
-This document defines the design system rules for the portfolio website. All components and pages must follow these rules to ensure consistency, accessibility, and good UX.
+Source of truth for tokens and primitives. Taste and page grammar live in [`taste.md`](./taste.md). All components and pages follow these rules.
+
+Dark-first. Same brand as v2 (electric blue, teal signal, Space Grotesk / Hanken Grotesk / IBM Plex Mono). v2.1 tunes contrast, reading rhythm, and quieter chrome.
 
 ## Core Principles
 
-1. **Reduce visual noise** - Prefer neutrals, remove unnecessary decoration
-2. **Clear hierarchy** - One thing draws attention at a time
-3. **Honest interactivity** - If it looks clickable, it must be clickable
-4. **Accessibility first** - WCAG AA contrast in both light and dark modes
+1. **Reduce visual noise** — Neutrals first; one object per beat
+2. **Clear hierarchy** — One thing draws attention at a time
+3. **Honest interactivity** — If it looks clickable, it is clickable
+4. **Accessibility first** — WCAG AA in both themes
+5. **Sentence over label** — Headings are claims; kickers are status only
 
 ---
 
 ## 1. Color Tokens
 
+Canonical values live in `apps/web/src/styles/global.css`. Use `rgb(var(--token))` or the Tailwind bridges (`bg-surface`, `text-ink`, `text-ink-on-accent`). Never raw Tailwind palettes (`slate-800`, `violet-500`).
+
 ### Semantic Tokens
 
-| Token | Purpose | Light Mode | Dark Mode |
-|-------|---------|------------|-----------|
-| `--surface` | Page background | White | Deep blue-black |
-| `--surface-raised` | Cards, elevated elements | Off-white | Slate-900 |
-| `--surface-overlay` | Hover states, overlays | Light gray | Slate-800 |
-| `--ink` | Primary text | Slate-900 | Slate-50 |
-| `--ink-muted` | Secondary text | Slate-500 | Slate-300 |
-| `--ink-faint` | Metadata, captions | Slate-400 | Slate-400 |
-| `--accent` | Primary CTAs, interactive focus | Blue-600 | Blue-400 |
-| `--accent-hover` | Accent hover state | Blue-700 | Blue-300 |
-| `--accent-muted` | Subtle accent backgrounds (buttons, badges) | Blue-50 | Blue-950 |
-| `--edge` | Subtle borders | Slate-200 | Slate-700 |
-| `--edge-strong` | Emphasis borders | Slate-300 | Slate-600 |
+| Token | Purpose | Dark | Light | Target ratio |
+|-------|---------|------|-------|--------------|
+| `--bg` | Page | `#0A0C10` | `#FBFBFA` | — |
+| `--surface-1` | Raised chrome (header, terminal) | `#0F131A` | `#FFFFFF` | — |
+| `--surface-2` | Cards | `#151A23` | `#F4F5F7` | — |
+| `--surface-3` | Hover / overlay | `#1C232E` | `#E8EBF0` | — |
+| `--ink` | Primary text | `#F3F5F8` | `#11151C` | 12:1+ |
+| `--ink-muted` | Secondary / body lead | `#A9B4C2` | `#424E5E` | 7:1+ |
+| `--ink-faint` | Captions, crumbs | `#8B97A6` | `#5C6877` | ≥4.5:1 |
+| `--ink-on-accent` | Text on accent fills | `#F3F5F8` | `#FFFFFF` | ≥4.5:1 |
+| `--ink-on-signal` | Text on signal fills | `#04110E` | `#04110E` | ≥4.5:1 |
+| `--edge` / `--edge-strong` | Borders | `#232B36` / `#34404F` | `#E5E8EC` / `#CDD3DB` | — |
+| `--accent` | Links, focus | `#3D7BFF` | `#2862E0` | — |
+| `--accent-bright` | Link text on dark | `#6AA1FF` | `#2862E0` | ≥4.5:1 on bg |
+| `--accent-deep` | Filled button | `#2862E0` | `#1A4BC0` | — |
+| `--accent-press` | Button hover | `#1A4BC0` | `#163E9A` | — |
+| `--signal` / `--signal-deep` | Live / available | `#1FCFA6` / `#0E9C7E` | `#0E9C7E` / `#0B7E66` | — |
+| `--danger` | Errors | `#FF6B6B` | `#DC2626` | — |
+| `--warn` | Community / limited (large/bold only) | `#F2C94C` | `#8F6E0F` | — |
 
-### Accent Usage Rules
+Aliases: `--surface` → surface-1, `--surface-raised` → surface-2, `--surface-overlay` → surface-3, `--accent-hover` → accent-press.
 
-**DO:**
-- Use accent for primary CTAs (filled buttons)
-- Use accent for link underlines and hover states
-- Use accent-muted for subtle button backgrounds
-- Use accent sparingly for interactive focus indicators
+### Accent Usage
 
-**DON'T:**
-- Use accent as a full section background
-- Use accent for large decorative areas
-- Use multiple accent colors (stick to one)
-- Use colored text for emphasis in body copy
+**DO:** primary CTAs, link underlines, focus rings. One `.accent-word` or `.mark` per page hero, max.
 
-### Background Rules
+**DON'T:** accent as a section background; colored emphasis in body copy; blue on every heading.
 
-- **Section backgrounds**: Use neutrals only (`surface`, `surface-raised`)
-- **No gradient section backgrounds** for primary content areas
-- Gradients allowed only for:
-  - Hero image overlays (for readability)
-  - Decorative backgrounds with very low opacity (< 10%)
-  - Loading/skeleton states
+### Backgrounds
+
+- Section backgrounds: neutrals only. Hairline `--edge` separates sections — do not add alternating `--surface-1` bands on Home / Speaking / About.
+- Gradients only for image scrims, decorative opacity < 10%, or skeletons.
 
 ---
 
 ## 2. Typography
 
-### Type Scale
+| Role | Family | Size / measure |
+|------|--------|----------------|
+| Sentence display (`.heading-sentence`) | Space Grotesk 700 | `clamp(2.25rem, 5vw, 3.4rem)`, LH 1.08, max 22–28ch |
+| Page title (`.heading-1`) | Space Grotesk | 2–2.5rem |
+| Section claim (`.heading-2`, `.home-h2`) | Space Grotesk 600 | `clamp(1.5rem, 2.4vw, 2rem)`, LH 1.2 |
+| Card / FAQ evidence | Space Grotesk 600 | 1.15–1.35rem |
+| Prose / FAQ / lead | Hanken Grotesk | 1.0625rem, LH 1.7, **62–68ch** |
+| Kicker / tags / terminal | IBM Plex Mono | 0.72–0.8rem |
 
-| Class | Use Case | Size |
-|-------|----------|------|
-| `heading-display` | Hero headlines | 3.5-4.5rem |
-| `heading-1` | Page titles | 2-2.5rem |
-| `heading-2` | Section titles | 1.75-2rem |
-| `heading-3` | Subsections, card titles | 1.25-1.5rem |
-| `text-lead` | Intro paragraphs | 1.25rem |
-| `text-secondary` | Body text | 1rem |
-| `text-tertiary` | Captions, metadata | 0.875rem |
+**Kickers are status only** (Next up, Available, Booking). Color `--ink-muted`, not faint. Sentence headings replace “Topics / Global reach / From the community.”
 
-### Typography Rules
-
-- **Headlines**: Font-display (Space Grotesk), bold weight
-- **Body**: Font-sans (Inter), regular weight
-- **Code**: Font-mono (JetBrains Mono)
-- **No colored text** for emphasis in body copy
-- Use underlines, bold, or visual hierarchy instead
+No serif. No Inter / JetBrains in the live UI (those names remain fallbacks only).
 
 ---
 
 ## 3. Spacing & Layout
 
-### Content Widths
+| Class | Width | Use |
+|-------|-------|-----|
+| `container` | 1140px | Main layout |
+| `container-wide` / `.wide` | 920px | Wide objects |
+| `container-narrow` | 680px | Article / FAQ / bio |
 
-| Class | Width | Use Case |
-|-------|-------|----------|
-| `container` | 1120px | Main layout |
-| `container-wide` | 920px | Wide content |
-| `container-narrow` | 680px | Article/text content |
+Home / Speaking / About section padding: `clamp(3.25rem, 7vw, 5.5rem)`.
 
-### Spacing Scale
-
-- Use Tailwind spacing scale
-- Related items: 1-2 units apart (icon + text, tag + label)
-- Groups: 4-6 units apart
-- Sections: 16-24 units (py-16, py-24)
-
-### Grid Rules
-
-- Use consistent column counts per breakpoint
-- Cards should fill space evenly (no floating/orphan cards)
-- All metadata blocks align to main content column
+Related items: 1–2 spacing units. Groups: 4–6. Do not invent a second column measure on a prose page.
 
 ---
 
 ## 4. Interactive Components
 
-### Buttons
+### Buttons — three variants
 
-Three variants only:
+| Class | Style | Use |
+|-------|-------|-----|
+| `ds-btn ds-btn-primary` | `--accent-deep` fill, `--ink-on-accent` text | Primary CTAs |
+| `ds-btn ds-btn-secondary` | Neutral outline | Secondary |
+| `ds-btn-ghost` / text | Transparent | Tertiary / nav |
 
-| Variant | Style | Use Case |
-|---------|-------|----------|
-| `btn-primary` | Accent filled, white text | Primary actions, CTAs |
-| `btn-secondary` | Neutral outline | Secondary actions |
-| `btn-ghost` | Transparent, text only | Tertiary actions, navigation |
-
-**Button Rules:**
-- CTAs must have strong contrast against background
-- Never place primary buttons on accent/gradient backgrounds without contrast adjustment
-- Hover states: subtle background shift or border change (no random colors)
+Min-height 44px. Visible `:focus-visible` ring (`--accent` + `--bg` offset). Never `text-white` — use `text-ink-on-accent`.
 
 ### Links
 
 | Type | Style |
 |------|-------|
-| Inline link | Accent underline, neutral text preferred |
-| Arrow link | Text with animated arrow, used for "View all" actions |
+| Inline | Accent, underline **at rest** (not only hover) |
+| `ds-link` | Arrow + underline; hover draws emphasis, not the only cue |
 
 ### Cards
 
-**Interactive Cards:**
-- Has hover/focus states (elevation, border change)
-- Has cursor pointer
-- Full-card is clickable
-- Clear destination or action
+**Interactive:** hover/focus is border + background. No `translateY` lift. Cursor pointer. Whole card is the hit target.
 
-**Informational Cards:**
-- No hover elevation
-- No pointer cursor
-- No click handlers
-- Static content display only
+**Informational:** no hover elevation, no pointer, no click. Never mix.
 
-**Every card must be one or the other. Never mix.**
+### New primitives (v2.1)
 
-### Tags/Badges
+| Class | Role |
+|-------|------|
+| `ds-claim` | First-person sentence link (replaces audience-router cards) |
+| `ds-proof` | Live numbers inside a prose line |
+| `ds-quote` | Unedited author + quote + source. No platform-color carnival on Home / Speaking |
+| `ds-faq` | Question `h2` + prose answer + optional evidence list |
+| `ds-bio` | Paste-ready short bio + copy button (`aria-label="Copy short bio"`, live region) |
 
-**Default Style:**
-- Simple text labels OR subtle outlined pills
-- Neutral borders (`border-edge`)
-- Neutral text (`text-ink-muted`)
-- No colored backgrounds by default
+Platform chrome on social cards is allowed on `/appreciation` only.
 
-**Interactive Tags:**
-- Add hover border change
-- Add cursor pointer
-- Must have a click action
+### Tags / chips
+
+Neutral outline + `text-ink-muted` by default. Selected: `bg-accent` + `text-ink-on-accent`. Interactive tags must do something.
 
 ---
 
 ## 5. Images & Media
 
-### Interaction Model: Static with Optional Lightbox
+Default: static. No hover zoom, no pointer, no click.
 
-Images follow one consistent model:
+Lightbox: icon overlay + zoom cursor, consistent across similar images.
 
-**Default (Static):**
-- No hover zoom effects
-- No cursor pointer
-- No click handlers
-- Standard appearance
-
-**With Lightbox:**
-- Clear visual indicator (icon overlay, zoom cursor)
-- Click opens lightbox/modal
-- Must be consistent across similar image types
-
-**Rules:**
-- Hero/mosaic images: Static unless they open to gallery
-- Project screenshots: Can have lightbox
-- Never add carousel-like animations unless it's an actual carousel
-- Never add hover effects that imply interactivity if there's no action
-
-### Carousels/Sliders
-
-If something visually implies a carousel:
-- Make it a real carousel (keyboard accessible, controls, dots)
-- OR redesign to look like static content or links
+Hero mosaic is static. Do not imply a carousel unless it is one (keyboard, controls).
 
 ---
 
 ## 6. Icons
 
-### Usage Rules
+16–20px, 1–1.5 units from the label. Neutral unless the icon *is* the status (signal dot).
 
-- Keep icons small (4-5 units / 16-20px)
-- Align icons close to their labels (1-1.5 units gap)
-- Remove icons where they don't add usability
-- Use neutral colors for decorative icons
-
-### No Emojis
-
-**Emojis are banned from the UI:**
-- Navigation labels
-- Card headers
-- Tags/badges
-- Section titles
-- CTAs
-
-Use simple SVG icons if visual distinction is needed.
+**No emojis** in nav, card headers, tags, section titles, or CTAs. SVG only.
 
 ---
 
 ## 7. Navigation
 
-### Labels
+Labels: 1–2 words. Talks, Workshops, Events, Blog, Projects.
 
-- Keep labels concise (1-2 words)
-- Avoid verbose/descriptive labels
-- Use standard terminology:
-  - "Talks" (not "Speaking Engagements")
-  - "Workshops"
-  - "Events"
-  - "Blog"
-  - "Projects"
-
-### Dropdown Structure
-
-- Parent label is also a link
-- Dropdown items have label only (no descriptions in most cases)
-- No emoji icons in dropdowns
+Parent mega-menu label is a link. Dropdown items are labels, no emoji.
 
 ---
 
-## 8. Animations & Transitions
+## 8. Motion
 
-### Allowed Animations
+Allowed: fade, small translate, subtle scale, hover color/border.
 
-- Fade in (opacity)
-- Slide in (small translateY/X)
-- Scale in (subtle, 0.95-1)
-- Hover transitions (transform, opacity, border)
+Duration: 150–300ms interactions, up to 600ms reveals. `prefers-reduced-motion` respected. No new infinite motion except status pulse dots.
 
-### Rules
-
-- Keep motion subtle and consistent
-- No width-changing animations that cause layout shifts
-- Respect `prefers-reduced-motion`
-- Animation duration: 150-300ms for interactions, up to 600ms for reveals
-
-### Forbidden
-
-- Carousel-like transitions without carousel functionality
-- Bounce/wiggle effects on important UI elements
-- Infinite animations (except subtle indicators like pulse dots)
+Forbidden: layout-shifting width animations; bounce on primary UI; carousel motion without a carousel.
 
 ---
 
-## 9. Light Mode Contrast Checklist
+## 9. Contrast checklist (both themes)
 
-All text must pass WCAG AA (4.5:1 for normal text, 3:1 for large text):
+- [ ] `--ink` on `--bg` / `--surface-1` / `--surface-2`
+- [ ] `--ink-muted` on `--bg` (body lead, kickers)
+- [ ] `--ink-faint` on `--bg` (captions only; ≥4.5:1)
+- [ ] `--ink-on-accent` on `--accent-deep` (buttons, skip link, selected chips)
+- [ ] `--ink-on-signal` on signal fills (agenda numbers)
+- [ ] Links ≥4.5:1; underline at rest for inline
+- [ ] Focus ring ≥3:1 against adjacent (WCAG 2.2)
+- [ ] `--warn` only at large/bold sizes on dark
 
-- [ ] Body text on `surface` background
-- [ ] Muted text on `surface` background
-- [ ] Text on `surface-raised` background
-- [ ] Text on `surface-overlay` background
-- [ ] Button text on accent background
-- [ ] Link text visibility
-- [ ] Placeholder/metadata text
-
-### Common Issues to Avoid
-
-- Hardcoded `text-white` that doesn't adapt to light mode
-- Light text on light gradient backgrounds
-- Low-opacity text on varying backgrounds
+Do not use hardcoded `text-white`. Do not use `--ink-faint` for anything smaller than 14px if a check fails.
 
 ---
 
-## 10. Component Checklist
+## 10. Component checklist
 
-Before shipping any component:
+1. No emojis
+2. Semantic tokens only
+3. Contrast passes in light **and** dark
+4. Visible `:focus-visible`
+5. Hover matches interactive vs informational
+6. If it looks clickable, it is
+7. `prefers-reduced-motion`
+8. Correct button variant
+9. Tags neutral unless selected
+10. One `h1` per page; FAQ questions are `h2`
 
-1. [ ] No emojis
-2. [ ] Uses semantic color tokens (not hardcoded colors)
-3. [ ] Contrast passes in light mode
-4. [ ] Contrast passes in dark mode
-5. [ ] Interactive elements have visible focus states
-6. [ ] Hover states are consistent with component type
-7. [ ] If it looks clickable, it IS clickable
-8. [ ] Respects reduced motion preference
-9. [ ] Uses appropriate button variant
-10. [ ] Tags use neutral styling
+## Page audit
 
----
-
-## Audit Checklist for Pages
-
-When reviewing a page:
-
-1. **Visual noise**: Is there too much competing for attention?
-2. **Hierarchy**: Is the most important thing obvious?
-3. **Interactivity**: Does every interactive-looking thing work?
-4. **Contrast**: Is everything readable in light mode?
-5. **Grid alignment**: Do elements align consistently?
-6. **Spacing**: Are related items grouped? Are sections distinct?
-7. **CTAs**: Are primary actions prominent and accessible?
-8. **Emojis**: Are there any emojis? (Remove them)
-9. **Accent usage**: Is accent used sparingly and consistently?
+1. Visual noise — too much competing?
+2. Hierarchy — is the sentence obvious?
+3. Interactivity honest?
+4. Contrast in both themes?
+5. Alignment and measure (62–68ch for prose)?
+6. Kickers only for status?
+7. Primary action reachable and 44px?
+8. Accent used once, not everywhere?

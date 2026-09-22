@@ -102,7 +102,7 @@ export function GateView({
             <button
               type="submit"
               disabled={!consent || !name.trim() || !email || status === 'loading'}
-              className="w-full px-6 py-3 rounded-lg font-medium text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {status === 'loading' ? 'Loading...' : 'Access Workshop'}
             </button>

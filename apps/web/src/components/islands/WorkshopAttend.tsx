@@ -155,7 +155,7 @@ export default function WorkshopAttend({
               href={overallFeedbackUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
             >
               Share Feedback
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

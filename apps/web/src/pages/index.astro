@@ -147,29 +147,18 @@ const formatEventDate = (dateStr: string) => {
           <HeroTerminal client:idle />
         </div>
 
-        <h1 class="home-hero__title">
-          <span class="ln">Faris</span>
-          <span class="ln accent-word">Aziz</span>
+        <h1 class="home-hero__title heading-sentence">
+          I'm Faris Aziz,
         </h1>
 
         <p class="home-hero__lead">
-          Staff Software Engineer, Conference Speaker, award-winning community builder, and cofounder of ZurichJS. I help teams ship resilient frontend systems and payment integrations, then I go talk about how on stage.
+          and I ship resilient frontend and payment systems, then I go talk about how on stage. I also build ZurichJS.
         </p>
 
-        <div class="home-hero__stats">
-          <div class="home-stat-inline">
-            <b class="cu" data-to={stats.totalEvents}>0</b>
-            <span>Events</span>
-          </div>
-          <div class="home-stat-inline">
-            <b class="cu" data-to={stats.countries}>0</b>
-            <span>Countries</span>
-          </div>
-          <div class="home-stat-inline">
-            <b class="cu" data-to={stats.cities}>0</b>
-            <span>Cities</span>
-          </div>
-        </div>
+        <p class="ds-proof">
+          <b>{stats.totalEvents}</b> events across <b>{stats.countries}</b> countries
+          and <b>{stats.cities}</b> cities, from a home base in Geneva.
+        </p>
 
         <div class="home-hero__socials">
           {socials.map((s) => (
@@ -322,10 +311,6 @@ const formatEventDate = (dateStr: string) => {
   <!-- AUDIENCE ROUTER -->
   <section class="home-section home-section--router">
     <div class="container">
-      <div class="home-section__head">
-        <h2 class="home-section__title-sm">What brings you here?</h2>
-        <span class="home-section__hint mono">Pick a path →</span>
-      </div>
       <AudienceRouter />
     </div>
   </section>
@@ -341,9 +326,8 @@ const formatEventDate = (dateStr: string) => {
     <section class="home-section">
       <div class="container">
         <div class="home-section__heading">
-          <Kicker class="ds-reveal">Global reach</Kicker>
-          <h2 class="home-h2 ds-reveal">Talks across <span class="mark">{stats.countries} countries</span></h2>
-          <p class="home-lead ds-reveal">From San Francisco to Singapore, all routed from a home base in Geneva.</p>
+          <h2 class="home-h2 ds-reveal">I've spoken from San Francisco to Singapore.</h2>
+          <p class="home-lead ds-reveal">All routed from a home base in Geneva.</p>
         </div>
         <ReachMap cities={reachCities} />
       </div>
@@ -355,8 +339,7 @@ const formatEventDate = (dateStr: string) => {
     <section class="home-section">
       <div class="container">
         <div class="home-section__heading">
-          <Kicker class="ds-reveal">From the community</Kicker>
-          <h2 class="home-h2 ds-reveal">What people <span class="mark">say</span></h2>
+          <h2 class="home-h2 ds-reveal">Here's what people say.</h2>
           <p class="home-lead ds-reveal">Real reactions from conferences, meetups, and colleagues, pulled straight from the social feeds.</p>
         </div>
         <SocialWallIsland
@@ -389,74 +372,6 @@ const formatEventDate = (dateStr: string) => {
 
   <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — a second copy here was redundant. -->
 
-  <script>
-    // Count-up stats re-run on initial load AND on every Astro ViewTransitions
-    // swap. (.ds-reveal is armed by the global initializer in BaseLayout.)
-    function initHome() {
-      // Reset prior state on swap-back so animations actually re-play
-      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
-        el.textContent = '0';
-      });
-
-      function countUp(el: HTMLElement) {
-        const to = parseFloat(el.dataset.to || '0');
-        const dec = parseInt(el.dataset.dec || '0', 10);
-        const dur = 1400;
-        const t0 = performance.now();
-        function tick(now: number) {
-          let p = Math.min(1, (now - t0) / dur);
-          p = 1 - Math.pow(1 - p, 3);
-          el.textContent = (to * p).toFixed(dec);
-          if (p < 1) requestAnimationFrame(tick);
-          else el.textContent = to.toFixed(dec);
-        }
-        requestAnimationFrame(tick);
-      }
-
-      const cuObs = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            countUp(e.target as HTMLElement);
-            cuObs.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.4 });
-      document.querySelectorAll<HTMLElement>('.cu').forEach((el) => cuObs.observe(el));
-
-      // Immediate fallback for stats that are above-the-fold and may have
-      // been considered "already visible" before the observer attached.
-      // Trigger them ~50ms after init so the animation still reads.
-      window.setTimeout(() => {
-        document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight && rect.bottom > 0 && el.textContent === '0') {
-            cuObs.unobserve(el);
-            countUp(el);
-          }
-        });
-      }, 80);
-
-      const cuFailsafe = window.setTimeout(() => {
-        document.querySelectorAll<HTMLElement>('.cu').forEach((el) => {
-          if (el.textContent === '0') {
-            el.textContent = parseFloat(el.dataset.to || '0').toFixed(parseInt(el.dataset.dec || '0', 10));
-          }
-        });
-      }, 3000);
-
-      // Clean up timers if the page is swapped away again.
-      document.addEventListener('astro:before-swap', () => {
-        window.clearTimeout(cuFailsafe);
-      }, { once: true });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initHome, { once: true });
-    } else {
-      initHome();
-    }
-    document.addEventListener('astro:after-swap', initHome);
-  </script>
 </BaseLayout>
 
 <style>
@@ -476,51 +391,14 @@ const formatEventDate = (dateStr: string) => {
     margin-bottom: clamp(2.25rem, 8vw, 7rem);
   }
   .home-hero__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    line-height: 0.96;
-    letter-spacing: -0.03em;
-    font-size: clamp(3.2rem, 7vw, 5.2rem);
-    color: rgb(var(--ink));
-    text-wrap: balance;
+    margin: 0;
   }
-  .home-hero__title .ln { display: block; }
   .home-hero__lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
+    font-size: 1.0625rem;
+    line-height: 1.7;
     color: rgb(var(--ink-muted));
-    max-width: 46ch;
-    margin-top: 1.4rem;
-  }
-  .home-hero__stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem 1.5rem;
-    margin-top: 1.8rem;
-  }
-  /* Keep all three stats on one line on small screens instead of orphaning the third. */
-  @media (max-width: 480px) {
-    .home-hero__stats { gap: 0.75rem 1rem; justify-content: space-between; }
-    .home-stat-inline b { font-size: 1.55rem; }
-  }
-  .home-stat-inline {
-    display: flex;
-    align-items: baseline;
-    gap: 0.45rem;
-  }
-  .home-stat-inline b {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    font-size: 1.9rem;
-    color: rgb(var(--ink));
-    letter-spacing: -0.02em;
-  }
-  .home-stat-inline span {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
+    max-width: 62ch;
+    margin-top: 1.1rem;
   }
   .home-hero__socials {
     display: flex;
@@ -593,15 +471,10 @@ const formatEventDate = (dateStr: string) => {
   }
 
   /* Section primitives */
-  .home-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
-  .home-section-sm { padding-block: clamp(2.5rem, 5vw, 4rem); }
-  .home-section--alt {
-    background: rgb(var(--surface-1));
-    border-top: 1px solid rgb(var(--edge));
-    border-bottom: 1px solid rgb(var(--edge));
-  }
+  .home-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
+  .home-section-sm { padding-block: clamp(2.25rem, 5vw, 3.5rem); }
   .home-section--router {
-    padding-top: clamp(2.5rem, 5vw, 4rem);
+    padding-top: clamp(2.25rem, 5vw, 3.5rem);
   }
   .home-section__head {
     display: flex;
@@ -633,19 +506,18 @@ const formatEventDate = (dateStr: string) => {
   .home-h2 {
     font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
     font-weight: 600;
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    line-height: 1.1;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    line-height: 1.2;
     letter-spacing: -0.015em;
     color: rgb(var(--ink));
     text-wrap: balance;
-    margin-top: 1rem;
   }
   .home-lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
+    font-size: 1.0625rem;
+    line-height: 1.7;
     color: rgb(var(--ink-muted));
-    max-width: 52ch;
-    margin: 1rem auto 0;
+    max-width: 68ch;
+    margin: 0.85rem auto 0;
     text-wrap: pretty;
   }
 
