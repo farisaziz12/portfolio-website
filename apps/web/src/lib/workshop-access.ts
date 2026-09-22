@@ -13,16 +13,31 @@ export type AccessStatus = 'open' | 'upcoming' | 'closed' | 'force-closed'
 export type AccessPhase = 'upcoming' | 'live' | 'readonly' | 'closed' | 'force-closed'
 
 export function getCloseDate(instance: WorkshopInstance): Date {
+  const days =
+    typeof instance.accessDurationDays === 'number' && Number.isFinite(instance.accessDurationDays)
+      ? instance.accessDurationDays
+      : 7
   const openDate = new Date(instance.workshopDate)
+  if (Number.isNaN(openDate.getTime())) {
+    // Fallback: treat "now" as open date so callers never get Invalid Date
+    const fallback = new Date()
+    fallback.setHours(0, 0, 0, 0)
+    fallback.setDate(fallback.getDate() + days)
+    return fallback
+  }
   openDate.setHours(0, 0, 0, 0)
   const closeDate = new Date(openDate)
-  closeDate.setDate(closeDate.getDate() + instance.accessDurationDays)
+  closeDate.setDate(closeDate.getDate() + days)
   return closeDate
 }
 
 /** End of the calendar day of `workshopDate` (local/server timezone). */
 export function getEndOfWorkshopDay(workshopDate: string): Date {
   const d = new Date(workshopDate)
+  if (Number.isNaN(d.getTime())) {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+  }
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
 }
 

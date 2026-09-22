@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { env } from './email'
+import { env } from './env'
 
 export const WORKSHOP_SESSION_COOKIE = 'workshop_session'
 export const ADMIN_SESSION_COOKIE = 'admin_session'

@@ -1,4 +1,4 @@
-import { env } from './email'
+import { env } from './env'
 
 export interface WorkshopRosterRow {
   email: string

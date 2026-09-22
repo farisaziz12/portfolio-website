@@ -1,5 +1,5 @@
 import { createClient } from '@sanity/client'
-import { env } from '../email'
+import { env } from '../env'
 
 /** Non-CDN client for authenticated mutations (e.g. End live). */
 export function getSanityWriteClient() {
