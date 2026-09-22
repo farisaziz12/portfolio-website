@@ -11,6 +11,7 @@ export type LiveAdminInstance = {
   accessDurationDays: number
   forceClose: boolean
   liveEndedAt?: string | null
+  liveKeepOpen?: boolean | null
   sections?: { _key: string; title: string; emoji?: string }[]
 }
 
@@ -20,6 +21,7 @@ export type LiveSnapshot = {
   event: string
   token: string
   liveEndedAt: string | null
+  liveKeepOpen: boolean
   closeDateISO: string
   onlineCount: number
   totalRecent: number
@@ -43,6 +45,7 @@ export function accessInputFromInstance(instance: LiveAdminInstance): WorkshopIn
     accessDurationDays: instance.accessDurationDays ?? 7,
     forceClose: Boolean(instance.forceClose),
     liveEndedAt: instance.liveEndedAt,
+    liveKeepOpen: Boolean(instance.liveKeepOpen),
   }
 }
 
@@ -65,6 +68,7 @@ export async function buildLiveSnapshot(instance: LiveAdminInstance): Promise<Li
     event: instance.event,
     token: instance.token,
     liveEndedAt: instance.liveEndedAt || null,
+    liveKeepOpen: Boolean(instance.liveKeepOpen),
     closeDateISO: closeDate.toISOString(),
     onlineCount: rows.filter((r) => r.focused).length,
     totalRecent: rows.length,
@@ -73,10 +77,16 @@ export async function buildLiveSnapshot(instance: LiveAdminInstance): Promise<Li
   }
 }
 
-export async function applyLiveAction(
-  instanceId: string,
-  action: string
-): Promise<{ ok: true; action: string } | { ok: false; status: number; error: string }> {
+export type LiveActionResult =
+  | {
+      ok: true
+      action: 'end-live' | 'reopen-live'
+      liveEndedAt: string | null
+      liveKeepOpen: boolean
+    }
+  | { ok: false; status: number; error: string }
+
+export async function applyLiveAction(instanceId: string, action: string): Promise<LiveActionResult> {
   if (action !== 'end-live' && action !== 'reopen-live') {
     return { ok: false, status: 400, error: 'Unknown action' }
   }
@@ -91,10 +101,11 @@ export async function applyLiveAction(
   }
 
   if (action === 'end-live') {
-    await writeClient.patch(instanceId).set({ liveEndedAt: new Date().toISOString() }).commit()
-  } else {
-    await writeClient.patch(instanceId).unset(['liveEndedAt']).commit()
+    const liveEndedAt = new Date().toISOString()
+    await writeClient.patch(instanceId).set({ liveEndedAt }).unset(['liveKeepOpen']).commit()
+    return { ok: true, action, liveEndedAt, liveKeepOpen: false }
   }
 
-  return { ok: true, action }
+  await writeClient.patch(instanceId).unset(['liveEndedAt']).set({ liveKeepOpen: true }).commit()
+  return { ok: true, action, liveEndedAt: null, liveKeepOpen: true }
 }

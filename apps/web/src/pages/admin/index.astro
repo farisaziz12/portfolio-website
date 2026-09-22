@@ -26,6 +26,7 @@ interface WorkshopInstanceRow {
   accessDurationDays: number;
   forceClose: boolean;
   liveEndedAt?: string | null;
+  liveKeepOpen?: boolean | null;
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
@@ -356,7 +357,7 @@ const copyOnClick =
                     )}
                     {status === 'readonly' && (
                       <p class="instance__live-hint instance__live-hint--muted">
-                        Live presence ended. Materials stay open until {formatDate(close.toISOString())}.
+                        Live presence ended (end of workshop day, or you clicked End live). Open Live room → Reopen live to turn heartbeats back on. Materials stay open until {formatDate(close.toISOString())}.
                       </p>
                     )}
 

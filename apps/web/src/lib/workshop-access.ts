@@ -4,6 +4,11 @@ export interface WorkshopInstance {
   forceClose: boolean
   /** ISO datetime — instructor ended the live layer early */
   liveEndedAt?: string | null
+  /**
+   * Instructor opted to keep presence on after the workshop calendar day
+   * (or after clearing an early End live). Set by Reopen live; cleared by End live.
+   */
+  liveKeepOpen?: boolean | null
 }
 
 /** Materials window only (legacy name kept for callers). */
@@ -55,6 +60,11 @@ export function getAccessStatus(instance: WorkshopInstance, now = new Date()): A
 }
 
 export function isLiveEnded(instance: WorkshopInstance, now = new Date()): boolean {
+  // Reopen live must win over the automatic end-of-workshop-day lock. Clearing
+  // liveEndedAt alone is a no-op after EOD — that was why POST reopen-live
+  // looked like it "did nothing".
+  if (instance.liveKeepOpen) return false
+
   if (instance.liveEndedAt) {
     const ended = new Date(instance.liveEndedAt)
     if (!Number.isNaN(ended.getTime()) && now >= ended) return true
