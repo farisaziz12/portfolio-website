@@ -3,7 +3,7 @@ export const prerender = false
 import type { APIRoute } from 'astro'
 import { sanityFetch } from '../../../lib/sanity/client'
 import { workshopInstanceByTokenQuery } from '../../../lib/sanity/queries'
-import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access'
+import { getAccessStatus, getCloseDate } from '../../../lib/workshop-access'
 import { subscribeContact } from '../../../lib/workshop-subscribe'
 import {
   WORKSHOP_SESSION_COOKIE,
@@ -20,8 +20,6 @@ interface InstanceRow {
   workshopDate: string
   accessDurationDays: number
   forceClose: boolean
-  liveEndedAt?: string | null
-  liveKeepOpen?: boolean | null
 }
 
 /** Resume session from cookie for a given attend token. */
@@ -72,8 +70,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(JSON.stringify({ error: 'Workshop not found' }), { status: 404 })
   }
 
-  const phase = getAccessPhase(instance)
-  if (phase === 'upcoming' || phase === 'closed' || phase === 'force-closed') {
+  const status = getAccessStatus(instance)
+  if (status !== 'open') {
     return new Response(JSON.stringify({ error: 'Workshop materials are not available' }), {
       status: 403,
     })
@@ -114,7 +112,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   return new Response(
     JSON.stringify({
       success: true,
-      phase,
       user: { name, email },
     }),
     { status: 200 }

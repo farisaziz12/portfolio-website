@@ -7,7 +7,7 @@ import Terminal from '../../components/design/Terminal.astro';
 import GridTexture from '../../components/design/GridTexture.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery, speakerProfileQuery } from '../../lib/sanity/queries';
-import { getAccessPhase, getCloseDate } from '../../lib/workshop-access';
+import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
 import {
   ADMIN_SESSION_COOKIE,
   adminCookieOptions,
@@ -25,8 +25,6 @@ interface WorkshopInstanceRow {
   workshopDate: string;
   accessDurationDays: number;
   forceClose: boolean;
-  liveEndedAt?: string | null;
-  liveKeepOpen?: boolean | null;
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
@@ -128,8 +126,7 @@ const formatDate = (dateStr: string) => {
 };
 
 const statusMeta: Record<string, { label: string; color: string }> = {
-  live: { label: 'Live', color: 'var(--signal)' },
-  readonly: { label: 'Read-only', color: 'var(--accent-bright)' },
+  open: { label: 'Open', color: 'var(--signal)' },
   upcoming: { label: 'Upcoming', color: 'var(--accent-bright)' },
   closed: { label: 'Closed', color: 'var(--ink-faint)' },
   'force-closed': { label: 'Force closed', color: 'var(--danger)' },
@@ -296,8 +293,7 @@ const copyOnClick =
             </div>
           </div>
           <p class="admin-head__body">
-            Open <strong>Live room</strong> during a session to see who’s on which section and whether their tab is active.
-            End live when you’re done teaching — materials stay readable until the access window closes.
+            Copy the access link for a session. Materials stay available from the workshop date until the access window closes.
           </p>
         </div>
 
@@ -317,14 +313,14 @@ const copyOnClick =
             {[...instances]
               .sort((a, b) => {
                 const rank = (p: string) =>
-                  p === 'live' ? 0 : p === 'readonly' ? 1 : p === 'upcoming' ? 2 : 3;
-                const ra = rank(getAccessPhase(a));
-                const rb = rank(getAccessPhase(b));
+                  p === 'open' ? 0 : p === 'upcoming' ? 1 : p === 'force-closed' ? 2 : 3;
+                const ra = rank(getAccessStatus(a));
+                const rb = rank(getAccessStatus(b));
                 if (ra !== rb) return ra - rb;
                 return new Date(b.workshopDate).getTime() - new Date(a.workshopDate).getTime();
               })
               .map((instance) => {
-              const status = getAccessPhase(instance);
+              const status = getAccessStatus(instance);
               const close = getCloseDate(instance);
               const meta = statusMeta[status] || statusMeta.closed;
               const audienceCount = instance.resendAudienceId ? audienceCounts.get(instance.resendAudienceId) : undefined;
@@ -333,10 +329,9 @@ const copyOnClick =
                 ? `https://resend.com/audiences/${instance.resendAudienceId}`
                 : null;
               const attendUrl = `https://faziz-dev.com/workshops/attend/${instance.token}`;
-              const isTeachable = status === 'live' || status === 'readonly';
 
               return (
-                <article class={`instance${status === 'live' ? ' instance--live' : ''}`}>
+                <article class="instance">
                   <div class="instance__status" style={`background: rgb(${meta.color});`} aria-hidden="true"></div>
                   <div class="instance__body">
                     <header class="instance__head">
@@ -349,17 +344,6 @@ const copyOnClick =
                         {meta.label}
                       </span>
                     </header>
-
-                    {status === 'live' && (
-                      <p class="instance__live-hint">
-                        Workshop day is open — use Live room to watch attendance and tab focus.
-                      </p>
-                    )}
-                    {status === 'readonly' && (
-                      <p class="instance__live-hint instance__live-hint--muted">
-                        Live presence ended (end of workshop day, or you clicked End live). Open Live room → Reopen live to turn heartbeats back on. Materials stay open until {formatDate(close.toISOString())}.
-                      </p>
-                    )}
 
                     <dl class="instance__meta-grid">
                       <div>
@@ -422,11 +406,6 @@ const copyOnClick =
                     </div>
 
                     <footer class="instance__actions">
-                      {isTeachable && (
-                        <a href={`/admin/live/${instance.token}`} class="ds-btn ds-btn-primary">
-                          {status === 'live' ? 'Open live room' : 'Live room'}
-                        </a>
-                      )}
                       <a href={`/workshops/attend/${instance.token}`} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
                         Preview attend
                       </a>
@@ -663,24 +642,6 @@ const copyOnClick =
     border-radius: 14px;
     overflow: hidden;
     transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .instance--live {
-    border-color: rgb(var(--signal) / 0.45);
-    box-shadow: 0 0 0 1px rgb(var(--signal) / 0.08);
-  }
-  .instance__live-hint {
-    margin: -0.5rem 0 1.15rem;
-    padding: 0.65rem 0.85rem;
-    border-radius: 10px;
-    font-size: 0.86rem;
-    color: rgb(var(--signal));
-    background: rgb(var(--signal) / 0.08);
-    border: 1px solid rgb(var(--signal) / 0.25);
-  }
-  .instance__live-hint--muted {
-    color: rgb(var(--ink-muted));
-    background: rgb(var(--surface));
-    border-color: rgb(var(--edge));
   }
   .instance__status { width: 4px; flex-shrink: 0; }
   .instance__body { padding: 1.6rem; flex: 1; min-width: 0; }

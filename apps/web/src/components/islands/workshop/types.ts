@@ -84,8 +84,6 @@ export interface WorkshopAttendProps {
   title: string;
   event: string;
   token: string;
-  /** live = heartbeats on; readonly = materials only */
-  phase: 'live' | 'readonly';
   repoUrl?: string;
   overallFeedbackUrl?: string;
   sections: WorkshopSection[];

@@ -12,12 +12,6 @@ interface ImportMetaEnv {
   /** HMAC secret for workshop + admin session cookies (falls back to ADMIN_PASSWORD). */
   readonly WORKSHOP_SESSION_SECRET?: string;
   readonly ADMIN_PASSWORD?: string;
-  /** Personal API key with query:read for /admin/live HogQL roster. */
-  readonly POSTHOG_PERSONAL_API_KEY?: string;
-  /** Numeric PostHog project id (EU project). */
-  readonly POSTHOG_PROJECT_ID?: string;
-  /** App host for query API; defaults derived from PUBLIC_POSTHOG_HOST. */
-  readonly POSTHOG_HOST?: string;
 }
 
 interface ImportMeta {
