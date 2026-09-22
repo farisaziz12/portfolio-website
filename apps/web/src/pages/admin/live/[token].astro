@@ -1,0 +1,169 @@
+---
+export const prerender = false
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Kicker from '../../../components/design/Kicker.astro';
+import WorkshopLiveAdmin from '../../../components/islands/WorkshopLiveAdmin';
+import { sanityFetch } from '../../../lib/sanity/client';
+import { workshopAttendQuery } from '../../../lib/sanity/queries';
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionCookie,
+} from '../../../lib/workshop-session';
+import {
+  accessInputFromInstance,
+  applyLiveAction,
+  buildLiveSnapshot,
+  jsonResponse,
+  type LiveAdminInstance,
+} from '../../../lib/workshop-live-route';
+import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
+
+const isAuthenticated = verifyAdminSessionCookie(
+  Astro.cookies.get(ADMIN_SESSION_COOKIE)?.value
+);
+const wantsJson =
+  Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST';
+
+if (!isAuthenticated) {
+  if (wantsJson) return jsonResponse({ error: 'Unauthorized' }, 401);
+  return Astro.redirect('/admin');
+}
+
+const { token } = Astro.params;
+const instance = await sanityFetch<LiveAdminInstance | null>(workshopAttendQuery, { token }).catch(
+  (err) => {
+    console.error('[admin/live] Sanity lookup failed:', err);
+    return null;
+  }
+);
+
+if (!instance) {
+  if (wantsJson) return jsonResponse({ error: 'Workshop not found' }, 404);
+  return Astro.redirect('/admin');
+}
+
+const access = accessInputFromInstance(instance);
+const phase = getAccessPhase(access);
+const closeDate = getCloseDate(access);
+
+if (Astro.request.method === 'POST') {
+  try {
+    const body = (await Astro.request.json()) as { action?: string };
+    const result = await applyLiveAction(instance._id, body.action || 'end-live');
+    if (!result.ok) return jsonResponse({ error: result.error }, result.status);
+    return jsonResponse({ success: true, action: result.action });
+  } catch (err) {
+    console.error('[admin/live] POST failed:', err);
+    return jsonResponse(
+      { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
+      500
+    );
+  }
+}
+
+if (Astro.url.searchParams.get('format') === 'json') {
+  try {
+    return jsonResponse(await buildLiveSnapshot(instance));
+  } catch (err) {
+    console.error('[admin/live] JSON failed:', err);
+    return jsonResponse(
+      { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
+      500
+    );
+  }
+}
+
+const attendPath = `/workshops/attend/${instance.token}`;
+const initialSnapshot = await buildLiveSnapshot(instance).catch((err) => ({
+  phase,
+  title: instance.title,
+  event: instance.event,
+  token: instance.token,
+  liveEndedAt: instance.liveEndedAt || null,
+  closeDateISO: closeDate.toISOString(),
+  onlineCount: 0,
+  totalRecent: 0,
+  rows: [],
+  rosterError: err instanceof Error ? err.message : 'roster failed',
+}));
+---
+
+<BaseLayout
+  title={`Live · ${instance.title}`}
+  description="Workshop live roster"
+  pathname={`/admin/live/${token}`}
+>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <section class="live-page">
+    <div class="live-page__inner">
+      <header class="live-page__head">
+        <div class="live-page__head-top">
+          <Kicker>Admin · Live room</Kicker>
+          <a href="/admin" class="ds-btn ds-btn-secondary live-page__back">← Dashboard</a>
+        </div>
+        <h1 class="live-page__title">{instance.title}</h1>
+        <p class="live-page__sub">
+          {instance.event}
+          <span aria-hidden="true"> · </span>
+          Materials until {closeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <span aria-hidden="true"> · </span>
+          {instance.sections?.length || 0} sections
+          <span aria-hidden="true"> · </span>
+          Server phase <strong>{phase}</strong>
+        </p>
+      </header>
+
+      <WorkshopLiveAdmin
+        client:load
+        token={instance.token}
+        event={instance.event}
+        attendPath={attendPath}
+        pollPath={`/admin/live/${instance.token}?format=json`}
+        actionPath={`/admin/live/${instance.token}`}
+        initialData={initialSnapshot}
+        sections={(instance.sections || []).map((s) => ({
+          _key: s._key,
+          title: s.title,
+          emoji: s.emoji,
+        }))}
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .live-page {
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    min-height: 70vh;
+  }
+  .live-page__inner {
+    width: min(1100px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+  .live-page__head { margin-bottom: 1.75rem; }
+  .live-page__head-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+  }
+  .live-page__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.5vw, 2.35rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: rgb(var(--ink));
+    margin: 0;
+  }
+  .live-page__sub {
+    margin: 0.55rem 0 0;
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+  }
+  .live-page__sub strong { color: rgb(var(--ink)); font-weight: 600; }
+</style>
