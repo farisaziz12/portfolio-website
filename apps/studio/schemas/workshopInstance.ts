@@ -75,6 +75,13 @@ export default defineType({
       initialValue: false
     }),
     defineField({
+      name: 'liveEndedAt',
+      title: 'Live Session Ended At',
+      type: 'datetime',
+      description:
+        'When set (or after end-of-day on the workshop date), the attend page stays readable but live presence/heartbeats stop. Prefer “End live” from /admin/live — or clear this field to reopen live while materials are still open.',
+    }),
+    defineField({
       name: 'repoUrl',
       title: 'GitHub Repo URL',
       type: 'url',

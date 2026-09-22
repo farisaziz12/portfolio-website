@@ -1,13 +1,8 @@
 import { Resend } from 'resend'
 import type { CreateEmailOptions, CreateEmailResponse } from 'resend'
+import { env } from './env'
 
-// Read runtime env via process.env first, falling back to import.meta.env for local
-// `astro dev`. On Vercel, non-public vars referenced through import.meta.env get inlined
-// at build time and end up undefined at runtime — so process.env is the reliable source
-// for the deployed serverless functions. This is why form submissions were silently
-// hitting the "email-disabled" branch in the API routes instead of actually sending.
-export const env = (key: string): string | undefined =>
-  process.env[key] ?? (import.meta.env as Record<string, string | undefined>)[key]
+export { env }
 
 const apiKey = env('RESEND_API_KEY')
 const FROM_EMAIL = env('RESEND_FROM_EMAIL')

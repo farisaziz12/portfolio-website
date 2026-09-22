@@ -27,7 +27,10 @@ The email routes, each in `src/pages/api/`:
 | `/api/invite` | POST | Admin notification (`InviteAdminEmail`) + submitter confirmation (`InviteConfirmationEmail`) | Admin = critical → 502 on failure. Confirmation = best-effort → logged only. |
 | `/api/mentorship` | POST | Admin notification (`MentorshipAdminEmail`) + submitter confirmation (`MentorshipConfirmationEmail`) | Same split. |
 | `/api/contact` | POST | Admin notification (`ContactAdminEmail`) + submitter confirmation (`ContactConfirmationEmail`). General contact incl. full-time-role inquiries (topic field). | Same split. |
-| `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. |
+| `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. Workshop-attend looks up the instance by **access token** (`instanceToken` / legacy `instanceSlug` value). |
+| `/api/workshop/session` | GET/POST | Sets signed `workshop_session` cookie on POST (gate); GET resumes session for a token | Cookie HMAC via `WORKSHOP_SESSION_SECRET` (falls back to `ADMIN_PASSWORD`). |
+| `/api/workshop/section` | GET | Lazy-load one section body (`token` + `sectionKey`) | Public CDN read; attend page ships schedule metadata only. |
+| `/admin/live/[token]` | GET/POST | Live HTML + JSON roster (`?format=json`); End/reopen live via Sanity `liveEndedAt` (POST) | Same route serves the instructor UI and polling. Requires signed `admin_session`. Needs `POSTHOG_PERSONAL_API_KEY` + `POSTHOG_PROJECT_ID` for roster; `SANITY_API_TOKEN` for End live. (Nested `/api/workshop/admin/live` was removed — it hit `FUNCTION_INVOCATION_FAILED` on Vercel.) |
 | `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD`). |
 
 **Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`):
@@ -50,7 +53,11 @@ All env reads go through `env(key)` in `src/lib/email.ts`. It checks `process.en
 | `INVITE_INBOX` | ⬜ optional | `/api/invite` | Override the destination inbox. Defaults to `faris@zurichjs.com`. |
 | `MENTORSHIP_INBOX` | ⬜ optional | `/api/mentorship` | Falls back to `INVITE_INBOX`, then `faris@zurichjs.com`. |
 | `CONTACT_INBOX` | ⬜ optional | `/api/contact` | Falls back to `INVITE_INBOX`, then `faris@zurichjs.com`. |
-| `ADMIN_PASSWORD` | ✅ for follow-up + `/admin` | `/api/workshop/follow-up`, `/admin` | Pass as `Authorization: Bearer $ADMIN_PASSWORD` to the follow-up route. |
+| `ADMIN_PASSWORD` | ✅ for follow-up + `/admin` | `/api/workshop/follow-up`, `/admin`, cookie HMAC fallback | Pass as `Authorization: Bearer $ADMIN_PASSWORD` to the follow-up route. |
+| `WORKSHOP_SESSION_SECRET` | ⬜ optional | Workshop + admin signed cookies | Falls back to `ADMIN_PASSWORD` when unset. |
+| `POSTHOG_PERSONAL_API_KEY` | ⬜ for live roster | `/admin/live/[token]` | Personal key with query read scope. |
+| `POSTHOG_PROJECT_ID` | ⬜ for live roster | `/admin/live/[token]` | Numeric project id. |
+| `SANITY_API_TOKEN` | ⬜ for End live | `/admin/live/[token]` POST | Needs write access to patch `liveEndedAt`. |
 
 ### Setup checklist
 
@@ -121,7 +128,7 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 
 - **`process.env` first, `import.meta.env` second** (`lib/email.ts`). Vercel inlines `import.meta.env` at build time for non-public vars — they're `undefined` at runtime. The `env()` helper handles this; don't bypass it. See in-code comment in `lib/email.ts`.
 - **Silent "email-disabled" success.** When `RESEND_API_KEY` or `RESEND_FROM_EMAIL` is missing, `/api/invite` and `/api/mentorship` return HTTP 200 with `{ success: true, warning: 'email-disabled' }`. The form shows success but no mail is sent. This is intentional (better UX than form errors during config gaps) — but watch logs for the warning string. `/api/workshop/subscribe` is stricter and returns 500 when the API key is missing.
-- **Sanity audience lookups stay server-side.** `workshopInstanceBySlugQuery` is the only sanctioned way to resolve a `resendAudienceId`. Never accept an audience ID from the request body.
+- **Sanity audience lookups stay server-side.** `workshopInstanceByTokenQuery` (attend) / `workshopInstanceBySlugQuery` (follow-up) are the sanctioned lookups. Never accept an audience ID from the request body.
 - **React Email doesn't support CSS variables.** Keep hex literals in `styles.ts`. If you reference a token in a template via inline `style`, import the constant from styles (`s.inkStrong`), don't paste the hex.
 - **Resend domain verification is non-optional.** Until SPF/DKIM/DMARC all show "Verified" in the Resend dashboard, every send fails. Verify after any DNS change.
 - **Don't include a display name in `RESEND_FROM_EMAIL`.** The routes wrap it themselves: `Invite Form <${RESEND_FROM_EMAIL}>` etc. If you put `"Faris" <foo@x>` in the env var, the result is `Invite Form <"Faris" <foo@x>>` and Resend rejects it.
