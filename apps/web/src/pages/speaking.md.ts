@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { sanityFetch } from '../lib/sanity/client';
-import { speakingStatsQuery, upcomingEventsQuery, speakerProfileQuery, allTalksQuery } from '../lib/sanity/queries';
+import { speakingStatsQuery, upcomingEventsQuery, allTalksQuery } from '../lib/sanity/queries';
 import { mdResponse, mdDate } from '../lib/markdown';
 import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
 
@@ -16,10 +16,6 @@ interface EventItem {
   date: string;
 }
 
-interface SpeakerProfile {
-  bioShort?: string;
-}
-
 interface Talk {
   title: string;
   slug: string;
@@ -27,16 +23,11 @@ interface Talk {
 }
 
 export const GET: APIRoute = async () => {
-  const [stats, upcoming, profile, talks] = await Promise.all([
+  const [stats, upcoming, talks] = await Promise.all([
     sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
     sanityFetch<EventItem[]>(upcomingEventsQuery).catch(() => []),
-    sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
     sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
   ]);
-
-  const bio =
-    profile?.bioShort ||
-    `Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and talks about resilient frontend systems and payment integrations.`;
 
   const featured = [...talks]
     .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
@@ -53,13 +44,7 @@ export const GET: APIRoute = async () => {
           .join('\n')}\n\nFull catalogue: https://faziz-dev.com/talks.md`
       : `Full catalogue: https://faziz-dev.com/talks.md`,
     ``,
-    `Send the date, the city, the audience size, the topic, and the slot length via https://faziz-dev.com/invite. I reply within two days. Community meetups are usually on the house.`,
-    ``,
-    `## Short bio (paste-ready)`,
-    ``,
-    bio,
-    ``,
-    `Press kit: https://faziz-dev.com/press-kit`,
+    `Drop me a message on my socials, or fill in the form: https://faziz-dev.com/invite. I reply within two days. Community meetups are usually on the house.`,
     ``,
     upcoming.length
       ? `## What's next\n\n${upcoming

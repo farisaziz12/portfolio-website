@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Kicker from '../components/design/Kicker.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
-import Bio from '../components/design/Bio.astro';
 import { EventRow } from '../components/events/EventRow';
 import { sanityFetch } from '../lib/sanity/client';
 import {
@@ -10,7 +9,6 @@ import {
   pastEventsQuery,
   speakingStatsQuery,
   allTalksQuery,
-  speakerProfileQuery,
 } from '../lib/sanity/queries';
 import { topConferences } from '../lib/conferences';
 import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
@@ -53,16 +51,11 @@ interface TalkListItem {
   latestEvent?: { conference?: string; location?: string };
 }
 
-interface SpeakerProfile {
-  bioShort?: string;
-}
-
-const [upcomingEvents, pastEvents, stats, talks, profile] = await Promise.all([
+const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
   sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
   sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
   sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
   sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
-  sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
 ]);
 
 const upcomingCount = upcomingEvents.length;
@@ -78,10 +71,6 @@ function firstLine(abstract?: string) {
 const featuredTalks = [...talks]
   .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
   .slice(0, 3);
-
-const shortBio =
-  profile?.bioShort ||
-  `Faris Aziz is a Staff Software Engineer and conference speaker based in Geneva. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and talks about resilient frontend systems and payment integrations.`;
 ---
 
 <BaseLayout
@@ -180,14 +169,6 @@ const shortBio =
             </svg>
           </a>
         </p>
-      </div>
-    </section>
-  )}
-
-  {shortBio && (
-    <section class="speaking-section">
-      <div class="container">
-        <Bio text={shortBio} />
         {conferenceWall.length > 0 && (
           <p class="speaking-stages">
             Stages I've shared: {conferenceWall.slice(0, 8).join(', ')}.
@@ -203,7 +184,7 @@ const shortBio =
         <ContactPanel
           status={`Booking ${bookingYears()} dates now`}
           title="Invite me to your event"
-          body="Send the date, the city, the audience, and the slot. I reply within two days. Community meetups are usually on the house."
+          body="Drop me a message on my socials, or fill in the form. I reply within two days. Community meetups are usually on the house."
           primaryHref="/invite"
           primaryLabel="Send an invite"
           secondaryHref="/talks"
