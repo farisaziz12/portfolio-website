@@ -71,7 +71,13 @@ interface Section {
   emoji?: string;
   title: string;
   sectionFeedbackUrl?: string;
+  /** Present only after lazy fetch (not on first paint). */
   content?: ContentBlock[];
+}
+
+interface UserInfo {
+  name: string;
+  email: string;
 }
 
 interface WorkshopAttendProps {
@@ -86,11 +92,8 @@ interface WorkshopAttendProps {
   closeDateISO: string;
   sanityProjectId: string;
   sanityDataset: string;
-}
-
-interface UserInfo {
-  name: string;
-  email: string;
+  /** From httpOnly cookie — paints schedule on SSR without waiting for JS. */
+  initialUser?: UserInfo | null;
 }
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -714,6 +717,8 @@ function SectionView({
   section,
   index,
   total,
+  content,
+  contentStatus,
   sanityProjectId,
   sanityDataset,
   onBack,
@@ -723,6 +728,8 @@ function SectionView({
   section: Section;
   index: number;
   total: number;
+  content: ContentBlock[] | undefined;
+  contentStatus: 'loading' | 'ready' | 'error';
   sanityProjectId: string;
   sanityDataset: string;
   onBack: () => void;
@@ -760,10 +767,25 @@ function SectionView({
       </div>
 
       {/* Content */}
-      {section.content && section.content.length > 0 && (
+      {contentStatus === 'loading' && (
+        <p className="mb-12 text-sm text-[rgb(var(--ink-muted))]">Loading section…</p>
+      )}
+      {contentStatus === 'error' && (
+        <p className="mb-12 text-sm text-danger" role="alert">
+          Couldn’t load this section. Go back and try again.
+        </p>
+      )}
+      {contentStatus === 'ready' && content && content.length > 0 && (
         <div className="mb-12">
-          <PortableTextContent blocks={section.content} sanityProjectId={sanityProjectId} sanityDataset={sanityDataset} />
+          <PortableTextContent
+            blocks={content}
+            sanityProjectId={sanityProjectId}
+            sanityDataset={sanityDataset}
+          />
         </div>
+      )}
+      {contentStatus === 'ready' && (!content || content.length === 0) && (
+        <p className="mb-12 text-sm text-[rgb(var(--ink-muted))]">No content in this section yet.</p>
       )}
 
       {/* Section feedback */}
@@ -826,13 +848,23 @@ export default function WorkshopAttend({
   closeDateISO,
   sanityProjectId,
   sanityDataset,
+  initialUser = null,
 }: WorkshopAttendProps) {
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(initialUser);
   const [activeSection, setActiveSection] = useState<number | null>(null);
-  const [visited, setVisited] = useState<Set<string>>(new Set());
+  const [visited, setVisited] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const raw = localStorage.getItem(`workshop-visited-${token}`);
+      if (raw) return new Set(JSON.parse(raw) as string[]);
+    } catch { /* ignore */ }
+    return new Set();
+  });
+  const [contentByKey, setContentByKey] = useState<Record<string, ContentBlock[]>>({});
+  const [contentErrors, setContentErrors] = useState<Record<string, true>>({});
+  const [loadingKeys, setLoadingKeys] = useState<Record<string, true>>({});
   const activeSectionRef = useRef<number | null>(null);
-  const userRef = useRef<UserInfo | null>(null);
+  const userRef = useRef<UserInfo | null>(initialUser);
 
   useEffect(() => {
     activeSectionRef.current = activeSection;
@@ -842,43 +874,76 @@ export default function WorkshopAttend({
     userRef.current = user;
   }, [user]);
 
-  // Hydrate from cookie session (preferred) or localStorage cache
+  // Prefer cookie SSR user; else localStorage; quietly confirm cookie in background.
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!user) {
+        const stored = getStoredUser(token);
+        if (stored && !cancelled) setUser(stored);
+      }
+
       try {
         const res = await fetch(`/api/workshop/session?token=${encodeURIComponent(token)}`);
-        if (res.ok) {
-          const data = (await res.json()) as { authenticated?: boolean; user?: UserInfo };
-          if (!cancelled && data.authenticated && data.user) {
-            storeUser(token, data.user);
-            setUser(data.user);
-            setMounted(true);
-            return;
-          }
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { authenticated?: boolean; user?: UserInfo };
+        if (data.authenticated && data.user && !cancelled) {
+          storeUser(token, data.user);
+          setUser(data.user);
         }
-      } catch { /* fall through */ }
-
-      if (cancelled) return;
-      const stored = getStoredUser(token);
-      if (stored) setUser(stored);
-
-      try {
-        const raw = localStorage.getItem(`workshop-visited-${token}`);
-        if (raw) setVisited(new Set(JSON.parse(raw)));
-      } catch { /* ignore */ }
-      setMounted(true);
+      } catch { /* keep local / SSR user */ }
     })();
     return () => { cancelled = true; };
+    // Only re-run when workshop token changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Restore visited even when cookie auth succeeds
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`workshop-visited-${token}`);
-      if (raw) setVisited(new Set(JSON.parse(raw)));
-    } catch { /* ignore */ }
-  }, [token]);
+  const contentByKeyRef = useRef(contentByKey);
+  const loadingKeysRef = useRef(loadingKeys);
+  useEffect(() => { contentByKeyRef.current = contentByKey; }, [contentByKey]);
+  useEffect(() => { loadingKeysRef.current = loadingKeys; }, [loadingKeys]);
+
+  const loadSectionContent = useCallback(
+    async (sectionKey: string) => {
+      if (contentByKeyRef.current[sectionKey] || loadingKeysRef.current[sectionKey]) return;
+      loadingKeysRef.current = { ...loadingKeysRef.current, [sectionKey]: true };
+      setLoadingKeys((prev) => ({ ...prev, [sectionKey]: true }));
+      setContentErrors((prev) => {
+        if (!prev[sectionKey]) return prev;
+        const next = { ...prev };
+        delete next[sectionKey];
+        return next;
+      });
+      try {
+        const res = await fetch(
+          `/api/workshop/section?token=${encodeURIComponent(token)}&sectionKey=${encodeURIComponent(sectionKey)}`
+        );
+        const body = (await res.json().catch(() => ({}))) as {
+          section?: { content?: ContentBlock[] };
+          error?: string;
+        };
+        if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+        const content = body.section?.content || [];
+        contentByKeyRef.current = { ...contentByKeyRef.current, [sectionKey]: content };
+        setContentByKey((prev) => ({
+          ...prev,
+          [sectionKey]: content,
+        }));
+      } catch {
+        setContentErrors((prev) => ({ ...prev, [sectionKey]: true }));
+      } finally {
+        const nextLoading = { ...loadingKeysRef.current };
+        delete nextLoading[sectionKey];
+        loadingKeysRef.current = nextLoading;
+        setLoadingKeys((prev) => {
+          const next = { ...prev };
+          delete next[sectionKey];
+          return next;
+        });
+      }
+    },
+    [token]
+  );
 
   // Heartbeats while live + signed in
   useEffect(() => {
@@ -920,33 +985,40 @@ export default function WorkshopAttend({
     };
   }, [phase, user, token, event, sections]);
 
-  const openSection = useCallback((index: number) => {
-    setActiveSection(index);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const openSection = useCallback(
+    (index: number) => {
+      setActiveSection(index);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    const key = sections[index]?._key;
-    if (key) {
-      track('workshop_section_viewed', {
-        instance: token,
-        workshop: event,
-        section_key: key,
-        section_index: index,
-      });
-      setVisited((prev) => {
-        if (prev.has(key)) return prev;
-        const next = new Set(prev);
-        next.add(key);
-        localStorage.setItem(`workshop-visited-${token}`, JSON.stringify([...next]));
-        track('workshop_section_completed', {
+      const key = sections[index]?._key;
+      if (key) {
+        void loadSectionContent(key);
+        const nextKey = sections[index + 1]?._key;
+        if (nextKey) void loadSectionContent(nextKey);
+
+        track('workshop_section_viewed', {
           instance: token,
           workshop: event,
           section_key: key,
           section_index: index,
         });
-        return next;
-      });
-    }
-  }, [sections, token, event]);
+        setVisited((prev) => {
+          if (prev.has(key)) return prev;
+          const next = new Set(prev);
+          next.add(key);
+          localStorage.setItem(`workshop-visited-${token}`, JSON.stringify([...next]));
+          track('workshop_section_completed', {
+            instance: token,
+            workshop: event,
+            section_key: key,
+            section_index: index,
+          });
+          return next;
+        });
+      }
+    },
+    [sections, token, event, loadSectionContent]
+  );
 
   const goToSchedule = useCallback(() => {
     setActiveSection(null);
@@ -959,8 +1031,6 @@ export default function WorkshopAttend({
     year: 'numeric',
   }), [closeDateISO]);
 
-  if (!mounted) return null;
-
   if (!user) {
     return <GateView event={event} token={token} phase={phase} onSuccess={setUser} />;
   }
@@ -972,13 +1042,23 @@ export default function WorkshopAttend({
   ) : null;
 
   if (activeSection !== null && sections[activeSection]) {
+    const section = sections[activeSection];
+    const key = section._key;
+    const contentStatus: 'loading' | 'ready' | 'error' = contentErrors[key]
+      ? 'error'
+      : key in contentByKey
+        ? 'ready'
+        : 'loading';
+
     return (
       <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
         {readonlyBanner}
         <SectionView
-          section={sections[activeSection]}
+          section={section}
           index={activeSection}
           total={sections.length}
+          content={contentByKey[key]}
+          contentStatus={contentStatus}
           sanityProjectId={sanityProjectId}
           sanityDataset={sanityDataset}
           onBack={goToSchedule}

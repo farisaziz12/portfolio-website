@@ -5,14 +5,17 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
 import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
+import {
+  WORKSHOP_SESSION_COOKIE,
+  verifyWorkshopSessionCookie,
+} from '../../../lib/workshop-session';
 import WorkshopAttend from '../../../components/islands/WorkshopAttend';
 
-interface Section {
+interface SectionMeta {
   _key: string;
   emoji?: string;
   title: string;
   sectionFeedbackUrl?: string;
-  content?: any[];
 }
 
 interface WorkshopInstanceData {
@@ -27,7 +30,7 @@ interface WorkshopInstanceData {
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
-  sections?: Section[];
+  sections?: SectionMeta[];
 }
 
 const { token } = Astro.params;
@@ -40,6 +43,14 @@ if (!instance) {
 const phase = getAccessPhase(instance);
 const closeDate = getCloseDate(instance);
 const materialsOpen = phase === 'live' || phase === 'readonly';
+
+const session = verifyWorkshopSessionCookie(
+  Astro.cookies.get(WORKSHOP_SESSION_COOKIE)?.value,
+  instance.token
+);
+const initialUser = session
+  ? { name: session.name, email: session.email }
+  : null;
 
 const formatDateLong = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -116,6 +127,7 @@ const formatDateLong = (dateStr: string) => {
       closeDateISO={closeDate.toISOString()}
       sanityProjectId={import.meta.env.SANITY_STUDIO_PROJECT_ID || '94fb4yui'}
       sanityDataset={import.meta.env.SANITY_STUDIO_DATASET || 'production'}
+      initialUser={initialUser}
     />
   )}
 </BaseLayout>

@@ -1432,6 +1432,7 @@ export const serviceLandingPageBySlugQuery = groq`
 `;
 
 // Workshop Instances
+/** Schedule shell for /workshops/attend — omit section bodies (fetched on open). */
 export const workshopAttendQuery = groq`
   *[_type == "workshopInstance" && token.current == $token][0] {
     _id,
@@ -1446,6 +1447,18 @@ export const workshopAttendQuery = groq`
     overallFeedbackUrl,
     emailCaptureEnabled,
     sections[] {
+      _key,
+      emoji,
+      title,
+      sectionFeedbackUrl
+    }
+  }
+`;
+
+/** One section body for lazy load after schedule click. */
+export const workshopAttendSectionQuery = groq`
+  *[_type == "workshopInstance" && token.current == $token][0] {
+    "section": sections[_key == $sectionKey][0] {
       _key,
       emoji,
       title,
