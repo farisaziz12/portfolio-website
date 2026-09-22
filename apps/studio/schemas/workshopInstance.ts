@@ -75,21 +75,6 @@ export default defineType({
       initialValue: false
     }),
     defineField({
-      name: 'liveEndedAt',
-      title: 'Live Session Ended At',
-      type: 'datetime',
-      description:
-        'When set, live presence/heartbeats stop (materials stay readable until the access window closes). Prefer End live from /admin/live. After the workshop calendar day, live also auto-ends unless Keep live open is on.',
-    }),
-    defineField({
-      name: 'liveKeepOpen',
-      title: 'Keep live open',
-      type: 'boolean',
-      initialValue: false,
-      description:
-        'Keep presence/heartbeats on after the workshop calendar day, until End live or the materials window closes. Set automatically by Reopen live on /admin/live. This is a document field — not Sanity Live / Presentation preview.',
-    }),
-    defineField({
       name: 'repoUrl',
       title: 'GitHub Repo URL',
       type: 'url',

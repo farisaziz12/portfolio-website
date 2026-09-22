@@ -5,8 +5,6 @@ import { ScheduleView } from './workshop/ScheduleView';
 import { SectionView } from './workshop/SectionView';
 import type { WorkshopAttendProps } from './workshop/types';
 import { useSectionContent } from './workshop/useSectionContent';
-import { useWorkshopHeartbeats } from './workshop/useWorkshopHeartbeats';
-import { useWorkshopPhase } from './workshop/useWorkshopPhase';
 import { useWorkshopSession } from './workshop/useWorkshopSession';
 import { getVisitedSections, persistVisitedSections } from './workshop/user-storage';
 
@@ -15,13 +13,12 @@ export type { WorkshopAttendProps } from './workshop/types';
 /**
  * Workshop attend island — thin orchestrator.
  * Views: GateView / ScheduleView / SectionView
- * State: useWorkshopSession, useSectionContent, useWorkshopHeartbeats
+ * State: useWorkshopSession, useSectionContent
  */
 export default function WorkshopAttend({
   title,
   event,
   token,
-  phase,
   repoUrl,
   overallFeedbackUrl,
   sections,
@@ -31,21 +28,11 @@ export default function WorkshopAttend({
   initialUser = null,
 }: WorkshopAttendProps) {
   const { user, setUser } = useWorkshopSession(token, initialUser);
-  const livePhase = useWorkshopPhase(token, phase);
   const { contentByKey, loadSection, statusFor } = useSectionContent(token);
   const [activeSection, setActiveSection] = useState<number | null>(null);
   const [visited, setVisited] = useState<Set<string>>(() =>
     typeof window === 'undefined' ? new Set() : getVisitedSections(token)
   );
-
-  useWorkshopHeartbeats({
-    phase: livePhase,
-    user,
-    token,
-    event,
-    sections,
-    activeSectionIndex: activeSection,
-  });
 
   const openSection = useCallback(
     (index: number) => {
@@ -99,22 +86,13 @@ export default function WorkshopAttend({
   );
 
   if (!user) {
-    return <GateView event={event} token={token} phase={livePhase} onSuccess={setUser} />;
+    return <GateView event={event} token={token} onSuccess={setUser} />;
   }
-
-  const readonlyBanner =
-    livePhase === 'readonly' ? (
-      <div className="max-w-3xl mx-auto mb-8 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] px-4 py-3 text-sm text-[rgb(var(--ink-muted))]">
-        Live session has ended — materials are read-only until {closeDate}. Presence is no longer
-        shared with the instructor.
-      </div>
-    ) : null;
 
   if (activeSection !== null && sections[activeSection]) {
     const section = sections[activeSection];
     return (
       <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
-        {readonlyBanner}
         <SectionView
           section={section}
           index={activeSection}
@@ -133,7 +111,6 @@ export default function WorkshopAttend({
 
   return (
     <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
-      {readonlyBanner}
       <ScheduleView
         userName={user.name.split(' ')[0]}
         title={title}

@@ -15,7 +15,6 @@ export type AnalyticsEvent =
   | 'contact_form_submitted'
   | 'newsletter_subscribed'
   | 'workshop_signed_up'
-  | 'workshop_heartbeat'
   | 'workshop_section_viewed'
   | 'workshop_section_completed'
   | 'discovery_call_opened'
@@ -31,21 +30,14 @@ export type AnalyticsEvent =
 
 type Props = Record<string, unknown>;
 
-/** Passed through to posthog-js `capture` (e.g. flush on tab hide). */
-export type CaptureOptions = {
-  send_instantly?: boolean;
-  transport?: 'sendBeacon';
-};
-
 function ph(): any | undefined {
   return typeof window !== 'undefined' ? (window as any).posthog : undefined;
 }
 
 /** Capture a custom event. Never throws. */
-export function track(event: AnalyticsEvent, props?: Props, options?: CaptureOptions): void {
+export function track(event: AnalyticsEvent, props?: Props): void {
   try {
-    if (options) ph()?.capture(event, props, options);
-    else ph()?.capture(event, props);
+    ph()?.capture(event, props);
   } catch (_) {
     /* analytics must never break the UI */
   }

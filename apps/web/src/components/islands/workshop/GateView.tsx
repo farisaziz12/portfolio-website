@@ -6,12 +6,10 @@ import { storeUser } from './user-storage';
 export function GateView({
   event,
   token,
-  phase,
   onSuccess,
 }: {
   event: string;
   token: string;
-  phase: 'live' | 'readonly';
   onSuccess: (user: WorkshopUser) => void;
 }) {
   const [name, setName] = useState('');
@@ -120,14 +118,6 @@ export function GateView({
                 unsubscribe anytime.
               </span>
             </label>
-
-            {phase === 'live' && (
-              <p className="text-xs text-[rgb(var(--ink-faint))] leading-relaxed">
-                During the live session, your name, current section, and whether this tab is active
-                are visible to the instructor. Live presence stops when the session ends; materials
-                stay available afterward.
-              </p>
-            )}
 
             <button
               type="submit"
