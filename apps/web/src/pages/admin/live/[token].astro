@@ -4,7 +4,7 @@ export const prerender = false
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Kicker from '../../../components/design/Kicker.astro';
 import WorkshopLiveAdmin from '../../../components/islands/WorkshopLiveAdmin';
-import { sanityFetch } from '../../../lib/sanity/client';
+import { sanityFetchFresh } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
 import {
   ADMIN_SESSION_COOKIE,
@@ -31,7 +31,7 @@ if (!isAuthenticated) {
 }
 
 const { token } = Astro.params;
-const instance = await sanityFetch<LiveAdminInstance | null>(workshopAttendQuery, { token }).catch(
+const instance = await sanityFetchFresh<LiveAdminInstance | null>(workshopAttendQuery, { token }).catch(
   (err) => {
     console.error('[admin/live] Sanity lookup failed:', err);
     return null;
@@ -52,7 +52,12 @@ if (Astro.request.method === 'POST') {
     const body = (await Astro.request.json()) as { action?: string };
     const result = await applyLiveAction(instance._id, body.action || 'end-live');
     if (!result.ok) return jsonResponse({ error: result.error }, result.status);
-    return jsonResponse({ success: true, action: result.action });
+    const snapshot = await buildLiveSnapshot({
+      ...instance,
+      liveEndedAt: result.liveEndedAt,
+      liveKeepOpen: result.liveKeepOpen,
+    });
+    return jsonResponse({ success: true, action: result.action, ...snapshot });
   } catch (err) {
     console.error('[admin/live] POST failed:', err);
     return jsonResponse(
@@ -81,6 +86,7 @@ const initialSnapshot = await buildLiveSnapshot(instance).catch((err) => ({
   event: instance.event,
   token: instance.token,
   liveEndedAt: instance.liveEndedAt || null,
+  liveKeepOpen: Boolean(instance.liveKeepOpen),
   closeDateISO: closeDate.toISOString(),
   onlineCount: 0,
   totalRecent: 0,

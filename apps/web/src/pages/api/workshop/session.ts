@@ -21,6 +21,7 @@ interface InstanceRow {
   accessDurationDays: number
   forceClose: boolean
   liveEndedAt?: string | null
+  liveKeepOpen?: boolean | null
 }
 
 /** Resume session from cookie for a given attend token. */

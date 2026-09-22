@@ -2,7 +2,7 @@
 export const prerender = false
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { sanityFetch } from '../../../lib/sanity/client';
+import { sanityFetch, sanityFetchFresh } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
 import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
 import {
@@ -27,6 +27,7 @@ interface WorkshopInstanceData {
   accessDurationDays: number;
   forceClose: boolean;
   liveEndedAt?: string | null;
+  liveKeepOpen?: boolean | null;
   repoUrl?: string;
   overallFeedbackUrl?: string;
   emailCaptureEnabled?: boolean;
@@ -34,15 +35,37 @@ interface WorkshopInstanceData {
 }
 
 const { token } = Astro.params;
-const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(() => null);
+const wantsJson = Astro.url.searchParams.get('format') === 'json';
+const fetchInstance = wantsJson ? sanityFetchFresh : sanityFetch;
+const instance = await fetchInstance<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(() => null);
 
 if (!instance) {
+  if (wantsJson) {
+    return new Response(JSON.stringify({ error: 'Workshop not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    });
+  }
   return Astro.redirect('/404');
 }
 
 const phase = getAccessPhase(instance);
 const closeDate = getCloseDate(instance);
 const materialsOpen = phase === 'live' || phase === 'readonly';
+
+if (wantsJson) {
+  return new Response(
+    JSON.stringify({
+      phase,
+      live: phase === 'live',
+      closeDateISO: closeDate.toISOString(),
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    }
+  );
+}
 
 const session = verifyWorkshopSessionCookie(
   Astro.cookies.get(WORKSHOP_SESSION_COOKIE)?.value,

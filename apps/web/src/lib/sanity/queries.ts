@@ -1443,6 +1443,7 @@ export const workshopAttendQuery = groq`
     accessDurationDays,
     forceClose,
     liveEndedAt,
+    liveKeepOpen,
     repoUrl,
     overallFeedbackUrl,
     emailCaptureEnabled,
@@ -1479,6 +1480,7 @@ export const allWorkshopInstancesQuery = groq`
     accessDurationDays,
     forceClose,
     liveEndedAt,
+    liveKeepOpen,
     repoUrl,
     overallFeedbackUrl,
     emailCaptureEnabled,
@@ -1510,6 +1512,7 @@ export const workshopInstanceByTokenQuery = groq`
     accessDurationDays,
     forceClose,
     liveEndedAt,
+    liveKeepOpen,
     resendAudienceId
   }
 `;

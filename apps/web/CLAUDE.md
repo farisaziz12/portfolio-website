@@ -30,7 +30,7 @@ The email routes, each in `src/pages/api/`:
 | `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. Workshop-attend looks up the instance by **access token** (`instanceToken` / legacy `instanceSlug` value). |
 | `/api/workshop/session` | GET/POST | Sets signed `workshop_session` cookie on POST (gate); GET resumes session for a token | Cookie HMAC via `WORKSHOP_SESSION_SECRET` (falls back to `ADMIN_PASSWORD`). |
 | `/api/workshop/section` | GET | Lazy-load one section body (`token` + `sectionKey`) | Public CDN read; attend page ships schedule metadata only. |
-| `/admin/live/[token]` | GET/POST | Live HTML + JSON roster (`?format=json`); End/reopen live via Sanity `liveEndedAt` (POST) | Same route serves the instructor UI and polling. Requires signed `admin_session`. Needs `POSTHOG_PERSONAL_API_KEY` + `POSTHOG_PROJECT_ID` for roster; `SANITY_API_TOKEN` for End live. (Nested `/api/workshop/admin/live` was removed — it hit `FUNCTION_INVOCATION_FAILED` on Vercel.) |
+| `/admin/live/[token]` | GET/POST | Live HTML + JSON roster (`?format=json`); End/reopen live via Sanity `liveEndedAt` + `liveKeepOpen` (POST) | Same route serves the instructor UI and polling. Requires signed `admin_session`. Needs `POSTHOG_PERSONAL_API_KEY` + `POSTHOG_PROJECT_ID` for roster; `SANITY_API_TOKEN` for End/Reopen live. Reopen sets `liveKeepOpen: true` so presence stays on after the workshop calendar day (clearing `liveEndedAt` alone is a no-op after EOD). This is a document field, not Sanity Live/Presentation. Reads use the origin API (`useCdn: false`). (Nested `/api/workshop/admin/live` was removed — it hit `FUNCTION_INVOCATION_FAILED` on Vercel.) |
 | `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD`). |
 
 **Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`):
@@ -57,7 +57,7 @@ All env reads go through `env(key)` in `src/lib/email.ts`. It checks `process.en
 | `WORKSHOP_SESSION_SECRET` | ⬜ optional | Workshop + admin signed cookies | Falls back to `ADMIN_PASSWORD` when unset. |
 | `POSTHOG_PERSONAL_API_KEY` | ⬜ for live roster | `/admin/live/[token]` | Personal key with query read scope. |
 | `POSTHOG_PROJECT_ID` | ⬜ for live roster | `/admin/live/[token]` | Numeric project id. |
-| `SANITY_API_TOKEN` | ⬜ for End live | `/admin/live/[token]` POST | Needs write access to patch `liveEndedAt`. |
+| `SANITY_API_TOKEN` | ⬜ for End/Reopen live | `/admin/live/[token]` POST | Needs write access to patch `liveEndedAt` / `liveKeepOpen`. |
 
 ### Setup checklist
 

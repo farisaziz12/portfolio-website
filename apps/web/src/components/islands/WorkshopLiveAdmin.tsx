@@ -15,6 +15,7 @@ interface LiveSnapshot {
   event?: string;
   token: string;
   liveEndedAt?: string | null;
+  liveKeepOpen?: boolean;
   closeDateISO?: string;
   onlineCount: number;
   totalRecent: number;
@@ -84,7 +85,7 @@ export default function WorkshopLiveAdmin({
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch(pollPath, { credentials: 'same-origin' });
+      const res = await fetch(pollPath, { credentials: 'same-origin', cache: 'no-store' });
       const body = (await res.json().catch(() => ({}))) as LiveSnapshot & {
         error?: string;
         detail?: string;
@@ -131,11 +132,21 @@ export default function WorkshopLiveAdmin({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
+        cache: 'no-store',
         body: JSON.stringify({ action }),
       });
-      const body = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+      const body = (await res.json().catch(() => ({}))) as LiveSnapshot & {
+        error?: string;
+        detail?: string;
+        success?: boolean;
+      };
       if (!res.ok) {
         throw new Error(body.detail || body.error || `HTTP ${res.status}`);
+      }
+      if (body.phase) {
+        setData(body);
+        setLastFetchAt(Date.now());
+        setError(null);
       }
       await refresh();
     } catch (err) {
