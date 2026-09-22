@@ -2071,6 +2071,16 @@
 .invite-form__input:focus { outline: none; border-color: rgb(var(--accent)); }
 .invite-form__input::placeholder { color: rgb(var(--ink-faint)); }
 .invite-form__textarea { resize: vertical; min-height: 120px; }
+select.invite-form__input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B97A6' stroke-width='2'><path d='M6 9l6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.4rem;
+  cursor: pointer;
+}
+select.invite-form__input--empty { color: rgb(var(--ink-faint)); }
+select.invite-form__input option { color: rgb(var(--ink)); }
 .invite-form__field--error .invite-form__input { border-color: rgb(var(--danger)); }
 .invite-form__seg {
   display: flex;
@@ -2162,34 +2172,6 @@
   text-decoration-color: rgb(var(--accent) / 0.4);
 }
 .invite-form__next a:hover { text-decoration-color: rgb(var(--accent-bright)); }
-
-/* "Add details (optional)" progressive disclosure */
-.invite-form__details-toggle {
-  grid-column: 1 / -1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  padding: 0.2rem 0;
-  cursor: pointer;
-  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgb(var(--accent-bright));
-}
-.invite-form__details-toggle svg {
-  width: 13px;
-  height: 13px;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.invite-form__details-hint {
-  color: rgb(var(--ink-faint));
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: 0.78rem;
-}
 
 /* ============================================
    REDUCED MOTION
