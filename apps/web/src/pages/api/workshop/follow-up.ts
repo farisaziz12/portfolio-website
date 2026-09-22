@@ -5,6 +5,10 @@ import { WorkshopFollowUpEmail } from '../../../emails/WorkshopFollowUpEmail'
 import { sanityFetch } from '../../../lib/sanity/client'
 import { workshopInstanceBySlugQuery } from '../../../lib/sanity/queries'
 import { env, getFrom, resend, sendOrLog } from '../../../lib/email'
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionCookie,
+} from '../../../lib/workshop-session'
 
 const FROM = getFrom('Faris Aziz')
 const ADMIN_PASSWORD = env('ADMIN_PASSWORD')
@@ -34,11 +38,13 @@ interface FollowUpPayload {
   dryRun?: boolean
 }
 
-export const POST: APIRoute = async ({ request }) => {
-  // Auth — Bearer ADMIN_PASSWORD (same secret as /admin).
+export const POST: APIRoute = async ({ request, cookies }) => {
+  // Auth — Bearer ADMIN_PASSWORD (CLI) or signed admin_session cookie (dashboard).
   const authHeader = request.headers.get('authorization') || ''
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-  if (!ADMIN_PASSWORD || token !== ADMIN_PASSWORD) {
+  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  const bearerOk = Boolean(ADMIN_PASSWORD && bearer === ADMIN_PASSWORD)
+  const cookieOk = verifyAdminSessionCookie(cookies.get(ADMIN_SESSION_COOKIE)?.value)
+  if (!bearerOk && !cookieOk) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
   }
 

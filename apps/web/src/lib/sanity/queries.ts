@@ -1499,15 +1499,8 @@ export const workshopInstanceBySlugQuery = groq`
 // Look up by attend token — used by subscribe/session so we never trust audience IDs from the client.
 export const workshopInstanceByTokenQuery = groq`
   *[_type == "workshopInstance" && token.current == $token][0] {
-    _id,
-    title,
-    event,
-    "slug": slug.current,
-    "token": token.current,
-    workshopDate,
-    accessDurationDays,
-    forceClose,
-    resendAudienceId
+    _id, title, event, "slug": slug.current, "token": token.current,
+    workshopDate, accessDurationDays, forceClose, resendAudienceId, repoUrl
   }
 `;
 

@@ -14,6 +14,7 @@ interface WorkshopInstanceLookup {
   slug?: string
   token?: string
   resendAudienceId?: string
+  repoUrl?: string
 }
 
 async function addContactToAudience(
@@ -78,6 +79,7 @@ export async function subscribeContact(input: SubscribeInput): Promise<Subscribe
   let instanceAudienceId: string | undefined
   let instanceTitle = event || 'Workshop'
   let attendToken = instanceToken
+  let repoUrl: string | undefined
 
   if (source === 'workshop-attend' && instanceToken) {
     const instance = await sanityFetch<WorkshopInstanceLookup | null>(workshopInstanceByTokenQuery, {
@@ -94,6 +96,9 @@ export async function subscribeContact(input: SubscribeInput): Promise<Subscribe
     }
     if (instance?.token) {
       attendToken = instance.token
+    }
+    if (instance?.repoUrl) {
+      repoUrl = instance.repoUrl
     }
   }
 
@@ -120,6 +125,7 @@ export async function subscribeContact(input: SubscribeInput): Promise<Subscribe
         name: firstName,
         event: event || '',
         workshopTitle: instanceTitle,
+        repoUrl,
         attendUrl: `https://faziz-dev.com/workshops/attend/${attendToken}`,
       }),
     })

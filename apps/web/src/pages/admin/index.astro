@@ -15,12 +15,14 @@ import {
   verifyAdminSessionCookie,
 } from '../../lib/workshop-session';
 import { env } from '../../lib/email';
+import WorkshopInstanceOps from '../../components/islands/WorkshopInstanceOps';
+import '../../styles/admin-dashboard.css';
 
 interface WorkshopInstanceRow {
   _id: string;
   title: string;
   event: string;
-  slug?: string;
+  slug: string;
   token: string;
   workshopDate: string;
   accessDurationDays: number;
@@ -207,7 +209,7 @@ const copyOnClick =
         <!-- PRESS KIT QUICKLINKS -->
         <div class="admin-block">
           <h2 class="admin-block__title">Press kit quicklinks</h2>
-          <p class="admin-head__body">Deep links into the <a href="/invite" class="ds-link">/invite</a> press kit. Paste one into an organizer email and they land with the right bio or headshot crop pre-selected.</p>
+          <p class="admin-head__body">Deep links into the <a href="/press-kit" class="ds-link">/press-kit</a>. Paste one into an organizer email and they land with the right bio or headshot crop pre-selected.</p>
 
           <div class="quicklinks">
             <div class="instance__row quicklinks__row">
@@ -250,7 +252,7 @@ const copyOnClick =
                   <option value="wide">Wide 16:9</option>
                 </select>
                 <button class="instance__copy" id="ql-combo-copy" type="button">
-                  <code id="ql-combo-url">faziz-dev.com/invite</code>
+                  <code id="ql-combo-url">faziz-dev.com/press-kit</code>
                   <span class="lbl">Copy</span>
                 </button>
               </div>
@@ -293,7 +295,7 @@ const copyOnClick =
             </div>
           </div>
           <p class="admin-head__body">
-            Copy the access link for a session. Materials stay available from the workshop date until the access window closes.
+            Show the QR on a projector, or copy the access link. Materials stay available from the workshop date until the access window closes.
           </p>
         </div>
 
@@ -360,17 +362,14 @@ const copyOnClick =
                       </div>
                     </dl>
 
-                    <div class="instance__row">
-                      <span class="instance__label">Access link</span>
-                      <button
-                        class="instance__copy"
-                        data-url={attendUrl}
-                        onclick="navigator.clipboard.writeText(this.dataset.url);const lbl=this.querySelector('.lbl');const prev=lbl.textContent;lbl.textContent='Copied';setTimeout(()=>{lbl.textContent=prev;},2000);"
-                      >
-                        <code>{attendUrl.replace('https://', '')}</code>
-                        <span class="lbl">Copy</span>
-                      </button>
-                    </div>
+                    <WorkshopInstanceOps
+                      client:load
+                      attendUrl={attendUrl}
+                      instanceSlug={instance.slug || ''}
+                      feedbackUrl={instance.overallFeedbackUrl}
+                      hasAudience={Boolean(instance.resendAudienceId && instance.slug)}
+                      eventLabel={instance.event}
+                    />
 
                     <div class="instance__row">
                       <span class="instance__label">Resend audience</span>
@@ -406,9 +405,6 @@ const copyOnClick =
                     </div>
 
                     <footer class="instance__actions">
-                      <a href={`/workshops/attend/${instance.token}`} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
-                        Preview attend
-                      </a>
                       {instance.repoUrl && (
                         <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
                           Repo
@@ -430,9 +426,7 @@ const copyOnClick =
 </BaseLayout>
 
 <script>
-  // Custom quicklink builder: combine a bio length and a headshot crop into
-  // one /invite deep link. Lands on #bios when a bio is chosen (headshot
-  // crop still applies further down the page), otherwise on #headshots.
+  // Custom quicklink builder: bio + headshot crop → /press-kit deep link.
   function initAdminQuicklinks() {
     const bioSel = document.getElementById('ql-bio') as HTMLSelectElement | null;
     const cropSel = document.getElementById('ql-crop') as HTMLSelectElement | null;
@@ -446,7 +440,7 @@ const copyOnClick =
       if (cropSel.value) params.set('crop', cropSel.value);
       const qs = params.toString();
       const hash = bioSel.value ? '#bios' : cropSel.value ? '#headshots' : '';
-      return `https://faziz-dev.com/invite${qs ? `?${qs}` : ''}${hash}`;
+      return `https://faziz-dev.com/press-kit${qs ? `?${qs}` : ''}${hash}`;
     };
     const render = () => {
       urlEl.textContent = buildUrl().replace('https://', '');
@@ -474,315 +468,3 @@ const copyOnClick =
   document.addEventListener('astro:after-swap', initAdminQuicklinks);
 </script>
 
-<style>
-  .auth-section {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    padding-block: 4rem;
-  }
-  .auth-card {
-    max-width: 26rem;
-    margin: 0 auto;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    padding: 2rem;
-  }
-  .auth-card__head {
-    text-align: center;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .auth-card__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.4rem;
-    color: rgb(var(--ink));
-    margin-top: 0.6rem;
-  }
-  .auth-card__error {
-    background: rgb(var(--danger) / 0.1);
-    border: 1px solid rgb(var(--danger) / 0.4);
-    color: rgb(var(--danger));
-    border-radius: 10px;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .auth-card__form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .auth-card__input {
-    width: 100%;
-    background: rgb(var(--surface-1));
-    border: 1px solid rgb(var(--edge-strong));
-    border-radius: 10px;
-    padding: 0.8rem 1rem;
-    color: rgb(var(--ink));
-    font-size: 0.98rem;
-  }
-  .auth-card__input:focus { outline: none; border-color: rgb(var(--accent)); }
-
-  .admin-section { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
-  .admin-head { max-width: 60rem; margin-bottom: 2rem; }
-
-  .admin-block { max-width: 60rem; margin-bottom: 2.5rem; }
-  .admin-block__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.2rem, 2vw, 1.5rem);
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    color: rgb(var(--ink));
-  }
-
-  .quicklinks {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    padding: 1.4rem 1.6rem;
-    margin-top: 1.2rem;
-  }
-  .quicklinks .quicklinks__row:first-child {
-    border-top: none;
-    padding-top: 0;
-  }
-  .quicklinks__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .quicklinks__combo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .quicklinks__select {
-    background: rgb(var(--surface-1));
-    border: 1px solid rgb(var(--edge-strong));
-    border-radius: 8px;
-    color: rgb(var(--ink));
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
-    font-family: inherit;
-  }
-  .quicklinks__select:focus { outline: none; border-color: rgb(var(--accent)); }
-  .instance__copy--primary code { color: rgb(var(--signal)); }
-  .admin-head__row {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-  }
-  .admin-head__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-  }
-  .admin-head__meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.78rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .admin-head__body {
-    color: rgb(var(--ink-muted));
-    margin-top: 1rem;
-    max-width: 60ch;
-  }
-
-  .empty {
-    position: relative;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    padding: 3rem;
-    text-align: center;
-    overflow: hidden;
-  }
-  .empty__inner { position: relative; }
-  .empty__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-  }
-  .empty__body {
-    color: rgb(var(--ink-muted));
-    margin: 0.5rem 0 1.5rem;
-  }
-
-  .instance-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .instance {
-    display: flex;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .instance__status { width: 4px; flex-shrink: 0; }
-  .instance__body { padding: 1.6rem; flex: 1; min-width: 0; }
-  .instance__head {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-  }
-  .instance__title-block { min-width: 0; }
-  .instance__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: rgb(var(--ink));
-  }
-  .instance__event {
-    font-size: 0.9rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.15rem;
-  }
-  .instance__chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.7rem;
-    border: 1px solid;
-    border-radius: 999px;
-    background: rgb(var(--surface-1));
-    flex-shrink: 0;
-  }
-
-  .instance__meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-  }
-  .instance__meta-grid dt {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-    margin-bottom: 0.25rem;
-  }
-  .instance__meta-grid dd {
-    font-size: 0.9rem;
-    color: rgb(var(--ink));
-    font-weight: 500;
-  }
-
-  .instance__row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgb(var(--edge));
-  }
-  .instance__label {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-    flex-shrink: 0;
-    min-width: 110px;
-  }
-  .instance__copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.4rem 0.75rem;
-    border: 1px solid rgb(var(--edge));
-    border-radius: 8px;
-    background: rgb(var(--surface-1));
-    color: rgb(var(--ink-muted));
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .instance__copy:hover { border-color: rgb(var(--accent-bright)); color: rgb(var(--ink)); }
-  .instance__copy code {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.75rem;
-    color: rgb(var(--accent-bright));
-  }
-  .instance__copy .lbl {
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-  }
-
-  .instance__audience {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-  }
-  .instance__audience-id {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.75rem;
-    color: rgb(var(--ink));
-    background: rgb(var(--surface-1));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 6px;
-    padding: 0.25rem 0.5rem;
-  }
-  .instance__audience-count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    color: rgb(var(--signal));
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .instance__audience-error {
-    font-size: 0.72rem;
-    color: rgb(var(--ink-faint));
-    font-style: italic;
-  }
-  .instance__audience-link svg { width: 0.9em; height: 0.9em; }
-  .instance__audience--empty {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-muted));
-  }
-
-  .instance__actions {
-    display: flex;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin-top: 1.4rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid rgb(var(--edge));
-  }
-  .instance__actions .ds-btn {
-    padding: 0.45rem 0.9rem;
-    font-size: 0.85rem;
-  }
-</style>
