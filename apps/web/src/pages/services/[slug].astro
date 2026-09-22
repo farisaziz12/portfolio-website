@@ -59,14 +59,16 @@ interface ServiceLandingPage {
 
 // Generate static paths
 export async function getStaticPaths() {
-  const pages = await sanityFetch<Array<{ slug: string }>>(allServiceLandingPagesQuery);
+  const pages = await sanityFetch<Array<{ slug: string }>>(allServiceLandingPagesQuery).catch(() => []);
   return pages.map((page) => ({
     params: { slug: page.slug },
   }));
 }
 
 const { slug } = Astro.params;
-const page = await sanityFetch<ServiceLandingPage>(serviceLandingPageBySlugQuery, { slug });
+const page = await sanityFetch<ServiceLandingPage | null>(serviceLandingPageBySlugQuery, { slug }).catch(
+  () => null,
+);
 
 if (!page) {
   return Astro.redirect('/404');

@@ -27,7 +27,7 @@ export default function ThemeToggle() {
     root.classList.toggle('dark', theme === 'dark');
     root.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-    try { localStorage.setItem('faziz-theme', theme); } catch (_) {}
+    try { localStorage.setItem('faziz-theme', theme); } catch { /* quota / private mode */ }
   }, [theme, mounted]);
 
   const btnRef = useRef<HTMLButtonElement>(null);

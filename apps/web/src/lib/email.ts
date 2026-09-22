@@ -1,5 +1,4 @@
-import { Resend } from 'resend'
-import type { CreateEmailOptions, CreateEmailResponse } from 'resend'
+import { Resend, type CreateEmailOptions, type CreateEmailResponse } from 'resend'
 import { env } from './env'
 
 export { env }

@@ -96,7 +96,7 @@ export default function InviteForm() {
         has_date: Boolean(fields.date),
         has_location: Boolean(fields.location.trim()),
       });
-    } catch (err) {
+    } catch {
       setServerError("Couldn't reach the server. Try again in a moment.");
       track('form_submit_failed', { form: 'invite', reason: 'network' });
     } finally {

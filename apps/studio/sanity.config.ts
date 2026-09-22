@@ -22,7 +22,7 @@ export default defineConfig({
     codeInput(),
     table(),
     BulkDelete({
-      schemaTypes: schemaTypes,
+      schemaTypes,
     }),
   ],
 

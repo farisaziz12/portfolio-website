@@ -32,7 +32,7 @@ interface BlogPost {
 }
 
 const { slug } = Astro.params;
-const post = await sanityFetch<BlogPost>(blogPostBySlugQuery, { slug });
+const post = await sanityFetch<BlogPost | null>(blogPostBySlugQuery, { slug }).catch(() => null);
 if (!post) return Astro.redirect('/blog');
 
 const coverImageUrl = post.coverImage?.asset

@@ -1,0 +1,18 @@
+{
+  "name": "faziz-dev website",
+  "install": "pnpm install --frozen-lockfile",
+  "terminals": [
+    {
+      "name": "web",
+      "command": "pnpm web",
+      "description": "Astro site at http://localhost:4321. Renders with empty-state fallbacks if Sanity env is missing. Use this for before/after screenshots."
+    }
+  ],
+  "ports": [
+    {
+      "name": "web",
+      "port": 4321
+    }
+  ],
+  "enable_testing": true
+}

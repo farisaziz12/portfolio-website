@@ -1,8 +1,10 @@
 # UI Design System Rules (DS v2.1)
 
-Source of truth for tokens and primitives. Taste and page grammar live in [`taste.md`](./taste.md). All components and pages follow these rules.
+Source of truth for tokens and primitives is `apps/web/src/styles/global.css`. Taste and page grammar live in [`taste.md`](./taste.md). All components and pages follow these rules.
 
-Dark-first. Same brand as v2 (electric blue, teal signal, Space Grotesk / Hanken Grotesk / IBM Plex Mono). v2.1 tunes contrast, reading rhythm, and quieter chrome.
+Dark-first. Same brand as v2 (electric blue, teal signal, Space Grotesk / Hanken Grotesk / IBM Plex Mono). v2.1 tunes contrast, reading rhythm, and quieter chrome. If a token or class name elsewhere disagrees with `global.css`, **`global.css` wins**.
+
+Use `ds-btn`, `ds-card` / `ds-card-interactive`, `ds-pill`, `ds-link`, `ds-reveal`. Mechanically enforced subset: `apps/web/scripts/ui-guardrails.mjs` (`pnpm --filter web lint:ui`).
 
 ## Core Principles
 

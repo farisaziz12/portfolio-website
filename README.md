@@ -17,6 +17,8 @@ Engineer, Conference Speaker & Workshop Instructor.
 
 | Guide | What's in it |
 |---|---|
+| [`AGENTS.md`](./AGENTS.md) | Agent map: stack, commands, hard constraints, MCPs, PR screenshots |
+| [`.cursor/README.md`](./.cursor/README.md) | Cursor rules, skills, MCP, Cloud Agent env, hooks |
 | [`apps/web/README.md`](./apps/web/README.md) | Website architecture: rendering, islands, global behaviors, conventions |
 | [`docs/sanity-guide.md`](./docs/sanity-guide.md) | CMS guide: content model, what powers which page, editing recipes |
 | [`apps/web/CLAUDE.md`](./apps/web/CLAUDE.md) | Email subsystem: Resend setup, templates, env vars, gotchas |
@@ -49,6 +51,7 @@ pnpm install
 cp apps/web/.env.example apps/web/.env
 cp apps/studio/.env.example apps/studio/.env
 # Fill in Sanity credentials; email vars are documented in apps/web/CLAUDE.md
+# Agent/Cursor setup: AGENTS.md and .cursor/README.md
 ```
 
 ```bash
@@ -56,7 +59,8 @@ pnpm dev        # web + studio
 pnpm web        # website only (localhost:4321)
 pnpm studio     # Sanity Studio only
 pnpm build      # build everything
-pnpm --filter web lint   # eslint + UI guardrails
+pnpm lint                    # ESLint + UI guardrails + file-size/convention ratchet
+pnpm --filter web lint       # website only
 ```
 
 Without Sanity credentials/network the site still runs — every fetch falls

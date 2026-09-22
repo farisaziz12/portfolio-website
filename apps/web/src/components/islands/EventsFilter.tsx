@@ -77,14 +77,6 @@ export default function EventsFilter({ events, upcomingOnly = false, pastOnly = 
     return [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [events, upcomingOnly, pastOnly, splitByTime, now]);
 
-  // Split filtered events into upcoming and past for rendering with divider
-  const { upcomingFiltered, pastFiltered } = useMemo(() => {
-    if (!splitByTime) return { upcomingFiltered: [], pastFiltered: [] };
-    return {
-      upcomingFiltered: baseEvents.filter((event) => new Date(event.date) >= now),
-      pastFiltered: baseEvents.filter((event) => new Date(event.date) < now),
-    };
-  }, [baseEvents, splitByTime, now]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<FilterType>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
@@ -131,7 +123,7 @@ export default function EventsFilter({ events, upcomingOnly = false, pastOnly = 
     });
 
     return {
-      years: Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a)),
+      years: Array.from(yearsSet).sort((a, b) => parseInt(b, 10) - parseInt(a, 10)),
       countries: Array.from(countriesSet).sort(),
       typeCounts: typeCountMap,
     };
@@ -228,14 +220,14 @@ export default function EventsFilter({ events, upcomingOnly = false, pastOnly = 
     return { upcomingByYear: upcomingGrouped, pastByYear: pastGrouped };
   }, [filteredUpcoming, filteredPast, splitByTime]);
 
-  const sortedUpcomingYears = Object.keys(upcomingByYear).sort((a, b) => parseInt(a) - parseInt(b));
-  const sortedPastYears = Object.keys(pastByYear).sort((a, b) => parseInt(b) - parseInt(a));
+  const sortedUpcomingYears = Object.keys(upcomingByYear).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+  const sortedPastYears = Object.keys(pastByYear).sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
 
   // Sort years: ascending for upcoming (2025 first), descending for past/all events (most recent first)
   const sortedYears = Object.keys(eventsByYear).sort((a, b) =>
     upcomingOnly
-      ? parseInt(a) - parseInt(b)  // Ascending for upcoming
-      : parseInt(b) - parseInt(a)  // Descending for past/all events
+      ? parseInt(a, 10) - parseInt(b, 10)  // Ascending for upcoming
+      : parseInt(b, 10) - parseInt(a, 10)  // Descending for past/all events
   );
 
   // Pagination for grid view

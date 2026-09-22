@@ -1,18 +1,15 @@
-import type { JSX } from 'react';
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import type {
-  ImpactMetricV2,
-  ImpactDomain,
-  ImpactLens,
-  HighlightStripMetric,
-  ProofItem,
-  PortableTextBlock,
-} from '../../types/impact';
+import { useState, useEffect, useCallback, useMemo, useRef, type JSX } from 'react';
 import {
   DOMAIN_CONFIG,
   LENS_CONFIG,
   formatMetricNumber,
   getColorClasses,
+  type ImpactMetricV2,
+  type ImpactDomain,
+  type ImpactLens,
+  type HighlightStripMetric,
+  type ProofItem,
+  type PortableTextBlock,
 } from '../../types/impact';
 
 interface ImpactExplorerProps {
@@ -67,7 +64,7 @@ export default function ImpactExplorer({
     return urlState.domain || defaultDomain;
   });
 
-  const [lens, setLens] = useState<ImpactLens>(() => {
+  const [lens] = useState<ImpactLens>(() => {
     const urlState = parseUrlState();
     return urlState.lens || defaultLens;
   });
@@ -680,7 +677,7 @@ function PortableText({ blocks }: { blocks: PortableTextBlock[] }) {
 
 function ProofItemDisplay({
   item,
-  imageUrls,
+  imageUrls: _imageUrls,
 }: {
   item: ProofItem;
   imageUrls: Record<string, string>;

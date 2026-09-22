@@ -1,0 +1,8 @@
+node_modules
+dist
+.astro
+.vercel
+pnpm-lock.yaml
+*.min.js
+apps/web/content
+src

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "node .cursor/hooks/require-visual-evidence.mjs",
+        "loop_limit": 1,
+        "timeout": 30
+      }
+    ]
+  }
+}

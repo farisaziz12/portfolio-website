@@ -99,7 +99,7 @@ export default function ContactForm() {
         has_company: Boolean(fields.company.trim()),
         message_length: fields.message.trim().length,
       });
-    } catch (err) {
+    } catch {
       setServerError("Couldn't reach the server. Try again in a moment.");
       track('form_submit_failed', { form: 'contact', reason: 'network' });
     } finally {

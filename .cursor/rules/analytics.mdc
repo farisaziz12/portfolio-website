@@ -1,0 +1,14 @@
+---
+description: PostHog events, identify, and recording rules
+globs: apps/web/src/lib/analytics.ts,apps/web/src/components/posthog.astro,apps/web/src/components/islands/**/*.tsx,docs/measurement.md
+alwaysApply: false
+---
+
+Inventory: `docs/measurement.md`. Typed names: `AnalyticsEvent` in `apps/web/src/lib/analytics.ts`. Prefer the PostHog MCP (this project is EU) over inventing events.
+
+- Islands call `track` / `identify` / `trackFormStarted` from `lib/analytics.ts`. Do not import `posthog-js` in an island.
+- New events need a product decision, a union member, and a `docs/measurement.md` row — same PR.
+- Identify on valid email blur (already global) and again on successful submit with form props. Distinct ID is the lowercased email.
+- Recording is gated to conversion paths (`RECORD_PATHS` in `posthog.astro`). Mask inputs; extra sensitive nodes get `data-ph-mask`.
+- Capture is disabled on localhost. `PUBLIC_POSTHOG_KEY` must be set on Vercel Production **and** Preview.
+- CTAs: add `data-track` and let the document listener fire `cta_click`. Do not duplicate that listener.

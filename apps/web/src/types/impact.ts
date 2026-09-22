@@ -181,7 +181,7 @@ export const LENS_CONFIG: LensConfig[] = [
 
 // Helper function to format metric number
 export function formatMetricNumber(value: number, unit?: MetricUnit, prefix?: string): string {
-  let formatted = '';
+  let formatted: string;
 
   switch (unit) {
     case 'k':

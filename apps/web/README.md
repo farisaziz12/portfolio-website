@@ -5,6 +5,7 @@ architecture map; the deeper guides live next to the code:
 
 | Topic | Where |
 |---|---|
+| Agent map (constraints, MCPs, PR screenshots) | [`../../AGENTS.md`](../../AGENTS.md) + [`AGENTS.md`](./AGENTS.md) |
 | Email subsystem (Resend), env vars, no-mailto policy | [`CLAUDE.md`](./CLAUDE.md) |
 | Design-system rules (tokens, `ds-*` classes, guardrails) | [`../../docs/ui-rules.md`](../../docs/ui-rules.md) |
 | Content model + editing recipes | [`../../docs/sanity-guide.md`](../../docs/sanity-guide.md) |
@@ -15,9 +16,10 @@ architecture map; the deeper guides live next to the code:
 ```sh
 pnpm dev          # dev server on :4321
 pnpm build        # production build (needs Sanity network access)
-pnpm lint         # eslint + UI guardrails
-pnpm lint:ui      # just the guardrails (scripts/ui-guardrails.mjs)
-npx astro check   # typecheck
+pnpm lint              # eslint + UI guardrails + file-size/convention ratchet
+pnpm lint:ui           # just the guardrails (scripts/ui-guardrails.mjs)
+pnpm lint:conventions  # file size, mailto, emoji, Resend, sanityFetch.catch, any, page mirrors
+npx astro check        # typecheck
 ```
 
 ## How rendering works

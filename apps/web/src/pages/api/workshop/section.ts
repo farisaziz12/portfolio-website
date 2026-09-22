@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ url }) => {
         sectionFeedbackUrl?: string
         content?: unknown[]
       } | null
-    } | null>(workshopAttendSectionQuery, { token, sectionKey })
+    } | null>(workshopAttendSectionQuery, { token, sectionKey }).catch(() => null)
 
     if (!result?.section) {
       return new Response(JSON.stringify({ error: 'Section not found' }), {

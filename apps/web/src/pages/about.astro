@@ -73,7 +73,6 @@ const [pageContent, stats, testimonials, socialPosts, profile] = await Promise.a
 
 const heroImage = pageContent?.heroImage;
 const seo = pageContent?.seo;
-const linkedinUrl = pageContent?.aboutHero?.linkedinUrl || 'https://linkedin.com/in/farisaziz12';
 
 // Sanity milestones don't carry a year — fall back to the design's curated timeline
 // when Sanity returns nothing. If Sanity has milestones we render them but with no year tag.

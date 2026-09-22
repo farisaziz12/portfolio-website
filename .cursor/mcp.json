@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "sanity": {
+      "url": "https://mcp.sanity.io"
+    },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp"
+    },
+    "vercel": {
+      "url": "https://mcp.vercel.com"
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/"
+    }
+  }
+}
