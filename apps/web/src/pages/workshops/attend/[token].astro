@@ -101,12 +101,34 @@ const formatDateLong = (dateStr: string) => {
           </h1>
 
           <p class="text-lg text-ink-muted mb-8">
-            This workshop session has ended. Materials are no longer available.
+            This workshop session has ended. Materials are no longer available on this page.
           </p>
 
-          <a href="/workshops" class="ds-btn ds-btn-primary">
-            View workshops
-          </a>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            {instance.repoUrl && (
+              <a
+                href={instance.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ds-btn ds-btn-primary"
+              >
+                Open GitHub repo
+              </a>
+            )}
+            {instance.overallFeedbackUrl && (
+              <a
+                href={instance.overallFeedbackUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ds-btn ds-btn-secondary"
+              >
+                Share feedback
+              </a>
+            )}
+            <a href="/workshops" class="ds-btn ds-btn-secondary">
+              View workshops
+            </a>
+          </div>
         </div>
       </div>
     </section>

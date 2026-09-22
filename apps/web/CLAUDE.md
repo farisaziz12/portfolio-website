@@ -32,7 +32,7 @@ The email routes, each in `src/pages/api/`:
 | `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. Workshop-attend looks up the instance by **access token** (`instanceToken` / legacy `instanceSlug` value). |
 | `/api/workshop/session` | GET/POST | Sets signed `workshop_session` cookie on POST (gate); GET resumes session for a token | Cookie HMAC via `WORKSHOP_SESSION_SECRET` (falls back to `ADMIN_PASSWORD`). |
 | `/api/workshop/section` | GET | Lazy-load one section body (`token` + `sectionKey`) | Public CDN read; attend page ships schedule metadata only. |
-| `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD`). |
+| `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD` **or** signed `admin_session` cookie from `/admin`). |
 
 **Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`):
 1. Send the admin notification first. If it fails, return 502 — the user needs to know their form didn't go through.

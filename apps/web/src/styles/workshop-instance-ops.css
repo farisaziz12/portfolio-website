@@ -1,0 +1,185 @@
+.wio {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.wio__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-start;
+}
+
+.wio__label {
+  flex: 0 0 7rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ink-faint));
+  padding-top: 0.35rem;
+}
+
+.wio__access {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.wio__qr {
+  width: 7.5rem;
+  height: 7.5rem;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--edge));
+  background: white;
+  padding: 0.35rem;
+}
+
+.wio__qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wio__access-actions {
+  flex: 1;
+  min-width: 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.wio__copy {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  background: rgb(var(--surface-1));
+  border: 1px solid rgb(var(--edge));
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  color: rgb(var(--ink));
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.wio__copy:hover {
+  border-color: rgb(var(--edge-strong));
+}
+
+.wio__copy code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: rgb(var(--ink-muted));
+}
+
+.wio__lbl {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(var(--accent-bright));
+}
+
+.wio__btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wio__btn-row .ds-btn {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.wio__follow {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wio__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgb(var(--ink-muted));
+  line-height: 1.45;
+}
+
+.wio__hint--ok {
+  color: rgb(var(--signal));
+}
+
+.wio__hint--err {
+  color: rgb(var(--danger));
+}
+
+.wio__fs {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 2rem;
+  background: rgb(var(--bg) / 0.96);
+  backdrop-filter: blur(8px);
+}
+
+.wio__fs-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgb(var(--surface-2));
+  border: 1px solid rgb(var(--edge-strong));
+  border-radius: 999px;
+  color: rgb(var(--ink));
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+}
+
+.wio__fs-qr {
+  width: min(72vw, 28rem);
+  height: min(72vw, 28rem);
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgb(var(--edge));
+}
+
+.wio__fs-qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wio__fs-url {
+  margin: 0;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+  color: rgb(var(--ink-muted));
+  text-align: center;
+  word-break: break-all;
+  max-width: 36rem;
+}
+
+.wio__fs-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgb(var(--ink-faint));
+}
