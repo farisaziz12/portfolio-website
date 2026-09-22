@@ -31,11 +31,9 @@ export default defineConfig({
     isr: {
       expiration: 60 * 60, // 1 hour
       exclude: [
-        '/api',
-        '/api/.*',
-        '/admin',
-        '/admin/.*',
-        '/workshops/attend/.*',
+        /^\/api\/.+/,
+        /^\/admin(\/.*)?$/,
+        /^\/workshops\/attend\/.+/,
       ],
     },
   }),

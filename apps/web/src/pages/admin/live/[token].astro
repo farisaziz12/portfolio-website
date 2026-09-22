@@ -43,6 +43,7 @@ if (!instance) {
 
 const phase = getAccessPhase(instance);
 const closeDate = getCloseDate(instance);
+const attendPath = `/workshops/attend/${instance.token}`;
 ---
 
 <BaseLayout
@@ -52,27 +53,30 @@ const closeDate = getCloseDate(instance);
 >
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
-  <section class="admin-section" style="padding-block: clamp(3rem, 8vw, 5rem);">
-    <div class="container" style="max-width: 960px;">
-      <div class="admin-head" style="margin-bottom: 1.5rem;">
-        <Kicker>Admin · Live</Kicker>
-        <div class="admin-head__row" style="display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-          <div>
-            <h1 class="admin-head__title" style="font-size:clamp(1.75rem,4vw,2.25rem);font-family:var(--font-display);font-weight:700;">
-              {instance.title}
-            </h1>
-            <p class="admin-head__body" style="color:rgb(var(--ink-muted));margin-top:0.35rem;">
-              {instance.event} · materials until {closeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              · SSR phase <strong>{phase}</strong>
-            </p>
-          </div>
-          <a href="/admin" class="ds-btn ds-btn-secondary">← Dashboard</a>
+  <section class="live-page">
+    <div class="live-page__inner">
+      <header class="live-page__head">
+        <div class="live-page__head-top">
+          <Kicker>Admin · Live room</Kicker>
+          <a href="/admin" class="ds-btn ds-btn-secondary live-page__back">← Dashboard</a>
         </div>
-      </div>
+        <h1 class="live-page__title">{instance.title}</h1>
+        <p class="live-page__sub">
+          {instance.event}
+          <span aria-hidden="true"> · </span>
+          Materials until {closeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <span aria-hidden="true"> · </span>
+          {instance.sections?.length || 0} sections
+          <span aria-hidden="true"> · </span>
+          Server phase <strong>{phase}</strong>
+        </p>
+      </header>
 
       <WorkshopLiveAdmin
         client:load
         token={instance.token}
+        event={instance.event}
+        attendPath={attendPath}
         sections={(instance.sections || []).map((s) => ({
           _key: s._key,
           title: s.title,
@@ -82,3 +86,38 @@ const closeDate = getCloseDate(instance);
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .live-page {
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    min-height: 70vh;
+  }
+  .live-page__inner {
+    width: min(1100px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+  .live-page__head { margin-bottom: 1.75rem; }
+  .live-page__head-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+  }
+  .live-page__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.5vw, 2.35rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: rgb(var(--ink));
+    margin: 0;
+  }
+  .live-page__sub {
+    margin: 0.55rem 0 0;
+    color: rgb(var(--ink-muted));
+    font-size: 0.95rem;
+  }
+  .live-page__sub strong { color: rgb(var(--ink)); font-weight: 600; }
+</style>
