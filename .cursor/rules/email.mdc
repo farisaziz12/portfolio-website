@@ -1,0 +1,14 @@
+---
+description: Resend email routes, templates, and the no-mailto policy
+globs: apps/web/src/emails/**,apps/web/src/pages/api/**,apps/web/src/lib/email.ts,apps/web/CLAUDE.md
+alwaysApply: false
+---
+
+Full spec: `apps/web/CLAUDE.md`. Recipe: `.cursor/skills/add-email/SKILL.md`.
+
+- Every public contact path is a Resend-backed form. No `mailto:` in site UI. The only allowed `mailto:` is inside admin email templates.
+- Routes go through `lib/email.ts` (`env()`, `sendOrLog`). Never `new Resend(...)` in a route. Never read `import.meta.env.RESEND_*` directly (undefined on Vercel).
+- Two-stage send: admin notification is critical (502 on failure); submitter confirmation is best-effort (log only).
+- Templates use `src/emails/styles.ts` hex tokens (keep in sync with `global.css`). Do not hard-code hex in a template.
+- Audience IDs are resolved server-side from Sanity. Never trust a client-supplied audience ID.
+- `RESEND_FROM_EMAIL` is a bare address — routes add the display name.

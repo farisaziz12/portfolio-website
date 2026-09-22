@@ -5,6 +5,7 @@ architecture map; the deeper guides live next to the code:
 
 | Topic | Where |
 |---|---|
+| Agent map (constraints, MCPs, PR screenshots) | [`../../AGENTS.md`](../../AGENTS.md) + [`AGENTS.md`](./AGENTS.md) |
 | Email subsystem (Resend), env vars, no-mailto policy | [`CLAUDE.md`](./CLAUDE.md) |
 | Design-system rules (tokens, `ds-*` classes, guardrails) | [`../../docs/ui-rules.md`](../../docs/ui-rules.md) |
 | Content model + editing recipes | [`../../docs/sanity-guide.md`](../../docs/sanity-guide.md) |

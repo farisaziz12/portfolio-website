@@ -1,5 +1,11 @@
 # UI Design System Rules
 
+> **Canonical tokens and `ds-*` classes live in `apps/web/src/styles/global.css` (Design System v2).** This guide is the UX rulebook (hierarchy, a11y, no emojis, component checklist). If a token or class name here disagrees with `global.css`, **`global.css` wins**.
+>
+> Use `ds-btn`, `ds-card` / `ds-card-interactive`, `ds-pill`, `ds-link`, `ds-reveal` — not a parallel `btn-primary` layer.
+> Fonts: Space Grotesk (headings), Hanken Grotesk (body), IBM Plex Mono (terminal/kicker) — not Inter.
+> Mechanically enforced subset: `apps/web/scripts/ui-guardrails.mjs` (`pnpm --filter web lint:ui`).
+
 This document defines the design system rules for the portfolio website. All components and pages must follow these rules to ensure consistency, accessibility, and good UX.
 
 ## Core Principles

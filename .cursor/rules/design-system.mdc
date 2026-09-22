@@ -1,0 +1,15 @@
+---
+description: Design System v2 — tokens, ds-* classes, a11y, no emojis
+globs: apps/web/**/*.{astro,css,tsx,jsx}
+alwaysApply: false
+---
+
+Token source of truth is `apps/web/src/styles/global.css`, not memorized palettes. UX rulebook: `docs/ui-rules.md` (if a token name there disagrees with `global.css`, `global.css` wins).
+
+- Colors: `bg`, `surface-1/2/3`, `ink`, `ink-muted`, `ink-faint`, `edge`, `edge-strong`, `accent`, `accent-bright`, `accent-deep`, `signal`, `danger`, `warn`. Use `rgb(var(--token) / <alpha>)` or `ds-*` utilities.
+- Fonts: Space Grotesk (headings), Hanken Grotesk (body), IBM Plex Mono (terminal/kicker). Not Inter.
+- Buttons: `ds-btn ds-btn-primary` | `ds-btn-secondary`. Cards: `ds-card` vs `ds-card-interactive` (never mix). Pills: `ds-pill`. Links: `ds-link`. Reveals: `ds-reveal`.
+- Dark is canonical. Check light mode contrast (WCAG AA) when you touch color/text.
+- No emojis. No accent as a full section background. If it looks clickable, it is clickable.
+- CTAs that should show up in analytics get `data-track="slug"` (optional `data-track-label`).
+- `pnpm --filter web lint:ui` must pass. Do not raise the hex/inline-style baselines.

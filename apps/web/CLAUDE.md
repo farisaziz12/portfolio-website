@@ -1,5 +1,7 @@
 # apps/web — Email subsystem
 
+> Agent entrypoint: [`AGENTS.md`](../../AGENTS.md). This file is the Resend/email spec — keep it in sync with the code.
+
 Everything that sends mail goes through Resend. This file documents the architecture, env-var setup, design tokens, and the recipe for adding a new email. Keep this file in sync with the code; if you change a route or template, update the relevant section.
 
 ---

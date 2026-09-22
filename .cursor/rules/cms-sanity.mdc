@@ -1,0 +1,13 @@
+---
+description: Sanity schema, GROQ, and talk-vs-event IA
+globs: apps/studio/**,apps/web/src/lib/sanity/**
+alwaysApply: false
+---
+
+Guide: `docs/sanity-guide.md`. Workflow: `.cursor/skills/sanity-content/SKILL.md`. Prefer the Sanity MCP over guessing.
+
+- Talk = timeless bookable topic. Event = dated appearance (usually references a talk). Do not model an upcoming gig as a talk.
+- New schema fields must be added to the matching projection in `apps/web/src/lib/sanity/queries.ts` or they never appear on the site.
+- Every list fetch is failure-tolerant (`sanityFetch(...).catch(() => [])` or a fallback object). Empty CMS is an empty state, not a 500.
+- Country names on events: standard English (`Czechia`). They drive flag emojis.
+- Do not bake editorial copy into components when it belongs in Studio.
