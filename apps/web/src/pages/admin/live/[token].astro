@@ -3,52 +3,35 @@ export const prerender = false
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Kicker from '../../../components/design/Kicker.astro';
-import { queryWorkshopRoster } from '../../../lib/posthog-query';
+import WorkshopLiveAdmin from '../../../components/islands/WorkshopLiveAdmin';
 import { sanityFetch } from '../../../lib/sanity/client';
 import { workshopAttendQuery } from '../../../lib/sanity/queries';
-import { getSanityWriteClient } from '../../../lib/sanity/write-client';
-import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
 import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionCookie,
 } from '../../../lib/workshop-session';
-import WorkshopLiveAdmin from '../../../components/islands/WorkshopLiveAdmin';
-
-interface WorkshopInstanceData {
-  _id: string;
-  title: string;
-  event: string;
-  token: string;
-  workshopDate: string;
-  accessDurationDays: number;
-  forceClose: boolean;
-  liveEndedAt?: string | null;
-  sections?: { _key: string; title: string; emoji?: string }[];
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
-    },
-  });
-}
+import {
+  accessInputFromInstance,
+  applyLiveAction,
+  buildLiveSnapshot,
+  jsonResponse,
+  type LiveAdminInstance,
+} from '../../../lib/workshop-live-route';
+import { getAccessPhase, getCloseDate } from '../../../lib/workshop-access';
 
 const isAuthenticated = verifyAdminSessionCookie(
   Astro.cookies.get(ADMIN_SESSION_COOKIE)?.value
 );
+const wantsJson =
+  Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST';
 
 if (!isAuthenticated) {
-  if (Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST') {
-    return json({ error: 'Unauthorized' }, 401);
-  }
+  if (wantsJson) return jsonResponse({ error: 'Unauthorized' }, 401);
   return Astro.redirect('/admin');
 }
 
 const { token } = Astro.params;
-const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(
+const instance = await sanityFetch<LiveAdminInstance | null>(workshopAttendQuery, { token }).catch(
   (err) => {
     console.error('[admin/live] Sanity lookup failed:', err);
     return null;
@@ -56,47 +39,23 @@ const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQu
 );
 
 if (!instance) {
-  if (Astro.url.searchParams.get('format') === 'json' || Astro.request.method === 'POST') {
-    return json({ error: 'Workshop not found' }, 404);
-  }
+  if (wantsJson) return jsonResponse({ error: 'Workshop not found' }, 404);
   return Astro.redirect('/admin');
 }
 
-const accessInput = {
-  workshopDate: instance.workshopDate,
-  accessDurationDays: instance.accessDurationDays ?? 7,
-  forceClose: Boolean(instance.forceClose),
-  liveEndedAt: instance.liveEndedAt,
-};
-const phase = getAccessPhase(accessInput);
-const closeDate = getCloseDate(accessInput);
+const access = accessInputFromInstance(instance);
+const phase = getAccessPhase(access);
+const closeDate = getCloseDate(access);
 
-// ── JSON poll + End/Reopen live (same route that already works as HTML) ──
 if (Astro.request.method === 'POST') {
   try {
     const body = (await Astro.request.json()) as { action?: string };
-    const action = body.action || 'end-live';
-    if (action !== 'end-live' && action !== 'reopen-live') {
-      return json({ error: 'Unknown action' }, 400);
-    }
-    const writeClient = getSanityWriteClient();
-    if (!writeClient) {
-      return json(
-        {
-          error: 'SANITY_API_TOKEN required to end/reopen live (Editor+ token with write access)',
-        },
-        500
-      );
-    }
-    if (action === 'end-live') {
-      await writeClient.patch(instance._id).set({ liveEndedAt: new Date().toISOString() }).commit();
-    } else {
-      await writeClient.patch(instance._id).unset(['liveEndedAt']).commit();
-    }
-    return json({ success: true, action });
+    const result = await applyLiveAction(instance._id, body.action || 'end-live');
+    if (!result.ok) return jsonResponse({ error: result.error }, result.status);
+    return jsonResponse({ success: true, action: result.action });
   } catch (err) {
     console.error('[admin/live] POST failed:', err);
-    return json(
+    return jsonResponse(
       { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
       500
     );
@@ -105,28 +64,10 @@ if (Astro.request.method === 'POST') {
 
 if (Astro.url.searchParams.get('format') === 'json') {
   try {
-    let rows: Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'] = [];
-    let rosterError: string | undefined;
-    if (phase === 'live') {
-      const roster = await queryWorkshopRoster(instance.token);
-      rows = roster.rows;
-      rosterError = roster.error;
-    }
-    return json({
-      phase,
-      title: instance.title,
-      event: instance.event,
-      token: instance.token,
-      liveEndedAt: instance.liveEndedAt || null,
-      closeDateISO: closeDate.toISOString(),
-      onlineCount: rows.filter((r) => r.focused).length,
-      totalRecent: rows.length,
-      rows,
-      rosterError,
-    });
+    return jsonResponse(await buildLiveSnapshot(instance));
   } catch (err) {
     console.error('[admin/live] JSON failed:', err);
-    return json(
+    return jsonResponse(
       { error: 'Internal error', detail: err instanceof Error ? err.message : 'unknown' },
       500
     );
@@ -134,9 +75,7 @@ if (Astro.url.searchParams.get('format') === 'json') {
 }
 
 const attendPath = `/workshops/attend/${instance.token}`;
-
-// First paint: include a roster snapshot so the page is useful even if polling fails.
-let initialSnapshot = {
+const initialSnapshot = await buildLiveSnapshot(instance).catch((err) => ({
   phase,
   title: instance.title,
   event: instance.event,
@@ -145,22 +84,9 @@ let initialSnapshot = {
   closeDateISO: closeDate.toISOString(),
   onlineCount: 0,
   totalRecent: 0,
-  rows: [] as Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'],
-  rosterError: undefined as string | undefined,
-};
-if (phase === 'live') {
-  const roster = await queryWorkshopRoster(instance.token).catch((err) => ({
-    rows: [] as Awaited<ReturnType<typeof queryWorkshopRoster>>['rows'],
-    error: err instanceof Error ? err.message : 'roster failed',
-  }));
-  initialSnapshot = {
-    ...initialSnapshot,
-    rows: roster.rows,
-    onlineCount: roster.rows.filter((r) => r.focused).length,
-    totalRecent: roster.rows.length,
-    rosterError: roster.error,
-  };
-}
+  rows: [],
+  rosterError: err instanceof Error ? err.message : 'roster failed',
+}));
 ---
 
 <BaseLayout
