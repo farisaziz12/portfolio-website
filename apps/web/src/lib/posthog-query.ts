@@ -1,4 +1,5 @@
 import { env } from './env'
+import { parseRosterFocused, parseRosterSectionKey } from './workshop-roster'
 
 export interface WorkshopRosterRow {
   email: string
@@ -17,6 +18,10 @@ function posthogApiHost(): string {
 /**
  * Near-live roster from recent workshop_heartbeat events.
  * Requires POSTHOG_PERSONAL_API_KEY + POSTHOG_PROJECT_ID (server-only).
+ *
+ * Latest event per person uses a row_number() window so section and focus
+ * come from the same heartbeat. Independent argMax(section) / argMax(toBool(focused))
+ * mixed columns across events, and toBool('false') is true in ClickHouse.
  */
 export async function queryWorkshopRoster(instanceToken: string): Promise<{
   rows: WorkshopRosterRow[]
@@ -38,15 +43,28 @@ export async function queryWorkshopRoster(instanceToken: string): Promise<{
   const hogql = `
 SELECT
   distinct_id AS email,
-  argMax(toString(properties.name), timestamp) AS name,
-  argMax(toString(properties.section_key), timestamp) AS section_key,
-  argMax(toBool(properties.focused), timestamp) AS focused,
-  max(timestamp) AS last_seen
-FROM events
-WHERE event = 'workshop_heartbeat'
-  AND properties.instance = '${safeToken}'
-  AND timestamp > now() - INTERVAL 45 SECOND
-GROUP BY distinct_id
+  name,
+  section_key,
+  focused,
+  last_seen
+FROM (
+  SELECT
+    distinct_id,
+    coalesce(toString(properties.name), '') AS name,
+    nullIf(toString(properties.section_key), '') AS section_key,
+    if(
+      toString(properties.focused) IN ('1', 'true', 'True'),
+      1,
+      0
+    ) AS focused,
+    timestamp AS last_seen,
+    row_number() OVER (PARTITION BY distinct_id ORDER BY timestamp DESC) AS rn
+  FROM events
+  WHERE timestamp > now() - INTERVAL 45 SECOND
+    AND event = 'workshop_heartbeat'
+    AND toString(properties.instance) = '${safeToken}'
+)
+WHERE rn = 1
 ORDER BY last_seen DESC
 LIMIT 200
 `.trim()
@@ -78,8 +96,8 @@ LIMIT 200
     const rows: WorkshopRosterRow[] = results.map((r) => ({
       email: String(r[0] ?? ''),
       name: String(r[1] ?? ''),
-      sectionKey: r[2] != null && String(r[2]) !== '' ? String(r[2]) : null,
-      focused: Boolean(r[3]),
+      sectionKey: parseRosterSectionKey(r[2]),
+      focused: parseRosterFocused(r[3]),
       lastSeen: String(r[4] ?? ''),
     }))
 
