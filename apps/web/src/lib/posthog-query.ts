@@ -1,5 +1,9 @@
 import { env } from './env'
-import { parseRosterFocused, parseRosterSectionKey } from './workshop-roster'
+import {
+  buildWorkshopRosterHogql,
+  parseRosterFocused,
+  parseRosterSectionKey,
+} from './workshop-roster'
 
 export interface WorkshopRosterRow {
   email: string
@@ -18,10 +22,6 @@ function posthogApiHost(): string {
 /**
  * Near-live roster from recent workshop_heartbeat events.
  * Requires POSTHOG_PERSONAL_API_KEY + POSTHOG_PROJECT_ID (server-only).
- *
- * Latest event per person uses a row_number() window so section and focus
- * come from the same heartbeat. Independent argMax(section) / argMax(toBool(focused))
- * mixed columns across events, and toBool('false') is true in ClickHouse.
  */
 export async function queryWorkshopRoster(instanceToken: string): Promise<{
   rows: WorkshopRosterRow[]
@@ -37,37 +37,7 @@ export async function queryWorkshopRoster(instanceToken: string): Promise<{
     }
   }
 
-  // Escape single quotes for HogQL string literal.
-  const safeToken = instanceToken.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
-
-  const hogql = `
-SELECT
-  distinct_id AS email,
-  name,
-  section_key,
-  focused,
-  last_seen
-FROM (
-  SELECT
-    distinct_id,
-    coalesce(toString(properties.name), '') AS name,
-    nullIf(toString(properties.section_key), '') AS section_key,
-    if(
-      toString(properties.focused) IN ('1', 'true', 'True'),
-      1,
-      0
-    ) AS focused,
-    timestamp AS last_seen,
-    row_number() OVER (PARTITION BY distinct_id ORDER BY timestamp DESC) AS rn
-  FROM events
-  WHERE timestamp > now() - INTERVAL 45 SECOND
-    AND event = 'workshop_heartbeat'
-    AND toString(properties.instance) = '${safeToken}'
-)
-WHERE rn = 1
-ORDER BY last_seen DESC
-LIMIT 200
-`.trim()
+  const hogql = buildWorkshopRosterHogql(instanceToken)
 
   try {
     const res = await fetch(`${posthogApiHost()}/api/projects/${projectId}/query/`, {
