@@ -49,9 +49,9 @@ function* walk(dir) {
   }
 }
 
-let paletteViolations = [];
+const paletteViolations = [];
 let hexCount = 0;
-let hexExamples = [];
+const hexExamples = [];
 let inlineCount = 0;
 
 for (const file of walk(SRC)) {

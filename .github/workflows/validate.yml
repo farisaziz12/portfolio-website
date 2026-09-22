@@ -8,6 +8,8 @@ on:
       - 'apps/web/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'eslint.config.js'
 
 jobs:
   validate:
@@ -23,6 +25,9 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Lint (ESLint + UI guardrails + conventions)
+        run: pnpm lint
 
       - name: Build Sanity Studio (validates schema)
         run: pnpm --filter studio build

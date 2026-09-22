@@ -1,0 +1,17 @@
+---
+description: ESLint, file-size ratchet, and convention checks
+globs: eslint.config.js,apps/web/scripts/**,apps/**/*.{ts,tsx,astro,mjs}
+alwaysApply: false
+---
+
+`pnpm lint` must pass. It is ESLint 10 + UI guardrails + `apps/web/scripts/conventions.mjs`.
+
+- **New files** stay under the cap (islands 400, components 350, pages 500, lib 400, emails 200, CSS 400). Oversized existing files are listed in `apps/web/scripts/file-size-baselines.json` and **cannot grow**. After you shrink one, run `node apps/web/scripts/conventions.mjs --write-baselines`.
+- Do not disable a rule to land a giant file. Split it.
+- `sanityFetch(...)` always `.catch(...)`. `new Resend()` / `import 'resend'` only in `lib/email.ts`. No `import.meta.env.RESEND_*` / `process.env.RESEND_*` — use `env()`.
+- No `mailto:` outside admin email templates. No new decorative emojis (country flags are allowed). Existing emoji counts are ratcheted in `emoji-baselines.json`.
+- Explicit `any` counts are ratcheted in `any-baselines.json` — they can only shrink. Prefer a real type or `unknown`.
+- New public pages need a sibling `.md.ts` mirror (skill: `add-site-page`). Existing gaps are listed in `missing-md-mirrors.json` and cannot grow.
+- Prefix unused names with `_`. `Props` in Astro portable-text files is ignored.
+- Inline scripts in `BaseLayout.astro` / `posthog.astro` are exempt from `no-var` (they run as classic browser scripts).
+- Do not run a repo-wide Prettier rewrite. `.prettierrc.json` is for new edits.

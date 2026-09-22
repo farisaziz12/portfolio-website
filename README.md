@@ -59,7 +59,8 @@ pnpm dev        # web + studio
 pnpm web        # website only (localhost:4321)
 pnpm studio     # Sanity Studio only
 pnpm build      # build everything
-pnpm --filter web lint   # eslint + UI guardrails
+pnpm lint                    # ESLint + UI guardrails + file-size/convention ratchet
+pnpm --filter web lint       # website only
 ```
 
 Without Sanity credentials/network the site still runs — every fetch falls

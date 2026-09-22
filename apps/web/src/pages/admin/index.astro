@@ -8,6 +8,7 @@ import GridTexture from '../../components/design/GridTexture.astro';
 import { sanityFetch } from '../../lib/sanity/client';
 import { allWorkshopInstancesQuery, speakerProfileQuery } from '../../lib/sanity/queries';
 import { getAccessStatus, getCloseDate } from '../../lib/workshop-access';
+import { env } from '../../lib/email';
 
 interface WorkshopInstanceRow {
   _id: string;
@@ -39,8 +40,8 @@ interface AdminSpeakerProfile {
   };
 }
 
-const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-const RESEND_API_KEY = import.meta.env.RESEND_API_KEY;
+const ADMIN_PASSWORD = env('ADMIN_PASSWORD');
+const RESEND_API_KEY = env('RESEND_API_KEY');
 
 let authError = '';
 let isAuthenticated = false;

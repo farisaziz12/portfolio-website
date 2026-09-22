@@ -6,8 +6,9 @@ Astro 5 site. Architecture map: [README.md](./README.md). Email subsystem: [CLAU
 
 ```sh
 pnpm --filter web dev          # :4321
-pnpm --filter web lint
+pnpm --filter web lint         # eslint + UI guardrails + conventions
 pnpm --filter web lint:ui
+pnpm --filter web lint:conventions
 pnpm --filter web typecheck
 ```
 

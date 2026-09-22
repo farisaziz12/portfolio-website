@@ -85,7 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
   // Fetch contacts in the audience. Resend's list endpoint returns all (no pagination
   // surfaced in the SDK at v6) — for very large audiences this would need batching,
   // but realistic workshop sizes (≤ a few hundred) fit in a single call.
-  let contacts: ResendContact[] = []
+  let contacts: ResendContact[]
   try {
     const listRes = await resend.contacts.list({ audienceId: instance.resendAudienceId })
     if (listRes.error) {

@@ -1,0 +1,15 @@
+[
+  "src/pages/appreciation.astro",
+  "src/pages/blog.astro",
+  "src/pages/events/[slug].astro",
+  "src/pages/gallery.astro",
+  "src/pages/impact.astro",
+  "src/pages/media.astro",
+  "src/pages/press-kit.astro",
+  "src/pages/projects/[slug].astro",
+  "src/pages/projects/index.astro",
+  "src/pages/services/[slug].astro",
+  "src/pages/speaking.astro",
+  "src/pages/workshops/[slug].astro",
+  "src/pages/workshops/index.astro"
+]

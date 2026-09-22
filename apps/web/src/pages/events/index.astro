@@ -34,8 +34,8 @@ let events: SanityEvent[] = [];
 let stats: SpeakingStats | null = null;
 try {
   const [eventsData, statsData] = await Promise.all([
-    sanityFetch<SanityEvent[]>(allEventsQuery),
-    sanityFetch<SpeakingStats>(speakingStatsQuery),
+    sanityFetch<SanityEvent[]>(allEventsQuery).catch(() => []),
+    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => null),
   ]);
   events = eventsData || [];
   stats = statsData || null;

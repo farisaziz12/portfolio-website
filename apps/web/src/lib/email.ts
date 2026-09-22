@@ -1,5 +1,4 @@
-import { Resend } from 'resend'
-import type { CreateEmailOptions, CreateEmailResponse } from 'resend'
+import { Resend, type CreateEmailOptions, type CreateEmailResponse } from 'resend'
 
 // Read runtime env via process.env first, falling back to import.meta.env for local
 // `astro dev`. On Vercel, non-public vars referenced through import.meta.env get inlined

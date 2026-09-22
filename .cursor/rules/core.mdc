@@ -8,12 +8,12 @@ Read `AGENTS.md` first. Nested `apps/web/AGENTS.md` and `apps/studio/AGENTS.md` 
 Hard constraints (full list in `AGENTS.md`):
 
 - No `mailto:` in site UI. Email spec: `apps/web/CLAUDE.md`.
-- No raw Tailwind palettes, no new hex outside `global.css`/emails, no new inline styles in `.astro`. Enforce with `pnpm --filter web lint:ui`.
-- No emojis in the UI.
+- No raw Tailwind palettes, no new hex outside `global.css`/emails, no new inline styles in `.astro`.
+- File-size and emoji counts are ratcheted. Explicit `any` and missing page `.md` mirrors too.
 - Sanity fetches always `.catch` to a fallback. CMS outage must not 500.
 - Talk ≠ event. Schema field changes also update `apps/web/src/lib/sanity/queries.ts`.
 - New public pages: `.md` mirror + `llms.txt.ts` + OG map. Skill: `add-site-page`.
 - Do not reimplement theme / reveal / `data-track` / cal.com modal (they live in `BaseLayout.astro`).
 - Ignore `/src` at the repo root (legacy Next.js).
-
-Prefer project MCPs in `.cursor/mcp.json` over guessing Sanity fields, PostHog events, or Vercel log state.
+- Prefer project MCPs in `.cursor/mcp.json` over guessing Sanity fields, PostHog events, or Vercel log state.
+- `pnpm lint` must pass (ESLint + UI guardrails + file-size/convention ratchet). See `.cursor/rules/lint.mdc`.

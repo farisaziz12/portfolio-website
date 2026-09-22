@@ -37,7 +37,7 @@ Non-UI agent PRs only: add an HTML comment whose inner text is exactly `visual-e
 
 ## Checklist
 
-- [ ] `pnpm --filter web lint` (includes UI guardrails) and typecheck pass locally, or CI covers them
+- [ ] `pnpm --filter web lint` (ESLint + UI guardrails + conventions) and typecheck pass locally, or CI covers them
 - [ ] No new `mailto:`, emojis, raw Tailwind palettes, or inline styles
 - [ ] Sanity fetches still fail open; new fields are in GROQ queries
 - [ ] Public page add/rename: `.md` mirror, `llms.txt`, OG map updated

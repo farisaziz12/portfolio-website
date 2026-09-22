@@ -22,8 +22,9 @@ Ignore `/src` at the repo root — leftover Next.js, not part of the build.
 pnpm install
 pnpm web          # site → http://localhost:4321
 pnpm studio       # Sanity Studio
-pnpm --filter web lint          # eslint + UI guardrails
+pnpm lint         # ESLint + UI guardrails + file-size/convention ratchet
 pnpm --filter web lint:ui
+pnpm --filter web lint:conventions
 pnpm --filter web typecheck     # astro check
 ```
 
@@ -45,15 +46,16 @@ Nested `AGENTS.md` files in `apps/web` and `apps/studio` apply when you work in 
 ## Hard constraints
 
 1. **No `mailto:`** in site UI. Contact goes through Resend forms. The only allowed `mailto:` is inside admin email templates.
-2. **No raw Tailwind palette classes** (`bg-slate-800`, `text-blue-500`, …). Use `ds-*` / `rgb(var(--token) / …)`. `pnpm --filter web lint:ui` fails the build.
+2. **No raw Tailwind palette classes** (`bg-slate-800`, `text-blue-500`, …). Use `ds-*` / `rgb(var(--token) / …)`. `pnpm lint` fails the build.
 3. **No new hex literals** outside `global.css` and emails (satori `og.ts` is allowlisted). No new inline `style=""` in `.astro` files.
-4. **No emojis in the UI.** SVG icons only.
-5. **Sanity fetches are failure-tolerant:** `sanityFetch(...).catch(() => [])` (or a fallback object). A CMS outage must never 500 a page.
-6. **Numbers come from data**, not copy (`lib/availability.ts`, `lib/proof.ts`, live queries).
-7. **Talk ≠ event.** A talk is bookable and timeless. An event has a date. Never model an upcoming appearance as a talk.
-8. **Agent surface stays in sync.** New/renamed public pages need a `.md` mirror, an `llms.txt.ts` entry, and an OG card in `pages/og/[...slug].png.ts`.
-9. **Do not reimplement** theme, scroll-reveal, `data-track` analytics, or cal.com modal — they live in `BaseLayout.astro`.
-10. **Do not add analytics events** unless a decision depends on them. If you do, update `AnalyticsEvent` and `docs/measurement.md` together.
+4. **No emojis in the UI** (country flags excepted). Decorative emoji counts are ratcheted — they can only shrink.
+5. **File-size ratchet.** New files stay under the cap in `apps/web/scripts/conventions.mjs`. Existing giants cannot grow; split instead of raising a baseline. Explicit `any` and missing `.md` mirrors are ratcheted the same way.
+6. **Sanity fetches are failure-tolerant:** `sanityFetch(...).catch(() => [])` (or a fallback object). A CMS outage must never 500 a page.
+7. **Numbers come from data**, not copy (`lib/availability.ts`, `lib/proof.ts`, live queries).
+8. **Talk ≠ event.** A talk is bookable and timeless. An event has a date. Never model an upcoming appearance as a talk.
+9. **Agent surface stays in sync.** New/renamed public pages need a `.md` mirror, an `llms.txt.ts` entry, and an OG card in `pages/og/[...slug].png.ts`.
+10. **Do not reimplement** theme, scroll-reveal, `data-track` analytics, or cal.com modal — they live in `BaseLayout.astro`.
+11. **Do not add analytics events** unless a decision depends on them. If you do, update `AnalyticsEvent` and `docs/measurement.md` together.
 
 ## MCPs for this repo
 
