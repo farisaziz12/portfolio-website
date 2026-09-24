@@ -2,6 +2,7 @@ import { defineType, defineField } from 'sanity'
 import {
   isReservedWorkshopShortPath,
   normalizeWorkshopShortPath,
+  defaultWorkshopShortPath,
 } from 'shared'
 
 export default defineType({
@@ -61,21 +62,16 @@ export default defineType({
       title: 'Short redirect path',
       type: 'slug',
       description:
-        'Optional typeable link for attendees. Example: "survive" → faziz-dev.com/survive redirects to the attend page. Prefer a short memorable word over the long token URL / QR.',
+        'Defaults from the event name (Generate). Override anytime with a memorable word — e.g. survive → faziz-dev.com/survive. Attendees type this instead of scanning the long token QR.',
       options: {
         source: 'event',
         maxLength: 48,
-        slugify: (input: string) =>
-          input
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 48),
+        slugify: (input: string) => defaultWorkshopShortPath(input),
       },
       validation: Rule =>
-        Rule.custom(async (value, context) => {
+        Rule.required().custom(async (value, context) => {
           const raw = value?.current
-          if (!raw) return true
+          if (!raw) return 'Generate a default from the event, or type your own short path'
           const path = normalizeWorkshopShortPath(raw)
           if (!path) {
             if (isReservedWorkshopShortPath(raw)) {

@@ -80,7 +80,7 @@ const audienceCounts = new Map<string, AudienceContactCount>();
 
 if (isAuthenticated) {
   [instances, profile] = await Promise.all([
-    sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery).catch(() => []),
+    sanityFetch<WorkshopInstanceRow[]>(allWorkshopInstancesQuery, {}, { cdn: false }).catch(() => []),
     sanityFetch<AdminSpeakerProfile | null>(speakerProfileQuery).catch(() => null),
   ]);
 

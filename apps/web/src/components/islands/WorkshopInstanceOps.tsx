@@ -133,7 +133,7 @@ export default function WorkshopInstanceOps({
               </button>
             ) : (
               <p className="wio__hint">
-                Set a short path in Sanity (e.g. survive) so attendees can type a short URL.
+                In Sanity, Generate a default short path from the event — or type your own (e.g. survive).
               </p>
             )}
             <button type="button" className="wio__copy" onClick={() => void copyLink(attendUrl, 'full')}>

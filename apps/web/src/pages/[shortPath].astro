@@ -21,9 +21,11 @@ if (!shortPath) {
   return Astro.redirect('/404')
 }
 
-const hit = await sanityFetch<ShortPathHit | null>(workshopInstanceByShortPathQuery, {
-  shortPath,
-}).catch(() => null)
+const hit = await sanityFetch<ShortPathHit | null>(
+  workshopInstanceByShortPathQuery,
+  { shortPath },
+  { cdn: false }
+).catch(() => null)
 
 if (!hit?.token) {
   return Astro.redirect('/404')

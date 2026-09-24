@@ -16,6 +16,14 @@ export const client = createClient({
   useCdn: true,
 });
 
+/** Same dataset, no CDN — for short-path redirects that must see Studio publishes quickly. */
+const liveClient = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: false,
+});
+
 const builder = imageUrlBuilder(client);
 
 export function urlFor(source: SanityImageSource) {
@@ -24,7 +32,9 @@ export function urlFor(source: SanityImageSource) {
 
 export async function sanityFetch<T>(
   query: string,
-  params: Record<string, unknown> = {}
+  params: Record<string, unknown> = {},
+  opts: { cdn?: boolean } = {}
 ): Promise<T> {
-  return client.fetch<T>(query, params);
+  const c = opts.cdn === false ? liveClient : client;
+  return c.fetch<T>(query, params);
 }
