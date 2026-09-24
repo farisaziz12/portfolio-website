@@ -1,0 +1,16 @@
+---
+// The hero terminal, wired to whichever workshop attend pages are live. A room
+// types its conference (`alicante`) and lands on its own materials — deliberately
+// absent from `help`, `ls`, and tab-completion.
+import HeroTerminal from '../islands/HeroTerminal';
+import { sanityFetch } from '../../lib/sanity/client';
+import { allWorkshopInstancesQuery } from '../../lib/sanity/queries';
+import { terminalWorkshopRoutes, type WorkshopShortcutInstance } from '../../lib/workshop-shortcuts';
+
+const instances = await sanityFetch<WorkshopShortcutInstance[]>(allWorkshopInstancesQuery).catch(
+  () => []
+);
+const secretRoutes = terminalWorkshopRoutes(instances);
+---
+
+<HeroTerminal client:idle secretRoutes={secretRoutes} />

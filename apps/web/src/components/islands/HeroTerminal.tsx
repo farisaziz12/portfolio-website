@@ -64,9 +64,14 @@ function setTheme(next: 'light' | 'dark') {
 interface Props {
   name?: string;
   mode?: 'hero' | 'notfound';
+  /**
+   * Extra commands that never show up in `help`, `ls`, or tab-completion:
+   * conference keywords wired to live workshop attend pages.
+   */
+  secretRoutes?: Record<string, { path: string; note: string }>;
 }
 
-export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props) {
+export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretRoutes = {} }: Props) {
   const [lines, setLines] = useState<Line[]>(mode === 'notfound' ? NOTFOUND_LINES : HERO_LINES);
 
   useEffect(() => {
@@ -106,7 +111,10 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
     const [cmd, ...args] = cmdLine.toLowerCase().split(/\s+/);
     track('terminal_command', {
       command: cmd.slice(0, 24),
-      known: COMMAND_NAMES.includes(cmd) || ['sudo', 'konami', 'coffee', 'exit', 'hire-me', 'hiring'].includes(cmd),
+      known:
+        COMMAND_NAMES.includes(cmd) ||
+        cmd in secretRoutes ||
+        ['sudo', 'konami', 'coffee', 'exit', 'hire-me', 'hiring'].includes(cmd),
       mode,
     });
 
@@ -174,7 +182,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero' }: Props
       print({ kind: 'cmt', text: "# there is no escape. only 'book'." });
       return;
     }
-    const route = ROUTES[cmd];
+    const route = ROUTES[cmd] || secretRoutes[cmd];
     if (route) {
       print({ kind: 'out', text: route.note });
       window.setTimeout(() => navigate(route.path), 500);
