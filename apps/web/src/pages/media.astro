@@ -4,8 +4,19 @@ import Kicker from '../components/design/Kicker.astro';
 import GridTexture from '../components/design/GridTexture.astro';
 import ContactPanel from '../components/design/ContactPanel.astro';
 import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { allMediaQuery } from '../lib/sanity/queries';
+import { allMediaQuery, externalPostsQuery, eventsWithVideoQuery } from '../lib/sanity/queries';
 import { formatDate } from 'shared/utils';
+
+interface RecordedEvent {
+  _id: string;
+  title: string;
+  slug: string;
+  conference?: string;
+  date?: string;
+  location?: { city?: string; country?: string };
+  videoUrl: string;
+  thumbnailImage?: any;
+}
 
 interface MediaItem {
   _id: string;
@@ -21,49 +32,69 @@ interface MediaItem {
   featured?: boolean;
 }
 
-const media = await sanityFetch<MediaItem[]>(allMediaQuery).catch(() => []);
+interface ExternalPost {
+  _id: string;
+  title: string;
+  url: string;
+  type: string;
+  publishedAt?: string;
+  source?: string;
+  excerpt?: string;
+  image?: any;
+  slug?: string;
+  hasDeepDive?: boolean;
+}
+
+const [media, externalPosts, recordings] = await Promise.all([
+  sanityFetch<MediaItem[]>(allMediaQuery).catch(() => []),
+  sanityFetch<ExternalPost[]>(externalPostsQuery).catch(() => []),
+  sanityFetch<RecordedEvent[]>(eventsWithVideoQuery).catch(() => []),
+]);
 
 const photos = media.filter((m) => m.type === 'photo');
-const videos = media.filter((m) => m.type === 'video');
 const press = media.filter((m) => m.type === 'press');
+// Spoken/video appearances live here now (moved off /blog, which is writing-only).
+const episodes = externalPosts.filter((p) => ['podcast', 'interview'].includes(p.type));
+const appearances = externalPosts.filter((p) => ['video', 'panel'].includes(p.type));
+const totalItems = media.length + episodes.length + appearances.length + recordings.length;
 ---
 
 <BaseLayout
-  title="Media | Faris Aziz"
-  description="Photos, videos, and press coverage from Faris Aziz's speaking engagements at conferences and meetups around the world."
+  title="Watch & listen | Faris Aziz"
+  description="Talk recordings, podcast episodes, interviews, photos, and press from Faris Aziz's speaking engagements around the world."
   pathname="/media"
   image="/og/media.png"
 >
   <header class="page-hero">
     <GridTexture />
     <div class="container page-hero__inner">
-      <Kicker>Gallery</Kicker>
+      <Kicker>Watch &amp; listen</Kicker>
       <h1 class="page-hero__title">
-        Photos, videos, and <span class="accent-word">press</span>.
+        Talks, podcasts, and <span class="accent-word">press</span>.
       </h1>
       <p class="page-hero__lead">
-        Visual record from conferences, meetups, and speaking engagements around the world. Free for organizers and press to use, credit appreciated.
+        Everything you can watch or listen to in one place — talk recordings, podcast episodes, interviews, and press. Photos are free for organizers to reuse, credit appreciated.
         Looking for bios and headshots? They're in the <a href="/press-kit" class="ds-link">press kit</a>.
       </p>
 
       <div class="page-hero__stats">
         <div>
+          <div class="ds-stat__value ds-stat__value--sm">{recordings.length}</div>
+          <div class="ds-stat__label">Recordings</div>
+        </div>
+        <div>
+          <div class="ds-stat__value ds-stat__value--sm">{episodes.length}</div>
+          <div class="ds-stat__label">Podcasts</div>
+        </div>
+        <div>
           <div class="ds-stat__value ds-stat__value--sm">{photos.length}</div>
           <div class="ds-stat__label">Photos</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{videos.length}</div>
-          <div class="ds-stat__label">Videos</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{press.length}</div>
-          <div class="ds-stat__label">Press</div>
         </div>
       </div>
     </div>
   </header>
 
-  {media.length === 0 ? (
+  {totalItems === 0 ? (
     <section class="page-section">
       <div class="container">
         <div class="page-empty">
@@ -74,8 +105,8 @@ const press = media.filter((m) => m.type === 'press');
     </section>
   ) : (
     <>
-      {/* VIDEOS */}
-      {videos.length > 0 && (
+      {/* TALK RECORDINGS */}
+      {recordings.length > 0 && (
         <section class="page-section">
           <div class="container">
             <div class="page-section__head">
@@ -83,38 +114,117 @@ const press = media.filter((m) => m.type === 'press');
                 <Kicker>Watch</Kicker>
                 <h2 class="page-h2">Talk recordings</h2>
               </div>
-              <span class="ds-pill">{videos.length}</span>
+              <span class="ds-pill">{recordings.length}</span>
             </div>
             <div class="page-grid-3">
-              {videos.map((m) => {
-                const thumb = m.image ? urlFor(m.image).width(800).height(450).quality(90).url() : null;
-                const Tag = m.videoUrl ? 'a' : 'div';
-                const linkAttrs = m.videoUrl
-                  ? { href: m.videoUrl, target: '_blank', rel: 'noopener noreferrer' }
-                  : {};
+              {recordings.map((ev) => {
+                let thumb: string | null = null;
+                try {
+                  thumb = ev.thumbnailImage ? urlFor(ev.thumbnailImage).width(800).height(450).quality(90).url() : null;
+                } catch {}
                 return (
-                  <Tag {...linkAttrs} class:list={['ds-card', 'media-card', 'ds-reveal', { 'ds-card-interactive': !!m.videoUrl }]}>
+                  <a href={ev.videoUrl} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
                     <div class="media-card__media">
                       {thumb ? (
-                        <img src={thumb} alt={m.title || 'Talk recording'} loading="lazy" />
+                        <img src={thumb} alt={ev.title} loading="lazy" />
                       ) : (
                         <div class="media-card__placeholder"><span class="ds-tag">Video</span></div>
                       )}
-                      {m.videoUrl && (
-                        <div class="media-card__play" aria-hidden="true">
-                          <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>
-                        </div>
-                      )}
-                    </div>
-                    <div class="media-card__body">
-                      <h3 class="media-card__title">{m.title || 'Untitled'}</h3>
-                      {m.event?.title && <p class="media-card__event">{m.event.title}</p>}
-                      <div class="media-card__meta">
-                        {m.date && <span>{formatDate(m.date, { month: 'short', year: 'numeric' })}</span>}
-                        {m.credit && <span>· {m.credit}</span>}
+                      <div class="media-card__play" aria-hidden="true">
+                        <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>
                       </div>
                     </div>
-                  </Tag>
+                    <div class="media-card__body">
+                      <h3 class="media-card__title">{ev.title}</h3>
+                      {ev.conference && <p class="media-card__event">{ev.conference}</p>}
+                      <div class="media-card__meta">
+                        {ev.date && <span>{formatDate(ev.date, { month: 'short', year: 'numeric' })}</span>}
+                        {ev.location?.city && <span>· {ev.location.city}</span>}
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PODCASTS & INTERVIEWS */}
+      {episodes.length > 0 && (
+        <section id="podcasts" class="page-section anchor-target">
+          <div class="container">
+            <div class="page-section__head">
+              <div>
+                <Kicker>Listen</Kicker>
+                <h2 class="page-h2">Podcasts &amp; interviews</h2>
+              </div>
+              <span class="ds-pill">{episodes.length}</span>
+            </div>
+            <div class="page-grid-3">
+              {episodes.map((p) => {
+                const img = p.image ? urlFor(p.image).width(800).height(450).quality(90).url() : null;
+                const internal = p.hasDeepDive && p.slug;
+                const href = internal ? `/podcasts/${p.slug}` : p.url;
+                const linkAttrs = internal ? {} : { target: '_blank', rel: 'noopener noreferrer' };
+                return (
+                  <a href={href} {...linkAttrs} class="ds-card ds-card-interactive media-card ds-reveal">
+                    <div class="media-card__media">
+                      {img ? (
+                        <img src={img} alt={p.title} loading="lazy" />
+                      ) : (
+                        <div class="media-card__placeholder"><span class="ds-tag">{p.type === 'interview' ? 'Interview' : 'Podcast'}</span></div>
+                      )}
+                      <div class="media-card__play" aria-hidden="true">
+                        <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>
+                      </div>
+                      {internal && <span class="media-card__badge">Key takeaways inside</span>}
+                    </div>
+                    <div class="media-card__body">
+                      <h3 class="media-card__title">{p.title}</h3>
+                      {p.source && <p class="media-card__event">{p.source}</p>}
+                      <div class="media-card__meta">
+                        {p.publishedAt && <span>{formatDate(p.publishedAt, { month: 'short', year: 'numeric' })}</span>}
+                        <span>· {internal ? 'Episode page' : 'Listen'}</span>
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PANELS & OTHER APPEARANCES */}
+      {appearances.length > 0 && (
+        <section class="page-section page-section--alt">
+          <div class="container">
+            <div class="page-section__head">
+              <div>
+                <Kicker>Also on camera</Kicker>
+                <h2 class="page-h2">Panels &amp; appearances</h2>
+              </div>
+              <span class="ds-pill">{appearances.length}</span>
+            </div>
+            <div class="page-grid-3">
+              {appearances.map((p) => {
+                const img = p.image ? urlFor(p.image).width(800).height(450).quality(90).url() : null;
+                return (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive media-card ds-reveal">
+                    {img && (
+                      <div class="media-card__media">
+                        <img src={img} alt={p.title} loading="lazy" />
+                      </div>
+                    )}
+                    <div class="media-card__body">
+                      <h3 class="media-card__title">{p.title}</h3>
+                      {p.source && <p class="media-card__event">{p.source}</p>}
+                      <div class="media-card__meta">
+                        {p.publishedAt && <span>{formatDate(p.publishedAt, { month: 'short', year: 'numeric' })}</span>}
+                      </div>
+                    </div>
+                  </a>
                 );
               })}
             </div>
@@ -124,7 +234,7 @@ const press = media.filter((m) => m.type === 'press');
 
       {/* PHOTOS */}
       {photos.length > 0 && (
-        <section class="page-section page-section--alt">
+        <section class="page-section">
           <div class="container">
             <div class="page-section__head">
               <div>
@@ -166,7 +276,7 @@ const press = media.filter((m) => m.type === 'press');
 
       {/* PRESS */}
       {press.length > 0 && (
-        <section class="page-section">
+        <section class="page-section page-section--alt">
           <div class="container">
             <div class="page-section__head">
               <div>
@@ -227,6 +337,19 @@ const press = media.filter((m) => m.type === 'press');
 
 <style>
   .media-gallery-link { margin-top: 0.5rem; font-size: 0.92rem; }
+  .media-card__badge {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(var(--accent));
+    color: #fff;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
   .media-card {
     overflow: hidden;
     display: flex;

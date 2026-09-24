@@ -1,0 +1,318 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Kicker from '../../components/design/Kicker.astro';
+import GridTexture from '../../components/design/GridTexture.astro';
+import ContactPanel from '../../components/design/ContactPanel.astro';
+import EpisodePlayer from '../../components/islands/EpisodePlayer';
+import { sanityFetch, urlFor } from '../../lib/sanity/client';
+import { podcastEpisodesQuery } from '../../lib/sanity/queries';
+import { formatDate } from 'shared/utils';
+
+interface Chapter { timestamp: string; title: string; note?: string }
+interface Quote { text: string; timestamp?: string }
+
+interface Episode {
+  _id: string;
+  title: string;
+  url: string;
+  type: 'podcast' | 'interview';
+  publishedAt?: string;
+  source?: string;
+  excerpt?: string;
+  image?: any;
+  slug: string;
+  summary?: string;
+  keyTakeaways?: string[];
+  chapters?: Chapter[];
+  quotes?: Quote[];
+  relatedTalk?: { title: string; slug: string; abstract?: string };
+}
+
+export async function getStaticPaths() {
+  const episodes = await sanityFetch<Episode[]>(podcastEpisodesQuery).catch(() => []);
+  return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
+}
+
+const { episode } = Astro.props as { episode: Episode };
+
+let coverUrl: string | undefined;
+try {
+  coverUrl = episode.image ? urlFor(episode.image).width(1280).height(720).quality(85).url() : undefined;
+} catch {}
+
+function platformName(url: string): string {
+  try {
+    const h = new URL(url).hostname;
+    if (h.includes('spotify')) return 'Spotify';
+    if (h.includes('youtube') || h === 'youtu.be') return 'YouTube';
+    if (h.includes('podcasts.apple')) return 'Apple Podcasts';
+  } catch {}
+  return episode.source || 'the original site';
+}
+
+const typeLabel = episode.type === 'interview' ? 'Interview' : 'Podcast';
+const description =
+  episode.summary?.slice(0, 155) ||
+  episode.excerpt ||
+  `${typeLabel} appearance by Faris Aziz${episode.source ? ` on ${episode.source}` : ''}.`;
+
+const episodeSchema = {
+  '@type': 'PodcastEpisode',
+  name: episode.title,
+  url: `https://faziz-dev.com/podcasts/${episode.slug}`,
+  ...(episode.publishedAt ? { datePublished: episode.publishedAt } : {}),
+  ...(episode.summary || episode.excerpt ? { description: episode.summary || episode.excerpt } : {}),
+  ...(episode.source
+    ? { partOfSeries: { '@type': 'PodcastSeries', name: episode.source } }
+    : {}),
+  actor: { '@id': 'https://faziz-dev.com/#person' },
+};
+
+const breadcrumbSchema = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Watch & listen', item: 'https://faziz-dev.com/media' },
+    { '@type': 'ListItem', position: 2, name: episode.title, item: `https://faziz-dev.com/podcasts/${episode.slug}` },
+  ],
+};
+---
+
+<BaseLayout
+  title={`${episode.title} | Faris Aziz`}
+  description={description}
+  pathname={`/podcasts/${episode.slug}`}
+  image={`/og/podcasts/${episode.slug}.png`}
+  markdownAlternate={`/podcasts/${episode.slug}.md`}
+  extraSchema={[episodeSchema, breadcrumbSchema]}
+>
+  <header class="page-hero">
+    <GridTexture />
+    <div class="container page-hero__inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb">
+        <a href="/media">Watch &amp; listen</a>
+        <span class="page-crumbs__sep">/</span>
+        <span class="page-crumbs__cur">{typeLabel}</span>
+      </nav>
+      <Kicker>
+        {[episode.source, episode.publishedAt ? formatDate(episode.publishedAt, { month: 'long', year: 'numeric' }) : null]
+          .filter(Boolean)
+          .join(' · ')}
+      </Kicker>
+      <h1 class="page-hero__title">{episode.title}</h1>
+      {episode.summary && <p class="page-hero__lead">{episode.summary}</p>}
+      <div class="page-hero__actions">
+        <a href={episode.url} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
+          Listen on {platformName(episode.url)}
+          <svg class="episode-listen-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- PLAYER + CHAPTERS -->
+  <section class="page-section">
+    <div class="container">
+      <div class="episode-player-wrap">
+        <EpisodePlayer
+          client:load
+          url={episode.url}
+          title={episode.title}
+          coverUrl={coverUrl}
+          chapters={episode.chapters || []}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY TAKEAWAYS -->
+  {episode.keyTakeaways && episode.keyTakeaways.length > 0 && (
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__heading">
+          <Kicker class="ds-reveal">The short version</Kicker>
+          <h2 class="page-h2 ds-reveal">What you'll <span class="mark">take away</span></h2>
+        </div>
+        <ol class="episode-takeaways wide">
+          {episode.keyTakeaways.map((t, i) => (
+            <li class="ds-card episode-takeaway ds-reveal">
+              <span class="episode-takeaway__n">{String(i + 1).padStart(2, '0')}</span>
+              <p>{t}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )}
+
+  <!-- PULL QUOTES -->
+  {episode.quotes && episode.quotes.length > 0 && (
+    <section class="page-section">
+      <div class="container">
+        <div class="episode-quotes wide">
+          {episode.quotes.map((q) => (
+            <figure class="episode-quote ds-reveal">
+              <blockquote>“{q.text}”</blockquote>
+              {q.timestamp && <figcaption>— at {q.timestamp}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- RELATED TALK -->
+  {episode.relatedTalk && (
+    <section class="page-section page-section--alt">
+      <div class="container">
+        <div class="page-section__heading">
+          <Kicker class="ds-reveal">Go deeper</Kicker>
+          <h2 class="page-h2 ds-reveal">This conversation, <span class="mark">on stage</span></h2>
+        </div>
+        <a href={`/talks/${episode.relatedTalk.slug}`} class="ds-card ds-card-interactive episode-talk ds-reveal">
+          <div>
+            <p class="episode-talk__kicker">Talk · book it for your event</p>
+            <h3 class="episode-talk__title">{episode.relatedTalk.title}</h3>
+            {episode.relatedTalk.abstract && <p class="episode-talk__abstract">{episode.relatedTalk.abstract}</p>}
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </div>
+    </section>
+  )}
+
+  <section class="page-section page-section--contact">
+    <div class="container">
+      <div class="wide ds-reveal">
+        <ContactPanel
+          status="Open to guesting"
+          title="Want a conversation like this on your show?"
+          body="I love talking payments, performance, and engineering leadership — and I come prepared. Tell me about your audience."
+          primaryHref="/invite"
+          primaryLabel="Pitch your show"
+          secondaryHref="/media"
+          secondaryLabel="More episodes"
+        />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .episode-listen-ext { width: 1em; height: 1em; }
+
+  .episode-player-wrap {
+    max-width: 860px;
+    margin-inline: auto;
+  }
+
+  .episode-takeaways {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 720px) {
+    .episode-takeaways { grid-template-columns: 1fr; }
+  }
+
+  .episode-takeaway {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1.3rem 1.4rem;
+  }
+
+  .episode-takeaway__n {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.8rem;
+    color: rgb(var(--accent-bright));
+    flex-shrink: 0;
+  }
+
+  .episode-takeaway p {
+    color: rgb(var(--ink-muted));
+    line-height: 1.55;
+    font-size: 0.96rem;
+  }
+
+  .episode-quotes {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .episode-quote {
+    margin: 0;
+    padding-left: 1.4rem;
+    border-left: 3px solid rgb(var(--accent));
+  }
+
+  .episode-quote blockquote {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.45;
+    color: rgb(var(--ink));
+  }
+
+  .episode-quote figcaption {
+    margin-top: 0.5rem;
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.78rem;
+    color: rgb(var(--ink-faint));
+  }
+
+  .episode-talk {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    color: inherit;
+  }
+
+  .episode-talk__kicker {
+    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--accent-bright));
+    margin-bottom: 0.4rem;
+  }
+
+  .episode-talk__title {
+    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
+    font-weight: 600;
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: rgb(var(--ink));
+  }
+
+  .episode-talk__abstract {
+    margin-top: 0.4rem;
+    color: rgb(var(--ink-muted));
+    font-size: 0.92rem;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .episode-talk svg {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    color: rgb(var(--ink-faint));
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .episode-talk:hover svg {
+    color: rgb(var(--accent-bright));
+    transform: translateX(4px);
+  }
+</style>

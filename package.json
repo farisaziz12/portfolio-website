@@ -11,9 +11,11 @@
     "studio": "pnpm --filter studio dev",
     "web": "pnpm --filter web dev",
     "migrate": "node --env-file=.env --import tsx scripts/migrate-content.ts",
-    "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts"
+    "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts",
+    "enrich-podcasts": "tsx --env-file=.env scripts/enrich-podcasts.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
     "@sanity/client": "^6.24.1"
   },
   "devDependencies": {

@@ -14,7 +14,7 @@ const isActive = (prefix: string) => {
 };
 
 // "Speaking" lights up for talks/events/workshops/invite too
-const speakingActive = ['/speaking', '/talks', '/events', '/workshops', '/invite'].some(isActive);
+const speakingActive = ['/speaking', '/talks', '/events', '/workshops', '/invite', '/media', '/podcasts'].some(isActive);
 const servicesActive = ['/consulting', '/mentorship', '/impact', '/contact'].some(isActive);
 
 // Context-aware CTA: on the speaking silo the primary action is the speaker
@@ -52,6 +52,10 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
           <a class="mm-row" href="/workshops" role="menuitem">
             <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg></span>
             <span><b>Workshops</b><span>Hands-on, full-day training</span></span>
+          </a>
+          <a class="mm-row" href="/media" role="menuitem">
+            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>
+            <span><b>Watch &amp; listen</b><span>Recordings, podcasts &amp; interviews</span></span>
           </a>
           <a class="mm-row" href="/press-kit" role="menuitem">
             <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>
@@ -137,6 +141,7 @@ const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
       <a href="/events">Schedule</a>
       <a href="/talks">Talk catalogue</a>
       <a href="/workshops">Workshops</a>
+      <a href="/media">Watch &amp; listen</a>
       <a href="/invite">Invite me</a>
       <a href="/press-kit">Press kit</a>
     </div>

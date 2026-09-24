@@ -378,6 +378,19 @@ export const allMediaQuery = groq`
   }
 `;
 
+export const eventsWithVideoQuery = groq`
+  *[_type == "event" && defined(links.videoUrl)] | order(date desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    conference,
+    date,
+    location,
+    "videoUrl": links.videoUrl,
+    "thumbnailImage": talk->assets.thumbnailImage
+  }
+`;
+
 export const featuredMediaQuery = groq`
   *[_type == "media" && featured == true] | order(date desc)[0...12] {
     _id,
@@ -525,7 +538,52 @@ export const externalPostsQuery = groq`
     publishedAt,
     source,
     excerpt,
-    image
+    image,
+    "slug": slug.current,
+    "hasDeepDive": defined(slug.current) && count(coalesce(keyTakeaways, [])) > 0
+  }
+`;
+
+// Podcast/interview episodes enriched with deep-dive content — these get
+// their own /podcasts/[slug] page (player, chapters, takeaways, quotes).
+export const podcastEpisodesQuery = groq`
+  *[_type == "externalPost" && type in ["podcast", "interview"] && defined(slug.current) && count(coalesce(keyTakeaways, [])) > 0]
+    | order(publishedAt desc) {
+    _id,
+    title,
+    url,
+    type,
+    publishedAt,
+    source,
+    excerpt,
+    image,
+    "slug": slug.current,
+    summary,
+    keyTakeaways,
+    chapters,
+    quotes,
+    "relatedTalk": relatedTalk->{
+      title,
+      "slug": slug.current,
+      abstract
+    }
+  }
+`;
+
+// Homepage "From the mic" strip — latest spoken appearances, enriched first.
+export const latestPodcastsQuery = groq`
+  *[_type == "externalPost" && type in ["podcast", "interview"]]
+    | order(defined(slug.current) && count(coalesce(keyTakeaways, [])) > 0 desc, publishedAt desc)[0...3] {
+    _id,
+    title,
+    url,
+    type,
+    publishedAt,
+    source,
+    excerpt,
+    image,
+    "slug": slug.current,
+    "hasDeepDive": defined(slug.current) && count(coalesce(keyTakeaways, [])) > 0
   }
 `;
 
