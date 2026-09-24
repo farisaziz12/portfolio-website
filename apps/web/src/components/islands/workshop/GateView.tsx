@@ -14,10 +14,9 @@ export function GateView({
 }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
 
-  const canSubmit = Boolean(consent && name.trim() && email) && status !== 'loading';
+  const canSubmit = Boolean(name.trim() && email) && status !== 'loading';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,26 +97,6 @@ export function GateView({
                 className={fieldClass}
               />
             </div>
-
-            <label
-              htmlFor="workshop-gate-consent"
-              className="flex items-start gap-3 cursor-pointer rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] px-4 py-3 has-[:focus-visible]:border-[rgb(var(--accent))]"
-            >
-              <input
-                id="workshop-gate-consent"
-                name="consent"
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                tabIndex={0}
-                aria-required="true"
-                className="mt-0.5 h-5 w-5 shrink-0 rounded border-[rgb(var(--edge))] accent-[rgb(var(--accent))]"
-              />
-              <span className="text-xs text-[rgb(var(--ink-muted))] leading-relaxed pt-0.5">
-                I agree to receive updates about future workshops and conference appearances. No spam,
-                unsubscribe anytime.
-              </span>
-            </label>
 
             <button
               type="submit"

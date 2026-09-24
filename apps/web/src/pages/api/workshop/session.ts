@@ -45,7 +45,7 @@ export const GET: APIRoute = async ({ cookies, url }) => {
 
 /** Gate submit: Resend subscribe + signed httpOnly session cookie. */
 export const POST: APIRoute = async ({ request, cookies }) => {
-  let body: { name?: string; email?: string; token?: string; event?: string; consent?: boolean }
+  let body: { name?: string; email?: string; token?: string; event?: string }
   try {
     body = (await request.json()) as typeof body
   } catch {
