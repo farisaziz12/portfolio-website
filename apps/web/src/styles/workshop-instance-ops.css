@@ -70,6 +70,16 @@
   transition: border-color 0.15s ease;
 }
 
+.wio__copy--short {
+  border-color: rgb(var(--accent) / 0.45);
+  background: rgb(var(--accent) / 0.08);
+}
+
+.wio__copy--short code {
+  color: rgb(var(--ink));
+  font-weight: 600;
+}
+
 .wio__copy:hover {
   border-color: rgb(var(--edge-strong));
 }

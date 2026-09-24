@@ -1,4 +1,8 @@
 import { defineType, defineField } from 'sanity'
+import {
+  isReservedWorkshopShortPath,
+  normalizeWorkshopShortPath,
+} from 'shared'
 
 export default defineType({
   name: 'workshopInstance',
@@ -51,6 +55,44 @@ export default defineType({
         },
       },
       validation: Rule => Rule.required()
+    }),
+    defineField({
+      name: 'shortPath',
+      title: 'Short redirect path',
+      type: 'slug',
+      description:
+        'Optional typeable link for attendees. Example: "survive" → faziz-dev.com/survive redirects to the attend page. Prefer a short memorable word over the long token URL / QR.',
+      options: {
+        source: 'event',
+        maxLength: 48,
+        slugify: (input: string) =>
+          input
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .slice(0, 48),
+      },
+      validation: Rule =>
+        Rule.custom(async (value, context) => {
+          const raw = value?.current
+          if (!raw) return true
+          const path = normalizeWorkshopShortPath(raw)
+          if (!path) {
+            if (isReservedWorkshopShortPath(raw)) {
+              return `"${raw}" is a reserved site path — pick another short link`
+            }
+            return 'Use a lowercase kebab path (letters, numbers, hyphens), e.g. survive'
+          }
+          const client = context.getClient({ apiVersion: '2024-01-01' })
+          const docId = context.document?._id
+          if (!docId) return true
+          const publishedId = docId.replace(/^drafts\./, '')
+          const count = await client.fetch<number>(
+            `count(*[_type == "workshopInstance" && shortPath.current == $path && !(_id in [$id, $draftId])])`,
+            { path, id: publishedId, draftId: `drafts.${publishedId}` }
+          )
+          return count === 0 || 'That short path is already used by another workshop instance'
+        }),
     }),
     defineField({
       name: 'workshopDate',

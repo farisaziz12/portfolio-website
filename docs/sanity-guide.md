@@ -122,10 +122,14 @@ surface updates.
    set `event`, `workshopDate`, `token` (gates the attend page) and
    `accessDurationDays`. `repoUrl` is optional — leave it empty for a
    workshop with no code repo and the "Open GitHub Repo" button is hidden.
-3. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
+3. Optional but recommended: set `shortPath` to a memorable kebab word
+   (e.g. `survive`). Attendees can type `faziz-dev.com/survive` instead of
+   scanning the QR / long token URL; `/admin` shows the short link when set.
+   Paths that collide with real site routes (`about`, `talks`, …) are blocked.
+4. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
    (create the audience in Resend first). Attendees who subscribe get the
    welcome email and join that audience.
-4. After the workshop, send the feedback request via the admin-protected
+5. After the workshop, send the feedback request via the admin-protected
    `/api/workshop/follow-up` route — see `apps/web/CLAUDE.md` for the curl
    recipe (always dry-run first).
 

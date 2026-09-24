@@ -152,6 +152,8 @@ export function expectedMdMirror(relPath) {
   if (fromPages.startsWith('admin/')) return null;
   if (fromPages.startsWith('og/')) return null;
   if (fromPages.startsWith('workshops/attend/')) return null;
+  // CMS short attend redirects — not a public content page
+  if (fromPages === '[shortPath].astro') return null;
   if (fromPages === 'index.astro') return 'src/pages/home.md.ts';
   if (fromPages.endsWith('/index.astro')) {
     return `src/pages/${fromPages.replace(/\/index\.astro$/, '.md.ts')}`;
@@ -449,7 +451,8 @@ function selfTest() {
       fn: () =>
         expectedMdMirror('src/pages/admin/index.astro') === null &&
         expectedMdMirror('src/pages/api/invite.ts') === null &&
-        expectedMdMirror('src/pages/workshops/attend/[token].astro') === null,
+        expectedMdMirror('src/pages/workshops/attend/[token].astro') === null &&
+        expectedMdMirror('src/pages/[shortPath].astro') === null,
     },
     {
       name: 'direct RESEND env is banned',

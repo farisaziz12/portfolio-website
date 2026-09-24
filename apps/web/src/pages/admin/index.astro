@@ -24,6 +24,7 @@ interface WorkshopInstanceRow {
   event: string;
   slug: string;
   token: string;
+  shortPath?: string;
   workshopDate: string;
   accessDurationDays: number;
   forceClose: boolean;
@@ -295,7 +296,7 @@ const copyOnClick =
             </div>
           </div>
           <p class="admin-head__body">
-            Show the QR on a projector, or copy the access link. Materials stay available from the workshop date until the access window closes.
+            Show the QR on a projector, or share the short link when set in Sanity (e.g. faziz-dev.com/survive). Materials stay available from the workshop date until the access window closes.
           </p>
         </div>
 
@@ -331,6 +332,9 @@ const copyOnClick =
                 ? `https://resend.com/audiences/${instance.resendAudienceId}`
                 : null;
               const attendUrl = `https://faziz-dev.com/workshops/attend/${instance.token}`;
+              const shortUrl = instance.shortPath
+                ? `https://faziz-dev.com/${instance.shortPath}`
+                : undefined;
 
               return (
                 <article class="instance">
@@ -365,6 +369,7 @@ const copyOnClick =
                     <WorkshopInstanceOps
                       client:load
                       attendUrl={attendUrl}
+                      shortUrl={shortUrl}
                       instanceSlug={instance.slug || ''}
                       feedbackUrl={instance.overallFeedbackUrl}
                       hasAudience={Boolean(instance.resendAudienceId && instance.slug)}
