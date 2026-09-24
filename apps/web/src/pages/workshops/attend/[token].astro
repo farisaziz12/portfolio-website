@@ -3,7 +3,11 @@ export const prerender = false
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../../lib/sanity/client';
-import { workshopAttendQuery } from '../../../lib/sanity/queries';
+import { allWorkshopInstancesQuery, workshopAttendQuery } from '../../../lib/sanity/queries';
+import {
+  resolveWorkshopShortcut,
+  type WorkshopShortcutInstance,
+} from '../../../lib/workshop-shortcuts';
 import { getAccessStatus, getCloseDate } from '../../../lib/workshop-access';
 import {
   WORKSHOP_SESSION_COOKIE,
@@ -36,7 +40,13 @@ const { token } = Astro.params;
 const instance = await sanityFetch<WorkshopInstanceData | null>(workshopAttendQuery, { token }).catch(() => null);
 
 if (!instance) {
-  return Astro.redirect('/404');
+  // A conference keyword (`/workshops/attend/alicante`, the hero-terminal easter egg)
+  // resolves to the live session's token here, so the token never ships to the client.
+  const instances = await sanityFetch<WorkshopShortcutInstance[]>(allWorkshopInstancesQuery).catch(
+    () => []
+  );
+  const shortcutToken = token ? resolveWorkshopShortcut(token, instances) : null;
+  return Astro.redirect(shortcutToken ? `/workshops/attend/${shortcutToken}` : '/404');
 }
 
 const status = getAccessStatus(instance);
