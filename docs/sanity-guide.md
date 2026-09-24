@@ -122,10 +122,15 @@ surface updates.
    set `event`, `workshopDate`, `token` (gates the attend page) and
    `accessDurationDays`. `repoUrl` is optional — leave it empty for a
    workshop with no code repo and the "Open GitHub Repo" button is hidden.
-3. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
+3. Set `shortPath` for a typeable attendee link. Click **Generate** to
+   default from the event name (e.g. CityJS London 2026 → `cityjs-london`),
+   or type your own memorable word (`survive`). `/admin` shows the short
+   link; `/survive` (etc.) redirects to the attend page. Paths that collide
+   with real site routes (`about`, `talks`, …) are blocked.
+4. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
    (create the audience in Resend first). Attendees who subscribe get the
    welcome email and join that audience.
-4. After the workshop, send the feedback request via the admin-protected
+5. After the workshop, send the feedback request via the admin-protected
    `/api/workshop/follow-up` route — see `apps/web/CLAUDE.md` for the curl
    recipe (always dry-run first).
 

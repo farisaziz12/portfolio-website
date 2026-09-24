@@ -1469,30 +1469,24 @@ export const workshopAttendSectionQuery = groq`
 
 export const allWorkshopInstancesQuery = groq`
   *[_type == "workshopInstance"] | order(workshopDate desc) {
-    _id,
-    title,
-    event,
-    "slug": slug.current,
-    "token": token.current,
-    workshopDate,
-    accessDurationDays,
-    forceClose,
-    repoUrl,
-    overallFeedbackUrl,
-    emailCaptureEnabled,
-    resendAudienceId
+    _id, title, event,
+    "slug": slug.current, "token": token.current, "shortPath": shortPath.current,
+    workshopDate, accessDurationDays, forceClose, repoUrl,
+    overallFeedbackUrl, emailCaptureEnabled, resendAudienceId
   }
 `;
 
 // Look up a workshopInstance by slug — used by follow-up API (admin supplies slug).
 export const workshopInstanceBySlugQuery = groq`
   *[_type == "workshopInstance" && slug.current == $slug][0] {
-    _id,
-    title,
-    event,
-    "slug": slug.current,
-    "token": token.current,
-    resendAudienceId
+    _id, title, event, "slug": slug.current, "token": token.current, resendAudienceId
+  }
+`;
+
+/** Short typeable link: /survive → attend token redirect. */
+export const workshopInstanceByShortPathQuery = groq`
+  *[_type == "workshopInstance" && shortPath.current == $shortPath][0] {
+    "token": token.current, "shortPath": shortPath.current
   }
 `;
 

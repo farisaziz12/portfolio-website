@@ -27,6 +27,7 @@ export default defineConfig({
     },
   },
   // ISR for SSR pages (e.g. homepage). Never cache API or admin — they use cookies.
+  // Workshop short-path redirects are SSR with Cache-Control: no-store (see [shortPath].astro).
   adapter: vercel({
     isr: {
       expiration: 60 * 60, // 1 hour

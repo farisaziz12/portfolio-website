@@ -1,0 +1,36 @@
+---
+/**
+ * CMS short redirects: /survive → /workshops/attend/<token>
+ * Static routes (about, talks, …) take precedence; this only catches leftovers.
+ */
+export const prerender = false
+
+import { sanityFetch } from '../lib/sanity/client'
+import { workshopInstanceByShortPathQuery } from '../lib/sanity/queries'
+import { normalizeWorkshopShortPath } from 'shared'
+
+interface ShortPathHit {
+  token: string
+  shortPath: string
+}
+
+const raw = Astro.params.shortPath
+const shortPath = normalizeWorkshopShortPath(raw)
+
+if (!shortPath) {
+  return Astro.redirect('/404')
+}
+
+const hit = await sanityFetch<ShortPathHit | null>(
+  workshopInstanceByShortPathQuery,
+  { shortPath },
+  { cdn: false }
+).catch(() => null)
+
+if (!hit?.token) {
+  return Astro.redirect('/404')
+}
+
+Astro.response.headers.set('Cache-Control', 'private, no-store')
+return Astro.redirect(`/workshops/attend/${hit.token}`, 302)
+---

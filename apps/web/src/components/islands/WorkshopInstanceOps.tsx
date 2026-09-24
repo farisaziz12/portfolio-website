@@ -11,31 +11,38 @@ type FollowUpState =
 
 export default function WorkshopInstanceOps({
   attendUrl,
+  shortUrl,
   instanceSlug,
   feedbackUrl,
   hasAudience,
   eventLabel,
 }: {
   attendUrl: string;
+  /** When set, preferred typeable link (faziz-dev.com/survive). QR encodes this. */
+  shortUrl?: string;
   instanceSlug: string;
   feedbackUrl?: string;
   hasAudience: boolean;
   eventLabel: string;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'short' | 'full' | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [followUp, setFollowUp] = useState<FollowUpState>({ kind: 'idle' });
 
+  const shareUrl = shortUrl || attendUrl;
+  const displayShare = shareUrl.replace(/^https?:\/\//, '');
+  const displayAttend = attendUrl.replace(/^https?:\/\//, '');
+
   const qrSvg = useMemo(
     () =>
-      renderSVG(attendUrl, {
+      renderSVG(shareUrl, {
         ecc: 'M',
         border: 2,
         pixelSize: 8,
         whiteColor: 'white',
         blackColor: 'black',
       }),
-    [attendUrl]
+    [shareUrl]
   );
 
   useEffect(() => {
@@ -47,11 +54,11 @@ export default function WorkshopInstanceOps({
     return () => window.removeEventListener('keydown', onKey);
   }, [fullscreen]);
 
-  const copyLink = async () => {
+  const copyLink = async (url: string, which: 'short' | 'full') => {
     try {
-      await navigator.clipboard.writeText(attendUrl);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(url);
+      setCopied(which);
+      window.setTimeout(() => setCopied(null), 2000);
     } catch {
       setFollowUp({ kind: 'error', message: 'Could not copy link' });
     }
@@ -115,9 +122,23 @@ export default function WorkshopInstanceOps({
             dangerouslySetInnerHTML={{ __html: qrSvg }}
           />
           <div className="wio__access-actions">
-            <button type="button" className="wio__copy" onClick={() => void copyLink()}>
-              <code>{attendUrl.replace(/^https?:\/\//, '')}</code>
-              <span className="wio__lbl">{copied ? 'Copied' : 'Copy'}</span>
+            {shortUrl ? (
+              <button
+                type="button"
+                className="wio__copy wio__copy--short"
+                onClick={() => void copyLink(shortUrl, 'short')}
+              >
+                <code>{displayShare}</code>
+                <span className="wio__lbl">{copied === 'short' ? 'Copied' : 'Copy short'}</span>
+              </button>
+            ) : (
+              <p className="wio__hint">
+                In Sanity, Generate a default short path from the event — or type your own (e.g. survive).
+              </p>
+            )}
+            <button type="button" className="wio__copy" onClick={() => void copyLink(attendUrl, 'full')}>
+              <code>{displayAttend}</code>
+              <span className="wio__lbl">{copied === 'full' ? 'Copied' : 'Copy'}</span>
             </button>
             <div className="wio__btn-row">
               <button
@@ -217,8 +238,12 @@ export default function WorkshopInstanceOps({
             className="wio__fs-qr"
             dangerouslySetInnerHTML={{ __html: qrSvg }}
           />
-          <p className="wio__fs-url">{attendUrl.replace(/^https?:\/\//, '')}</p>
-          <p className="wio__fs-hint">Scan to open workshop materials</p>
+          <p className="wio__fs-url">{displayShare}</p>
+          <p className="wio__fs-hint">
+            {shortUrl
+              ? 'Scan or type the short link for workshop materials'
+              : 'Scan to open workshop materials'}
+          </p>
         </div>
       )}
     </div>
