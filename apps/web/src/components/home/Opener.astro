@@ -1,0 +1,233 @@
+---
+/**
+ * The opener ("web cut", 3.6s): an overlay above the fully rendered homepage.
+ * Four cuts: white diagonal wipe + "F." mark → cropped "Faris" on yellow →
+ * "Aziz" with yellow/blue colour offsets on white → speaker card; then the
+ * overlay lifts (translateY(-3%) + fade, 0.6s).
+ *
+ * Rules: plays once per session (sessionStorage.introSeen), only on a full
+ * load of `/` (never on a ViewTransitions route change), replays on
+ * `?intro=replay` or the `intro:replay` document event (header link).
+ * Skip button + Esc from 0s; the overlay starts below the header so the nav
+ * stays clickable. Reduced motion → static title frame, 400ms fade.
+ * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
+ */
+import SanityImg from '../v3/SanityImg.astro';
+import type { SanityImage } from '../../lib/sanity/v3';
+
+interface Props {
+  /** Wide stage photo for the first cut. */
+  wide?: SanityImage;
+  /** Square-ish portrait for the speaker card. */
+  portrait?: SanityImage;
+  name?: string;
+  /** "Software engineer · speaker · ZurichJS co-founder" */
+  line: string;
+}
+
+const { wide, portrait, name = 'Faris Aziz', line } = Astro.props;
+const parts = line.split(/\s*·\s*/).filter(Boolean);
+const first = parts[0] ?? '';
+const rest = parts.slice(1).join(', ');
+const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
+---
+
+<div class="op" data-opener hidden>
+  <div class="op__cut op__s1" aria-hidden="true">
+    {wide?.asset && <SanityImg image={wide} alt="" widths={[960, 1600]} sizes="100vw" loading="eager" class="op__photo" />}
+    <div class="op__wipe"></div>
+    <div class="op__mark">{given.charAt(0)}<span>.</span></div>
+  </div>
+  <div class="op__cut op__s2" aria-hidden="true">
+    <div class="op__crop">{given}</div>
+  </div>
+  <div class="op__cut op__s3" aria-hidden="true">
+    <div class="op__stack">
+      <span class="op__off op__off--y">{family}</span>
+      <span class="op__off op__off--b">{family}</span>
+      <span class="op__word">{family}</span>
+    </div>
+  </div>
+  <div class="op__cut op__s4" aria-hidden="true">
+    <div class="op__card">
+      <div class="op__avatar">
+        <span class="op__tile op__tile--y"></span>
+        <span class="op__tile op__tile--b"></span>
+        {portrait?.asset && <SanityImg image={portrait} alt="" ratio={1} widths={[200, 400]} sizes="120px" loading="eager" class="op__face" />}
+      </div>
+      <div>
+        <div class="op__name">{name}</div>
+        <div class="op__role">{first}{rest && <>,<br />{rest}</>}</div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="op__skip" data-opener-skip>Skip intro · Esc</button>
+</div>
+
+<style>
+  .op {
+    position: fixed; left: 0; right: 0; bottom: 0; top: var(--op-top, var(--header-height)); z-index: 19;
+    overflow: hidden; background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); container-type: inline-size; cursor: pointer;
+  }
+  .op[hidden] { display: none !important; }
+  .op__cut { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
+
+  /* Cut 1: stage photo, white diagonal wipe, "F." */
+  .op__s1 :global(.op__photo) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .op__wipe { position: absolute; inset: 0; background: rgb(255 255 255); clip-path: polygon(0 0, 0 0, 0 0); }
+  .op__mark { position: absolute; left: 5cqw; top: 5cqw; font-weight: 900; font-size: 14cqw; line-height: 0.8; letter-spacing: -0.06em; color: rgb(var(--c-ink)); opacity: 0; }
+  .op__mark span { color: rgb(var(--c-blue)); }
+
+  /* Cut 2: cropped name on yellow */
+  .op__s2 { background: rgb(var(--c-yellow)); }
+  .op__crop { position: absolute; left: 0; bottom: -14cqw; font-weight: 900; font-size: 58cqw; line-height: 1; letter-spacing: -0.07em; color: rgb(var(--c-ink)); white-space: nowrap; }
+
+  /* Cut 3: family name with colour offsets on white */
+  .op__s3 { background: rgb(255 255 255); display: grid; place-items: center; }
+  .op__stack { position: relative; font-weight: 900; font-size: 28cqw; line-height: 1; letter-spacing: -0.06em; }
+  .op__off { position: absolute; inset: 0; }
+  .op__off--y { color: rgb(var(--c-yellow)); }
+  .op__off--b { color: rgb(var(--c-blue)); }
+  .op__word { position: relative; color: rgb(var(--c-ink)); }
+
+  /* Cut 4: speaker card */
+  .op__s4 { background: rgb(var(--c-ink)); display: grid; place-items: center; }
+  .op__card { display: flex; gap: max(14px, 2cqw); align-items: center; padding: 2cqw var(--gutter); }
+  .op__avatar { position: relative; width: max(72px, 10cqw); height: max(72px, 10cqw); flex: none; }
+  .op__tile { position: absolute; inset: 0; }
+  .op__tile--y { background: rgb(var(--c-yellow)); transform: rotate(-8deg); }
+  .op__tile--b { background: rgb(var(--c-blue)); transform: rotate(6deg); }
+  .op__avatar :global(.op__face) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .op__name { color: rgb(var(--c-yellow)); font-weight: 800; font-size: max(12px, 1.7cqw); }
+  .op__role { font-weight: 800; font-size: max(20px, 3.4cqw); line-height: 1.02; letter-spacing: -0.04em; }
+
+  .op__skip {
+    position: absolute; right: max(12px, 2cqw); top: max(12px, 2cqw); z-index: 5; min-height: 44px; padding: 0 16px;
+    border: 0; border-radius: 999px; background: rgb(var(--c-ink) / 0.72); color: rgb(var(--c-cream));
+    font: 700 13px var(--font); cursor: pointer; backdrop-filter: blur(6px);
+  }
+  .op__skip:hover { background: rgb(var(--c-yellow)); color: rgb(var(--c-ink)); }
+
+  /* Timeline (web cut): total 3.6s including the 0.6s lift. */
+  .op.is-play { animation: op-lift 0.6s cubic-bezier(0.7, 0, 0.3, 1) 3s both; }
+  .op.is-play .op__s1 { animation: op-scene 0.86s linear 0s both; }
+  .op.is-play .op__s1 :global(.op__photo) { animation: op-ken 0.9s linear both; }
+  .op.is-play .op__wipe { animation: op-wipe 0.41s cubic-bezier(0.8, 0, 0.2, 1) 0.11s both; }
+  .op.is-play .op__mark { animation: op-pop 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) 0.34s both; }
+  .op.is-play .op__s2 { animation: op-scene 0.79s linear 0.83s both; }
+  .op.is-play .op__crop { animation: op-slide 0.83s cubic-bezier(0.3, 0, 0.2, 1) 0.83s both; }
+  .op.is-play .op__s3 { animation: op-scene 0.86s linear 1.58s both; }
+  .op.is-play .op__stack { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 1.59s both; }
+  .op.is-play .op__off--y { animation: op-off-y 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 1.8s both; }
+  .op.is-play .op__off--b { animation: op-off-b 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 1.8s both; }
+  .op.is-play .op__s4 { animation: op-hold 1.2s linear 2.4s both; }
+  .op.is-play .op__card { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 2.42s both; }
+
+  /* Reduced motion: the static title frame; JS fades it out over 400ms
+     (Web Animations, so the global reduced-motion clamp doesn't zero it). */
+  .op.is-static .op__s4 { opacity: 1; }
+
+  @keyframes op-scene { 0% { opacity: 0; } 2% { opacity: 1; } 98% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes op-hold { 0% { opacity: 0; } 4% { opacity: 1; } 100% { opacity: 1; } }
+  @keyframes op-wipe { from { clip-path: polygon(0 0, 0 0, 0 0); } to { clip-path: polygon(0 0, 62% 0, 0 100%); } }
+  @keyframes op-slide { from { transform: translateX(8%); } to { transform: translateX(-22%); } }
+  @keyframes op-pop { from { opacity: 0; transform: translateY(12%) scale(0.96); } to { opacity: 1; transform: none; } }
+  @keyframes op-off-y { from { transform: translate(0, 0); } to { transform: translate(-1.2cqw, 1.2cqw); } }
+  @keyframes op-off-b { from { transform: translate(0, 0); } to { transform: translate(1.2cqw, -1cqw); } }
+  @keyframes op-ken { from { transform: scale(1.04); } to { transform: scale(1.12); } }
+  @keyframes op-lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-3%); visibility: hidden; } }
+</style>
+
+<script>
+  const KEY = 'introSeen';
+  let stop: (() => void) | null = null;
+  let firstRun = true;
+
+  function initialLoadWasHome(): boolean {
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    try {
+      return new URL(nav?.name || location.href).pathname === '/';
+    } catch {
+      return location.pathname === '/';
+    }
+  }
+
+  function finish(el: HTMLElement) {
+    stop?.();
+    const hadFocus = el.contains(document.activeElement);
+    el.hidden = true;
+    el.classList.remove('is-play', 'is-static');
+    document.querySelectorAll<HTMLElement>('[data-replay-intro]').forEach((a) => (a.hidden = false));
+    if (hadFocus) {
+      const h1 = document.querySelector<HTMLElement>('main h1');
+      if (h1) {
+        h1.setAttribute('tabindex', '-1');
+        h1.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  function play(el: HTMLElement) {
+    stop?.();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { sessionStorage.setItem(KEY, '1'); } catch { /* storage blocked */ }
+    // Start below the header so the nav stays visible and clickable.
+    const header = document.querySelector('header');
+    const top = Math.max(0, header ? header.getBoundingClientRect().bottom : 0);
+    el.style.setProperty('--op-top', `${top}px`);
+    el.classList.remove('is-play', 'is-static');
+    el.hidden = false;
+    void el.offsetWidth; // restart the CSS timeline on replay
+    el.classList.add(reduced ? 'is-static' : 'is-play');
+
+    const done = () => finish(el);
+    const fade = reduced ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, delay: 1200, easing: 'ease', fill: 'forwards' }) : null;
+    if (fade) fade.onfinish = done;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') done(); };
+    const onEnd = (e: AnimationEvent) => { if (!reduced && e.target === el) done(); };
+    const onScroll = () => { if (window.scrollY > 40) done(); };
+    const timer = window.setTimeout(done, reduced ? 1900 : 3900); // safety net if animationend never fires
+    document.addEventListener('keydown', onKey);
+    el.addEventListener('animationend', onEnd);
+    el.addEventListener('click', done); // Skip button, or a tap anywhere on the overlay
+    window.addEventListener('scroll', onScroll, { passive: true });
+    stop = () => {
+      window.clearTimeout(timer);
+      fade?.cancel();
+      document.removeEventListener('keydown', onKey);
+      el.removeEventListener('animationend', onEnd);
+      el.removeEventListener('click', done);
+      window.removeEventListener('scroll', onScroll);
+      stop = null;
+    };
+  }
+
+  function init() {
+    const isFirst = firstRun;
+    firstRun = false;
+    const el = document.querySelector<HTMLElement>('[data-opener]');
+    if (!el || el.dataset.ready) return;
+    el.dataset.ready = '1';
+
+    const url = new URL(location.href);
+    if (url.searchParams.get('intro') === 'replay') {
+      url.searchParams.delete('intro');
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+      play(el);
+      return;
+    }
+    // Only on a full load of `/`: never when a route change brought us here.
+    if (!isFirst || !initialLoadWasHome()) return;
+    let seen = true;
+    try { seen = sessionStorage.getItem(KEY) === '1'; } catch { /* storage blocked: stay quiet */ }
+    if (!seen) play(el);
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => stop?.());
+  document.addEventListener('intro:replay', () => {
+    const el = document.querySelector<HTMLElement>('[data-opener]');
+    if (el) play(el);
+  });
+</script>

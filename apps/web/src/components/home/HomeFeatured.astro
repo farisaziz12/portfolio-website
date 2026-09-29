@@ -1,0 +1,118 @@
+---
+/**
+ * Featured posters: 01 = the flagship talk (yellow), 02/03 = conversations or
+ * posts (ink). Under the row: one attributed quote and the way into the rest.
+ */
+import PosterCard from '../v3/PosterCard.astro';
+import SectionHead from '../v3/SectionHead.astro';
+import { monthYear, shortQuote, PLATFORM_LABEL, writingAction, type FeaturedItem, type Praise } from '../../lib/sanity/v3';
+
+interface Props {
+  items: FeaturedItem[];
+  quote?: Praise;
+  podcasts: number;
+}
+
+const { items, quote, podcasts } = Astro.props;
+
+const FORMAT_LABEL = { podcast: 'Podcast', video: 'Video', article: 'Article' } as const;
+
+/** Drop a subtitle after the colon: "Caching, Payloads, and Other Dark Arts". */
+const mainTitle = (t: string) => (t.includes(': ') ? t.slice(0, t.indexOf(': ')) : t);
+
+const posters = items.slice(0, 3).map((f, i) => {
+  if (f.kind === 'talk') {
+    const t = f.talk;
+    const ev = t.recording?.event ?? t.lastDelivery?.event;
+    const minutes = t.recording?.minutes ?? t.duration;
+    return {
+      n: i + 1,
+      tone: i === 0 ? ('lead' as const) : ('ink' as const),
+      kicker: ['Talk', minutes ? `${minutes} min` : null].filter(Boolean).join(' · '),
+      kickerRight: ev ? [ev.seriesName || ev.title, monthYear(ev.date)].filter(Boolean).join(' · ') : undefined,
+      title: mainTitle(t.title),
+      text: i === 0 ? t.summary : undefined,
+      action: t.recording ? 'Watch the recording' : 'See the talk',
+      icon: t.recording ? ('play' as const) : undefined,
+      href: `/talks/${t.slug}`,
+      external: false,
+    };
+  }
+  const w = f.item;
+  const label = w.kind === 'post' && w.format === 'article' ? 'Writing' : FORMAT_LABEL[w.format];
+  return {
+    n: i + 1,
+    tone: i === 0 ? ('lead' as const) : ('ink' as const),
+    kicker: [label, w.isInternal ? null : w.source, monthYear(w.date)].filter(Boolean).join(' · '),
+    kickerRight: undefined,
+    title: w.title,
+    text: i === 0 ? w.excerpt : undefined,
+    action: writingAction(w).split(' · ')[0],
+    icon: w.format === 'video' ? ('play' as const) : undefined,
+    href: w.href,
+    external: !w.isInternal,
+  };
+});
+
+const quoteMeta = quote
+  ? [
+      `${quote.author.name}${quote.label ? ` ${quote.label.charAt(0).toLowerCase()}${quote.label.slice(1)}` : ''}`,
+      [PLATFORM_LABEL[quote.platform] !== 'Direct' ? PLATFORM_LABEL[quote.platform] : null, monthYear(quote.date)].filter(Boolean).join(', '),
+    ]
+      .filter(Boolean)
+      .join(' · ')
+  : '';
+const allLabel = podcasts > 0 ? `All talks and ${podcasts} podcast${podcasts === 1 ? '' : 's'}` : 'All talks';
+---
+
+{posters.length > 0 && (
+  <section class="ds-wrap ds-section hf" aria-labelledby="home-featured">
+    <SectionHead id="home-featured" title="Featured." size="sm" note="The flagship talk and recent conversations" />
+    <div class:list={['hf__grid', `hf__grid--${posters.length}`]}>
+      {posters.map((p) => (
+        <PosterCard {...p} class={`hf__poster hf__poster--${p.n}`} track={`home-featured-${p.n}`} />
+      ))}
+    </div>
+    <div class="hf__foot">
+      {quote && (
+        <p class="hf__quote">
+          “{shortQuote(quote)}” <span class="hf__who">— {quoteMeta}</span>
+        </p>
+      )}
+      <a href="/talks" class="ds-link ds-link--sm hf__all" data-track="home-featured-all">{allLabel}</a>
+    </div>
+  </section>
+)}
+
+<style>
+  .hf { display: flex; flex-direction: column; }
+  .hf :global(.shead) { margin-bottom: 22px; }
+  .hf__grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 14px; }
+  .hf__grid--2 { grid-template-columns: 1.5fr 1fr; }
+  .hf__grid--1 { grid-template-columns: 1fr; }
+  .hf__foot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 24px; flex-wrap: wrap; margin-top: 22px; font-size: 14px; }
+  .hf__quote { margin: 0; color: rgb(var(--text-muted)); max-width: 80ch; text-wrap: pretty; }
+  .hf__who { color: rgb(var(--text-faint)); }
+  .hf__all { flex: none; }
+
+  @media (max-width: 960px) {
+    .hf__grid, .hf__grid--2 { grid-template-columns: 1fr 1fr; grid-auto-rows: auto; }
+    .hf__grid :global(.hf__poster--1) { grid-column: 1 / -1; min-height: 240px; }
+    .hf__grid :global(.hf__poster--2), .hf__grid :global(.hf__poster--3) { min-height: 220px; }
+  }
+  @media (max-width: 720px) {
+    .hf__grid { gap: 10px; }
+    .hf__grid :global(.hf__poster--1) { min-height: 200px; padding: 18px; }
+    .hf__grid :global(.hf__poster--2), .hf__grid :global(.hf__poster--3) { min-height: 160px; padding: 14px; gap: 14px; }
+    .hf__grid :global(.poster--ink .poster__top) { font-size: 10.5px; letter-spacing: 0.1em; }
+    .hf__grid :global(.poster--ink .poster__title) { font-size: 15.5px; line-height: 1.1; }
+    .hf__grid :global(.poster--ink .poster__num) { font-size: 160px; bottom: -60px; }
+    .hf__grid :global(.poster--ink .poster__action) { min-height: 36px; padding: 0 12px; font-size: 12.5px; }
+    .hf__grid :global(.poster--lead .poster__title) { font-size: 24px; }
+    .hf__grid :global(.poster__top) { flex-wrap: wrap; gap: 2px 12px; }
+    .hf__grid :global(.poster__right) { text-align: left; }
+  }
+  @media (max-width: 369px) {
+    .hf__grid { grid-template-columns: 1fr; }
+  }
+</style>

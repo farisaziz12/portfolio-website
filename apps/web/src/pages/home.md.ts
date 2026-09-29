@@ -1,55 +1,128 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { speakingStatsQuery, upcomingEventsQuery } from '../lib/sanity/queries';
-import { mdResponse, mdDate } from '../lib/markdown';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
-import { availabilityLabel } from '../lib/availability';
+import { mdResponse } from '../lib/markdown';
+import { SITE } from '../lib/seo';
+import {
+  getHomePage,
+  plainHeadline,
+  getHomeFeatured,
+  getPrimaryCommunity,
+  getMetricsByDomain,
+  getUpcomingEvents,
+  getSpeakingStats,
+  getWriting,
+  getSiteSettings,
+  getProfile,
+  primarySession,
+  sessionLine,
+  eventPlace,
+  fullDate,
+  monthYear,
+} from '../lib/sanity/v3';
 
-interface SpeakingStats {
-  totalEvents: number;
-  countries: number;
-  cities: number;
-}
-
-interface EventItem {
-  title: string;
-  conference?: string;
-  date: string;
-  slug: string;
-}
+const abs = (href: string) => (href.startsWith('http') ? href : `${SITE}${href}`);
 
 export const GET: APIRoute = async () => {
-  const [stats, upcoming] = await Promise.all([
-    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
-    sanityFetch<EventItem[]>(upcomingEventsQuery).catch(() => []),
+  const home = await getHomePage();
+  const [settings, profile, featured, community, communityMetrics, upcoming, stats, writing] = await Promise.all([
+    getSiteSettings(),
+    getProfile(),
+    getHomeFeatured(),
+    getPrimaryCommunity(home.communityId),
+    getMetricsByDomain('community'),
+    getUpcomingEvents(),
+    getSpeakingStats(),
+    getWriting(),
   ]);
 
-  const body = [
-    `# I'm Faris Aziz`,
-    ``,
-    `> I'm Faris Aziz, and I ship resilient frontend and payment systems, then I go talk about how on stage. I also build ZurichJS. Staff Software Engineer and conference speaker based in Geneva. ${stats.totalEvents} events across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). Talks, workshops, consulting, and 1:1 mentorship. ${availabilityLabel('Available')}.`,
-    ``,
-    `## Site map (markdown mirrors for agents)`,
-    ``,
-    `- [About & bios](https://faziz-dev.com/about.md)`,
-    `- [Speaking](https://faziz-dev.com/speaking.md): what I speak about, how to book, paste-ready bio`,
-    `- [Talk catalogue](https://faziz-dev.com/talks.md): bookable talks`,
-    `- [Speaking schedule](https://faziz-dev.com/events.md): upcoming & past`,
-    `- [Invite to speak](https://faziz-dev.com/invite.md): booking form, availability, practical details`,
-    `- [Press kit](https://faziz-dev.com/press-kit): copy-paste bios, downloadable headshots`,
-    `- [Consulting](https://faziz-dev.com/consulting.md)`,
-    `- [Mentorship](https://faziz-dev.com/mentorship.md)`,
-    `- [Work with me](https://faziz-dev.com/contact.md): all contact routes`,
-    ``,
-    upcoming.length
-      ? `## Next up\n\n${upcoming
-          .slice(0, 3)
-          .map((e) => `- ${mdDate(e.date)}: ${e.title}${e.conference ? ` at ${e.conference}` : ''}`)
-          .join('\n')}`
-      : '',
+  const metrics = (community?.metrics.length ? community.metrics : communityMetrics).filter((m) => m.dateLabel);
+  const latest = writing.slice(0, 4);
+
+  const statLine = [
+    `${stats.talksDelivered} talks delivered`,
+    stats.workshopsDelivered ? `${stats.workshopsDelivered} workshops delivered` : null,
+    stats.hosted ? `${stats.hosted} events hosted (counted separately)` : null,
+    `${stats.countries} countries`,
+    stats.podcasts ? `${stats.podcasts} podcast appearances` : null,
+    `${stats.catalogueTalks} talks in the current catalogue`,
   ]
     .filter(Boolean)
-    .join('\n');
+    .join(' · ');
+
+  const body = [
+    `# ${profile.name}: ${home.kicker || settings.nowLine}`,
+    ``,
+    `> ${plainHeadline(home.headline)} ${home.intro}`,
+    ``,
+    `Based in ${profile.travelBase}. ${settings.metaDescription ?? ''}`.trim(),
+    ``,
+    `## Speaking record (derived, as of ${fullDate(stats.asOf)})`,
+    ``,
+    statLine,
+    ``,
+    upcoming.length
+      ? [
+          `## Next up`,
+          ``,
+          ...upcoming.slice(0, 5).map((e) => {
+            const s = primarySession(e);
+            return `- ${fullDate(e.date)}: [${e.title}](${SITE}/events/${e.slug}), ${eventPlace(e)}${s ? `. ${sessionLine(s)}` : ''}`;
+          }),
+          ``,
+        ].join('\n')
+      : `## Next up\n\nNo public dates announced right now. [Invite me](${SITE}/invite).\n`,
+    featured.length
+      ? [
+          `## Featured`,
+          ``,
+          ...featured.map((f) =>
+            f.kind === 'talk'
+              ? `- Talk: [${f.talk.title}](${SITE}/talks/${f.talk.slug})${f.talk.summary ? `: ${f.talk.summary}` : ''}${f.talk.recording ? ` Recording: ${f.talk.recording.url}` : ''}`
+              : `- ${f.item.format === 'podcast' ? 'Podcast' : f.item.format === 'video' ? 'Video' : 'Writing'}: [${f.item.title}](${abs(f.item.href)}) (${[f.item.isInternal ? null : f.item.source, monthYear(f.item.date)].filter(Boolean).join(', ')})`,
+          ),
+          ``,
+        ].join('\n')
+      : null,
+    community
+      ? [
+          `## ${community.name}`,
+          ``,
+          `${community.headline ?? ''} ${community.role ? `Role: ${community.role}.` : ''} ${community.summary ?? ''}`.replace(/\s+/g, ' ').trim(),
+          ``,
+          ...metrics.map((m) => `- ${m.value} ${m.label} (${m.dateLabel})`),
+          ...community.recognition.map((r) => `- Recognition: ${[r.title, r.issuer, r.year].filter(Boolean).join(', ')}`),
+          community.aftermovie
+            ? `- Aftermovie: ${community.aftermovie.published && community.aftermovie.url ? community.aftermovie.url : 'not yet published'}`
+            : null,
+          ``,
+          `More: ${SITE}/community`,
+          ``,
+        ]
+          .filter((l) => l !== null)
+          .join('\n')
+      : null,
+    latest.length
+      ? [
+          `## Latest writing and conversations`,
+          ``,
+          ...latest.map((w) => `- ${fullDate(w.date)}: [${w.title}](${abs(w.href)})${w.isInternal ? '' : ` (${w.source})`}`),
+          ``,
+          `All writing: ${SITE}/blog`,
+          ``,
+        ].join('\n')
+      : null,
+    `## How to book`,
+    ``,
+    `${home.invitePanel.body}`,
+    ``,
+    `- Invite me to speak: ${SITE}/invite`,
+    `- Talk catalogue: ${SITE}/talks`,
+    `- Workshops: ${SITE}/workshops`,
+    `- Press kit (bios, photos, rider): ${SITE}/press-kit`,
+    `- Everything else: ${SITE}/contact`,
+  ]
+    .filter((l) => l !== null)
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 
   return mdResponse(body);
 };

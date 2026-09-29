@@ -7,6 +7,9 @@
  *   Every platform card links to the original post.
  */
 import { PLATFORM_LABEL, shortQuote, monthYear, type Praise } from '../../lib/sanity/v3';
+
+const longDate = (iso?: string) =>
+  iso ? new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
 import SanityImg from './SanityImg.astro';
 import Icon from './Icon.astro';
 
@@ -66,8 +69,10 @@ const initials = p.author.name.split(/\s+/).map((n) => n[0]).slice(0, 2).join(''
     </div>
     <p class="pp__text">{p.quote}</p>
     <div class="pp__foot">
-      <span>{p.label}</span>
-      <span>{monthYear(p.date)}{p.url && <> · view original <Icon name="external" size={10} /></>}</span>
+      {[longDate(p.date), p.event?.title ?? p.label.replace(/^On /, ''), p.url ? `Read on ${PLATFORM_LABEL[p.platform]}` : null]
+        .filter(Boolean)
+        .join(' · ')}
+      {p.url && <Icon name="external" size={9} />}
     </div>
   </Tag>
 )}
@@ -97,11 +102,12 @@ const initials = p.author.name.split(/\s+/).map((n) => n[0]).slice(0, 2).join(''
   .pp__sub { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pp__mark { font-weight: 800; font-size: 15px; flex: none; }
   .pp__text { margin: 0; font-size: 14.5px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-  .pp__foot { margin-top: auto; display: flex; justify-content: space-between; gap: 10px; font-size: 12px; }
+  .pp__foot { margin-top: auto; padding-top: 12px; border-top: 1px solid currentColor; border-top-color: rgb(128 128 128 / 0.25); display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+  .pp__foot :global(.icon) { opacity: 0.7; }
 
   /* Network looks. Brand colours are the platforms', used only on their cards. */
-  .pp--linkedin { background: rgb(var(--c-cream-2)); color: rgb(var(--c-ink)); border-radius: 8px; border-color: rgb(224 223 220); }
-  .pp--linkedin .pp__avatar { background: rgb(var(--hairline) / 0.2); color: rgb(var(--c-ink)); }
+  .pp--linkedin { background: #fff; color: rgb(0 0 0 / 0.9); border-radius: 8px; border-color: rgb(224 223 220); }
+  .pp--linkedin .pp__avatar { background: rgb(10 102 194 / 0.12); color: #0a66c2; }
   .pp--linkedin .pp__sub, .pp--linkedin .pp__foot { color: rgb(0 0 0 / 0.6); }
   .pp--linkedin .pp__mark { background: #0a66c2; color: #fff; border-radius: 3px; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
   .pp--x { background: #000; color: #fff; border-radius: 16px; border-color: rgb(47 51 54); }

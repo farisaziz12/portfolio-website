@@ -3,8 +3,12 @@
  * Numbered poster card (Featured row, Services). A huge 01/02/03 numeral is
  * cropped off the card edge. `lead` = yellow flagship; `ink` = surface card.
  */
+import Icon from './Icon.astro';
+
 interface Props {
   n: number;
+  /** Glyph before the action label. */
+  icon?: 'play' | 'listen' | 'external' | 'arrow' | 'written';
   tone?: 'lead' | 'ink';
   kicker?: string;
   kickerRight?: string;
@@ -16,7 +20,7 @@ interface Props {
   track?: string;
   class?: string;
 }
-const { n, tone = 'ink', kicker, kickerRight, title, text, action, href, external = false, track, class: className } = Astro.props;
+const { n, icon, tone = 'ink', kicker, kickerRight, title, text, action, href, external = false, track, class: className } = Astro.props;
 const num = String(n).padStart(2, '0');
 const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
@@ -30,7 +34,7 @@ const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
   <span class="poster__body">
     <span class="poster__title">{title}</span>
     {text && <span class="poster__text">{text}</span>}
-    {action && <span class="poster__action">{action}</span>}
+    {action && <span class="poster__action">{icon && <Icon name={icon} size={12} />}{action}</span>}
   </span>
 </a>
 
