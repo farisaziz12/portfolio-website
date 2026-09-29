@@ -1,435 +1,143 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
-import { bookingYears } from '../../lib/availability';
-import { sanityFetch, urlFor } from '../../lib/sanity/client';
-import { eventBySlugQuery, allEventsQuery, socialPostsForEventQuery } from '../../lib/sanity/queries';
-import type { SocialPost } from '../../lib/sanity/types';
-import { formatDate, getCountryFlag } from 'shared/utils';
-
-interface EventDetail {
-  _id: string;
-  title: string;
-  slug: string;
-  type: string;
-  conference: string;
-  date: string;
-  endDate?: string;
-  description?: string;
-  location?: { city?: string; country?: string; isOnline?: boolean; venue?: string };
-  links?: { eventUrl?: string; videoUrl?: string; slidesUrl?: string };
-  talk?: { _id: string; title: string; slug: string; abstract?: string; topics?: string[]; duration?: number; takeaways?: string[] };
-  workshop?: { _id: string; title: string; slug: string; description?: string; duration?: string; technologies?: string[]; level?: string; prerequisites?: string[]; outcomes?: string[] };
-  relatedMedia?: { _id: string; type: string; image?: any; videoUrl?: string; description?: string }[];
-  featured?: boolean;
-}
-
-interface EventListItem { _id: string; slug: string }
-
+import SessionCard from '../../components/events/SessionCard.astro';
+import EventResources from '../../components/events/EventResources.astro';
+import EventAside from '../../components/events/EventAside.astro';
+import PraiseCard from '../../components/v3/PraiseCard.astro';
+import Icon from '../../components/v3/Icon.astro';
+import {
+  eventPlace,
+  fullDate,
+  getAllEvents,
+  getPhotos,
+  getPraiseFor,
+  getTalks,
+  getUpcomingEvents,
+  getWorkshops,
+  weekday,
+  type EventEdition,
+  type Session,
+} from '../../lib/sanity/v3';
+import { kindLabel, sessionSummary } from '../../lib/events-view';
+import { breadcrumbs, eventSchema } from '../../lib/seo';
 
 export async function getStaticPaths() {
-  const events = await sanityFetch<EventListItem[]>(allEventsQuery).catch(() => []);
-  return events.map((event) => ({ params: { slug: event.slug } }));
+  const events = await getAllEvents();
+  return events.map((e) => ({ params: { slug: e.slug }, props: { event: e } }));
 }
 
-const { slug } = Astro.params;
-const event = await sanityFetch<EventDetail | null>(eventBySlugQuery, { slug }).catch(() => null);
-if (!event) return Astro.redirect('/404');
+const e = Astro.props.event as EventEdition;
+const [talks, workshops, photos, praise, upcoming] = await Promise.all([
+  getTalks(),
+  getWorkshops(),
+  getPhotos(),
+  getPraiseFor({ eventId: e._id }),
+  getUpcomingEvents(),
+]);
 
-const socialPosts = await sanityFetch<SocialPost[]>(socialPostsForEventQuery, { eventId: event._id }).catch(() => []);
-
-const socialPostImages: Record<string, string> = {};
-socialPosts.forEach((post) => {
-  if (post.authorImage) {
-    try { socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url(); } catch {}
+function describe(s: Session): string | undefined {
+  if (s.talk) {
+    const t = talks.find((x) => x._id === s.talk!._id);
+    return t?.summary || t?.abstract || s.talk.summary;
   }
-});
-const normalizedSocialPosts = socialPosts.map((p) => ({
-  _id: p._id,
-  platform: p.platform,
-  author: p.author,
-  authorRole: p.authorRole,
-  authorHandle: p.authorHandle,
-  content: p.content,
-  url: p.url,
-  postDate: p.postDate,
-}));
+  if (s.workshop) {
+    const w = workshops.find((x) => x._id === s.workshop!._id);
+    return w?.summary || w?.description;
+  }
+  return s.title ? s.detail : undefined;
+}
 
-const isPast = new Date(event.date) < new Date();
-const dateStr = formatDate(event.date, { month: 'long', day: 'numeric', year: 'numeric' });
-const isOnline = event.location?.isOnline;
-const locationStr = isOnline
-  ? 'Online'
-  : [event.location?.venue, event.location?.city, event.location?.country].filter(Boolean).join(' · ');
+const eventPhotos = photos.filter((p) => p.event?._id === e._id);
+const cover = e.coverImage?.asset ? e.coverImage : eventPhotos[0]?.image;
+const coverAlt = (e.coverImage?.asset ? e.coverImage.alt : eventPhotos[0]?.image.alt) || `${e.title}`;
+const next = upcoming.find((x) => x.slug !== e.slug);
+const place = eventPlace(e, { venue: true });
+const dates = e.endDate && e.endDate !== e.date ? `${fullDate(e.date)} – ${fullDate(e.endDate)}` : fullDate(e.date);
+const days = e.endDate && e.endDate !== e.date ? `${weekday(e.date)} – ${weekday(e.endDate)}` : weekday(e.date);
 
-const typeLabel = event.type?.charAt(0).toUpperCase() + event.type?.slice(1);
-
-const hasMedia = (event.relatedMedia?.length || 0) > 0;
-
-// schema.org Event node — performer resolves to the site-wide #person entity.
-const siteUrl = 'https://faziz-dev.com';
-const eventSchema: Record<string, unknown> = {
-  '@type': 'Event',
-  name: `${event.title} at ${event.conference}`,
-  startDate: event.date,
-  ...(event.endDate ? { endDate: event.endDate } : {}),
-  eventStatus: 'https://schema.org/EventScheduled',
-  eventAttendanceMode: isOnline
-    ? 'https://schema.org/OnlineEventAttendanceMode'
-    : 'https://schema.org/OfflineEventAttendanceMode',
-  location: isOnline
-    ? { '@type': 'VirtualLocation', url: event.links?.eventUrl || `${siteUrl}/events/${slug}` }
-    : {
-        '@type': 'Place',
-        name: event.location?.venue || event.conference,
-        address: [event.location?.city, event.location?.country].filter(Boolean).join(', ') || undefined,
-      },
-  performer: { '@id': `${siteUrl}/#person` },
-  ...(event.description ? { description: event.description } : {}),
-  ...(event.links?.eventUrl ? { url: event.links.eventUrl } : {}),
-};
-
-const breadcrumbSchema = {
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
-    { '@type': 'ListItem', position: 2, name: 'Schedule', item: `${siteUrl}/events` },
-    { '@type': 'ListItem', position: 3, name: event.title, item: `${siteUrl}/events/${slug}` },
-  ],
-};
-
-const videoSchema = event.links?.videoUrl
-  ? {
-      '@type': 'VideoObject',
-      name: `${event.talk?.title || event.title} · ${event.conference}`,
-      description: event.talk?.abstract?.split('\n')[0] || event.description || event.title,
-      uploadDate: event.date,
-      contentUrl: event.links.videoUrl,
-      author: { '@id': `${siteUrl}/#person` },
-    }
-  : null;
-
-const extraSchema = [eventSchema, breadcrumbSchema, ...(videoSchema ? [videoSchema] : [])];
+const summary = sessionSummary(e);
+const description = [
+  `${e.title}, ${fullDate(e.date)}${place ? `, ${place}` : ''}.`,
+  summary ? `${summary}.` : '',
+  e.isUpcoming ? 'Upcoming.' : '',
+]
+  .filter(Boolean)
+  .join(' ')
+  .slice(0, 160);
 ---
 
 <BaseLayout
-  title={`${event.title} | ${event.conference || 'Event'} | Faris Aziz`}
-  description={event.description || `${event.title} · ${event.conference} · ${dateStr}`}
-  pathname={`/events/${slug}`}
-  image={`/og/events/${slug}.png`}
-  imageAlt={`${event.title} · Faris Aziz speaking engagement`}
-  extraSchema={extraSchema}
+  title={`${e.title} · ${fullDate(e.date)} | Faris Aziz`}
+  description={description}
+  image={`/og/events/${e.slug}.png`}
+  markdownAlternate={`/events/${e.slug}.md`}
+  extraSchema={[
+    eventSchema(e),
+    breadcrumbs([
+      { name: 'Speaking', path: '/speaking' },
+      { name: 'Events', path: '/events' },
+      { name: e.title, path: `/events/${e.slug}` },
+    ]),
+  ]}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <nav class="page-crumbs" aria-label="Breadcrumb">
-        <a href="/speaking">Speaking</a>
-        <span class="page-crumbs__sep">/</span>
-        <a href="/events">Events</a>
-        <span class="page-crumbs__sep">/</span>
-        <span class="page-crumbs__cur">{event.title.length > 26 ? event.title.slice(0, 24) + '…' : event.title}</span>
-      </nav>
+  <div class="ds-wrap evp">
+    <div class="evp__main">
+      <header class="evp__head">
+        <p class="ds-kicker">
+          <a href="/events" class="is-muted evp__crumb">Schedule</a><span aria-hidden="true"> · </span>{kindLabel(e)}<span aria-hidden="true"> · </span>{e.isUpcoming ? 'Upcoming' : 'Past'}
+        </p>
+        <h1 class="ds-h1 evp__title">{e.title}</h1>
+        <p class="evp__facts">
+          <span><strong><time datetime={e.date}>{dates}</time></strong> · {days}</span>
+          {place && <span>{place}</span>}
+          {e.url && (
+            <span>
+              <a href={e.url} class="evp__site" target="_blank" rel="noopener noreferrer" data-track="event_site">
+                Event site <Icon name="external" size={11} /><span class="sr-only"> (opens in a new tab)</span>
+              </a>
+            </span>
+          )}
+        </p>
+        {e.description && <p class="ds-body evp__desc">{e.description}</p>}
+      </header>
 
-      <div class="event-tags">
-        {typeLabel && <span class="ds-tag">{typeLabel}</span>}
-        {event.featured && <span class="ds-tag" style="color:rgb(var(--accent-bright));border-color:rgb(var(--accent) / 0.4);">Featured</span>}
-        {isPast && <span class="ds-tag">Past</span>}
-        {event.links?.videoUrl && <span class="ds-tag">Recording available</span>}
-      </div>
-
-      <h1 class="page-hero__title event-title">{event.title}</h1>
-      {event.conference && <p class="event-conference">{event.conference}</p>}
-
-      <div class="event-meta">
-        <div class="event-meta__row">
-          <span class="event-meta__label">When</span>
-          <span class="event-meta__value">{dateStr}{event.endDate && ` → ${formatDate(event.endDate, { month: 'short', day: 'numeric' })}`}</span>
-        </div>
-        <div class="event-meta__row">
-          <span class="event-meta__label">Where</span>
-          <span class="event-meta__value">
-            {!isOnline && event.location?.country && (
-              <span class="event-meta__flag">{getCountryFlag(event.location.country)}</span>
-            )}
-            {locationStr || 'TBA'}
-          </span>
-        </div>
-      </div>
-
-      {event.description && <p class="page-hero__lead">{event.description}</p>}
-
-      <div class="page-hero__actions">
-        {event.links?.eventUrl && (
-          <a href={event.links.eventUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary">
-            Event page
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
+      <section class="evp__sessions" aria-labelledby="sess-h">
+        <h2 id="sess-h" class="ds-label">My sessions at this edition</h2>
+        {e.sessions.length ? (
+          e.sessions.map((s) => <SessionCard event={e} session={s} description={describe(s)} />)
+        ) : (
+          <p class="ds-body">No session recorded for this edition.</p>
         )}
-        {event.links?.videoUrl && (
-          <a href={event.links.videoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:1em;height:1em;" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-            Watch recording
-          </a>
-        )}
-        {event.links?.slidesUrl && (
-          <a href={event.links.slidesUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">Slides</a>
-        )}
-      </div>
+      </section>
+
+      <EventResources event={e} photoCount={eventPhotos.length} photosCredited={eventPhotos.length > 0 && eventPhotos.every((p) => p.credit || p.image.credit)} />
+
+      {praise.length > 0 && (
+        <section class="evp__praise" aria-labelledby="praise-h">
+          <h2 id="praise-h" class="ds-label">From this edition</h2>
+          {praise.slice(0, 2).map((p) => <PraiseCard praise={p} variant="stripe" />)}
+        </section>
+      )}
     </div>
-  </header>
 
-  {event.talk && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <div>
-            <Kicker>The talk</Kicker>
-            <h2 class="page-h2">{event.talk.title}</h2>
-          </div>
-          <a href={`/talks/${event.talk.slug}`} class="ds-link">
-            Talk page
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
-        </div>
-        {event.talk.topics && event.talk.topics.length > 0 && (
-          <div class="event-tags" style="margin-bottom:1rem;">
-            {event.talk.topics.map((t) => <span class="ds-tag">{t}</span>)}
-          </div>
-        )}
-        {event.talk.abstract && <p class="event-body">{event.talk.abstract}</p>}
-        {event.talk.takeaways && event.talk.takeaways.length > 0 && (
-          <ul class="event-list">
-            {event.talk.takeaways.map((t) => (
-              <li>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  )}
-
-  {event.workshop && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="page-section__head">
-          <div>
-            <Kicker>The workshop</Kicker>
-            <h2 class="page-h2">{event.workshop.title}</h2>
-          </div>
-          <a href={`/workshops/${event.workshop.slug}`} class="ds-link">
-            Workshop page
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
-        </div>
-        <div class="event-tags" style="margin-bottom:1rem;">
-          {event.workshop.duration && <span class="ds-tag">{event.workshop.duration}</span>}
-          {event.workshop.level && <span class="ds-tag">{event.workshop.level}</span>}
-          {event.workshop.technologies?.slice(0, 4).map((t) => <span class="ds-tag">{t}</span>)}
-        </div>
-        {event.workshop.description && <p class="event-body">{event.workshop.description}</p>}
-        {event.workshop.outcomes && event.workshop.outcomes.length > 0 && (
-          <ul class="event-list">
-            {event.workshop.outcomes.map((o) => (
-              <li>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>{o}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  )}
-
-  {hasMedia && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Captured</Kicker>
-          <h2 class="page-h2">From the event</h2>
-        </div>
-        <div class="page-grid-3">
-          {event.relatedMedia!.map((m) => (
-            <div class="ds-card event-media-card ds-reveal">
-              {m.image && (
-                <div class="event-media-card__media">
-                  <img src={urlFor(m.image).width(600).height(400).quality(90).url()} alt={m.description || event.title} loading="lazy" />
-                  {m.videoUrl && (
-                    <a class="event-media-card__play" href={m.videoUrl} target="_blank" rel="noopener noreferrer" aria-label="Play video">
-                      <span><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg></span>
-                    </a>
-                  )}
-                </div>
-              )}
-              {m.description && <p class="event-media-card__caption">{m.description}</p>}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )}
-
-  {normalizedSocialPosts.length > 0 && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>From the audience</Kicker>
-          <h2 class="page-h2">What people said</h2>
-        </div>
-        <SocialPostsGrid client:visible posts={normalizedSocialPosts} imageUrls={socialPostImages} />
-        <div style="text-align:center;margin-top:2rem;">
-          <a href="/appreciation" class="ds-link">
-            More community feedback
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={`Booking ${bookingYears()} dates`}
-          title={isPast ? 'Want me at your next event?' : 'Want me at your event?'}
-          body="Tell me about your audience and I'll adapt a talk or workshop to fit. I reply within two days."
-          primaryHref="/invite"
-          primaryLabel="Invite me"
-          secondaryHref="/events"
-          secondaryLabel="All events"
-        />
-      </div>
-    </div>
-  </section>
-
+    <EventAside event={e} cover={cover} coverAlt={coverAlt} next={next} />
+  </div>
 </BaseLayout>
 
 <style>
-  .event-tags {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-  }
-  .event-title { max-width: 22ch; }
-  .event-conference {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 500;
-    font-size: 1.2rem;
-    color: rgb(var(--accent-bright));
-    margin-top: 0.6rem;
-  }
-  .event-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-    margin-top: 1.6rem;
-    max-width: 580px;
-  }
-  @media (max-width: 540px) {
-    .event-meta { grid-template-columns: 1fr; }
-  }
-  .event-meta__row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .event-meta__label {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .event-meta__value {
-    color: rgb(var(--ink));
-    font-size: 0.95rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .event-meta__flag { font-size: 1.1rem; }
-
-  .event-body {
-    color: rgb(var(--ink-muted));
-    line-height: 1.7;
-    margin-bottom: 1.4rem;
-    max-width: 70ch;
-  }
-  .event-list {
-    list-style: none;
-    padding: 0;
-    margin: 1.2rem 0 0;
-    display: grid;
-    gap: 0.8rem;
-    max-width: 70ch;
-  }
-  .event-list li {
-    display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
-  .event-list svg {
-    width: 20px;
-    height: 20px;
-    color: rgb(var(--signal));
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
-
-  .event-media-card {
-    overflow: hidden;
-    color: inherit;
-  }
-  .event-media-card__media {
-    position: relative;
-    aspect-ratio: 3 / 2;
-    background: rgb(var(--surface-3));
-  }
-  .event-media-card__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .event-media-card__play {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .event-media-card__play span {
-    width: 56px;
-    height: 56px;
-    border-radius: 999px;
-    background: rgba(10, 12, 16, 0.55);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .event-media-card__play svg {
-    width: 22px;
-    height: 22px;
-    color: #fff;
-    margin-left: 3px;
-  }
-  .event-media-card__caption {
-    padding: 0.9rem 1.1rem;
-    font-size: 0.86rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.5;
+  .evp { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 56px; padding-top: 48px; padding-bottom: 64px; }
+  .evp__main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+  .evp__head { display: flex; flex-direction: column; gap: 14px; }
+  .evp__crumb { text-decoration: none; }
+  .evp__crumb:hover { color: rgb(var(--text)); }
+  .evp__title { font-size: clamp(38px, 6vw, 52px); overflow-wrap: anywhere; }
+  .evp__facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; font-size: 15px; color: rgb(var(--text-muted)); }
+  .evp__facts strong { color: rgb(var(--text)); }
+  .evp__site { color: rgb(var(--text)); text-decoration: underline; text-underline-offset: 0.2em; text-decoration-color: rgb(var(--yellow)); display: inline-flex; align-items: center; gap: 4px; }
+  .evp__site:hover { color: rgb(var(--accent-text)); }
+  .evp__desc { margin: 0; max-width: 60ch; }
+  .evp__sessions, .evp__praise { display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 960px) {
+    .evp { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 36px; }
   }
 </style>

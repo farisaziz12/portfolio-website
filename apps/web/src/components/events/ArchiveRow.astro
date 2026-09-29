@@ -1,0 +1,54 @@
+---
+/**
+ * One past edition in the archive: Mon YYYY · title · what I did · flag +
+ * place · role badge. `data-role` carries every bucket, so an edition where
+ * I spoke AND ran a workshop shows under both filters.
+ */
+import { monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
+import { bucketBadge, flagFor, placeShort, sessionSummary } from '../../lib/events-view';
+
+interface Props {
+  event: EventEdition;
+}
+const { event: e } = Astro.props;
+const bucket = primarySession(e)?.bucket;
+const flag = flagFor(e);
+---
+
+<li data-filter-item data-role={e.buckets.join(' ')}>
+  <a href={`/events/${e.slug}`} class="ds-row arow">
+    <span class="arow__date">{monthYear(e.date)}</span>
+    <span class="ds-row__title arow__title">{e.title}</span>
+    <span class="arow__what">{sessionSummary(e)}</span>
+    <span class="arow__place">{flag && <span class="arow__flag" aria-hidden="true">{flag}</span>}{placeShort(e)}</span>
+    {bucket && <span class:list={['ds-badge arow__badge', { 'is-muted': bucket === 'attended' }]}>{bucketBadge(bucket)}</span>}
+  </a>
+</li>
+
+<style>
+  .arow {
+    display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr) 130px 100px; gap: 20px; align-items: center;
+    padding: 16px 0; font-size: 14.5px; min-height: 44px;
+  }
+  .arow__date { color: rgb(var(--text-muted)); font-size: 13px; }
+  .arow__title { font-weight: 700; transition: color 0.15s; overflow-wrap: anywhere; }
+  .arow__what { color: rgb(var(--text-muted)); overflow-wrap: anywhere; }
+  .arow__place { color: rgb(var(--text-faint)); font-size: 13px; }
+  .arow__flag { font-size: 16px; margin-right: 6px; }
+  .arow__badge { justify-self: end; color: rgb(var(--text-muted)); }
+  .arow__badge.is-muted { color: rgb(var(--text-faint)); }
+  @media (max-width: 900px) {
+    .arow { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 4px 16px; align-items: start; }
+    .arow__date { grid-row: 1 / span 3; padding-top: 2px; }
+    .arow__title { grid-column: 2; }
+    .arow__what { grid-column: 2; font-size: 13.5px; }
+    .arow__place { grid-column: 2; }
+    .arow__badge { grid-column: 3; grid-row: 1; }
+  }
+  @media (max-width: 420px) {
+    .arow { grid-template-columns: minmax(0, 1fr) auto; }
+    .arow__date { grid-row: auto; grid-column: 1; }
+    .arow__title, .arow__what, .arow__place { grid-column: 1 / -1; }
+    .arow__badge { grid-column: 2; grid-row: 1; }
+  }
+</style>

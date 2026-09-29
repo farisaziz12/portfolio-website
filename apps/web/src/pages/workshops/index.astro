@@ -1,311 +1,104 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import IconChip from '../../components/design/IconChip.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import { sanityFetch } from '../../lib/sanity/client';
-import { allWorkshopsQuery } from '../../lib/sanity/queries';
-import { availabilityLabel } from '../../lib/availability';
+import SkewHero from '../../components/v3/SkewHero.astro';
+import PraiseCard from '../../components/v3/PraiseCard.astro';
+import WorkshopRow from '../../components/workshops/WorkshopRow.astro';
+import { getPhotos, getPraiseFor, getWorkshops, numberWord } from '../../lib/sanity/v3';
+import { breadcrumbs, itemList } from '../../lib/seo';
+import { pastDeliveries } from '../../lib/workshops-view';
 
-interface Workshop {
-  _id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  duration?: string;
-  level?: string;
-  technologies?: string[];
-  isBookable?: boolean;
-}
+const [all, photos, praise] = await Promise.all([getWorkshops(), getPhotos(), getPraiseFor({ topic: 'workshop' })]);
+// Editor order first; unordered ones by how often they've actually run.
+const workshops = all
+  .filter((w) => w.isBookable)
+  .sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || pastDeliveries(b).length - pastDeliveries(a).length);
+const hero = workshops.find((w) => w.image?.asset)?.image ?? photos[0]?.image;
+const heroAlt = hero?.alt || 'Faris running a workshop';
+// A general workshop quote here; per-workshop quotes live on their own pages.
+const quote = praise.find((p) => !p.workshop) ?? praise[0];
+const count = workshops.length;
+const lede = count
+  ? `${numberWord(count)} workshop${count === 1 ? '' : 's'}, each edition with its own agenda, so the advertised length and the schedule always agree. Resources stay available to attendees afterwards.`
+  : 'Each edition has its own agenda, so the advertised length and the schedule always agree. Resources stay available to attendees afterwards.';
 
-const workshops = await sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []);
-const bookable = workshops.filter((w) => w.isBookable !== false);
-
-const benefits = [
-  {
-    title: 'Hands-on learning',
-    desc: 'Build real projects during the session: guided exercises, working code by the end.',
-    icon: '<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
-    signal: false,
-  },
-  {
-    title: 'Small group format',
-    desc: "Interactive sessions mean personalized attention and questions tackled as they come up.",
-    icon: '<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
-    signal: false,
-  },
-  {
-    title: 'Take-home materials',
-    desc: 'Code samples, exercises, and reference docs to keep building after the session ends.',
-    icon: '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"/>',
-    signal: true,
-  },
-];
-
-const topics = [
-  { title: 'Next.js in production', desc: 'App router, server components, performance budgets.', icon: '<path d="M3 12h18M12 3v18"/>' },
-  { title: 'React Query patterns', desc: 'Cache invalidation, suspense, infinite scroll.', icon: '<circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4"/>' },
-  { title: 'Real-world architecture', desc: 'Module boundaries, monorepo patterns, shared types.', icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
-  { title: 'Observability', desc: 'Logging, tracing, what to measure when it breaks.', icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>' },
-  { title: 'Resilient patterns', desc: 'Retries, circuit breakers, graceful degradation.', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
-  { title: 'Engineering leadership', desc: 'Reviews, prioritisation, growing senior engineers.', icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>' },
-  { title: 'SDLC best practices', desc: 'Branching, CI/CD discipline, fast feedback loops.', icon: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>' },
-  { title: 'Career growth', desc: 'From mid to senior to staff: what actually moves the needle.', icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>' },
+const schema = [
+  breadcrumbs([
+    { name: 'Speaking', path: '/speaking' },
+    { name: 'Workshops', path: '/workshops' },
+  ]),
+  ...(workshops.length ? [itemList('Workshops', workshops.map((w) => `/workshops/${w.slug}`))] : []),
 ];
 ---
 
 <BaseLayout
-  title="Workshops | Faris Aziz"
-  description="Hands-on workshops by Faris Aziz on React, Next.js, and modern web development. Available for conferences and corporate training."
-  pathname="/workshops"
+  title="Workshops: hands-on, with a repo you keep | Faris Aziz"
+  description="Hands-on workshops by Faris Aziz, compared side by side: what you leave able to do, prerequisites, editions and group size. Book one for your event or team."
   image="/og/workshops.png"
+  markdownAlternate="/workshops.md"
+  extraSchema={schema}
+  band={false}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>Workshops · hands-on</Kicker>
-      <h1 class="page-hero__title">
-        Build it, then <span class="accent-word">ship it</span>.
-      </h1>
-      <p class="page-hero__lead">
-        Interactive sessions where participants learn by building. Available for conferences, corporate training, and bootcamps, in full-day or half-day formats.
-      </p>
-      <div class="page-hero__actions">
-        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
-          Book a workshop
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/talks" class="ds-btn ds-btn-secondary ds-btn-lg">View talks</a>
-      </div>
-    </div>
-  </header>
+  <SkewHero image={hero} imageAlt={heroAlt} height={440}>
+    <p class="ds-kicker"><a href="/speaking" class="is-muted ws-crumb">Speaking</a><span aria-hidden="true"> · </span>Workshops</p>
+    <h1 class="ds-h1 ws-h1">Hands-on, with a repo you keep.</h1>
+    <p class="ds-lede ws-lede">{lede}</p>
+  </SkewHero>
 
-  <!-- WHY WORKSHOPS -->
-  <section class="page-section page-section--alt">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Why workshops</Kicker>
-        <h2 class="page-h2 ds-reveal">Nobody learns from <span class="mark">slides alone</span></h2>
-      </div>
-      <div class="page-grid-3 wide">
-        {benefits.map((b) => (
-          <div class="ds-card workshop-benefit ds-reveal">
-            <IconChip variant={b.signal ? 'signal' : 'accent'}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={b.icon} />
-            </IconChip>
-            <h3 class="workshop-benefit__title">{b.title}</h3>
-            <p class="workshop-benefit__desc">{b.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
+  <div class="ds-wrap ws-body">
+    {workshops.length ? (
+      <>
+        <div class="ws-head" aria-hidden="true">
+          <span>Workshop</span><span>You leave able to</span><span>Prerequisites</span><span>Editions · cap</span><span></span>
+        </div>
+        <ul class="ws-list" role="list">
+          {workshops.map((w) => <WorkshopRow workshop={w} />)}
+        </ul>
+      </>
+    ) : (
+      <p class="ds-card ds-card--dashed ws-empty">No workshops listed right now. Tell me what your team needs and I'll send a matching agenda.</p>
+    )}
 
-  <!-- AVAILABLE WORKSHOPS -->
-  <section class="page-section">
-    <div class="container">
-      <div class="page-section__head">
+    <div class:list={['ws-foot', { 'ws-foot--solo': !quote }]}>
+      {quote && <PraiseCard praise={quote} variant="stripe" />}
+      <div class="ds-panel ws-cta">
         <div>
-          <Kicker>The catalogue</Kicker>
-          <h2 class="page-h2">Available workshops</h2>
+          <h2 class="ws-cta__title">Running a conference workshop day or a team training?</h2>
+          <p class="ws-cta__body">Tell me the audience and the slot. I'll send the matching agenda.</p>
         </div>
-        {bookable.length > 0 && (
-          <span class="ds-pill ds-pill--signal">
-            <span class="ds-dot ds-dot--pulse"></span>
-            {bookable.length} ready to book
-          </span>
-        )}
-      </div>
-
-      {workshops.length > 0 ? (
-        <div class="page-grid-2 wide">
-          {workshops.map((w) => (
-            <a href={`/workshops/${w.slug}`} class="ds-card ds-card-interactive workshop-card ds-reveal">
-              <div class="workshop-card__head">
-                <div class="workshop-card__tags">
-                  {w.duration && <span class="ds-tag">{w.duration}</span>}
-                  {w.level && <span class="ds-tag">{w.level}</span>}
-                </div>
-                {w.isBookable !== false && (
-                  <span class="workshop-card__status">
-                    <span class="ds-dot"></span>
-                    Bookable
-                  </span>
-                )}
-              </div>
-              <h3 class="workshop-card__title">{w.title}</h3>
-              {w.description && <p class="workshop-card__desc">{w.description}</p>}
-              {w.technologies && w.technologies.length > 0 && (
-                <div class="workshop-card__techs">
-                  {w.technologies.slice(0, 5).map((t) => <span class="ds-tag">{t}</span>)}
-                  {w.technologies.length > 5 && (
-                    <span class="ds-tag">+{w.technologies.length - 5}</span>
-                  )}
-                </div>
-              )}
-              <div class="workshop-card__foot">
-                <span class="ds-link">
-                  View details
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                </span>
-              </div>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <div class="page-empty">
-          <h3>Coming soon</h3>
-          <p>Workshop details will appear here once content is added.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Contact me about workshops</a>
-        </div>
-      )}
-    </div>
-  </section>
-
-  <!-- TOPICS -->
-  <section class="page-section page-section--alt">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Workshop topics</Kicker>
-        <h2 class="page-h2 ds-reveal">Areas I run <span class="mark">deep sessions</span> in</h2>
-        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">From production engineering to career growth, pick what fits your audience.</p>
-      </div>
-      <div class="workshop-topics wide">
-        {topics.map((t) => (
-          <a
-            href={`/invite?format=workshop&workshop=${encodeURIComponent(t.title)}`}
-            class="ds-card ds-card-interactive workshop-topic ds-reveal"
-          >
-            <IconChip>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={t.icon} />
-            </IconChip>
-            <h3 class="workshop-topic__title">{t.title}</h3>
-            <p class="workshop-topic__desc">{t.desc}</p>
-          </a>
-        ))}
+        <a href="/invite?kind=workshop" class="ds-btn ds-btn--panel" data-track="workshops_book">Book a workshop</a>
       </div>
     </div>
-  </section>
-
-  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — no page copy needed. -->
-
-  <!-- CTA -->
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={availabilityLabel('Custom workshops')}
-          title="Need a custom workshop?"
-          body="Tailored sessions for your team or event: pick a topic, tell me about your audience's level, and I'll build it for you."
-          primaryHref="/invite"
-          primaryLabel="Get in touch"
-          secondaryHref="/talks"
-          secondaryLabel="View my talks"
-        />
-      </div>
-    </div>
-  </section>
-
+  </div>
 </BaseLayout>
 
 <style>
-  .workshop-benefit {
-    padding: 1.6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .workshop-benefit__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: rgb(var(--ink));
-    margin-top: 0.5rem;
-  }
-  .workshop-benefit__desc {
-    font-size: 0.95rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
+  .ws-crumb { text-decoration: none; }
+  .ws-crumb:hover { color: rgb(var(--text)); }
+  .ws-h1 { font-size: clamp(38px, 6vw, 52px); }
+  .ws-lede { font-size: 17px; max-width: 44ch; }
 
-  .workshop-card {
-    padding: 1.8rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    color: inherit;
+  .ws-body { display: flex; flex-direction: column; gap: 14px; padding-top: 48px; padding-bottom: 64px; }
+  .ws-head {
+    display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 110px; gap: 20px; padding: 0 25px 10px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--text-faint));
   }
-  .workshop-card__head {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-  }
-  .workshop-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .workshop-card__status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--signal));
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  .workshop-card__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-    line-height: 1.2;
-  }
-  .workshop-card__desc {
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-    /* Long Sanity descriptions get clamped — the full text lives on the detail page. */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .workshop-card__techs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .workshop-card__foot {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid rgb(var(--edge));
-  }
+  .ws-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ws-empty { margin: 0; color: rgb(var(--text-muted)); }
 
-  .workshop-topics {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+  .ws-foot { margin-top: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+  .ws-foot--solo { grid-template-columns: minmax(0, 1fr); }
+  .ws-foot :global(.pq-stripe) { height: 100%; }
+  .ws-cta { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 24px; }
+  .ws-cta__title { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; }
+  .ws-cta__body { margin: 4px 0 0; font-size: 14px; }
+  .ws-cta .ds-btn { flex: none; }
+
+  @media (max-width: 900px) {
+    .ws-head { display: none; }
   }
-  @media (max-width: 1024px) { .workshop-topics { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .workshop-topics { grid-template-columns: 1fr; } }
-  .workshop-topic {
-    padding: 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-  .workshop-topic__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1rem;
-    color: rgb(var(--ink));
-    margin-top: 0.5rem;
-  }
-  .workshop-topic__desc {
-    font-size: 0.86rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.5;
+  @media (max-width: 720px) {
+    .ws-body { padding-top: 32px; }
+    .ws-foot { grid-template-columns: minmax(0, 1fr); }
+    .ws-cta { flex-direction: column; align-items: flex-start; }
   }
 </style>

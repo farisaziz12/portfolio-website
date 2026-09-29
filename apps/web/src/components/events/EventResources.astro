@@ -1,0 +1,112 @@
+---
+/**
+ * "Resources from this session", same slot before and after the event.
+ * Before (or while nothing is published): a dashed note + curious duck.
+ * After: Recording / Slides / Photos, each only when it actually exists.
+ */
+import Icon from '../v3/Icon.astro';
+import Illustration from '../v3/Illustration.astro';
+import { recordingHost, type EventEdition } from '../../lib/sanity/v3';
+import { hasResources, sessionTitle, shortTalk } from '../../lib/events-view';
+
+interface Props {
+  event: EventEdition;
+  photoCount: number;
+  photosCredited: boolean;
+}
+const { event: e, photoCount, photosCredited } = Astro.props;
+
+function host(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+const after = !e.isUpcoming && hasResources(e, photoCount);
+const cells: { label: string; icon?: 'play'; title: string; meta: string; href: string; external: boolean; track: string }[] = [];
+if (after) {
+  for (const s of e.sessions) {
+    if (s.recordingUrl) {
+      const minutes = s.recordingMinutes ?? s.durationMinutes;
+      cells.push({
+        label: 'Recording',
+        icon: 'play',
+        title: s.talk ? shortTalk(s.talk) : sessionTitle(s),
+        meta: [recordingHost(s.recordingUrl), minutes ? `${minutes} min` : ''].filter(Boolean).join(' · '),
+        href: s.recordingUrl,
+        external: true,
+        track: 'event_recording',
+      });
+    }
+  }
+  for (const s of e.sessions) {
+    if (s.slidesUrl) {
+      cells.push({ label: 'Slides', title: s.slidesNote || 'Slide deck', meta: host(s.slidesUrl), href: s.slidesUrl, external: true, track: 'event_slides' });
+    }
+  }
+  if (photoCount > 0) {
+    cells.push({
+      label: 'Photos',
+      title: `${photoCount} from the day`,
+      meta: photosCredited ? 'Credits attached' : 'Gallery',
+      href: '/gallery',
+      external: false,
+      track: 'event_photos',
+    });
+  }
+}
+const spoke = e.sessions.some((s) => s.bucket === 'spoke' || s.bucket === 'workshop');
+---
+
+<section class="res" aria-labelledby="res-h">
+  <h2 id="res-h" class="ds-label">Resources from this {e.sessions.length > 1 ? 'edition' : 'session'}</h2>
+  {after ? (
+    <ul class="ds-card res__grid" role="list">
+      {cells.map((c) => (
+        <li>
+          <a href={c.href} class="res__cell" data-track={c.track} {...(c.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+            <span class="res__label">{c.icon && <Icon name={c.icon} size={10} />}{c.label}{c.external && <span class="sr-only"> (opens in a new tab)</span>}</span>
+            <span class="res__title">{c.title}</span>
+            {c.meta && <span class="res__meta">{c.meta}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="ds-card ds-card--dashed res__empty">
+      <div>
+        <p class="res__empty-title">
+          {e.isUpcoming ? (spoke ? 'Slides and links appear here after the talk.' : 'Photos and links appear here after the event.') : 'Nothing published from this edition yet.'}
+        </p>
+        <p class="res__empty-body">
+          {e.isUpcoming && spoke ? 'Scan the QR on the last slide or come back to this page. ' : ''}
+          When a recording is published it's attached to this session and shows up on the talk page too.
+        </p>
+      </div>
+      <Illustration name="duck-curious" width={100} class="res__duck" />
+    </div>
+  )}
+</section>
+
+<style>
+  .res { display: flex; flex-direction: column; gap: 12px; }
+  .res__grid { list-style: none; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px 24px; }
+  .res__cell { display: flex; flex-direction: column; gap: 4px; color: rgb(var(--text)); text-decoration: none; font-size: 14px; min-height: 44px; }
+  .res__label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: rgb(var(--accent-text)); }
+  .res__title { font-weight: 700; overflow-wrap: anywhere; transition: color 0.15s; }
+  .res__cell:hover .res__title { color: rgb(var(--accent-text)); }
+  .res__meta { font-size: 12.5px; color: rgb(var(--text-faint)); }
+  .res__empty { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 20px; align-items: center; padding: 22px 24px; }
+  .res__empty-title { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+  .res__empty-body { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .res__empty :global(.res__duck) { justify-self: end; width: 100px; height: auto; }
+  @media (max-width: 720px) {
+    .res__grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .res__empty { grid-template-columns: minmax(0, 1fr) 64px; gap: 14px; padding: 20px; }
+    .res__empty :global(.res__duck) { width: 64px; }
+  }
+</style>

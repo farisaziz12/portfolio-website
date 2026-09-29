@@ -1,0 +1,44 @@
+---
+/**
+ * One upcoming edition as a card: big day number + month, "MEETUP · SPEAKING"
+ * kicker, flag + title, and a meta line with place, sessions and local time.
+ */
+import { monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
+import { bucketVerb, flagFor, kindLabel, upcomingMeta } from '../../lib/events-view';
+
+interface Props {
+  event: EventEdition;
+}
+const { event: e } = Astro.props;
+const s = primarySession(e);
+const flag = flagFor(e);
+---
+
+<a href={`/events/${e.slug}`} class="ds-card upc" data-track="events_upcoming_card">
+  <span class="upc__date">
+    <span class="upc__day">{Number(e.date.slice(8, 10))}</span>
+    <span class="upc__month">{monthYear(e.date)}</span>
+  </span>
+  <span class="upc__main">
+    <span class="upc__kicker">{[kindLabel(e), bucketVerb(s?.bucket)].filter(Boolean).join(' · ')}</span>
+    <span class="upc__title">{flag && <span class="upc__flag" aria-hidden="true">{flag}</span>}{e.title}</span>
+    <span class="upc__meta">{upcomingMeta(e)}</span>
+  </span>
+</a>
+
+<style>
+  .upc { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; padding: 24px; height: 100%; }
+  .upc__date { display: flex; flex-direction: column; }
+  .upc__day { font-size: 44px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+  .upc__month { font-size: 13px; color: rgb(var(--text-muted)); margin-top: 4px; }
+  .upc__main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .upc__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .upc__title { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-wrap: balance; overflow-wrap: anywhere; }
+  .upc__flag { font-size: 22px; margin-right: 8px; }
+  .upc__meta { font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  @media (max-width: 480px) {
+    .upc { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
+    .upc__date { flex-direction: row; align-items: baseline; gap: 10px; }
+    .upc__day { font-size: 36px; }
+  }
+</style>

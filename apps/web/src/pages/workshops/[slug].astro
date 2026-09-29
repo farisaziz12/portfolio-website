@@ -1,324 +1,121 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import AgendaAccordion from '../../components/islands/AgendaAccordion';
-import { sanityFetch } from '../../lib/sanity/client';
-import { workshopBySlugQuery, allWorkshopsQuery } from '../../lib/sanity/queries';
-import { formatDate, getCountryFlag } from 'shared/utils';
-import { bookingYears } from '../../lib/availability';
-
-interface AgendaItem { _key?: string; title?: string; topic?: string; duration?: string; description?: any[] }
-interface WorkshopEvent {
-  _id: string; title: string; slug: string; date: string; conference: string;
-  location?: { city?: string; country?: string };
-}
-interface Workshop {
-  _id: string; title: string; slug: string;
-  description?: string; duration?: string; technologies?: string[];
-  level?: string; prerequisites?: string[]; outcomes?: string[];
-  isBookable?: boolean; agenda?: AgendaItem[];
-  upcomingEvents?: WorkshopEvent[]; pastEvents?: WorkshopEvent[];
-}
+import AgendaSwitch from '../../components/workshops/AgendaSwitch.astro';
+import WorkshopAside from '../../components/workshops/WorkshopAside.astro';
+import PraiseCard from '../../components/v3/PraiseCard.astro';
+import { getPraiseFor, getWorkshops, type WorkshopWithHistory } from '../../lib/sanity/v3';
+import { breadcrumbs } from '../../lib/seo';
+import { deliveryLine, pillarLabel } from '../../lib/workshops-view';
 
 export async function getStaticPaths() {
-  const workshops = await sanityFetch<Workshop[]>(allWorkshopsQuery).catch(() => []);
-  return workshops.map((w) => ({ params: { slug: w.slug } }));
+  const workshops = await getWorkshops();
+  return workshops.map((w) => ({ params: { slug: w.slug }, props: { workshop: w } }));
 }
 
-const { slug } = Astro.params;
-const workshop = await sanityFetch<Workshop | null>(workshopBySlugQuery, { slug }).catch(() => null);
-if (!workshop) return Astro.redirect('/404');
+const w = Astro.props.workshop as WorkshopWithHistory;
+const praise = await getPraiseFor({ workshopId: w._id });
+const intro = w.description || w.summary;
+// Upcoming editions first (soonest first), then delivered ones newest first.
+const upcoming = w.deliveries.filter((d) => d.event.isUpcoming).reverse();
+const delivered = w.deliveries.filter((d) => !d.event.isUpcoming);
+const description = (w.seo?.metaDescription || w.summary || w.description || `${w.title}, a hands-on workshop by Faris Aziz.`).slice(0, 160);
 
-const sessionCount = (workshop.upcomingEvents?.length || 0) + (workshop.pastEvents?.length || 0);
-
-// Prefilled invite link so the form opens with this workshop's context.
-const inviteHref = `/invite?format=workshop&workshop=${encodeURIComponent(workshop.title)}`;
+const schema = [
+  breadcrumbs([
+    { name: 'Speaking', path: '/speaking' },
+    { name: 'Workshops', path: '/workshops' },
+    { name: w.title, path: `/workshops/${w.slug}` },
+  ]),
+  {
+    '@type': 'Course',
+    '@id': `https://faziz-dev.com/workshops/${w.slug}#workshop`,
+    name: w.title,
+    ...(intro ? { description: intro } : {}),
+    provider: { '@id': 'https://faziz-dev.com/#person' },
+    ...(w.prerequisites.length ? { coursePrerequisites: w.prerequisites } : {}),
+  },
+];
 ---
 
 <BaseLayout
-  title={`${workshop.title} | Workshops | Faris Aziz`}
-  description={workshop.description || `${workshop.title}, a hands-on workshop by Faris Aziz`}
-  pathname={`/workshops/${slug}`}
-  image={`/og/workshops/${slug}.png`}
-  imageAlt={`${workshop.title}, a hands-on workshop by Faris Aziz`}
+  title={w.seo?.metaTitle || `${w.title} · Workshop | Faris Aziz`}
+  description={description}
+  image={`/og/workshops/${w.slug}.png`}
+  imageAlt={`${w.title}, a hands-on workshop by Faris Aziz`}
+  markdownAlternate={`/workshops/${w.slug}.md`}
+  extraSchema={schema}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <nav class="page-crumbs" aria-label="Breadcrumb">
-        <a href="/speaking">Speaking</a>
-        <span class="page-crumbs__sep">/</span>
-        <a href="/workshops">Workshops</a>
-        <span class="page-crumbs__sep">/</span>
-        <span class="page-crumbs__cur">{workshop.title.length > 28 ? workshop.title.slice(0, 26) + '…' : workshop.title}</span>
-      </nav>
+  <div class="ds-wrap wsp">
+    <div class="wsp__main">
+      <header class="wsp__head">
+        <p class="ds-kicker"><a href="/workshops" class="is-muted wsp__crumb">Workshops</a><span aria-hidden="true"> · </span>{pillarLabel(w)}</p>
+        <h1 class="ds-h1 wsp__title">{w.title}</h1>
+        {intro && <p class="ds-lede wsp__intro">{intro}</p>}
+      </header>
 
-      <div class="event-tags">
-        <span class="ds-tag">Workshop</span>
-        {workshop.duration && <span class="ds-tag">{workshop.duration}</span>}
-        {workshop.level && <span class="ds-tag">{workshop.level}</span>}
-        {sessionCount > 0 && <span class="ds-tag">{sessionCount} session{sessionCount !== 1 ? 's' : ''}</span>}
-        {workshop.isBookable !== false && (
-          <span class="ds-tag" style="color:rgb(var(--signal));border-color:rgb(var(--signal) / 0.4);">
-            <span class="ds-dot" style="background:rgb(var(--signal));box-shadow:none;"></span>
-            Bookable
-          </span>
-        )}
+      {w.formats.length > 0 ? (
+        <AgendaSwitch formats={w.formats} />
+      ) : (
+        <section class="wsp__block">
+          <h2 class="ds-label">Agenda</h2>
+          <p class="ds-body">The agenda is tailored per edition. <a href={`/invite?kind=workshop&workshop=${encodeURIComponent(w.title)}`} class="ds-textlink">Ask for the current one</a>.</p>
+        </section>
+      )}
+
+      <div class="wsp__pair">
+        <section class="wsp__block" aria-labelledby="pre-h">
+          <h2 id="pre-h" class="ds-label">Prerequisites</h2>
+          {w.prerequisites.length ? (
+            <ul class="wsp__pre">{w.prerequisites.map((p) => <li>{p}</li>)}</ul>
+          ) : (
+            <p class="ds-body">None listed.</p>
+          )}
+        </section>
+        <section class="wsp__block" aria-labelledby="del-h">
+          <h2 id="del-h" class="ds-label">Delivered at</h2>
+          {upcoming.length + delivered.length ? (
+            <ul class="wsp__del" role="list">
+              {upcoming.map((d) => (
+                <li><a href={`/events/${d.event.slug}`} class="wsp__del-link">{deliveryLine(d)} <span class="wsp__soon">· upcoming</span></a></li>
+              ))}
+              {delivered.map((d) => (
+                <li><a href={`/events/${d.event.slug}`} class="wsp__del-link">{deliveryLine(d)}</a></li>
+              ))}
+            </ul>
+          ) : (
+            <p class="ds-body">No public editions listed yet.</p>
+          )}
+        </section>
       </div>
 
-      <h1 class="page-hero__title event-title">{workshop.title}</h1>
-      {workshop.description && <p class="page-hero__lead">{workshop.description}</p>}
-
-      <div class="page-hero__actions">
-        <a href={inviteHref} class="ds-btn ds-btn-primary ds-btn-lg">
-          Book this workshop
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/workshops" class="ds-btn ds-btn-secondary ds-btn-lg">View all workshops</a>
-      </div>
+      {praise.slice(0, 2).map((p) => <PraiseCard praise={p} variant="stripe" />)}
     </div>
-  </header>
 
-  {workshop.outcomes && workshop.outcomes.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Outcomes</Kicker>
-          <h2 class="page-h2">What you'll learn</h2>
-        </div>
-        <ul class="event-list" style="grid-template-columns:repeat(2,1fr);display:grid;gap:0.8rem 2rem;max-width:none;">
-          {workshop.outcomes.map((o) => (
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>{o}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )}
-
-  {workshop.agenda && workshop.agenda.length > 0 && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>The plan</Kicker>
-          <h2 class="page-h2">Agenda</h2>
-        </div>
-        <div style="max-width:760px;">
-          <AgendaAccordion client:visible items={workshop.agenda} />
-        </div>
-      </div>
-    </section>
-  )}
-
-  {workshop.prerequisites && workshop.prerequisites.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Before you start</Kicker>
-          <h2 class="page-h2">Prerequisites</h2>
-        </div>
-        <ul class="event-list" style="max-width:none;">
-          {workshop.prerequisites.map((p) => (
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>{p}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )}
-
-  {workshop.technologies && workshop.technologies.length > 0 && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Stack</Kicker>
-          <h2 class="page-h2">Technologies covered</h2>
-        </div>
-        <div class="event-tags" style="margin-bottom:0;">
-          {workshop.technologies.map((t) => <span class="ds-tag">{t}</span>)}
-        </div>
-      </div>
-    </section>
-  )}
-
-  {(workshop.upcomingEvents?.length || workshop.pastEvents?.length) ? (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>On the calendar</Kicker>
-          <h2 class="page-h2">Sessions</h2>
-        </div>
-
-        {workshop.upcomingEvents && workshop.upcomingEvents.length > 0 && (
-          <div class="event-sessions">
-            <p class="event-sessions__label">
-              <span class="ds-dot ds-dot--pulse"></span> Upcoming
-            </p>
-            {workshop.upcomingEvents.map((e) => (
-              <a class="event-session" href={`/events/${e.slug}`}>
-                <div class="event-session__date">
-                  <b>{new Date(e.date).getDate()}</b>
-                  <span>{new Date(e.date).toLocaleString('en-US', { month: 'short' })}</span>
-                </div>
-                <div class="event-session__body">
-                  <b>{e.conference || e.title}</b>
-                  <span>
-                    {e.location?.country && <>{getCountryFlag(e.location.country)} </>}
-                    {[e.location?.city, e.location?.country].filter(Boolean).join(', ') || 'Online'}
-                  </span>
-                </div>
-                <span class="event-session__year">{formatDate(e.date, { month: 'short', year: 'numeric' })}</span>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {workshop.pastEvents && workshop.pastEvents.length > 0 && (
-          <div class="event-sessions" style="margin-top:2rem;">
-            <p class="event-sessions__label" style="color:rgb(var(--ink-faint));">Past sessions</p>
-            {workshop.pastEvents.map((e) => (
-              <a class="event-session" href={`/events/${e.slug}`}>
-                <div class="event-session__date">
-                  <b>{new Date(e.date).getDate()}</b>
-                  <span>{new Date(e.date).toLocaleString('en-US', { month: 'short' })}</span>
-                </div>
-                <div class="event-session__body">
-                  <b>{e.conference || e.title}</b>
-                  <span>
-                    {e.location?.country && <>{getCountryFlag(e.location.country)} </>}
-                    {[e.location?.city, e.location?.country].filter(Boolean).join(', ') || 'Online'}
-                  </span>
-                </div>
-                <span class="event-session__year">{formatDate(e.date, { month: 'short', year: 'numeric' })}</span>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  ) : null}
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={`Booking ${bookingYears()} dates`}
-          title="Ready to book this workshop?"
-          body="Tell me about your team or event audience and I'll tailor depth, pace, and exercises to fit. I reply within two days."
-          primaryHref={inviteHref}
-          primaryLabel="Book a workshop"
-          secondaryHref="/workshops"
-          secondaryLabel="View other workshops"
-        />
-      </div>
-    </div>
-  </section>
-
+    <WorkshopAside workshop={w} />
+  </div>
 </BaseLayout>
 
 <style>
-  .event-tags {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
+  .wsp { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 56px; padding-top: 48px; padding-bottom: 64px; }
+  .wsp__main { display: flex; flex-direction: column; gap: 30px; min-width: 0; }
+  .wsp__head { display: flex; flex-direction: column; gap: 14px; }
+  .wsp__crumb { text-decoration: none; }
+  .wsp__crumb:hover { color: rgb(var(--text)); }
+  .wsp__title { font-size: clamp(38px, 6vw, 52px); overflow-wrap: anywhere; }
+  .wsp__intro { font-size: clamp(16px, 1.7vw, 18px); line-height: 1.55; }
+  .wsp__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+  .wsp__block { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .wsp__block .ds-body { margin: 0; }
+  .wsp__pre { margin: 0; padding-left: 18px; list-style: disc; font-size: 15px; line-height: 1.6; color: rgb(var(--text-muted)); }
+  .wsp__del { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid rgb(var(--hairline)); font-size: 15px; }
+  .wsp__del li { border-top: 1px solid rgb(var(--hairline)); }
+  .wsp__del-link { display: block; padding: 10px 0; min-height: 24px; color: rgb(var(--text)); text-decoration: none; transition: color 0.15s; }
+  .wsp__del-link:hover { color: rgb(var(--accent-text)); }
+  .wsp__soon { color: rgb(var(--accent-text)); font-weight: 700; }
+  @media (max-width: 960px) {
+    .wsp { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 36px; }
   }
-  .event-title { max-width: 22ch; }
-  .event-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.8rem;
-    max-width: 70ch;
-  }
-  .event-list li {
-    display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
-  .event-list svg {
-    width: 20px;
-    height: 20px;
-    color: rgb(var(--signal));
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
-
-  .event-sessions { display: grid; }
-  .event-sessions__label {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--signal));
-    margin-bottom: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .event-session {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.1rem 0.4rem;
-    border-bottom: 1px solid rgb(var(--edge));
-    color: inherit;
-    transition: color 0.15s, background 0.15s;
-  }
-  .event-session:hover { color: rgb(var(--accent-bright)); background: rgb(var(--surface-2)); }
-  .event-session__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    text-align: center;
-    flex-shrink: 0;
-    width: 50px;
-  }
-  .event-session__date b {
-    display: block;
-    font-size: 1.4rem;
-    color: rgb(var(--ink));
-    line-height: 1;
-    font-weight: 600;
-  }
-  .event-session__date span {
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .event-session__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    min-width: 0;
-  }
-  .event-session__body b {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .event-session__body span {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-  }
-  .event-session:hover .event-session__body b { color: rgb(var(--accent-bright)); }
-  .event-session__year {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.75rem;
-    color: rgb(var(--ink-faint));
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
+  @media (max-width: 720px) {
+    .wsp__pair { grid-template-columns: minmax(0, 1fr); }
   }
 </style>

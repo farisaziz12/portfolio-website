@@ -1,0 +1,73 @@
+---
+/**
+ * One workshop in the comparison: pillar + title + summary, what you leave
+ * able to do, prerequisites, editions · cap, and an Agenda affordance. The
+ * title link stretches over the card; column labels are visible on phones
+ * (where the header row is hidden) and screen-reader-only on desktop.
+ */
+import type { WorkshopWithHistory } from '../../lib/sanity/v3';
+import { deliveredAtSentence, editionsLine, groupLine, pastDeliveries, pillarLabel } from '../../lib/workshops-view';
+
+interface Props {
+  workshop: WorkshopWithHistory;
+}
+const { workshop: w } = Astro.props;
+const summary = [w.summary || w.description, deliveredAtSentence(w)].filter(Boolean).join(' ');
+const delivered = pastDeliveries(w).length;
+const outcomes = w.outcomes.length ? w.outcomes.join('; ') : '';
+const prereqs = w.prerequisites.length ? w.prerequisites.map((p) => p.replace(/\.$/, '')).join('. ') + '.' : '';
+---
+
+<li class="ds-card wsx">
+  <div class="wsx__cell">
+    <p class="wsx__kicker">{pillarLabel(w)}</p>
+    <h2 class="wsx__title"><a href={`/workshops/${w.slug}`} class="wsx__link" data-track="workshops_row">{w.title}</a></h2>
+    {summary && <p class="wsx__summary">{summary}</p>}
+  </div>
+  <div class="wsx__cell">
+    <span class="wsx__lbl">You leave able to</span>
+    <p class:list={['wsx__text', { 'is-faint': !outcomes }]}>{outcomes || 'Outcomes are on the agenda page.'}</p>
+  </div>
+  <div class="wsx__cell">
+    <span class="wsx__lbl">Prerequisites</span>
+    <p class:list={['wsx__text', { 'is-faint': !prereqs }]}>{prereqs || 'None listed.'}</p>
+  </div>
+  <div class="wsx__cell">
+    <span class="wsx__lbl">Editions · cap</span>
+    <p class="wsx__text">
+      {editionsLine(w)}
+      {groupLine(w, 'people') && <><br />{groupLine(w, 'people')}</>}
+      {delivered > 0 && <><br /><span class="wsx__faint">Delivered {delivered}×</span></>}
+    </p>
+  </div>
+  <span class="wsx__cta" aria-hidden="true">Agenda</span>
+</li>
+
+<style>
+  .wsx {
+    position: relative; padding: 24px; transition: border-color 0.15s; list-style: none;
+    display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 110px; gap: 20px; align-items: start;
+  }
+  .wsx:hover { border-color: rgb(var(--yellow)); }
+  .wsx__cell { display: flex; flex-direction: column; min-width: 0; }
+  .wsx__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .wsx__title { margin-top: 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .wsx__link { color: rgb(var(--text)); text-decoration: none; }
+  .wsx__link::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+  .wsx__link:focus-visible { outline: none; }
+  .wsx__link:focus-visible::after { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+  .wsx__summary { margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .wsx__lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .wsx__text { margin: 0; font-size: 14px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .wsx__text.is-faint, .wsx__faint { color: rgb(var(--text-faint)); }
+  .wsx__cta {
+    justify-self: end; align-self: start; font-size: 13px; font-weight: 800; border: 2px solid rgb(var(--text)); border-radius: var(--radius-btn);
+    padding: 8px 12px; color: rgb(var(--text)); transition: border-color 0.15s, color 0.15s;
+  }
+  .wsx:hover .wsx__cta { border-color: rgb(var(--yellow)); color: rgb(var(--accent-text)); }
+  @media (max-width: 900px) {
+    .wsx { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
+    .wsx__lbl { position: static; width: auto; height: auto; clip: auto; font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--text-faint)); margin-bottom: 4px; }
+    .wsx__cta { align-self: flex-start; }
+  }
+</style>
