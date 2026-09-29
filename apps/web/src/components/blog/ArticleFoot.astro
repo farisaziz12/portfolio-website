@@ -4,8 +4,7 @@
  * writing) on the left, share intents on the right. Plain links, no SDKs.
  */
 import type { WritingItem } from '../../lib/sanity/v3';
-import type { WritingPost } from '../../lib/writing-post';
-import { shareLinks } from '../../lib/writing-post';
+import { shareLinks, type WritingPost } from '../../lib/writing-post';
 
 interface Props {
   post: Pick<WritingPost, 'title' | 'relatedTalk' | 'relatedEvent'>;

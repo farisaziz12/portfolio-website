@@ -77,7 +77,11 @@ export default function ThemeToggle() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <button type="button" className="theme-toggle" aria-label="Toggle theme" />
+      <button type="button" className="theme-toggle" aria-label="Toggle theme">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" strokeWidth={2} />
+        </svg>
+      </button>
     );
   }
 

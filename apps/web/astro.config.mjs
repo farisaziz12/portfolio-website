@@ -32,6 +32,12 @@ export default defineConfig({
     ssr: {
       noExternal: ['shared'],
     },
+    // Pre-bundle React's JSX runtimes with React itself. Without this, a dep
+    // re-optimisation mid-session can leave islands with two React copies
+    // ("jsxDEV is not a function" in dev only).
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    },
   },
   // ISR for SSR pages (e.g. homepage). Never cache API or admin — they use cookies.
   // Workshop short-path redirects are SSR with Cache-Control: no-store (see [shortPath].astro).
