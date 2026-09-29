@@ -1,0 +1,87 @@
+---
+/**
+ * Talk detail sidebar: "Book this talk" (or a retired note), "Heard as a
+ * podcast" (writing items that reference this talk) and "Pairs well with".
+ */
+import { monthYear, writingAction, type TalkWithHistory, type WritingItem } from '../../lib/sanity/v3';
+import { inviteHref, lengthLabel, pillarTitle } from '../../lib/talks';
+import Icon from '../v3/Icon.astro';
+
+interface Props {
+  talk: TalkWithHistory;
+  retired: boolean;
+  /** Setup line when the talk has none (first rider item). */
+  setupFallback?: string;
+  podcasts: WritingItem[];
+  /** Related talks resolved against the catalogue (bookable only). */
+  related: TalkWithHistory[];
+}
+const { talk: t, retired, setupFallback, podcasts, related } = Astro.props;
+
+const w = t.alsoAsWorkshop;
+const rows = [
+  { k: 'Length', v: lengthLabel(t) },
+  { k: 'Level', v: t.level },
+  { k: 'Setup', v: t.setup || setupFallback },
+].filter((r) => r.v);
+---
+
+<aside class="tside" aria-label="About booking this talk">
+  {retired ? (
+    <div class="ds-card tside__box">
+      <h2 class="ds-kicker">Retired</h2>
+      <p class="tside__text">This version is no longer on offer. Its ideas live on in the current catalogue, adapted to today's stack.</p>
+      <a href="/talks" class="ds-btn ds-btn--outline ds-btn--block" data-track="talk-retired-catalogue">See the current talks</a>
+    </div>
+  ) : (
+    <div class="ds-card tside__box">
+      <h2 class="ds-kicker">Book this talk</h2>
+      {(rows.length > 0 || w) && (
+        <dl class="tside__dl">
+          {rows.map((r) => (
+            <>
+              <dt>{r.k}</dt>
+              <dd>{r.v}</dd>
+            </>
+          ))}
+          {w && (
+            <>
+              <dt>Also as</dt>
+              <dd>Workshop: <a href={`/workshops/${w.slug}`} class="ds-textlink">{w.title}</a>{w.duration && ` · ${w.duration}`}</dd>
+            </>
+          )}
+        </dl>
+      )}
+      <a href={inviteHref(t)} class="ds-btn ds-btn--yellow ds-btn--block" data-track="talk-invite">Invite me to give it</a>
+    </div>
+  )}
+
+  {podcasts.map((p) => (
+    <a href={p.href} class="ds-card tside__link" {...(p.isInternal ? {} : { target: '_blank', rel: 'noopener noreferrer' })} data-track="talk-podcast">
+      <span class="ds-kicker">Heard as a podcast</span>
+      <span class="tside__title">{[p.source, p.title, monthYear(p.date)].filter(Boolean).join(' · ')}</span>
+      <span class="tside__meta">{writingAction(p)}{p.minutes ? ` · ${p.minutes} min` : ''}{!p.isInternal && <> <Icon name="external" size={10} /></>}</span>
+    </a>
+  ))}
+
+  {related.slice(0, 2).map((r) => (
+    <a href={`/talks/${r.slug}`} class="ds-card tside__link" data-track="talk-related">
+      <span class="ds-kicker">Pairs well with</span>
+      <span class="tside__title">{r.title}</span>
+      <span class="tside__meta">{[r.duration ? `${r.duration} min` : null, r.pillar === t.pillar ? 'same family' : pillarTitle(r.pillar)].filter(Boolean).join(' · ')}</span>
+    </a>
+  ))}
+</aside>
+
+<style>
+  .tside { display: flex; flex-direction: column; gap: 14px; }
+  .tside__box { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+  .tside__box .ds-kicker, .tside__link .ds-kicker { letter-spacing: 0.12em; }
+  .tside__dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; margin: 0; font-size: 14px; line-height: 1.5; }
+  .tside__dl dt { color: rgb(var(--text-faint)); }
+  .tside__dl dd { margin: 0; color: rgb(var(--text)); }
+  .tside__text { margin: 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .tside__link { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
+  .tside__title { font-weight: 800; font-size: 16px; line-height: 1.25; color: rgb(var(--text)); }
+  .tside__meta { font-size: 13px; color: rgb(var(--text-muted)); }
+</style>

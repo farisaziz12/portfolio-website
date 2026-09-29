@@ -1,60 +1,82 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { speakingStatsQuery, upcomingEventsQuery, allTalksQuery } from '../lib/sanity/queries';
-import { mdResponse, mdDate } from '../lib/markdown';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
-
-interface SpeakingStats {
-  totalEvents: number;
-  countries: number;
-  cities: number;
-}
-
-interface EventItem {
-  title: string;
-  conference?: string;
-  date: string;
-}
-
-interface Talk {
-  title: string;
-  slug: string;
-  eventCount?: number;
-}
+import { TOPICS, titleFor } from 'shared';
+import {
+  eventPlace,
+  fullDate,
+  getCatalogueTalks,
+  getProfile,
+  getSpeakingStats,
+  getUpcomingEvents,
+  getWorkshops,
+  primarySession,
+  sessionLine,
+} from '../lib/sanity/v3';
+import { mdResponse } from '../lib/markdown';
+import { bookingYears } from '../lib/availability';
+import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
-  const [stats, upcoming, talks] = await Promise.all([
-    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
-    sanityFetch<EventItem[]>(upcomingEventsQuery).catch(() => []),
-    sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
+  const [profile, stats, upcomingAll, talks, workshops] = await Promise.all([
+    getProfile(),
+    getSpeakingStats(),
+    getUpcomingEvents(),
+    getCatalogueTalks(),
+    getWorkshops(),
   ]);
+  const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b !== 'attended'));
+  const bookable = workshops.filter((w) => w.isBookable);
 
-  const featured = [...talks]
-    .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
-    .slice(0, 3);
+  const pillars = profile.topicPillars.map((p) => {
+    const lead = (p.talk && talks.find((t) => t._id === p.talk!._id)) || talks.find((t) => p.pillar && t.pillar === p.pillar);
+    const kicker = titleFor(TOPICS, p.pillar);
+    return `- **${kicker ? `${kicker}: ` : ''}${p.title}**${p.description ? `. ${p.description}` : ''}${lead ? ` Talk: [${lead.title}](${SITE}/talks/${lead.slug}.md)` : ''}`;
+  });
 
   const body = [
-    `# Invite me to speak.`,
+    `# Speaking: production stories, told from the inside.`,
     ``,
-    `> ${stats.totalEvents} events across ${stats.countries} countries and ${stats.cities} cities. I speak about production and scale: pragmatic decisions behind real systems, drawn from case studies rather than theory. Book: https://faziz-dev.com/invite`,
+    `> Faris Aziz gives talks and workshops about scale, resilience, payments and the leadership calls behind real systems. React and Next.js are home base; the lessons aren't framework-specific. Every talk is adapted to its audience. Booking ${bookingYears()}. Invite: ${SITE}/invite`,
     ``,
-    featured.length
-      ? `## A few talks I give.\n\n${featured
-          .map((t) => `- [${t.title}](https://faziz-dev.com/talks/${t.slug}.md)`)
-          .join('\n')}\n\nFull catalogue: https://faziz-dev.com/talks.md`
-      : `Full catalogue: https://faziz-dev.com/talks.md`,
+    `## Counts (derived from session records, as of ${stats.asOf})`,
     ``,
-    `Drop me a message on my socials, or fill in the form: https://faziz-dev.com/invite. I reply within two days. Community meetups are usually on the house.`,
+    `- Talks delivered: ${stats.talksDelivered} (speaker, keynote and lightning sessions; hosting and attending are not counted)`,
+    `- Countries: ${stats.countries} (speaking and hosting), cities: ${stats.cities}`,
+    `- Workshops in the catalogue: ${bookable.length} (3 h to full day); workshop sessions delivered: ${stats.workshopsDelivered}`,
+    `- Talks in the catalogue: ${stats.catalogueTalks}`,
+    `- Reply time to an invitation: ${profile.replyTime}`,
     ``,
+    `## Things I talk about`,
+    ``,
+    ...pillars,
+    ``,
+    `All ${talks.length} talks: ${SITE}/talks.md`,
+    ``,
+    `## Formats`,
+    ``,
+    ...profile.formats.map((f) => `- **${f.name}**${f.duration ? ` (${f.duration})` : ''}: ${f.description ?? ''}`.trimEnd()),
+    ``,
+    bookable.length ? `## Workshops\n\n${bookable.map((w) => `- [${w.title}](${SITE}/workshops/${w.slug}.md)${w.duration ? ` · ${w.duration}` : ''}${w.summary ? `. ${w.summary}` : ''}`).join('\n')}\n` : '',
     upcoming.length
-      ? `## What's next\n\n${upcoming
-          .slice(0, 5)
-          .map((e) => `- ${mdDate(e.date)}: ${e.title}${e.conference ? ` at ${e.conference}` : ''}`)
-          .join('\n')}`
+      ? `## Next on the calendar\n\n${upcoming
+          .slice(0, 6)
+          .map((e) => {
+            const s = primarySession(e);
+            return `- ${fullDate(e.date)}: [${e.title}](${SITE}/events/${e.slug}.md), ${eventPlace(e)}${s ? ` · ${sessionLine(s)}` : ''}`;
+          })
+          .join('\n')}\n\nFull schedule and archive: ${SITE}/events.md\n`
       : '',
+    `## How to book`,
+    ``,
+    `Fill in the invite form: ${SITE}/invite (three required fields). I reply within ${profile.replyTime}. Community meetups are usually on the house; for conferences I'd expect travel and accommodation to be covered. Travelling from ${profile.travelBase}.`,
+    ``,
+    `## Technical rider`,
+    ``,
+    ...profile.rider.map((r) => `- ${r.label}: ${r.body}`),
+    ``,
+    `Bios, photos and the full rider: ${SITE}/press-kit`,
   ]
-    .filter(Boolean)
-    .join('\n');
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 
   return mdResponse(body);
 };

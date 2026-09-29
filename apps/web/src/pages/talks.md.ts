@@ -1,47 +1,44 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { allTalksQuery } from '../lib/sanity/queries';
-import { mdResponse, mdDate } from '../lib/markdown';
-
-interface Talk {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  topics?: string[];
-  duration?: number;
-  eventCount: number;
-  latestEvent?: { date: string; conference: string; location: string };
-}
+import { getCatalogueTalks, getSpeakingStats, numberWord } from '../lib/sanity/v3';
+import { mdResponse } from '../lib/markdown';
+import { SITE } from '../lib/seo';
+import { deliveredLine, inviteHref, lengthLabel, nextLine, pillarTitle } from '../lib/talks';
 
 export const GET: APIRoute = async () => {
-  const talks = await sanityFetch<Talk[]>(allTalksQuery).catch(() => []);
-  const deliveries = talks.reduce((sum, t) => sum + (t.eventCount || 0), 0);
+  const [talks, stats] = await Promise.all([getCatalogueTalks(), getSpeakingStats()]);
+
+  const entries = talks.map((t) =>
+    [
+      `## [${t.title}](${SITE}/talks/${t.slug}.md)`,
+      ``,
+      t.summary ?? '',
+      ``,
+      t.pillar ? `- Topic: ${pillarTitle(t.pillar)}` : '',
+      t.audience ? `- Audience: ${t.audience}` : '',
+      lengthLabel(t) ? `- Length: ${lengthLabel(t)}` : '',
+      t.level ? `- Level: ${t.level}` : '',
+      `- Deliveries: ${deliveredLine(t)?.replace(/^delivered /, '') ?? 'none yet'}`,
+      nextLine(t) ? `- Upcoming: ${nextLine(t)!.replace(/^next: /, '')}` : '',
+      t.recording ? `- Recording: ${t.recording.url}` : '',
+      t.slidesUrl ? `- Slides: ${t.slidesUrl}` : '',
+      `- Book it: ${SITE}${inviteHref(t)}`,
+    ]
+      .filter((l, i) => l !== '' || i === 1 || i === 3)
+      .join('\n')
+  );
 
   const body = [
-    `# Talk catalogue · Faris Aziz`,
+    `# ${talks.length ? `${numberWord(talks.length)} talks, ready to book.` : 'Talk catalogue'}`,
     ``,
-    `> ${talks.length} talks, delivered ${deliveries} times. Every talk is adaptable in depth and length; most have a hands-on workshop version. Book any of them: https://faziz-dev.com/invite`,
+    `> Conference talks by Faris Aziz: short premise, audience, length and a recording where one exists. Every talk adapts to your slot and audience. ${stats.talksDelivered} talks delivered in ${stats.countries} countries (${stats.cities} cities), counted from session records as of ${stats.asOf}. Book: ${SITE}/invite`,
     ``,
-    ...talks.map((t) =>
-      [
-        `## ${t.title}`,
-        ``,
-        [
-          t.duration ? `${t.duration} min` : null,
-          t.eventCount ? `delivered ${t.eventCount}×` : null,
-          t.latestEvent?.conference ? `last at ${t.latestEvent.conference} (${mdDate(t.latestEvent.date)})` : null,
-          t.topics?.length ? `topics: ${t.topics.join(', ')}` : null,
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        ``,
-        t.abstract || '',
-        ``,
-        `Details: https://faziz-dev.com/talks/${t.slug} · Book this talk: https://faziz-dev.com/invite?format=talk&talk=${encodeURIComponent(t.title)}`,
-      ].join('\n')
-    ),
-  ].join('\n');
+    ...entries.flatMap((e) => [e, '']),
+    `Need something built for your theme? Tell me what you'd like your audience to leave with and I'll propose a talk within two days: ${SITE}/invite`,
+    ``,
+    `Where these were delivered: ${SITE}/events.md · Speaking overview: ${SITE}/speaking.md`,
+  ]
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 
   return mdResponse(body);
 };

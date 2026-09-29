@@ -1,0 +1,88 @@
+---
+/**
+ * Workshops image card (links to /workshops) beside the "Formats" list
+ * from the speaker profile.
+ */
+import { numberWord, type PressPhoto, type SpeakingFormat, type Workshop } from '../../lib/sanity/v3';
+import SanityImg from '../v3/SanityImg.astro';
+
+interface Props {
+  workshops: Workshop[];
+  formats: SpeakingFormat[];
+  /** Fallback photo when no workshop has an image. */
+  photo?: PressPhoto;
+}
+const { workshops: list, formats, photo } = Astro.props;
+// Lead with the workshop that has the richest record (image, audience size, then several formats).
+const score = (w: Workshop) => (w.image?.asset ? 4 : 0) + (w.participants?.max ? 2 : 0) + (w.formats.length > 1 ? 1 : 0);
+const workshops = [...list].sort((a, b) => score(b) - score(a));
+
+const lead = workshops[0];
+const image = workshops.find((w) => w.image?.asset)?.image ?? photo;
+const more = workshops.length - 1;
+const title = lead ? (more > 0 ? `${lead.title}, and ${numberWord(more).toLowerCase()} more` : lead.title) : 'Workshops';
+
+// "3-hour and full-day formats": format labels without the "edition" suffix.
+const labels = [...new Set(workshops.flatMap((w) => w.formats.map((f) => f.label.replace(/\s*(edition|version|format)$/i, '').trim().toLowerCase())))].filter(Boolean);
+const formatText = labels.length > 1 ? `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]} formats` : labels.length ? `${labels[0]} format` : lead?.duration;
+const mins = workshops.map((w) => w.participants?.min).filter((n): n is number => Boolean(n));
+const maxs = workshops.map((w) => w.participants?.max).filter((n): n is number => Boolean(n));
+const people = mins.length && maxs.length ? `${Math.min(...mins)}–${Math.max(...maxs)} participants` : null;
+const meta = [formatText, people].filter(Boolean).join(' · ');
+---
+
+<section class="ds-wrap wf">
+  {lead && (
+    <a href="/workshops" class="wf__card" data-track="speaking-workshops">
+      <SanityImg image={image} alt={image?.alt ?? 'Workshop in progress'} ratio={16 / 9} widths={[480, 800, 1200]} sizes="(max-width: 720px) 100vw, 46vw" class="wf__img" />
+      <span class="wf__scrim" aria-hidden="true"></span>
+      <span class="wf__text">
+        <span class="ds-kicker">Workshops</span>
+        <span class="wf__title">{title}</span>
+        {meta && <span class="wf__meta">{meta}</span>}
+      </span>
+    </a>
+  )}
+  <div class="wf__formats">
+    <h2 class="wf__h2">Formats</h2>
+    <dl class="wf__list">
+      {formats.map((f) => (
+        <div class="wf__row">
+          <dt>{f.name}</dt>
+          <dd>{[f.duration, f.description].filter(Boolean).join('. ')}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .wf { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding-bottom: 56px; align-items: start; }
+  .wf__card {
+    position: relative; display: block; border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 16 / 9;
+    color: rgb(var(--text)); text-decoration: none; background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline));
+    transition: border-color 0.15s;
+  }
+  .wf__card:hover { border-color: rgb(var(--yellow)); }
+  .wf__card:hover .wf__title { color: rgb(var(--accent-text)); }
+  .wf__card :global(.wf__img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .wf__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(var(--ground) / 0) 30%, rgb(var(--ground) / 0.94)); }
+  .wf__text { position: absolute; left: 24px; right: 24px; bottom: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .wf__text .ds-kicker { letter-spacing: 0.12em; }
+  .wf__title { font-size: clamp(22px, 2.4vw, 28px); font-weight: 800; letter-spacing: -0.035em; line-height: 1; transition: color 0.15s; }
+  .wf__meta { font-size: 13.5px; color: rgb(var(--text-muted)); }
+  .wf__h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 14px; }
+  .wf__list { margin: 0; border-bottom: 1px solid rgb(var(--hairline)); }
+  .wf__row { display: grid; grid-template-columns: 130px 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid rgb(var(--hairline)); }
+  .wf__row dt { font-weight: 800; }
+  .wf__row dd { margin: 0; color: rgb(var(--text-muted)); font-size: 14.5px; line-height: 1.5; }
+  @media (max-width: 720px) {
+    .wf { grid-template-columns: 1fr; gap: 36px; }
+    .wf__card { aspect-ratio: 4 / 3; }
+  }
+  @media (max-width: 420px) {
+    .wf__row { grid-template-columns: 1fr; gap: 4px; }
+    .wf__card { aspect-ratio: 1 / 1; }
+    .wf__text { left: 18px; right: 18px; bottom: 18px; }
+  }
+</style>

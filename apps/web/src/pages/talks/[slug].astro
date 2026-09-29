@@ -1,837 +1,139 @@
 ---
+/**
+ * Talk detail (V3 `Talk.dc.html`). Every talk slug gets a page, including
+ * retired versions (they render a note and no booking CTA). Delivery history
+ * lists SESSIONS of the talk family, each linking to its event page.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import SocialPostsGrid from '../../components/islands/SocialPostsGrid';
-import { bookingYears } from '../../lib/availability';
-import { sanityFetch, urlFor } from '../../lib/sanity/client';
-import {
-  talkBySlugQuery,
-  allTalkSlugsQuery,
-  allTalksQuery,
-  socialPostsForTalkQuery,
-} from '../../lib/sanity/queries';
-import type { SocialPost } from '../../lib/sanity/types';
-
-interface TalkEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  date: string;
-  conference?: string;
-  location?: { city?: string; country?: string; isOnline?: boolean };
-  links?: { videoUrl?: string; slidesUrl?: string };
-  talkVersion?: { _id: string; title: string; slug: string; version?: string };
-}
-
-interface TalkVersion {
-  _id: string;
-  title: string;
-  slug: string;
-  version?: string;
-  isCurrentVersion?: boolean;
-}
-
-interface TalkDetails {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  audience?: string;
-  takeaways?: string[];
-  topics?: string[];
-  duration?: number;
-  version?: string;
-  isCurrentVersion?: boolean;
-  versionNotes?: string;
-  viewCount?: number;
-  events?: TalkEvent[];
-  otherVersions?: TalkVersion[];
-  parentTalkDetails?: { _id: string; title: string; slug: string };
-  allFamilyEvents?: TalkEvent[];
-  assets?: { slidesUrl?: string; videoUrl?: string; repoUrl?: string; demoUrl?: string; thumbnailImage?: any };
-}
-
-interface TalkListItem {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  duration?: number;
-  topics?: string[];
-}
-
+import PraiseCard from '../../components/v3/PraiseCard.astro';
+import TalkHero from '../../components/talks/TalkHero.astro';
+import DeliveryList from '../../components/talks/DeliveryList.astro';
+import TalkAside from '../../components/talks/TalkAside.astro';
+import { getCatalogueTalks, getPraiseFor, getProfile, getTalks, getWriting, type TalkWithHistory } from '../../lib/sanity/v3';
+import { breadcrumbs, talkSchema } from '../../lib/seo';
+import { eventShortName, isRetired } from '../../lib/talks';
 
 export async function getStaticPaths() {
-  const talks = await sanityFetch<TalkListItem[]>(allTalkSlugsQuery).catch(() => []);
-  return talks.map((talk) => ({ params: { slug: talk.slug } }));
+  const talks = await getTalks();
+  return talks.map((talk) => ({ params: { slug: talk.slug }, props: { talk } }));
 }
 
-const { slug } = Astro.params;
-const talk = await sanityFetch<TalkDetails | null>(talkBySlugQuery, { slug }).catch(() => null);
-
-if (!talk) {
-  return Astro.redirect('/404');
+interface Props {
+  talk: TalkWithHistory;
 }
+const { talk } = Astro.props;
 
-const [socialPosts, allTalks] = await Promise.all([
-  sanityFetch<SocialPost[]>(socialPostsForTalkQuery, { talkId: talk._id }).catch(() => []),
-  sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
+const [catalogue, praise, writing, profile] = await Promise.all([
+  getCatalogueTalks(),
+  getPraiseFor({ talkId: talk._id }),
+  getWriting(),
+  getProfile(),
 ]);
 
-// Pre-process image URLs for the React component
-const socialPostImages: Record<string, string> = {};
-socialPosts.forEach((post) => {
-  if (post.authorImage) {
-    try { socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url(); } catch {}
-  }
-});
-const normalizedSocialPosts = socialPosts.map((post) => ({
-  _id: post._id,
-  platform: post.platform,
-  author: post.author,
-  authorRole: post.authorRole,
-  authorHandle: post.authorHandle,
-  content: post.content,
-  url: post.url,
-  postDate: post.postDate,
-}));
+const retired = isRetired(talk, catalogue);
+// The bookable version of the same family, if this one is retired.
+const root = talk.parentId || talk._id;
+const current = retired ? catalogue.find((c) => (c.parentId || c._id) === root && c._id !== talk._id) : undefined;
+const podcasts = writing.filter((w) => w.format === 'podcast' && w.relatedTalk?._id === talk._id).slice(0, 2);
+const related = talk.relatedTalks
+  .map((r) => catalogue.find((c) => c._id === r._id))
+  .filter((r): r is TalkWithHistory => Boolean(r));
+const premise = talk.abstract || talk.summary;
+const quotes = praise.slice(0, 2);
 
-// Version awareness
-const hasVersions = talk.otherVersions && talk.otherVersions.length > 0;
-const isDeprecated = hasVersions && !talk.isCurrentVersion;
-const currentVersion = talk.otherVersions?.find((v) => v.isCurrentVersion);
-
-// Use family events if available, else this talk's events. Sorted desc by date.
-const events = (hasVersions ? talk.allFamilyEvents : talk.events) || [];
-const sortedEvents = [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-// Pick a video URL: explicit asset.videoUrl wins, else first event with a video.
-const videoUrl =
-  talk.assets?.videoUrl ||
-  sortedEvents.find((e) => e.links?.videoUrl)?.links?.videoUrl ||
-  null;
-const slidesUrl =
-  talk.assets?.slidesUrl ||
-  sortedEvents.find((e) => e.links?.slidesUrl)?.links?.slidesUrl ||
-  null;
-
-// Thumbnail image
-const thumbUrl = talk.assets?.thumbnailImage
-  ? (() => { try { return urlFor(talk.assets!.thumbnailImage).width(1200).height(675).quality(90).url(); } catch { return null; } })()
-  : null;
-
-// View count formatting
-function formatViews(n?: number): string | null {
-  if (!n) return null;
-  if (n >= 10000) return `${Math.round(n / 1000)}k+ on YouTube`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k+ on YouTube`;
-  return `${n} on YouTube`;
-}
-const viewsLabel = formatViews(talk.viewCount);
-
-// Related talks — top 3 from allTalksQuery excluding this one
-const relatedTalks = allTalks
-  .filter((t) => t.slug !== talk.slug)
-  .slice(0, 3);
-
-// Location string helper. Dedupes when city === country (e.g. "Singapore, Singapore" → "Singapore").
-function locationOf(e: TalkEvent): string {
-  if (e.location?.isOnline) return 'Online';
-  const city = e.location?.city?.trim();
-  const country = e.location?.country?.trim();
-  if (city && country && city.toLowerCase() === country.toLowerCase()) return city;
-  return [city, country].filter(Boolean).join(', ');
-}
-
-function formatEventDate(date: string): string {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
-
-// JSON-LD VideoObject (only emit if we have a video)
-const jsonLd = videoUrl
-  ? {
-      '@context': 'https://schema.org',
-      '@type': 'VideoObject',
-      name: talk.title,
-      description: talk.abstract || `${talk.title}, a talk by Faris Aziz`,
-      duration: talk.duration ? `PT${talk.duration}M` : undefined,
-      embedUrl: videoUrl,
-      ...(thumbUrl ? { thumbnailUrl: [thumbUrl] } : {}),
-      author: { '@type': 'Person', name: 'Faris Aziz' },
-    }
-  : null;
-
-const description = (talk.abstract && talk.abstract.split('\n')[0]) || `${talk.title}, a talk by Faris Aziz`;
-
-// Prefilled invite link so the form opens with this talk's context.
-const inviteHref = `/invite?format=talk&talk=${encodeURIComponent(talk.title)}`;
+const description = (talk.seo?.metaDescription || talk.summary || `A talk by Faris Aziz${talk.duration ? `, ${talk.duration} min` : ''}.`).slice(0, 160);
 ---
 
 <BaseLayout
-  title={`${talk.title} · Talk | Faris Aziz`}
+  title={talk.seo?.metaTitle || talk.title}
   description={description}
-  pathname={`/talks/${slug}`}
-  image={`/og/talks/${slug}.png`}
-  imageAlt={`${talk.title}, a conference talk by Faris Aziz`}
-  markdownAlternate={`/talks/${slug}.md`}
+  image={`/og/talks/${talk.slug}.png`}
+  markdownAlternate={`/talks/${talk.slug}.md`}
+  band={false}
   extraSchema={[
-    {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://faziz-dev.com' },
-        { '@type': 'ListItem', position: 2, name: 'Talk catalogue', item: 'https://faziz-dev.com/talks' },
-        { '@type': 'ListItem', position: 3, name: talk.title, item: `https://faziz-dev.com/talks/${slug}` },
-      ],
-    },
+    talkSchema(talk),
+    breadcrumbs([
+      { name: 'Speaking', path: '/speaking' },
+      { name: 'Talks', path: '/talks' },
+      { name: talk.title, path: `/talks/${talk.slug}` },
+    ]),
   ]}
 >
-  {jsonLd && (
-    <Fragment slot="head">
-      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    </Fragment>
-  )}
+  <div class="ds-wrap tpage">
+    <TalkHero talk={talk} retired={retired} />
 
-  <!-- HERO -->
-  <header class="talk-hero">
-    <GridTexture />
-    <div class="container talk-hero__inner">
-      <nav class="talk-crumbs" aria-label="Breadcrumb">
-        <a href="/speaking">Speaking</a>
-        <span class="talk-crumbs__sep">/</span>
-        <a href="/talks">Talks</a>
-        <span class="talk-crumbs__sep">/</span>
-        <span class="talk-crumbs__cur">{talk.title.length > 24 ? talk.title.slice(0, 22) + '…' : talk.title}</span>
-      </nav>
-
-      {isDeprecated && currentVersion && (
-        <div class="talk-deprecation">
-          <strong>This is an older version.</strong>
-          <a href={`/talks/${currentVersion.slug}`} class="ds-link">
-            See the current version
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
-        </div>
-      )}
-
-      {talk.topics && talk.topics.length > 0 && (
-        <div class="talk-hero__tags">
-          {talk.topics.slice(0, 4).map((t) => <span class="ds-tag">{t}</span>)}
-          {talk.duration && <span class="ds-tag">{talk.duration} min</span>}
-        </div>
-      )}
-
-      <h1 class="talk-hero__title" transition:name={`talk-${slug}`}>{talk.title}</h1>
-
-      {talk.abstract && (
-        <p class="talk-hero__lead">{talk.abstract.split('\n')[0]}</p>
-      )}
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <section class="talk-section">
-    <div class="container talk-grid">
-      <div class="talk-main">
-        {videoUrl && (
-          <>
-            {/* VIDEO — only renders when a recording exists. Thumbnail comes from
-                talk.assets.thumbnailImage in Sanity; falls back to a clean accent
-                panel if no thumbnail has been uploaded yet. */}
-            <a
-              class="talk-vid"
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Watch ${talk.title} on YouTube`}
-            >
-              {thumbUrl ? (
-                <img src={thumbUrl} alt={`Thumbnail for ${talk.title}`} loading="eager" />
+    <div class="tpage__grid">
+      <div class="tpage__main">
+        {retired && (
+          <div class="ds-stripe tpage__retired" role="note">
+            <p class="tpage__retired-title">This version is retired{talk.version ? ` (${talk.version})` : ''}.</p>
+            <p class="tpage__retired-body">
+              {talk.versionNotes || 'It is kept here for the record and the recording; it is no longer booked.'}
+              {current ? (
+                <> The current version is <a href={`/talks/${current.slug}`} class="ds-textlink">{current.title}</a>.</>
               ) : (
-                <div class="talk-vid__placeholder" aria-hidden="true"></div>
+                <> See the <a href="/talks" class="ds-textlink">current catalogue</a>.</>
               )}
-              <span class="talk-vid__play">
-                <span>
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                </span>
-              </span>
-            </a>
-          </>
-        )}
-
-        <div class="talk-actions">
-          {videoUrl && (
-            <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary">
-              <svg viewBox="0 0 24 24" fill="currentColor" style="width:1.1em;height:1.1em;" aria-hidden="true">
-                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.6V8.4l6.3 3.6z" />
-              </svg>
-              Watch on YouTube
-            </a>
-          )}
-          {slidesUrl && (
-            <a href={slidesUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary">Download slides</a>
-          )}
-          <a href={inviteHref} class={videoUrl ? 'ds-btn ds-btn-secondary' : 'ds-btn ds-btn-primary'}>Invite me to give this talk</a>
-        </div>
-
-        <!-- ABSTRACT -->
-        {talk.abstract && (
-          <div class="talk-block">
-            <Kicker>The talk</Kicker>
-            <h2 class="talk-h2">What it's about</h2>
-            {talk.abstract.split(/\n\n+/).map((p) => <p class="talk-body">{p}</p>)}
+            </p>
           </div>
         )}
 
-        <!-- TAKEAWAYS -->
-        {talk.takeaways && talk.takeaways.length > 0 && (
-          <div class="talk-block">
-            <Kicker>Takeaways</Kicker>
-            <h2 class="talk-h2">What you'll leave with</h2>
-            <ul class="talk-learn">
-              {talk.takeaways.map((t) => (
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {premise && (
+          <section class="tpage__block" aria-labelledby="premise-title">
+            <h2 id="premise-title" class="tpage__h2">The premise</h2>
+            <p class="tpage__premise">{premise}</p>
+          </section>
         )}
 
-        <!-- AUDIENCE (kept from original schema if present) -->
-        {talk.audience && (
-          <div class="talk-block">
-            <Kicker>Audience</Kicker>
-            <h2 class="talk-h2">Who it's for</h2>
-            <p class="talk-body">{talk.audience}</p>
-          </div>
-        )}
-
-        <!-- ON STAGE -->
-        {sortedEvents.length > 0 && (
-          <div class="talk-block">
-            <Kicker>On stage</Kicker>
-            <h2 class="talk-h2">Where I've given this talk</h2>
-            <div class="talk-events">
-              {sortedEvents.slice(0, 8).map((e) => {
-                const loc = locationOf(e) || 'Online';
-                // Show the event title as the primary line — conferences sometimes hold venue/city
-                // strings ("Arena Cinemas Sihlcity") that aren't what the audience cares about.
-                // If the conference name actually differs from the title, surface it as the subtitle.
-                const showConference = e.conference
-                  && e.conference.trim().toLowerCase() !== e.title.trim().toLowerCase()
-                  && e.conference.trim().toLowerCase() !== loc.toLowerCase();
-                return (
-                  <a class="talk-event" href={`/events/${e.slug}`}>
-                    <div>
-                      <b>{e.title}</b>
-                      <div class="talk-event__loc">
-                        {showConference && <>{e.conference} · </>}
-                        {loc}
-                      </div>
-                    </div>
-                    <span class="talk-event__date">{formatEventDate(e.date)}</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <!-- ASIDE -->
-      <aside class="talk-aside">
-        <div class="ds-card talk-card">
-          <dl class="talk-card__dl">
-            {talk.duration && (
-              <div>
-                <dt>Length</dt>
-                <dd>{talk.duration} minutes</dd>
-              </div>
-            )}
-            <div>
-              <dt>Format</dt>
-              <dd>Conference talk{videoUrl ? ' · recording available' : ''}</dd>
-            </div>
+        {(talk.audience || talk.takeaways.length > 0) && (
+          <div class="tpage__two">
             {talk.audience && (
-              <div>
-                <dt>Audience</dt>
-                <dd>{talk.audience.length > 60 ? talk.audience.slice(0, 58) + '…' : talk.audience}</dd>
-              </div>
+              <section class="tpage__col" aria-labelledby="aud-title">
+                <h3 id="aud-title" class="ds-label">Who it's for</h3>
+                <p class="tpage__text">{talk.audience}</p>
+              </section>
             )}
-            {viewsLabel && (
-              <div>
-                <dt>Views</dt>
-                <dd>{viewsLabel}</dd>
-              </div>
+            {talk.takeaways.length > 0 && (
+              <section class="tpage__col" aria-labelledby="take-title">
+                <h3 id="take-title" class="ds-label">You leave with</h3>
+                <ul class="tpage__list">
+                  {talk.takeaways.map((k) => <li>{k}</li>)}
+                </ul>
+              </section>
             )}
-            {sortedEvents.length > 0 && (
-              <div>
-                <dt>Delivered</dt>
-                <dd>{sortedEvents.length} time{sortedEvents.length !== 1 ? 's' : ''}</dd>
-              </div>
-            )}
-          </dl>
-          <div class="talk-card__divider"></div>
-          <p class="talk-card__hint">Want this talk at your event? I tailor it to your audience.</p>
-          <a href={inviteHref} class="ds-btn ds-btn-primary talk-card__cta">
-            Invite me to give this talk
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-      </aside>
-    </div>
-  </section>
+          </div>
+        )}
 
-  <!-- SOCIAL POSTS (community reactions) -->
-  {normalizedSocialPosts.length > 0 && (
-    <section class="talk-section talk-section--alt">
-      <div class="container">
-        <div class="talk-section__head">
-          <Kicker class="ds-reveal">From the audience</Kicker>
-          <h2 class="talk-h2 ds-reveal">What people said</h2>
-        </div>
-        <SocialPostsGrid client:visible posts={normalizedSocialPosts} imageUrls={socialPostImages} />
+        <DeliveryList deliveries={talk.deliveries} retired={retired} />
+
+        {quotes.map((p) => (
+          <PraiseCard praise={p} variant="stripe" full context={p.event ? `about this talk at ${eventShortName(p.event)}` : 'about this talk'} />
+        ))}
       </div>
-    </section>
-  )}
 
-  <!-- RELATED -->
-  {relatedTalks.length > 0 && (
-    <section class="talk-section talk-section--alt">
-      <div class="container">
-        <div class="talk-section__head">
-          <Kicker class="ds-reveal">Keep exploring</Kicker>
-          <h2 class="talk-h2 ds-reveal">More talks</h2>
-        </div>
-        <div class="talk-related wide">
-          {relatedTalks.map((t) => (
-            <a href={`/talks/${t.slug}`} class="ds-card ds-card-interactive talk-related__card ds-reveal">
-              {t.topics && t.topics[0] && <span class="ds-tag talk-related__tag">{t.topics[0]}</span>}
-              <h3 class="talk-related__title">{t.title}</h3>
-              {t.abstract && (
-                <p class="talk-related__abstract">
-                  {t.abstract.split('\n')[0].slice(0, 120)}{t.abstract.length > 120 ? '…' : ''}
-                </p>
-              )}
-            </a>
-          ))}
-        </div>
-        <div style="text-align:center;margin-top:2rem;">
-          <a href="/talks" class="ds-link">
-            All talks
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- CTA -->
-  <section class="talk-section">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={`Booking ${bookingYears()} dates`}
-          title="Want a talk like this at your event?"
-          body="Tell me about your audience and I'll adapt this talk (or build something new) to fit your room. I reply within two days."
-          primaryHref={inviteHref}
-          primaryLabel="Invite me"
-          secondaryHref="/speaking"
-          secondaryLabel="More upcoming events"
-        />
-      </div>
-    </div>
-  </section>
-
-  <!-- Sticky action bar — the booking CTA stays reachable at every scroll depth -->
-  <div class="talk-stickybar" id="talkStickybar" aria-hidden="true">
-    <div class="container talk-stickybar__inner">
-      <span class="talk-stickybar__title">{talk.title}</span>
-      <a href={inviteHref} class="ds-btn ds-btn-primary talk-stickybar__cta" data-track="talk-stickybar" data-track-label={talk.title}>
-        Invite me to give this talk
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </a>
+      <TalkAside talk={talk} retired={retired} setupFallback={profile.rider[0]?.body} podcasts={podcasts} related={related} />
     </div>
   </div>
-
-  <script>
-    // Sticky invite bar. (.ds-reveal is armed by the global initializer in BaseLayout.)
-    function initTalk() {
-      const bar = document.getElementById('talkStickybar');
-      const actions = document.querySelector('.talk-actions');
-      const contact = document.querySelector('.page-section--contact') || document.querySelector('.contact-panel');
-      if (bar && actions) {
-        let pastActions = false;
-        let nearContact = false;
-        const sync = () => {
-          const show = pastActions && !nearContact;
-          bar.classList.toggle('talk-stickybar--visible', show);
-          bar.setAttribute('aria-hidden', String(!show));
-        };
-        new IntersectionObserver(([e]) => {
-          pastActions = !e.isIntersecting && e.boundingClientRect.top < 0;
-          sync();
-        }).observe(actions);
-        if (contact) {
-          new IntersectionObserver(([e]) => {
-            nearContact = e.isIntersecting;
-            sync();
-          }).observe(contact);
-        }
-      }
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initTalk, { once: true });
-    } else {
-      initTalk();
-    }
-    document.addEventListener('astro:after-swap', initTalk);
-  </script>
 </BaseLayout>
 
 <style>
-  .talk-hero {
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid rgb(var(--edge));
-    padding-block: clamp(2.5rem, 5vw, 4rem);
+  .tpage { padding-top: 0; padding-bottom: 64px; }
+  .tpage__grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 56px; padding-top: 48px; align-items: start; }
+  .tpage__main { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+  .tpage__block { display: flex; flex-direction: column; gap: 12px; }
+  .tpage__h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+  .tpage__premise { margin: 0; font-size: 17px; line-height: 1.65; color: rgb(var(--text-muted)); max-width: 65ch; }
+  .tpage__two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .tpage__col { display: flex; flex-direction: column; gap: 10px; }
+  .tpage__text { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .tpage__list { margin: 0; padding-left: 18px; list-style: disc; font-size: 15px; line-height: 1.6; color: rgb(var(--text-muted)); }
+  .tpage__retired { display: flex; flex-direction: column; gap: 6px; }
+  .tpage__retired-title { margin: 0; font-weight: 800; font-size: 17px; }
+  .tpage__retired-body { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  @media (max-width: 960px) {
+    .tpage__grid { grid-template-columns: 1fr; gap: 40px; padding-top: 32px; }
   }
-  .talk-hero__inner { position: relative; }
-  .talk-crumbs {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.74rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
-    margin-bottom: 1.6rem;
-    flex-wrap: wrap;
-  }
-  .talk-crumbs a { color: rgb(var(--ink-faint)); transition: color 0.15s; }
-  .talk-crumbs a:hover { color: rgb(var(--accent-bright)); }
-  .talk-crumbs__sep { opacity: 0.45; }
-  .talk-crumbs__cur { color: rgb(var(--ink-muted)); }
-
-  .talk-deprecation {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    align-items: center;
-    background: rgb(var(--accent-bright) / 0.08);
-    border: 1px solid rgb(var(--accent-bright) / 0.32);
-    color: rgb(var(--ink-muted));
-    padding: 0.5rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-  }
-  .talk-deprecation strong { color: rgb(var(--ink)); }
-
-  .talk-hero__tags {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.2rem;
-  }
-  .talk-hero__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    line-height: 1.04;
-    letter-spacing: -0.02em;
-    font-size: clamp(2.2rem, 5vw, 3.6rem);
-    color: rgb(var(--ink));
-    max-width: 20ch;
-    text-wrap: balance;
-  }
-  .talk-hero__lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
-    color: rgb(var(--ink-muted));
-    max-width: 60ch;
-    margin-top: 1.2rem;
-  }
-
-  /* Section primitives */
-  .talk-section { padding-block: clamp(4rem, 9vw, 7.5rem); }
-  .talk-section--alt {
-    background: rgb(var(--surface-1));
-    border-top: 1px solid rgb(var(--edge));
-  }
-  .talk-section__head { margin-bottom: 1.8rem; }
-  .talk-h2 {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-    margin: 1rem 0;
-  }
-  .talk-body {
-    color: rgb(var(--ink-muted));
-    line-height: 1.7;
-    margin-bottom: 1rem;
-  }
-
-  /* Main layout */
-  .talk-grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 3rem;
-    align-items: start;
-  }
-  @media (max-width: 920px) {
-    .talk-grid { grid-template-columns: 1fr; gap: 2rem; }
-  }
-
-  /* Video — only rendered when a recording exists. The whole tile is a link
-     to YouTube; thumbnail (from Sanity) is the visual; play overlay sits on top. */
-  .talk-vid {
-    position: relative;
-    display: block;
-    aspect-ratio: 16 / 9;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-3));
-    color: inherit;
-  }
-  .talk-vid img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.4s ease;
-  }
-  .talk-vid:hover img { transform: scale(1.03); }
-  .talk-vid__placeholder {
-    width: 100%;
-    height: 100%;
-    background:
-      radial-gradient(ellipse 60% 80% at 50% 50%, rgb(var(--accent) / 0.18), transparent 70%),
-      rgb(var(--surface-3));
-  }
-  .talk-vid__play {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-  .talk-vid__play > span {
-    width: 80px;
-    height: 80px;
-    border-radius: 999px;
-    background: rgba(10, 12, 16, 0.55);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 28px -10px rgba(0,0,0,.65);
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
-  }
-  .talk-vid__play svg {
-    width: 30px;
-    height: 30px;
-    color: #fff;
-    margin-left: 5px;
-  }
-  .talk-vid:hover .talk-vid__play > span {
-    transform: scale(1.06);
-    background: rgba(10, 12, 16, 0.75);
-  }
-
-  .talk-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 1.2rem;
-  }
-
-  /* Content blocks */
-  .talk-block { margin-top: 3rem; }
-  .talk-learn {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.9rem;
-  }
-  .talk-learn li {
-    display: flex;
-    gap: 0.8rem;
-    align-items: flex-start;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
-  .talk-learn li svg {
-    width: 20px;
-    height: 20px;
-    color: rgb(var(--signal));
-    flex-shrink: 0;
-    margin-top: 0.2rem;
-  }
-
-  /* Events list */
-  .talk-events { display: grid; }
-  .talk-event {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.95rem 0;
-    border-bottom: 1px solid rgb(var(--edge));
-    color: inherit;
-    transition: color 0.15s;
-  }
-  .talk-event:last-child { border-bottom: 0; }
-  .talk-event:hover { color: rgb(var(--accent-bright)); }
-  .talk-event b {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .talk-event:hover b { color: rgb(var(--accent-bright)); }
-  .talk-event__loc {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-    margin-top: 0.1rem;
-  }
-  .talk-event__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.78rem;
-    color: rgb(var(--ink-faint));
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
-  }
-
-  /* Aside card */
-  .talk-aside { width: 100%; }
-  .talk-card {
-    padding: 1.4rem;
-    position: sticky;
-    top: 88px;
-  }
-  @media (max-width: 920px) {
-    .talk-card { position: static; }
-  }
-  .talk-card__dl {
-    display: grid;
-    gap: 0.9rem;
-    margin: 0;
-  }
-  .talk-card__dl dt {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .talk-card__dl dd {
-    margin: 0.1rem 0 0;
-    color: rgb(var(--ink));
-    font-size: 0.95rem;
-  }
-  .talk-card__divider {
-    height: 1px;
-    background: rgb(var(--edge));
-    margin: 1.3rem 0;
-  }
-  .talk-card__hint {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-muted));
-    margin-bottom: 1rem;
-  }
-  .talk-card__cta {
-    width: 100%;
-  }
-
-  /* Related */
-  .talk-related {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-  }
-  @media (max-width: 900px) {
-    .talk-related { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 560px) {
-    .talk-related { grid-template-columns: 1fr; }
-  }
-  .talk-related__card {
-    padding: 1.4rem;
-    color: inherit;
-  }
-  .talk-related__tag { margin-bottom: 1rem; display: inline-flex; }
-  .talk-related__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: rgb(var(--ink));
-  }
-  .talk-related__abstract {
-    font-size: 0.9rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.4rem;
-    line-height: 1.55;
-  }
-
-  /* Sticky action bar */
-  .talk-stickybar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-    background: color-mix(in srgb, rgb(var(--bg)) 88%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-top: 1px solid rgb(var(--edge));
-    padding-bottom: env(safe-area-inset-bottom);
-    transform: translateY(102%);
-    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-  }
-  .talk-stickybar--visible {
-    transform: none;
-    pointer-events: auto;
-  }
-  .talk-stickybar__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-block: 0.7rem;
-  }
-  .talk-stickybar__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 0.98rem;
-    color: rgb(var(--ink));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
-  .talk-stickybar__cta {
-    flex-shrink: 0;
-    padding: 0.55rem 1rem !important;
-    font-size: 0.85rem !important;
-  }
-  @media (max-width: 560px) {
-    .talk-stickybar__title { display: none; }
-    .talk-stickybar__inner { justify-content: center; }
+  @media (max-width: 720px) {
+    .tpage__two { grid-template-columns: 1fr; gap: 24px; }
   }
 </style>

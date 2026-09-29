@@ -1,0 +1,70 @@
+---
+/**
+ * "Things I talk about.": the three topic pillars from the speaker profile.
+ * Each card leads with its pillar's lead talk (the referenced talk, else the
+ * first catalogue talk in that pillar) and a meta line derived from it.
+ */
+import { dayMonth, type TalkWithHistory, type TopicPillar } from '../../lib/sanity/v3';
+import { eventShortName, pillarTitle } from '../../lib/talks';
+import SectionHead from '../v3/SectionHead.astro';
+
+interface Props {
+  pillars: TopicPillar[];
+  talks: TalkWithHistory[];
+}
+const { pillars, talks } = Astro.props;
+
+const cards = pillars.slice(0, 3).map((p) => {
+  const lead = (p.talk && talks.find((t) => t._id === p.talk!._id)) || talks.find((t) => p.pillar && t.pillar === p.pillar);
+  const other = talks.find((t) => t !== lead && p.pillar && t.pillar === p.pillar);
+  const meta = lead
+    ? [
+        lead.duration ? `${lead.duration} min` : null,
+        lead.recording ? 'recording available' : null,
+        lead.nextDelivery ? `next: ${eventShortName(lead.nextDelivery.event)}, ${dayMonth(lead.nextDelivery.event.date)}` : null,
+        other ? `also: ${other.title}` : null,
+      ]
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(' · ')
+    : '';
+  return {
+    kicker: pillarTitle(p.pillar) || 'Talk',
+    title: p.title,
+    description: p.description,
+    meta,
+    href: lead ? `/talks/${lead.slug}` : p.pillar ? `/talks?topic=${p.pillar}` : '/talks',
+  };
+});
+---
+
+{cards.length > 0 && (
+  <section class="ds-wrap pillars" aria-labelledby="pillars-title">
+    <SectionHead id="pillars-title" title="Things I talk about." size="sm" link={{ label: `All ${talks.length} talks`, href: '/talks' }} />
+    <ul class="ds-grid-3 pillars__grid">
+      {cards.map((c) => (
+        <li>
+          <a href={c.href} class="ds-card ds-card--fill pillars__card" data-track="speaking-pillar">
+            <p class="ds-kicker pillars__kicker">{c.kicker}</p>
+            <h3 class="pillars__title">{c.title}</h3>
+            {c.description && <p class="pillars__desc">{c.description}</p>}
+            {c.meta && <p class="ds-meta ds-card__foot">{c.meta}</p>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .pillars { padding-top: 8px; padding-bottom: 56px; }
+  .pillars :global(.shead) { margin-bottom: 20px; }
+  .pillars__grid { list-style: none; margin: 0; padding: 0; }
+  .pillars__card { display: flex; flex-direction: column; height: 100%; gap: 12px; min-height: 260px; padding: 24px; }
+  .pillars__kicker { letter-spacing: 0.12em; }
+  .pillars__title { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; }
+  .pillars__desc { margin: 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  @media (max-width: 720px) {
+    .pillars__card { min-height: 0; }
+  }
+</style>
