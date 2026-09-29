@@ -176,7 +176,7 @@ a { color: inherit; }
 
 /* Format tiles on the Writing timeline */
 .ds-tile { display: inline-grid; place-items: center; width: 56px; height: 56px; flex: none; border-radius: var(--radius-card); font-weight: 800; font-size: 20px; }
-.ds-tile--written { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); }
+.ds-tile--written { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); box-shadow: inset 0 0 0 1px rgb(var(--hairline-strong)); }
 .ds-tile--podcast { background: rgb(var(--yellow)); color: rgb(var(--c-ink)); }
 .ds-tile--video { background: rgb(var(--blue)); color: rgb(var(--c-cream)); }
 

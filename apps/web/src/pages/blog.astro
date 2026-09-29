@@ -1,560 +1,69 @@
 ---
+/**
+ * Writing & conversations: one timeline for posts on this site, pieces for
+ * other publications, podcasts and video. Latest to read + latest to
+ * listen on top, then Format/Topic filters over year groups.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { externalPostsQuery, allBlogPostsQuery } from '../lib/sanity/queries';
-import { formatDate, formatReadingTime } from 'shared/utils';
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
+import Kicker from '../components/v3/Kicker.astro';
+import LatestPair from '../components/writing/LatestPair.astro';
+import WritingTimeline from '../components/writing/WritingTimeline.astro';
+import { getWriting } from '../lib/sanity/v3';
+import { breadcrumbs, itemList } from '../lib/seo';
 
-interface SanityImage { asset?: SanityImageSource; alt?: string }
-interface ExternalPost {
-  _id: string; title: string; url: string; type: string;
-  publishedAt: string; source?: string; excerpt?: string; image?: SanityImage;
-}
-interface BlogPost {
-  _id: string; title: string; slug: string; excerpt: string;
-  coverImage?: SanityImage; publishedAt: string; tags?: string[]; category?: string;
-  featured?: boolean; estimatedReadingTime: number;
-}
-
-const [externalPosts, blogPosts] = await Promise.all([
-  sanityFetch<ExternalPost[]>(externalPostsQuery).catch(() => []),
-  sanityFetch<BlogPost[]>(allBlogPostsQuery).catch(() => []),
-]);
-
-const articles = externalPosts.filter((p) => p.type === 'article');
-const podcasts = externalPosts.filter((p) => p.type === 'podcast');
-const interviews = externalPosts.filter((p) => p.type === 'interview');
-const other = externalPosts.filter((p) => !['article', 'podcast', 'interview'].includes(p.type));
-
-const featuredBlogPosts = blogPosts.filter((p) => p.featured);
-const regularBlogPosts = blogPosts.filter((p) => !p.featured);
-
-const totalPosts = externalPosts.length + blogPosts.length;
-
-const contentTypes = [
-  { name: 'Blog', code: 'blog', count: blogPosts.length, anchor: '#blog' },
-  { name: 'Articles', code: 'articles', count: articles.length, anchor: '#articles' },
-  { name: 'Podcasts', code: 'podcasts', count: podcasts.length, anchor: '#podcasts' },
-  { name: 'Interviews', code: 'interviews', count: interviews.length, anchor: '#interviews' },
-  { name: 'Other', code: 'other', count: other.length, anchor: '#other' },
-].filter((t) => t.count > 0);
-
-const categoryLabels: Record<string, string> = {
-  tutorial: 'Tutorial',
-  guide: 'Guide',
-  review: 'Review',
-  retrospective: 'Retrospective',
-  'case-study': 'Case Study',
-  announcement: 'Announcement',
-  'deep-dive': 'Deep Dive',
-};
-
-function safeImg(image: SanityImage | undefined, w: number, h: number): string | null {
-  if (!image) return null;
-  try { return urlFor(image).width(w).height(h).url(); } catch { return null; }
-}
+const items = await getWriting();
+const latestRead = items.find((i) => i.format === 'article');
+const latestListen = items.find((i) => i.format === 'podcast');
+const internal = items.filter((i) => i.isInternal);
 ---
 
 <BaseLayout
-  title="Writing & content | Faris Aziz"
-  description="Articles, podcasts, and external content by Faris Aziz on React, Next.js, payments, and software development."
-  pathname="/blog"
+  title="Writing & conversations | Faris Aziz"
+  description="Posts on this site, guest articles, podcasts and video by Faris Aziz in one timeline: engineering in production, careers and community."
   image="/og/blog.png"
+  markdownAlternate="/blog.md"
+  extraSchema={[
+    breadcrumbs([
+      { name: 'Home', path: '/' },
+      { name: 'Writing', path: '/blog' },
+    ]),
+    ...(internal.length ? [itemList('Posts on faziz-dev.com', internal.map((i) => i.href))] : []),
+  ]}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>Writing · {totalPosts} pieces</Kicker>
-      <h1 class="page-hero__title">
-        Essays, talks, and <span class="accent-word">conversations</span>.
-      </h1>
-      <p class="page-hero__lead">
-        Self-hosted blog posts plus everything else I've written, recorded, or guested on across the web.
+    <header class="ds-wrap wr-hero">
+      <Kicker parts={['Writing & conversations']} />
+      <h1 class="ds-h1 wr-hero__title">What I've written, and what I've said out loud.</h1>
+      <p class="ds-lede wr-hero__lede">
+        Posts on this site, pieces for other publications and podcast conversations, in one timeline. Same topics, different formats: read it, listen to it or watch it.
       </p>
+    </header>
 
-      {contentTypes.length > 0 && (
-        <div class="blog-anchors">
-          {contentTypes.map((t) => (
-            <a href={t.anchor} class="ds-pill">
-              {t.name}
-              <span class="blog-anchors__count">{t.count}</span>
-            </a>
-          ))}
+    {items.length > 0 ? (
+      <>
+        <div class="ds-wrap wr-latest">
+          <LatestPair read={latestRead} listen={latestListen} />
         </div>
-      )}
-
-      <div class="page-hero__actions">
-        <a href="https://bsky.app/profile/farisaziz.com" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary ds-btn-lg">
-          Follow on Bluesky
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:1em;height:1em;" aria-hidden="true">
-            <path d="M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026"/>
-          </svg>
-        </a>
-        <a href="https://linkedin.com/in/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-secondary ds-btn-lg">Connect on LinkedIn</a>
-      </div>
-    </div>
-  </header>
-
-  {totalPosts === 0 ? (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-empty">
-          <h3>Coming soon</h3>
-          <p>Posts will appear here once content is added to Sanity.</p>
+        <div class="ds-wrap wr-list">
+          <WritingTimeline items={items} />
         </div>
+      </>
+    ) : (
+      <div class="ds-wrap wr-list">
+        <p class="wr-none">Nothing published here right now. The feed is still at <a class="ds-textlink" href="/rss.xml">/rss.xml</a>, and the talks are on <a class="ds-textlink" href="/talks">the talks page</a>.</p>
       </div>
-    </section>
-  ) : (
-    <>
-      {/* BLOG POSTS */}
-      {blogPosts.length > 0 && (
-        <section id="blog" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>The blog</Kicker>
-                <h2 class="page-h2">Long-form writing</h2>
-              </div>
-              <span class="ds-pill">
-                {blogPosts.length} {blogPosts.length === 1 ? 'post' : 'posts'}
-              </span>
-            </div>
-
-            {featuredBlogPosts.length > 0 && (
-              <div class="blog-featured">
-                {featuredBlogPosts.map((post) => {
-                  const cover = safeImg(post.coverImage, 1200, 675);
-                  return (
-                    <a href={`/blog/${post.slug}`} class="ds-card ds-card-interactive blog-featured__card ds-reveal">
-                      {cover && (
-                        <div class="blog-featured__media">
-                          <img src={cover} alt={post.title} loading="lazy" />
-                        </div>
-                      )}
-                      <div class="blog-featured__body">
-                        <div class="blog-card__tags">
-                          <span class="ds-tag" style="color:rgb(var(--accent-bright));border-color:rgb(var(--accent) / 0.4);">Featured</span>
-                          {post.category && <span class="ds-tag">{categoryLabels[post.category] || post.category}</span>}
-                        </div>
-                        <h3 class="blog-featured__title">{post.title}</h3>
-                        <p class="blog-featured__excerpt">{post.excerpt}</p>
-                        <div class="blog-card__meta">
-                          <span>{formatDate(post.publishedAt, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                          <span>·</span>
-                          <span>{formatReadingTime(post.estimatedReadingTime)}</span>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-
-            {regularBlogPosts.length > 0 && (
-              <div class="page-grid-3 blog-grid">
-                {regularBlogPosts.map((post) => {
-                  const cover = safeImg(post.coverImage, 600, 340);
-                  return (
-                    <a href={`/blog/${post.slug}`} class="ds-card ds-card-interactive blog-card ds-reveal">
-                      <div class="blog-card__media">
-                        {cover ? (
-                          <img src={cover} alt={post.title} loading="lazy" />
-                        ) : (
-                          <div class="blog-card__placeholder">
-                            <span class="ds-tag">Post</span>
-                          </div>
-                        )}
-                        {post.category && (
-                          <span class="blog-card__category">
-                            {categoryLabels[post.category] || post.category}
-                          </span>
-                        )}
-                      </div>
-                      <div class="blog-card__body">
-                        <h3 class="blog-card__title">{post.title}</h3>
-                        <p class="blog-card__excerpt">{post.excerpt}</p>
-                        <div class="blog-card__meta">
-                          <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>
-                          <span>·</span>
-                          <span>{formatReadingTime(post.estimatedReadingTime)}</span>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ARTICLES */}
-      {articles.length > 0 && (
-        <section id="articles" class="page-section page-section--alt">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>Elsewhere</Kicker>
-                <h2 class="page-h2">External articles</h2>
-              </div>
-              <span class="ds-pill">{articles.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {articles.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Article</span>
-                        </div>
-                      )}
-                      <span class="blog-card__category">Article</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* PODCASTS */}
-      {podcasts.length > 0 && (
-        <section id="podcasts" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>Listen in</Kicker>
-                <h2 class="page-h2">Podcast appearances</h2>
-              </div>
-              <span class="ds-pill">{podcasts.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {podcasts.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card blog-card--podcast ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Podcast</span>
-                        </div>
-                      )}
-                      <div class="blog-card__play">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
-                      <span class="blog-card__category">Podcast</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* INTERVIEWS */}
-      {interviews.length > 0 && (
-        <section id="interviews" class="page-section page-section--alt">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>On the record</Kicker>
-                <h2 class="page-h2">Interviews</h2>
-              </div>
-              <span class="ds-pill">{interviews.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {interviews.map((post) => {
-                const cover = safeImg(post.image, 600, 340);
-                return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card ds-reveal">
-                    <div class="blog-card__media">
-                      {cover ? (
-                        <img src={cover} alt={post.title} loading="lazy" />
-                      ) : (
-                        <div class="blog-card__placeholder">
-                          <span class="ds-tag">Interview</span>
-                        </div>
-                      )}
-                      <span class="blog-card__category">Interview</span>
-                    </div>
-                    <div class="blog-card__body">
-                      {post.source && <p class="blog-card__source">{post.source}</p>}
-                      <h3 class="blog-card__title">{post.title}</h3>
-                      <div class="blog-card__meta">
-                        {post.publishedAt && <span>{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</span>}
-                        <span class="blog-card__external">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* OTHER */}
-      {other.length > 0 && (
-        <section id="other" class="page-section">
-          <div class="container">
-            <div class="page-section__head">
-              <div>
-                <Kicker>More</Kicker>
-                <h2 class="page-h2">Everything else</h2>
-              </div>
-              <span class="ds-pill">{other.length}</span>
-            </div>
-            <div class="page-grid-3">
-              {other.map((post) => (
-                <a href={post.url} target="_blank" rel="noopener noreferrer" class="ds-card ds-card-interactive blog-card-min ds-reveal">
-                  <span class="ds-tag" style="margin-bottom:0.8rem;">{post.type}</span>
-                  {post.source && <p class="blog-card__source">{post.source}</p>}
-                  <h3 class="blog-card__title">{post.title}</h3>
-                  {post.publishedAt && (
-                    <p class="blog-card__meta">{formatDate(post.publishedAt, { month: 'short', year: 'numeric' })}</p>
-                  )}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-    </>
-  )}
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status="Open to guesting"
-          title="Want me on your podcast?"
-          body="I love technical conversations: payments, performance, engineering leadership. Tell me about your show."
-          primaryHref="/invite"
-          primaryLabel="Pitch a topic"
-          secondaryHref={null}
-        />
-      </div>
-    </div>
-  </section>
-
+    )}
 </BaseLayout>
 
 <style>
-  .blog-anchors {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.6rem;
-  }
-  .blog-anchors__count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    margin-left: 0.25rem;
-  }
-
-  /* Featured blog posts */
-  .blog-featured {
-    display: grid;
-    gap: 1.2rem;
-    margin-bottom: 1.6rem;
-  }
-  .blog-featured__card {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    overflow: hidden;
-    color: inherit;
-  }
-  @media (max-width: 760px) {
-    .blog-featured__card { grid-template-columns: 1fr; }
-  }
-  .blog-featured__media {
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: rgb(var(--surface-3));
-  }
-  .blog-featured__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  .blog-featured__card:hover .blog-featured__media img {
-    transform: scale(1.04);
-  }
-  .blog-featured__body {
-    padding: clamp(1.5rem, 3vw, 2.2rem);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.8rem;
-  }
-  .blog-featured__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    font-size: clamp(1.2rem, 2vw, 1.6rem);
-    color: rgb(var(--ink));
-    line-height: 1.2;
-  }
-  .blog-featured__excerpt {
-    color: rgb(var(--ink-muted));
-    font-size: 0.95rem;
-    line-height: 1.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* Regular blog card */
-  .blog-card {
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    color: inherit;
-  }
-  .blog-grid { margin-top: 0; }
-  .blog-card__media {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: rgb(var(--surface-3));
-    border-bottom: 1px solid rgb(var(--edge));
-  }
-  .blog-card__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  .blog-card:hover .blog-card__media img { transform: scale(1.04); }
-  .blog-card__placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgb(var(--ink-faint));
-  }
-  .blog-card__category {
-    position: absolute;
-    top: 0.6rem;
-    left: 0.6rem;
-    display: inline-flex;
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    background: rgb(var(--accent));
-    color: #fff;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .blog-card__play {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-  .blog-card__play svg {
-    width: 48px;
-    height: 48px;
-    color: #fff;
-    background: rgba(10, 12, 16, 0.5);
-    backdrop-filter: blur(4px);
-    border-radius: 999px;
-    padding: 12px 11px 12px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-  }
-  .blog-card__body {
-    padding: 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex: 1;
-  }
-  .blog-card__source {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .blog-card__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1rem;
-    color: rgb(var(--ink));
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .blog-card__excerpt {
-    font-size: 0.86rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .blog-card__meta {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: auto;
-    padding-top: 0.6rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
-  }
-  .blog-card__external svg { width: 0.85em; height: 0.85em; margin-left: auto; }
-  .blog-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .blog-card-min {
-    padding: 1.3rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    color: inherit;
+  .wr-hero { display: flex; flex-direction: column; gap: 14px; padding-top: 48px; padding-bottom: 32px; }
+  .wr-hero > * { max-width: 720px; }
+  .wr-hero__title { font-size: clamp(36px, 5.6vw, 52px); }
+  .wr-hero__lede { max-width: 640px; font-size: 17px; }
+  .wr-latest { padding-bottom: 48px; }
+  .wr-list { padding-bottom: 56px; }
+  .wr-none { margin: 0; padding: 32px 0; border-top: 1px solid rgb(var(--hairline)); color: rgb(var(--text-muted)); font-size: 15px; }
+  @media (max-width: 720px) {
+    .wr-hero { padding-top: 32px; padding-bottom: 24px; }
+    .wr-latest { padding-bottom: 36px; }
   }
 </style>

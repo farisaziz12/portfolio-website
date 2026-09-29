@@ -1,0 +1,67 @@
+---
+/**
+ * The quiet last line of a post: related items (talk, event, same-topic
+ * writing) on the left, share intents on the right. Plain links, no SDKs.
+ */
+import type { WritingItem } from '../../lib/sanity/v3';
+import type { WritingPost } from '../../lib/writing-post';
+import { shareLinks } from '../../lib/writing-post';
+
+interface Props {
+  post: Pick<WritingPost, 'title' | 'relatedTalk' | 'relatedEvent'>;
+  url: string;
+  related: WritingItem[];
+}
+
+const { post, url, related } = Astro.props;
+interface Rel { label: string; href: string; note?: string; external?: boolean }
+const rel: Rel[] = [
+  ...(post.relatedTalk ? [{ label: `Talk: ${post.relatedTalk.shortTitle || post.relatedTalk.title}`, href: `/talks/${post.relatedTalk.slug}` }] : []),
+  ...(post.relatedEvent ? [{ label: post.relatedEvent.title, href: `/events/${post.relatedEvent.slug}` }] : []),
+  ...related.map((r) => ({
+    label: r.title,
+    href: r.href,
+    note: r.hasCorrections ? 'with corrections' : r.isInternal ? undefined : r.source,
+    external: !r.isInternal,
+  })),
+];
+const shares = shareLinks(url, post.title);
+---
+
+<footer class="afoot">
+  {rel.length > 0 && (
+    <nav class="afoot__rel" aria-label="Related">
+      <span class="afoot__label">Related:</span>
+      <ul class="afoot__list">
+        {rel.map((r) => (
+          <li>
+            <a href={r.href} {...(r.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{r.label}</a>
+            {r.note && <span class="afoot__note"> ({r.note})</span>}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
+  <div class="afoot__share">
+    <span class="afoot__label">Share:</span>
+    <ul class="afoot__list">
+      {shares.map((s) => (
+        <li><a href={s.href} target="_blank" rel="noopener noreferrer" data-track={`share-${s.label.toLowerCase()}`}>{s.label}<span class="sr-only"> (opens in a new tab)</span></a></li>
+      ))}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .afoot { display: flex; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; font-size: 13.5px; line-height: 1.9; border-top: 1px solid rgb(var(--hairline)); padding-top: 18px; color: rgb(var(--text-faint)); }
+  .afoot__rel { flex: 1 1 320px; min-width: 0; }
+  .afoot__share { flex: none; }
+  .afoot__label { margin-right: 4px; }
+  .afoot__list { display: inline; list-style: none; margin: 0; padding: 0; }
+  .afoot__list li { display: inline; }
+  .afoot__list li + li::before { content: ' · '; color: rgb(var(--text-faint)); }
+  .afoot a { padding-block: 10px; color: rgb(var(--text-muted)); text-decoration: underline; text-underline-offset: 0.2em; text-decoration-color: rgb(var(--hairline-strong)); }
+  .afoot__share a { text-decoration: none; }
+  .afoot a:hover { color: rgb(var(--accent-text)); text-decoration-color: rgb(var(--yellow)); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>

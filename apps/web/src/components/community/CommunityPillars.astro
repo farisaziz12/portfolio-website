@@ -1,0 +1,49 @@
+---
+/**
+ * Host / Teach / Build: three columns under a yellow top rule. The Build
+ * column links to the platform as an engineering project when it exists.
+ */
+import type { CommunityPillar } from '../../lib/sanity/v3';
+
+interface Props {
+  pillars: CommunityPillar[];
+  /** Link for the Build pillar (the platform project page). */
+  buildHref?: string;
+  /** Derived line for the Host pillar ("12 evenings hosted, as of Sep 2026"). */
+  hostLine?: string;
+}
+
+const { pillars, buildHref, hostLine } = Astro.props;
+const kind = (p: CommunityPillar) => (p.kicker ?? '').toLowerCase();
+---
+
+{pillars.length > 0 && (
+  <ul class="cpil">
+    {pillars.map((p) => {
+      const href = p.link?.href || (kind(p) === 'build' ? buildHref : undefined);
+      const label = p.link?.label || 'As an engineering project';
+      return (
+        <li class="cpil__item">
+          {p.kicker && <p class="ds-kicker">{p.kicker}</p>}
+          {p.title && <h3 class="cpil__title">{p.title}</h3>}
+          <p class="cpil__body">
+            {kind(p) === 'host' && hostLine && <>{hostLine}. </>}
+            {p.body}
+            {href && <>{' '}<a href={href} class="ds-textlink cpil__link" data-track={`community-pillar-${kind(p) || 'link'}`}>{label}</a></>}
+          </p>
+        </li>
+      );
+    })}
+  </ul>
+)}
+
+<style>
+  .cpil { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .cpil__item { border-top: 2px solid rgb(var(--yellow)); padding-top: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .cpil__title { font-size: clamp(21px, 2.2vw, 24px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .cpil__body { margin: 0; font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .cpil__link { color: rgb(var(--text)); }
+  @media (max-width: 720px) {
+    .cpil { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  }
+</style>

@@ -7,14 +7,16 @@ import Illustration from './Illustration.astro';
 import { bookingYears } from '../../lib/availability';
 
 interface Props {
-  kicker?: string;
+  /** `null` hides it. */
+  kicker?: string | null;
   headline?: string;
   body?: string;
   primary?: { label: string; href: string };
-  secondary?: { label: string; href: string };
+  /** `null` hides it. */
+  secondary?: { label: string; href: string } | null;
   /** Small print under the button. */
   note?: string;
-  art?: 'faris-speaking' | 'faris-thinking' | 'none';
+  art?: 'faris-speaking' | 'faris-thinking' | 'duck-curious' | 'none';
   track?: string;
   class?: string;
 }
@@ -34,7 +36,7 @@ const {
 
 <aside class:list={['ds-panel ipanel', { 'ipanel--art': art !== 'none' }, className]} aria-label={headline}>
   <div class="ipanel__copy">
-    <p class="ds-kicker">{kicker}</p>
+    {kicker && <p class="ds-kicker">{kicker}</p>}
     <h2 class="ipanel__title">{headline}</h2>
     {body && <p class="ipanel__body">{body}</p>}
     <div class="ipanel__actions">

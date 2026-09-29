@@ -1,0 +1,158 @@
+---
+/**
+ * Community: hosting, teaching and building for engineers, with ZurichJS
+ * as the case study (dated metrics, confirmed recognition only, the
+ * aftermovie in its unpublished state until the film is out).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkewHero from '../components/v3/SkewHero.astro';
+import Kicker from '../components/v3/Kicker.astro';
+import PraiseCard from '../components/v3/PraiseCard.astro';
+import InvitePanel from '../components/v3/InvitePanel.astro';
+import CommunityPillars from '../components/community/CommunityPillars.astro';
+import CaseStudy from '../components/community/CaseStudy.astro';
+import { getPrimaryCommunity, getProfile, getAllPraise, getWriting, getSpeakingStats, getHomePage, getMetricsByDomain, getPhotos, currentMonthYear, type Praise, type SanityImage } from '../lib/sanity/v3';
+import { breadcrumbs, SITE } from '../lib/seo';
+
+const home = await getHomePage();
+const [primary, profile, praise, writing, stats, communityMetrics, media] = await Promise.all([
+  getPrimaryCommunity(home.communityId),
+  getProfile(),
+  getAllPraise(),
+  getWriting(),
+  getSpeakingStats(),
+  getMetricsByDomain('community'),
+  getPhotos(),
+]);
+
+// The community query's metric dereference can come back empty (see report); the
+// approved, dated community-domain metrics are the same numbers.
+const community = primary && !primary.metrics.length ? { ...primary, metrics: communityMetrics.filter((m) => !m.legacy) } : primary;
+
+const name = community?.name ?? 'ZurichJS';
+const assetKey = (p: SanityImage) => p.asset?._ref ?? p.asset?._id ?? p.asset?.url ?? '';
+const tagged = media.filter((m) => `${m.title ?? ''} ${m.event?.title ?? ''}`.toLowerCase().includes(name.toLowerCase())).map((m) => m.image);
+const pool = [...(community?.photos ?? []), ...tagged]
+  .filter((p) => p?.asset)
+  .filter((p, i, all) => all.findIndex((q) => assetKey(q) === assetKey(p)) === i);
+const pressPhoto = profile.photos.find((p) => p.tag === 'community');
+const heroPhoto: SanityImage | undefined = pool[0] ?? pressPhoto;
+const sidePhotos = pool.filter((p) => heroPhoto && assetKey(p) !== assetKey(heroPhoto)).slice(0, 2);
+const poster = community?.aftermovie?.poster?.asset ? community.aftermovie.poster : sidePhotos[0] ?? heroPhoto;
+
+const storyPost = writing.find((w) => w.isInternal && (/why-its-called-/.test(w.href) || /why it.?s called/i.test(w.title)));
+const story = storyPost ? { label: storyPost.title, href: storyPost.href } : { label: 'Community writing', href: '/blog?topic=community' };
+const buildHref = community?.platformProject?.slug ? `/projects/${community.platformProject.slug}` : undefined;
+const hostLine = stats.hosted > 0 ? `${stats.hosted} ${stats.hosted === 1 ? 'evening' : 'evenings'} hosted, as of ${currentMonthYear()}` : undefined;
+
+// Two quotes about community, the stage or a workshop, one per topic where possible.
+const pickPraise = (): Praise[] => {
+  const order = ['community', 'workshop', 'stage'] as const;
+  const picked: Praise[] = [];
+  for (const t of order) {
+    const p = praise.find((x) => x.topic === t && !picked.includes(x));
+    if (p) picked.push(p);
+  }
+  for (const p of praise) if (picked.length < 2 && order.includes(p.topic as (typeof order)[number]) && !picked.includes(p)) picked.push(p);
+  return picked.slice(0, 2);
+};
+const quotes = pickPraise();
+
+const description = `How Faris Aziz hosts meetups, teaches at them and builds the systems behind them, with ${name} as the case study: dated metrics and the conference platform.`.slice(0, 160);
+---
+
+<BaseLayout
+  title="Community | Faris Aziz"
+  description={description}
+  image="/og/community.png"
+  markdownAlternate="/community.md"
+  band={false}
+  extraSchema={[
+    breadcrumbs([
+      { name: 'Home', path: '/' },
+      { name: 'Community', path: '/community' },
+    ]),
+    ...(community
+      ? [
+          {
+            '@type': 'Organization',
+            '@id': `${SITE}/community#${community.slug}`,
+            name: community.name,
+            ...(community.url ? { url: community.url } : {}),
+            ...(community.founded ? { foundingDate: String(community.founded) } : {}),
+            ...(community.city ? { location: { '@type': 'Place', name: community.city } } : {}),
+            founder: { '@id': `${SITE}/#person` },
+            ...(community.recognition.length ? { award: community.recognition.map((r) => [r.title, r.issuer, r.year].filter(Boolean).join(', ')) } : {}),
+          },
+        ]
+      : []),
+  ]}
+>
+  <SkewHero image={heroPhoto} imageAlt={heroPhoto?.alt || `Faris hosting a ${name} meetup`} height={540} focus="50% 30%">
+    <Kicker parts={['Community']} />
+    <h1 class="ds-h1">I host meetups, teach at them, and build the systems behind them.</h1>
+    <p class="ds-lede cm-lede">
+      Hosting a meetup, running a workshop and writing the ticketing platform are the same job to me: get engineers together and make it worth their evening. {name} is where most of that happens.
+    </p>
+    <div class="cm-links">
+      <a href="/invite" class="ds-link" data-track="community-hero-invite">Bring me to your community</a>
+      <a href="/blog?topic=community" class="ds-link ds-link--muted" data-track="community-hero-writing">Community writing</a>
+    </div>
+    {heroPhoto && <span slot="strip" class="cm-strip">{heroPhoto.caption || `${name} meetup`}</span>}
+  </SkewHero>
+
+  {community ? (
+    <>
+      <section class="ds-wrap cm-pillars" aria-label="Host, teach, build">
+        <CommunityPillars pillars={community.pillars} buildHref={buildHref} hostLine={hostLine} />
+      </section>
+
+      <div class="ds-wrap cm-case">
+        <CaseStudy community={community} photos={sidePhotos} poster={poster} story={story} />
+      </div>
+    </>
+  ) : (
+    <div class="ds-wrap cm-pillars">
+      <p class="ds-body">The community details are being updated. Meanwhile, the <a class="ds-textlink" href="/blog?topic=community">community writing</a> is all here.</p>
+    </div>
+  )}
+
+  <section class="ds-wrap cm-bottom" aria-label="What organisers say, and an invitation">
+    <div class="cm-bottom__grid">
+      {quotes.map((q) => <PraiseCard praise={q} />)}
+      <InvitePanel
+        kicker="Meetups & community events"
+        headline="Running a meetup or a community conference?"
+        body="I'll come and talk, run a workshop, or tell you what broke when we built ours. Community events are usually on the house."
+        primary={{ label: 'Invite me', href: '/invite' }}
+        secondary={{ label: 'See the workshops', href: '/workshops' }}
+        art="none"
+        track="community-invite"
+        class="cm-panel"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .cm-lede { max-width: 44ch; }
+  .cm-links { display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: 15px; }
+  .cm-strip { display: block; background: rgb(var(--ground)); color: rgb(var(--text-muted)); font-size: 12px; font-weight: 600; padding: 10px 16px; }
+  .cm-pillars { padding-top: 64px; padding-bottom: 24px; }
+  .cm-case { padding-top: 40px; }
+  .cm-bottom { padding-top: 48px; padding-bottom: 64px; }
+  .cm-bottom__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .cm-bottom__grid > :global(*) { min-width: 0; }
+  .cm-bottom :global(.cm-panel .ipanel__title) { font-size: 24px; line-height: 1.02; letter-spacing: -0.035em; }
+  @media (max-width: 960px) {
+    .cm-bottom__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cm-bottom :global(.cm-panel) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 720px) {
+    .cm-strip { display: none; }
+    .cm-pillars { padding-top: 40px; }
+    .cm-case { padding-top: 32px; }
+    .cm-bottom { padding-top: 32px; padding-bottom: 48px; }
+    .cm-bottom__grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  }
+</style>

@@ -1,312 +1,122 @@
 ---
+/**
+ * Article: calm register. Kicker, title, lede, cover figure with caption,
+ * dated corrections near the top, a 65ch body, the cream panel, then a
+ * quiet related/share line. The band stays at the page edge only.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
+import Kicker from '../../components/v3/Kicker.astro';
+import SanityImg from '../../components/v3/SanityImg.astro';
 import PortableTextRenderer from '../../components/blog/PortableTextRenderer.astro';
 import TableOfContents from '../../components/blog/TableOfContents.astro';
-import { sanityFetch, urlFor } from '../../lib/sanity/client';
-import { allBlogPostSlugsQuery, blogPostBySlugQuery } from '../../lib/sanity/queries';
-import { formatDate, formatReadingTime } from 'shared/utils';
+import Corrections from '../../components/blog/Corrections.astro';
+import ArticleInvite from '../../components/blog/ArticleInvite.astro';
+import ArticleFoot from '../../components/blog/ArticleFoot.astro';
+import { TOPIC_SHORT } from 'shared';
 import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
+import { getWriting, fullDate } from '../../lib/sanity/v3';
+import { getWritingPost } from '../../lib/writing-post';
+import { breadcrumbs, SITE } from '../../lib/seo';
 
 export async function getStaticPaths() {
-  const slugs = await sanityFetch<{ slug: string }[]>(allBlogPostSlugsQuery).catch(() => []);
-  return slugs.map(({ slug }) => ({ params: { slug } }));
+  const items = await getWriting();
+  return items.filter((i) => i.isInternal && i.href.startsWith('/blog/')).map((i) => ({ params: { slug: i.href.slice('/blog/'.length) } }));
 }
 
-interface SanityImage { asset?: SanityImageSource; alt?: string }
-interface RelatedPost {
-  _id: string; title: string; slug: string; excerpt: string;
-  coverImage?: SanityImage; publishedAt: string; category?: string; estimatedReadingTime: number;
-}
-interface RelatedTalk { _id: string; title: string; slug: string; abstract?: string }
-interface BlogPost {
-  _id: string; title: string; slug: string; excerpt: string;
-  coverImage?: SanityImage; body: (PortableTextBlock | ArbitraryTypedObject)[];
-  publishedAt: string; updatedAt?: string; tags?: string[]; category?: string;
-  relatedTalk?: RelatedTalk; seoTitle?: string; seoDescription?: string;
-  ogImage?: SanityImage; estimatedReadingTime: number; wordCount: number;
-  relatedPosts?: RelatedPost[];
-}
-
-const { slug } = Astro.params;
-const post = await sanityFetch<BlogPost | null>(blogPostBySlugQuery, { slug }).catch(() => null);
+const { slug } = Astro.params as { slug: string };
+const [post, writing] = await Promise.all([getWritingPost(slug), getWriting()]);
 if (!post) return Astro.redirect('/blog');
 
-const coverImageUrl = post.coverImage?.asset
-  ? urlFor(post.coverImage).width(1200).height(630).url()
-  : undefined;
-const ogImageUrl = post.ogImage
-  ? urlFor(post.ogImage).width(1200).height(630).url()
-  : coverImageUrl || `/og/blog/${post.slug}.png`;
-
-const categoryLabels: Record<string, string> = {
-  tutorial: 'Tutorial',
-  guide: 'Guide',
-  review: 'Review',
-  retrospective: 'Retrospective',
-  'case-study': 'Case Study',
-  announcement: 'Announcement',
-  'deep-dive': 'Deep Dive',
-};
-
-const categoryLabel = post.category ? (categoryLabels[post.category] || post.category) : null;
+const item = writing.find((i) => i.href === `/blog/${slug}`);
+const minutes = post.minutes ?? item?.minutes;
+const related = writing
+  .filter((i) => i.href !== `/blog/${slug}` && i.topic === post.topic)
+  .slice(0, post.relatedTalk || post.relatedEvent ? 2 : 3);
+const url = `${SITE}/blog/${slug}`;
+const cover = post.coverImage?.asset ? post.coverImage : undefined;
+const caption = cover ? [cover.caption || cover.alt, cover.credit ? `Photo: ${cover.credit}` : ''].filter(Boolean).join(' · ') : '';
+const description = (post.seoDescription || post.excerpt || `${post.title}, by Faris Aziz.`).slice(0, 160);
 ---
 
 <BaseLayout
-  title={post.seoTitle || `${post.title} | Blog`}
-  description={post.seoDescription || post.excerpt}
-  image={ogImageUrl}
+  title={`${post.seoTitle || post.title} | Faris Aziz`}
+  description={description}
+  image={`/og/blog/${slug}.png`}
+  imageAlt={post.title}
   article={true}
-  pathname={`/blog/${post.slug}`}
   publishedTime={post.publishedAt}
-  markdownAlternate={`/blog/${post.slug}.md`}
+  markdownAlternate={`/blog/${slug}.md`}
   extraSchema={[
+    breadcrumbs([
+      { name: 'Home', path: '/' },
+      { name: 'Writing', path: '/blog' },
+      { name: post.title, path: `/blog/${slug}` },
+    ]),
     {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://faziz-dev.com' },
-        { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://faziz-dev.com/blog' },
-        { '@type': 'ListItem', position: 3, name: post.title, item: `https://faziz-dev.com/blog/${post.slug}` },
-      ],
+      '@type': 'BlogPosting',
+      '@id': `${url}#article`,
+      headline: post.title,
+      description,
+      url,
+      mainEntityOfPage: { '@id': `${url}#page` },
+      datePublished: post.publishedAt,
+      ...(post.updatedAt ? { dateModified: post.updatedAt } : post.corrections.at(-1)?.date ? { dateModified: post.corrections.at(-1)!.date } : {}),
+      author: { '@id': `${SITE}/#person` },
+      image: `${SITE}/og/blog/${slug}.png`,
+      ...(post.topic ? { articleSection: TOPIC_SHORT[post.topic] } : {}),
+      ...(post.tags.length ? { keywords: post.tags.join(', ') } : {}),
+      ...(minutes ? { timeRequired: `PT${minutes}M` } : {}),
     },
   ]}
 >
-  <header class="page-hero blog-post-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <nav class="page-crumbs" aria-label="Breadcrumb">
-        <a href="/blog">Writing</a>
-        <span class="page-crumbs__sep">/</span>
-        <span class="page-crumbs__cur">{post.title.length > 36 ? post.title.slice(0, 34) + '…' : post.title}</span>
-      </nav>
-
-      <div class="blog-post-tags">
-        {categoryLabel && <span class="ds-tag" style="color:rgb(var(--accent-bright));border-color:rgb(var(--accent) / 0.4);">{categoryLabel}</span>}
-        <span class="ds-tag">{formatReadingTime(post.estimatedReadingTime)}</span>
-      </div>
-
-      <h1 class="page-hero__title blog-post-title">{post.title}</h1>
-      <p class="page-hero__lead">{post.excerpt}</p>
-
-      <div class="blog-post-meta">
-        <span>{formatDate(post.publishedAt, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-        {post.updatedAt && (
-          <>
-            <span>·</span>
-            <span>Updated {formatDate(post.updatedAt, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-          </>
-        )}
-        {post.tags && post.tags.length > 0 && (
-          <>
-            <span>·</span>
-            <span>{post.tags.slice(0, 3).join(' · ')}</span>
-          </>
-        )}
-      </div>
-    </div>
-  </header>
-
-  {coverImageUrl && (
-    <section class="blog-cover-section">
-      <div class="container">
-        <div class="blog-cover">
-          <img src={coverImageUrl} alt={post.coverImage?.alt || post.title} loading="eager" />
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="page-section blog-post-body-section">
-    <div class="container blog-post-grid">
-      <aside class="blog-post-toc">
-        <TableOfContents body={post.body} />
-      </aside>
-
-      <article class="blog-post-content prose">
-        <PortableTextRenderer value={post.body} />
-      </article>
-    </div>
-  </section>
-
-  {post.relatedTalk && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Related talk</Kicker>
-          <h2 class="page-h2">Want this live, on stage?</h2>
-        </div>
-        <a href={`/talks/${post.relatedTalk.slug}`} class="ds-card ds-card-interactive blog-related-talk ds-reveal">
-          <div>
-            <p class="blog-related-talk__kicker">Talk · book it for your event</p>
-            <h3 class="blog-related-talk__title">{post.relatedTalk.title}</h3>
-            {post.relatedTalk.abstract && (
-              <p class="blog-related-talk__abstract">{post.relatedTalk.abstract.split('\n')[0]}</p>
-            )}
-          </div>
-          <span class="ds-link">
-            View talk
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </span>
-        </a>
-      </div>
-    </section>
-  )}
-
-  {post.relatedPosts && post.relatedPosts.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__head">
-          <Kicker>Keep reading</Kicker>
-          <h2 class="page-h2">More posts</h2>
-        </div>
-        <div class="page-grid-3">
-          {post.relatedPosts.map((rp) => {
-            const cover = rp.coverImage?.asset ? urlFor(rp.coverImage).width(600).height(340).url() : null;
-            return (
-              <a href={`/blog/${rp.slug}`} class="ds-card ds-card-interactive blog-card ds-reveal">
-                <div class="blog-card__media">
-                  {cover ? (
-                    <img src={cover} alt={rp.title} loading="lazy" />
-                  ) : (
-                    <div class="blog-card__placeholder"><span class="ds-tag">Post</span></div>
-                  )}
-                  {rp.category && (
-                    <span class="blog-card__category">{categoryLabels[rp.category] || rp.category}</span>
-                  )}
-                </div>
-                <div class="blog-card__body">
-                  <h3 class="blog-card__title">{rp.title}</h3>
-                  <p class="blog-card__excerpt">{rp.excerpt}</p>
-                  <div class="blog-card__meta">
-                    <span>{formatDate(rp.publishedAt, { month: 'short', year: 'numeric' })}</span>
-                    <span>·</span>
-                    <span>{formatReadingTime(rp.estimatedReadingTime)}</span>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status="Want to discuss?"
-          title="Liked this? Want it live?"
-          body="If this resonated, the talk version goes deeper, with live examples and Q&A. Or just say hi."
-          primaryHref="/invite"
-          primaryLabel="Book a talk"
-          secondaryHref="/blog"
-          secondaryLabel="More writing"
+  <div class="ds-wrap">
+    <article class="art">
+      <header class="art__head">
+        <Kicker
+          parts={[
+            'Writing',
+            post.topic ? TOPIC_SHORT[post.topic] : null,
+            fullDate(post.publishedAt),
+            minutes ? `${minutes} min read` : null,
+          ]}
+          mutedFirst
         />
-      </div>
-    </div>
-  </section>
+        <h1 class="art__title">{post.title}</h1>
+        {post.excerpt && <p class="art__lede">{post.excerpt}</p>}
+        {post.updatedAt && <p class="ds-meta">Updated <time datetime={post.updatedAt}>{fullDate(post.updatedAt)}</time></p>}
+      </header>
 
+      <Corrections corrections={post.corrections} />
+
+      {cover && (
+        <figure class="art__cover">
+          <SanityImg image={cover} alt={cover.alt ?? ''} ratio={2} widths={[480, 800, 1200, 1400]} sizes="(max-width: 760px) 100vw, 680px" loading="eager" fetchpriority="high" class="art__cover-img" />
+          {caption && <figcaption class="art__caption">{caption}</figcaption>}
+        </figure>
+      )}
+
+      <TableOfContents body={post.body as (PortableTextBlock | ArbitraryTypedObject)[]} />
+
+      <PortableTextRenderer value={post.body as (PortableTextBlock | ArbitraryTypedObject)[]} />
+
+      <ArticleInvite talk={post.relatedTalk} />
+
+      <ArticleFoot post={post} url={url} related={related} />
+    </article>
+  </div>
 </BaseLayout>
 
 <style>
-  .blog-post-hero { padding-block: clamp(3rem, 6vw, 5rem); }
-  .blog-post-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-  .blog-post-title { max-width: 26ch; }
-  .blog-post-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.6rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.78rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
-  }
-
-  .blog-cover-section {
-    padding-block: clamp(1.5rem, 3vw, 2.5rem);
-    background: rgb(var(--surface-1));
-    border-bottom: 1px solid rgb(var(--edge));
-  }
-  .blog-cover {
-    max-width: 920px;
-    margin: 0 auto;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid rgb(var(--edge));
-  }
-  .blog-cover img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .blog-post-body-section { padding-block: clamp(2rem, 4vw, 3rem); }
-  .blog-post-grid {
-    display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    gap: 3rem;
-    align-items: start;
-    max-width: 1140px;
-    margin: 0 auto;
-  }
-  @media (max-width: 940px) {
-    .blog-post-grid { grid-template-columns: 1fr; }
-    .blog-post-toc { display: none; }
-  }
-  .blog-post-toc {
-    position: sticky;
-    top: 96px;
-  }
-  .blog-post-content {
-    max-width: 680px;
-  }
-  .blog-post-content :global(h2),
-  .blog-post-content :global(h3) {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    color: rgb(var(--ink));
-  }
-  .blog-post-content :global(a) {
-    color: rgb(var(--accent-bright));
-  }
-  .blog-post-content :global(code) {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-  }
-
-  /* Related talk card */
-  .blog-related-talk {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding: 1.6rem 1.8rem;
-    color: inherit;
-  }
-  @media (max-width: 640px) {
-    .blog-related-talk { flex-direction: column; align-items: flex-start; }
-  }
-  .blog-related-talk__kicker {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--accent-bright));
-    margin-bottom: 0.4rem;
-  }
-  .blog-related-talk__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.2rem;
-    color: rgb(var(--ink));
-  }
-  .blog-related-talk__abstract {
-    font-size: 0.92rem;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.4rem;
-    max-width: 60ch;
+  .art { max-width: 680px; margin: 0 auto; padding: 64px 0 80px; display: flex; flex-direction: column; gap: 28px; }
+  .art__head { display: flex; flex-direction: column; gap: 22px; }
+  .art__title { font-size: clamp(36px, 6vw, 54px); line-height: 0.98; letter-spacing: -0.045em; font-weight: 800; }
+  .art__lede { margin: 0; font-size: clamp(18px, 2vw, 21px); line-height: 1.45; color: rgb(var(--text-muted)); }
+  .art__cover { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .art__cover :global(.art__cover-img) { width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; border-radius: var(--radius-card); }
+  .art__caption { font-size: 12.5px; line-height: 1.45; color: rgb(var(--text-faint)); }
+  .art :global(.ainv) { margin-top: 14px; }
+  @media (max-width: 720px) {
+    .art { padding: 36px 0 56px; gap: 22px; }
+    .art__head { gap: 16px; }
   }
 </style>

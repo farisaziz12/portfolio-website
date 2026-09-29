@@ -1,0 +1,133 @@
+---
+/**
+ * "The case study · ZurichJS": headline, first-person summary, confirmed
+ * recognition, dated metrics and links on the left; the aftermovie poster
+ * (unpublished state until the film is out) and two photos on the right.
+ */
+import SanityImg from '../v3/SanityImg.astro';
+import Icon from '../v3/Icon.astro';
+import type { Community, SanityImage } from '../../lib/sanity/v3';
+
+interface Props {
+  community: Community;
+  photos: SanityImage[];
+  poster?: SanityImage;
+  story: { label: string; href: string };
+}
+
+const { community: c, photos, poster, story } = Astro.props;
+const awards = c.recognition.map((r) => `${r.title}${r.issuer ? `, ${r.issuer}` : ''}${r.year ? ` (${r.year})` : ''}`);
+const film = c.aftermovie;
+const published = Boolean(film?.published && film.url);
+const host = c.url ? c.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : '';
+const filmTitle = film?.title ? `Aftermovie · ${film.title}` : 'Aftermovie';
+---
+
+<section class="cs" aria-labelledby="cs-title">
+  <span class="cs__edge" aria-hidden="true"></span>
+  <div class="cs__grid">
+    <div class="cs__copy">
+      <p class="ds-kicker">The case study · {c.name}</p>
+      <h2 class="cs__title" id="cs-title">{c.caseStudyHeadline || c.headline || c.name}</h2>
+      {c.summary && <p class="cs__text">{c.summary}</p>}
+      {awards.length > 0 && <p class="cs__text">Recognised as {awards.join('; ')}.</p>}
+      {c.metrics.length > 0 && (
+        <dl class="cs__metrics">
+          {c.metrics.map((m) => (
+            <div class="cs__metric">
+              <dt class="cs__num">{m.value}</dt>
+              <dd class="cs__label" title={m.definition}>{[m.label, m.dateLabel].filter(Boolean).join(' · ')}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <div class="cs__links">
+        <a href={story.href} class="ds-link ds-link--sm" data-track="community-story">{story.label}</a>
+        {c.url && (
+          <a href={c.url} class="cs__ext" target="_blank" rel="noopener noreferrer" data-track="community-site">
+            {host} <Icon name="external" size={11} /><span class="sr-only"> (opens in a new tab)</span>
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="cs__media">
+      {published ? (
+        <a href={film!.url} class="cs__film cs__film--live" target="_blank" rel="noopener noreferrer" data-track="community-aftermovie">
+          {poster && <SanityImg image={poster} alt="" ratio={2} widths={[600, 1000]} sizes="(max-width: 720px) 100vw, 45vw" class="cs__poster" />}
+          <span class="cs__film-in">
+            <span class="cs__film-top"><span class="cs__film-k">{filmTitle}</span><span>Watch</span></span>
+            <span class="cs__film-bottom">
+              <span class="cs__film-note">{film?.caption || 'With captions.'}{film?.credit && <> Crew: {film.credit}.</>}</span>
+              <span class="cs__play"><Icon name="play" size={16} label="Play the aftermovie" /></span>
+            </span>
+          </span>
+          <span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      ) : (
+        <div class="cs__film">
+          {poster && <SanityImg image={poster} alt="" ratio={2} widths={[600, 1000]} sizes="(max-width: 720px) 100vw, 45vw" class="cs__poster" />}
+          <div class="cs__film-in">
+            <p class="cs__film-top"><span class="cs__film-k">{filmTitle}</span><span>Not yet published</span></p>
+            <div class="cs__film-bottom">
+              <p class="cs__film-note">Plays here with captions and a plain link when the film is out. {film?.credit ? `Crew: ${film.credit}.` : 'Crew credit to follow.'}</p>
+              <button type="button" class="cs__play" disabled aria-label="Play the aftermovie (not yet published)"><Icon name="play" size={16} /></button>
+            </div>
+          </div>
+        </div>
+      )}
+      {photos.length > 0 && (
+        <div class:list={['cs__photos', { 'cs__photos--one': photos.length === 1 }]}>
+          {photos.map((p) => (
+            <SanityImg image={p} ratio={photos.length === 1 ? 32 / 9 : 16 / 9} widths={[400, 600, 900]} sizes="(max-width: 720px) 50vw, 22vw" class="cs__photo" />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .cs { position: relative; overflow: hidden; background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); }
+  .cs__edge { position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: linear-gradient(90deg, rgb(var(--yellow)) 0 12px, rgb(var(--blue)) 12px 16px); }
+  .cs__grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 36px; padding: 44px 40px 44px 56px; }
+  .cs__copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .cs__title { font-size: clamp(32px, 3.6vw, 42px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 800; }
+  .cs__text { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); max-width: 44ch; }
+  .cs__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 16px 20px; margin: 6px 0 0; }
+  .cs__num { font-size: clamp(30px, 3vw, 36px); font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cs__label { margin: 4px 0 0; font-size: 12px; color: rgb(var(--text-faint)); }
+  .cs__links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 4px; }
+  .cs__ext { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; font-size: 14px; font-weight: 700; color: rgb(var(--text-muted)); text-decoration: none; }
+  .cs__ext:hover { color: rgb(var(--accent-text)); }
+
+  .cs__media { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .cs__film { position: relative; display: block; aspect-ratio: 2 / 1; min-height: 190px; overflow: hidden; border-radius: var(--radius-card); background: rgb(var(--ground)); border: 1px solid rgb(var(--hairline)); color: rgb(var(--text)); text-decoration: none; }
+  .cs__film--live:hover { border-color: rgb(var(--yellow)); }
+  .cs__film :global(.cs__poster) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: grayscale(0.5); }
+  .cs__film--live :global(.cs__poster) { opacity: 0.6; filter: none; }
+  .cs__film-in { position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+  .cs__film-top { margin: 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-muted)); }
+  .cs__film-k { color: rgb(var(--accent-text)); }
+  .cs__film-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .cs__film-note { margin: 0; font-size: 13px; line-height: 1.45; color: rgb(var(--text-muted)); max-width: 40ch; }
+  .cs__play { width: 48px; height: 48px; flex: none; border: 0; border-radius: 50%; background: rgb(var(--text)); color: rgb(var(--ground)); display: grid; place-items: center; padding: 0; }
+  .cs__play[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .cs__film--live:hover .cs__play { background: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
+  .cs__photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cs__photos--one { grid-template-columns: minmax(0, 1fr); }
+  .cs__photos :global(.cs__photo) { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-card); }
+  .cs__photos--one :global(.cs__photo) { aspect-ratio: 32 / 9; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 900px) {
+    .cs__grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  }
+  @media (max-width: 720px) {
+    .cs__edge { width: 10px; background: linear-gradient(90deg, rgb(var(--yellow)) 0 7px, rgb(var(--blue)) 7px 10px); }
+    .cs__grid { padding: 28px 20px 28px 30px; }
+    .cs__film { aspect-ratio: auto; min-height: 220px; }
+    .cs__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .cs__num { font-size: 32px; }
+  }
+</style>
