@@ -9,7 +9,7 @@ paths: apps/web/src/emails/**,apps/web/src/pages/api/**
 Spec: `apps/web/CLAUDE.md`. Do not skip it.
 
 1. Create `apps/web/src/emails/MyEmail.tsx`. Copy `InviteConfirmationEmail.tsx` (submitter) or `InviteAdminEmail.tsx` (ops). Structure: terminal header → content → `— Faris` signature → footer.
-2. Style only via `import * as s from './styles'`. New values go in `styles.ts` first (keep hex in sync with `global.css`).
+2. Style only via `import * as s from './styles'`. New values go in `styles.ts` first (keep hex in sync with `styles/tokens.css`).
 3. Route in `apps/web/src/pages/api/`: import `sendOrLog` from `lib/email.ts`. Never `new Resend(...)`. Never `import.meta.env.RESEND_*`.
 4. Critical vs best-effort: admin notification failure → 502. Confirmation failure → log only. Subscribe/audience writes: `Promise.allSettled`, don't block the response on audience errors.
 5. Audience IDs: server-side Sanity lookup only.

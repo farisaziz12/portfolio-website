@@ -81,7 +81,7 @@ src/
 │   ├── og/           # build-time OG image endpoint
 │   ├── *.md.ts       # agent-facing markdown mirrors (+ llms.txt.ts)
 │   └── *.astro       # pages
-└── styles/global.css # Design System v2 tokens + ds-* classes
+└── styles/         # tokens.css (DS v3 tokens) · ds.css (primitives) · global.css (shared legacy layer)
 ```
 
 ## Conventions that CI enforces

@@ -11,7 +11,10 @@
     "studio": "pnpm --filter studio dev",
     "web": "pnpm --filter web dev",
     "migrate": "node --env-file=.env --import tsx scripts/migrate-content.ts",
-    "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts"
+    "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts",
+    "migrate:v3": "tsx scripts/migrate-v3/run.ts",
+    "test:migrate": "tsx --test scripts/migrate-v3/transform.test.ts",
+    "test": "pnpm --filter web test && pnpm test:migrate"
   },
   "dependencies": {
     "@sanity/client": "^6.24.1"

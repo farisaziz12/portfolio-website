@@ -9,7 +9,7 @@ paths: apps/web/**/*.{astro,css,tsx,jsx}
 ## Before code
 
 1. Capture **before** screenshots per `agent-pr-visual-evidence`.
-2. Read `apps/web/README.md` and `docs/ui-rules.md`. Tokens: `apps/web/src/styles/global.css`.
+2. Read `apps/web/README.md` and `docs/ui-rules.md`. Tokens: `apps/web/src/styles/tokens.css`; primitives `ds.css`; components `src/components/v3/`.
 
 ## Implement
 

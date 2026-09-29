@@ -1,62 +1,73 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { allTalksQuery, speakingStatsQuery } from '../lib/sanity/queries';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
+import { getCatalogueTalks, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
 
-interface Talk {
-  title: string;
-  slug: string;
-  abstract?: string;
-}
-
-interface SpeakingStats {
-  totalEvents: number;
-  countries: number;
-}
-
-// llms.txt per https://llmstxt.org — a markdown index for LLMs and agents.
+// llms.txt per https://llmstxt.org: a markdown index for LLMs and agents.
 // Links point at the .md mirrors, which carry the same Sanity content as the
-// HTML pages with none of the markup overhead.
+// HTML pages with none of the markup. /llms-full.txt concatenates them.
+const SITE = 'https://faziz-dev.com';
+
 export const GET: APIRoute = async () => {
-  const [talks, stats] = await Promise.all([
-    sanityFetch<Talk[]>(allTalksQuery).catch(() => []),
-    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
+  const [talks, workshops, stats, profile, settings, upcoming] = await Promise.all([
+    getCatalogueTalks(),
+    getWorkshops(),
+    getSpeakingStats(),
+    getProfile(),
+    getSiteSettings(),
+    getUpcomingEvents(),
   ]);
 
-  const body = `# Faris Aziz
+  const summary = stats.fallback
+    ? profile.bios.short
+    : `${profile.bios.short} ${stats.talksDelivered} talks delivered in ${stats.countries} countries (counted from session records, ${fullDate(stats.asOf)}).`;
 
-> Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. ${stats.totalEvents}+ speaking engagements across ${stats.countries} countries. Cofounder of ZurichJS (JSNation Open Source Award). Speaks and consults on React, Next.js, frontend architecture, payment systems, developer experience, and engineering leadership. Available for keynotes, talks, workshops, consulting, and 1:1 mentorship.
+  const body = `# ${profile.name}
 
-To book: speaking invitations at https://faziz-dev.com/invite (form; replies within two days), consulting discovery calls at https://cal.com/farisaziz12/discovery-call, mentorship inquiries at https://faziz-dev.com/mentorship.
+> ${summary}
 
-## About
-
-- [Bio & facts](https://faziz-dev.com/about.md): copy-ready short/medium/full bios, stats, topics
-- [Work with me](https://faziz-dev.com/contact.md): all contact routes in one place
+${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite (form; replies within ${profile.replyTime}). Everything else: ${SITE}/contact. There is no public email address; forms only.
 
 ## Speaking
 
-- [Speaking hub](https://faziz-dev.com/speaking.md): what I speak about, how to book, paste-ready bio
-- [Talk catalogue](https://faziz-dev.com/talks.md): every bookable talk with abstracts and delivery history
-- [Schedule](https://faziz-dev.com/events.md): upcoming and past engagements
-- [Invite me](https://faziz-dev.com/invite.md): booking form, availability, practical details
-- [Press kit](https://faziz-dev.com/press-kit): copy-paste bios, downloadable headshots, practical details
+- [Speaking overview](${SITE}/speaking.md): topics, formats, stats, how to book
+- [Talk catalogue](${SITE}/talks.md): every bookable talk with premise, audience, lengths, recordings and delivery history
+- [Schedule](${SITE}/events.md): upcoming appearances and the archive, with my role at each event (spoke / workshop / hosted / attended)
+- [Workshops](${SITE}/workshops.md): hands-on formats, agendas and prerequisites
+- [Invite me](${SITE}/invite.md): what to send, good to know, availability by month
+- [Press kit](${SITE}/press-kit.md): bios in three lengths, pronunciation, photos with credits and crops, rider
 
-## Services
+## Writing & community
 
-- [Consulting](https://faziz-dev.com/consulting.md): expertise areas and engagement formats
-- [Mentorship](https://faziz-dev.com/mentorship.md): focus areas and how it works
+- [Writing & conversations](${SITE}/blog.md): posts, guest articles, podcasts and video in one timeline
+- [Community](${SITE}/community.md): ZurichJS, co-founded in 2024, with dated metrics
+
+## About
+
+- [About](${SITE}/about.md): story and facts
+- [Track record](${SITE}/impact.md): dated and defined numbers, career timeline
+- [What people say](${SITE}/appreciation.md): quotes with sources
+
+## Work together
+
+- [Services](${SITE}/services.md): events, advisory, mentorship
+- [Mentorship](${SITE}/mentorship.md)
+- [Contact](${SITE}/contact.md)
 
 ## Optional
 
-- [Homepage overview](https://faziz-dev.com/home.md)
-${talks
-  .slice(0, 12)
-  .map((t) => `- [Talk: ${t.title}](https://faziz-dev.com/talks/${t.slug}.md)`)
+- [Home](${SITE}/home.md)
+- [Everything in one file](${SITE}/llms-full.txt)
+${upcoming
+  .slice(0, 6)
+  .map((e) => `- [Upcoming: ${e.title}, ${fullDate(e.date)}, ${eventPlace(e)}](${SITE}/events/${e.slug}.md)`)
+  .join('\n')}
+${talks.map((t) => `- [Talk: ${t.title}](${SITE}/talks/${t.slug}.md)`).join('\n')}
+${workshops
+  .filter((w) => w.isBookable)
+  .map((w) => `- [Workshop: ${w.title}](${SITE}/workshops/${w.slug}.md)`)
   .join('\n')}
 `;
 
-  return new Response(body, {
+  return new Response(body.replace(/\n{3,}/g, '\n\n'), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
 };

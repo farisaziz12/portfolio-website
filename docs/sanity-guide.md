@@ -1,176 +1,134 @@
-# Sanity CMS guide
+# Sanity CMS guide (V3 model)
 
-How to manage the content that powers faziz-dev.com. The Studio lives in
-`apps/studio` (run locally with `pnpm studio`, or use the deployed Studio).
-The website reads content through the GROQ queries in
-`apps/web/src/lib/sanity/queries.ts` — if you add a field to a schema and want
-it on the site, it must also be added to the relevant query projection there.
+How the content behind faziz-dev.com is modelled and edited. The Studio lives in `apps/studio` (`pnpm studio`, or
+the hosted Studio). The site reads content ONLY through the loaders in `apps/web/src/lib/sanity/v3/` (they own all
+GROQ, normalise legacy shapes and never throw). Add a field to a schema → project it in the matching loader → use it.
 
-Every list page is resilient: if a query returns nothing, the page renders a
-sensible empty state or a hardcoded fallback (`apps/web/src/lib/proof.ts`).
-So publishing content only ever *adds* — nothing breaks while a section is empty.
+Every page is resilient: an empty query renders an empty state or approved default copy
+(`lib/sanity/v3/defaults.ts`), so publishing content only ever *adds*.
+
+Migrating from V2, or cleaning up content: see [`sanity-mcp-prompts.md`](./sanity-mcp-prompts.md)
+(`pnpm migrate:v3` + copy-paste prompts for the Sanity MCP).
 
 ---
 
-## The content model in one picture
+## The model in one picture
 
 ```
-talk ───────────────┐            "What I can speak about" (timeless, bookable)
-                    │
-event ──────────────┤            "Where/when I spoke or will speak" (dated)
-  └─ references talk(s)          upcoming = date >= now, past = date < now
-                    │
-workshop ───────────┤            Workshop template (agenda, outcomes)
-  └─ workshopInstance            One delivery of a workshop (date, repo, emails)
-                    │
-serviceOffer ───────┤            Consulting packages & mentorship programs
-testimonial ────────┤            Quotes with author/role/rating
-socialPost ─────────┤            LinkedIn/X/Bluesky mentions (social walls)
-impactMetricV2 ─────┤            Headline numbers + optional case study
-speakerProfile ─────┘            Singleton: bios, headshots, taglines
+eventSeries ── React Summit, CityJS, ZurichJS (brand, optional)
+   └─ event ── one dated EDITION: React Summit US 2025 (date, timezone, place, url)
+        └─ sessions[] ── what Faris did there, each with an explicit ROLE
+             speaker | keynote | lightning | workshop | panel | host | organizer | judge | mentor | guest | attendee
+             ├─ talk ──────→ talk      (bookable, timeless; versions via parentTalk)
+             ├─ workshop ──→ workshop  (formats[] with agendas)
+             └─ recording.url · slidesUrl · startsAt · stage · status (tba / cancelled)
+
+praise ── one quote: platform · url · date · author · topic → talk / workshop / event
+metric ── one dated, defined number: value · label · asOf · definition · status (only "approved" is public)
+community ── ZurichJS: pillars · metrics → metric · recognition (confirmed only) · aftermovie · photos
+blogPost (on this site) + externalPost (elsewhere: article | podcast | video) ── one Writing timeline, by topic
+serviceOffer ── events | advisory | mentorship     company ── career timeline entry     project · media (photos)
+
+Singletons: homePage · speakerProfile ("Profile & press kit") · availability · siteSettings · page (About)
 ```
 
-**Talk vs event — the rule that keeps the IA clean:** a *talk* is a topic an
-organizer can book (it has no date). An *event* is a concrete appearance (it
-has a date and a location, and usually references the talk given). Never model
-an upcoming appearance as a talk.
+**Talk ≠ event.** A talk is something an organiser can book; it has no date. An event is a dated edition; what
+happened there is a list of sessions with roles. **Attach recordings and slides to the session**: the talk page
+("Where it's been delivered" + the Watch button), the event page (resources) and the home poster all update from
+that one edit.
+
+**Counts are derived** (`lib/sanity/v3/stats.ts`): "talks delivered" = past, not-cancelled sessions with role
+speaker/keynote/lightning. Hosting, judging and attending are counted separately and never inflate it. Countries
+count where Faris spoke, ran a workshop or hosted. Upcoming vs past is computed in the **event's own timezone**.
+
+Shared vocabulary (roles, topics, platforms, statuses) lives in `packages/shared/src/content-model.ts` and is used
+by both the Studio option lists and the site.
 
 ## What powers which page
 
-| Page | Content types | Notes |
-|---|---|---|
-| `/` (home) | `event` (upcoming), `talk` (featured), `socialPost`, `testimonial`, `media`, speaking stats | ISR-cached ~1h, so new content appears without a redeploy |
-| `/speaking` | `event` (upcoming + past), `talk`, speaking stats | "Next up" shows the next 3 upcoming events |
-| `/events` | `event` (all) | Filterable archive; flags come from `location.country` |
-| `/talks`, `/talks/[slug]` | `talk` (+ events referencing it) | Detail page lists where the talk was given |
-| `/workshops`, `/workshops/[slug]` | `workshop` | Long descriptions are clamped on cards — keep `description` tight anyway |
-| `/workshops/attend/[slug]` | `workshopInstance` | Token-gated attendee page with email capture |
-| `/consulting` | `serviceOffer` (serviceType=consulting) | Empty → "Coming soon" + discovery-call CTA |
-| `/mentorship` | `serviceOffer` (serviceType=mentorship), `socialPost` (featured) | |
-| `/impact` | `impactMetricV2`, `impactPage` settings | Metrics with `caseStudy.title` become case-study cards |
-| `/appreciation` | `socialPost` (all), `testimonial` (all) | |
-| `/invite` | `speakerProfile` (bios, headshots), `event` (for the availability calendar) | |
-| `/about` | `page` (about), `company` | |
-| `/blog` | `blogPost` (self-hosted), `externalPost` | External posts are categorized by type |
-| `/media` | `media`, `event` videos | |
-| `/gallery` | `media` (type=photo) grouped by `event` reference | One filmstrip per event; ungrouped photos land in "Elsewhere" |
-| `/projects` | `project` | |
+| Page | Content |
+|---|---|
+| `/` | `homePage` (hero, featured refs, praise refs, community ref) + upcoming events, writing, stats (ISR ~1h) |
+| `/speaking` | `speakerProfile` (topicClusters, formats), upcoming events, stats, praise |
+| `/talks`, `/talks/[slug]` | `talk` + every session referencing it (history, recordings), praise about it, podcasts with `relatedTalk` |
+| `/events`, `/events/[slug]` | `event` editions + sessions (role filter), photos (`media.event`) |
+| `/workshops`, `/workshops/[slug]` | `workshop` (formats/agendas) + workshop sessions, praise |
+| `/workshops/attend/[token]` | `workshopInstance` (token-gated attendee page; ops only) |
+| `/invite` | `speakerProfile.goodToKnow`, `availability.months`, upcoming events ("Already booked") |
+| `/press-kit` | `speakerProfile` (bios, headshots with tag/credit/hotspot, rider, pronunciation) |
+| `/community` | `community` (+ its metrics), praise, stats.hosted |
+| `/blog`, `/blog/[slug]` | `blogPost` + `externalPost` (one timeline by format + topic), corrections |
+| `/about` | `page` (identifier about), `speakerProfile.links` |
+| `/impact` | derived stats, `metric` (engineering, community), `company` (career), `community.recognition` |
+| `/appreciation` | `praise` (platform-styled cards; legacy socialPost/testimonial until migrated) |
+| `/services`, `/mentorship` | `serviceOffer` (by type), mentorship praise |
+| `/gallery`, `/projects` | `media` (photos by event), `project` |
 
-The agent-facing markdown mirrors (`/home.md`, `/talks.md`, `/invite.md`, …)
-and the OG images are generated from the same queries — publish once, every
-surface updates.
+Markdown mirrors (`/talks.md`, …), `/llms.txt`, `/llms-full.txt` and OG cards (`/og/*.png`) are generated from the
+same loaders: publish once, every surface updates.
 
 ## Recipes
 
-### Add an upcoming speaking engagement
-
-1. Studio → **Event** → create.
-2. Fill: `title`, `slug`, `type` (conference/meetup/workshop/panel/…), `conference`
-   (venue name — used for the logo wall), `date` (**future date = it appears in
-   "upcoming" everywhere automatically**), `location.city` + `location.country`
-   (the country name drives the flag emoji — use the standard English name,
-   e.g. "Czechia" not "Czech Republic"), or `location.isOnline` for remote.
-3. Reference the `talk` being given so the talk's detail page picks it up.
-4. Mark `featured` for headline conferences — this stars them on the logo wall.
-5. After the event: add `links.videoUrl` and `links.slidesUrl` when available.
-   The event flips to "past" automatically once the date passes.
+### Add an upcoming appearance
+1. **Event** → new: `title` ("Game of Codes 2026"), `series`, `kind`, `date` (+ `endDate`), `timezone`,
+   `location` (standard English country name; it drives the flag), `url`.
+2. **My sessions** tab → add a session: `role`, the `talk` (or `workshop`), `status` "Time & stage TBA" until the
+   organisers publish the programme; then `startsAt` + `stage`.
+3. After the day: add `recording.url` and `slidesUrl` to the session. Nothing else to update.
 
 ### Add a bookable talk
+**Talk** → `title`, `shortTitle` ("the caching talk"), `pillar`, one-sentence `summary`, `abstract` (the premise),
+`audience`, three `takeaways`, `duration` + `durationOptions`, `level`, `thumbnail`. New cut of an existing talk:
+set `parentTalk`, mark only one version current.
 
-1. Studio → **Talk** → create: `title`, `slug`, `abstract`, `audience`,
-   `takeaways`, `topics`, `duration`.
-2. Versioning: use `parentTalk` + `version` + `isCurrentVersion` for talks that
-   evolve; only the current version is listed.
-3. Assets tab: thumbnail + video make the talk card much stronger.
+### Add praise
+**Praise** → paste the `quote` verbatim, pick `platform`, add the `url` of the original post and its `date`,
+`author` (name, headline, handle), `topic`, and the `talk` / `workshop` / `event` it's about. `featured` for the
+home and speaking highlights.
 
-### Add a consulting package or mentorship program
+### Add a number
+**Metric** → `value` as displayed, `label`, `asOf`, one-sentence `definition`, `domain`. It stays hidden until
+`status` is **Approved**.
 
-1. Studio → **Service Offer** → create.
-2. `serviceType` decides the page (`consulting` or `mentorship`).
-3. Content: `title`, `slug`, `shortDescription`, `bestFor`, `outcomes` (3–5
-   punchy bullets), `engagementFormat`.
-4. Pricing tab: `pricingType` + `price`/`priceCurrency`/`priceUnit`, and
-   `bookingUrl` (cal.com links open as an on-site modal automatically).
-5. `featured` + `order` control card prominence and sorting.
-6. Drafted copy for the initial offers lives in `SANITY_SERVICES_CONTENT.md`
-   at the repo root — entering those documents makes /consulting and
-   /mentorship fully live.
+### Writing and conversations
+Posts on this site: **Posts on this site** (`blogPost`, with `topic`). Guest articles, podcast episodes and videos:
+**Published elsewhere** (`externalPost`, with `format`, `topic`, `source` = the outlet/show). Changed a published
+number? Add a **Correction** instead of silently editing.
 
-### Add social proof
+### Availability
+**Availability** → add a month only when it isn't open: "Some dates taken" or "Limited". "Already booked" on the
+invite page comes from upcoming events automatically.
 
-- **Social post** (someone posted about a talk): create **Social Post** with
-  `url`, `platform` (LinkedIn / X / Bluesky — cards take on the platform's
-  look automatically), `author`, `content` (paste the text), `postDate`. Link
-  `relatedTalk`/`relatedEvent` when relevant — detail pages then show it.
-  Mark featured posts to surface them on `/` and `/mentorship`.
-- **Testimonial** (a quote given to you): create **Testimonial** with `type`,
-  `quote`, `author`, `role`, `company`, optional `rating` and `image`.
+### Press photos
+**Profile & press kit → Press photos**: label, tag (also the download filename), alt, credit, and **set the hotspot**
+on the face: the press kit crops 1:1, 4:5 and 16:9 around it.
 
-### Add an impact metric / case study
-
-1. Studio → **Impact Metric (Enhanced)** → create: `domain`, `headlineNumber`,
-   `unit`, `label`, `contextNote` (one honest sentence of context).
-2. Case Study tab (optional): `title`, `description`, `context`, `approach`,
-   `result` — filling these turns the metric into a full case-study card on
-   `/impact`.
-3. Featured metrics also feed the proof strips on `/` and `/services`.
-
-### Run a workshop delivery
-
-1. Create the **Workshop** template once (agenda, outcomes, duration).
-2. For each delivery, create a **Workshop Instance**: reference the template,
-   set `event`, `workshopDate`, `token` (gates the attend page) and
-   `accessDurationDays`. `repoUrl` is optional — leave it empty for a
-   workshop with no code repo and the "Open GitHub Repo" button is hidden.
-3. Set `shortPath` for a typeable attendee link. Click **Generate** to
-   default from the event name (e.g. CityJS London 2026 → `cityjs-london`),
-   or type your own memorable word (`survive`). `/admin` shows the short
-   link; `/survive` (etc.) redirects to the attend page. Paths that collide
-   with real site routes (`about`, `talks`, …) are blocked.
-4. For email capture: set `emailCaptureEnabled` and `resendAudienceId`
-   (create the audience in Resend first). Attendees who subscribe get the
-   welcome email and join that audience.
-5. After the workshop, send the feedback request via the admin-protected
-   `/api/workshop/follow-up` route — see `apps/web/CLAUDE.md` for the curl
-   recipe (always dry-run first).
-
-### Add event photos to the gallery
-
-1. Studio → **Media** → create with `type = Photo`, upload the `image`
-   (alt text required), and set the **Related Event** reference — that's what
-   groups the photo into the event's filmstrip on `/gallery`.
-2. Optional: `title`/`description` (become the lightbox caption), `credit`
-   (photographer, shown as 📷), `date`.
-3. Photos without an event still show, in the trailing "Elsewhere" group.
-   Throw in as many as you like — strips scroll horizontally.
-
-### Update bios / headshots (speaker kit)
-
-Studio → **Speaker Profile** (singleton): `bioShort`/`bioMedium`/`bioFull`
-feed the bio switcher on `/invite` (with copy-to-clipboard), `headshots` feed
-the downloadable gallery. Keep bios in first person — the site's voice is
-casual and direct.
+### Workshop delivery (attendee page)
+Public history = an event session with role "workshop". The token-gated attendee page is a **Workshop delivery**
+(`workshopInstance`): workshop, event, date, token, short path, sections. See `apps/web/CLAUDE.md` for follow-ups.
 
 ## Conventions
 
-- **Dates decide everything.** Upcoming vs past is computed from `date >= now()`
-  at query time. Don't maintain manual "upcoming" flags.
-- **Country names, not codes.** Flags are looked up by English country name
-  (`apps/web/src/lib/flags.ts`; aliases like Czech Republic → Czechia live there).
-- **Slugs are permanent.** They're public URLs and OG-image routes; changing
-  one breaks inbound links.
-- **Keep `conference` names consistent.** The home logo wall dedupes by
-  normalized name ("ZurichJS" and "Zurich JS" merge, "ZurichJS Pro" stays
-  separate).
-- **No contact emails in content.** All contact flows go through the site's
-  Resend-backed forms — never paste a `mailto:` into CMS copy
-  (policy: `apps/web/CLAUDE.md`).
+- **Dates decide everything.** Never maintain "upcoming" flags.
+- **Country names, not codes** (`Czechia`, `United States`, `North Macedonia`). Aliases live in `apps/web/src/lib/flags.ts`.
+- **Slugs are permanent** (public URLs + OG routes).
+- **Numbers need a date and a definition.** Speaking counts are never typed; they're derived.
+- **No contact emails or `mailto:` in content.** Contact goes through the site's forms.
+- **Unannounced roles** stay out of public copy (`siteSettings.nowLine` and `company.isPublic` are the switches).
+
+## Health checks
+
+Studio → **Needs attention** lists events without sessions, past talks without recordings, events without a country,
+talks without a pillar/summary, praise without link/date, metrics waiting for an OK, writing without topic/format,
+photos without alt/credit. **Legacy (migrate, then delete)** lists V2 documents still around.
+
+## Local development without Sanity
+
+`SANITY_FIXTURES=1 pnpm web` evaluates every query locally (groq-js) against `apps/web/fixtures/sanity-dataset.json`
+(generated by `apps/web/fixtures/build-dataset.py`; it deliberately includes V2 shapes). `pnpm --filter web test` runs
+the loader contract tests; `pnpm test:migrate` runs the migration tests.
 
 ## Studio deployments
 
-The hosted Studio auto-deploys from `main`: any merge touching
-`apps/studio/**` triggers `.github/workflows/deploy-studio.yml`, which runs
-`sanity deploy` so editors always see the latest schemas. It needs two repo
-secrets — `SANITY_STUDIO_PROJECT_ID` and `SANITY_AUTH_TOKEN` (a token with
-Deploy Studio permissions from sanity.io/manage). PRs are validated by
-`.github/workflows/validate.yml` (studio build + web typecheck) before merge.
+Merges touching `apps/studio/**` deploy the hosted Studio via `.github/workflows/deploy-studio.yml`
+(`SANITY_STUDIO_PROJECT_ID`, `SANITY_AUTH_TOKEN` secrets). PRs are validated by `.github/workflows/validate.yml`.

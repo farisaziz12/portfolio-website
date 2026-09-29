@@ -1,207 +1,91 @@
-# UI Design System Rules (DS v2.1)
-
-Source of truth for tokens and primitives is `apps/web/src/styles/global.css`. Taste and page grammar live in [`taste.md`](./taste.md). All components and pages follow these rules.
-
-Dark-first. Same brand as v2 (electric blue, teal signal, Space Grotesk / Hanken Grotesk / IBM Plex Mono). v2.1 tunes contrast, reading rhythm, and quieter chrome. If a token or class name elsewhere disagrees with `global.css`, **`global.css` wins**.
-
-Use `ds-btn`, `ds-card` / `ds-card-interactive`, `ds-pill`, `ds-link`, `ds-reveal`. Mechanically enforced subset: `apps/web/scripts/ui-guardrails.mjs` (`pnpm --filter web lint:ui`).
-
-## Core Principles
-
-1. **Reduce visual noise** — Neutrals first; one object per beat
-2. **Clear hierarchy** — One thing draws attention at a time
-3. **Honest interactivity** — If it looks clickable, it is clickable
-4. **Accessibility first** — WCAG AA in both themes
-5. **Sentence over label** — Headings are claims; kickers are status only
-
----
-
-## 1. Color Tokens
-
-Canonical values live in `apps/web/src/styles/global.css`. Use `rgb(var(--token))` or the Tailwind bridges (`bg-surface`, `text-ink`, `text-ink-on-accent`). Never raw Tailwind palettes (`slate-800`, `violet-500`).
-
-### Semantic Tokens
-
-| Token | Purpose | Dark | Light | Target ratio |
-|-------|---------|------|-------|--------------|
-| `--bg` | Page | `#0A0C10` | `#FBFBFA` | — |
-| `--surface-1` | Raised chrome (header, terminal) | `#0F131A` | `#FFFFFF` | — |
-| `--surface-2` | Cards | `#151A23` | `#F4F5F7` | — |
-| `--surface-3` | Hover / overlay | `#1C232E` | `#E8EBF0` | — |
-| `--ink` | Primary text | `#F3F5F8` | `#11151C` | 12:1+ |
-| `--ink-muted` | Secondary / body lead | `#A9B4C2` | `#424E5E` | 7:1+ |
-| `--ink-faint` | Captions, crumbs | `#8B97A6` | `#5C6877` | ≥4.5:1 |
-| `--ink-on-accent` | Text on accent fills | `#F3F5F8` | `#FFFFFF` | ≥4.5:1 |
-| `--ink-on-signal` | Text on signal fills | `#04110E` | `#04110E` | ≥4.5:1 |
-| `--edge` / `--edge-strong` | Borders | `#232B36` / `#34404F` | `#E5E8EC` / `#CDD3DB` | — |
-| `--accent` | Links, focus | `#3D7BFF` | `#2862E0` | — |
-| `--accent-bright` | Link text on dark | `#6AA1FF` | `#2862E0` | ≥4.5:1 on bg |
-| `--accent-deep` | Filled button | `#2862E0` | `#1A4BC0` | — |
-| `--accent-press` | Button hover | `#1A4BC0` | `#163E9A` | — |
-| `--signal` / `--signal-deep` | Live / available | `#1FCFA6` / `#0E9C7E` | `#0E9C7E` / `#0B7E66` | — |
-| `--danger` | Errors | `#FF6B6B` | `#DC2626` | — |
-| `--warn` | Community / limited (large/bold only) | `#F2C94C` | `#8F6E0F` | — |
-
-Aliases: `--surface` → surface-1, `--surface-raised` → surface-2, `--surface-overlay` → surface-3, `--accent-hover` → accent-press.
-
-### Accent Usage
-
-**DO:** primary CTAs, link underlines, focus rings. One `.accent-word` or `.mark` per page hero, max.
-
-**DON'T:** accent as a section background; colored emphasis in body copy; blue on every heading.
-
-### Backgrounds
-
-- Section backgrounds: neutrals only. Hairline `--edge` separates sections — do not add alternating `--surface-1` bands on Home / Speaking / About.
-- Gradients only for image scrims, decorative opacity < 10%, or skeletons.
-
----
-
-## 2. Typography
-
-| Role | Family | Size / measure |
-|------|--------|----------------|
-| Sentence display (`.heading-sentence`) | Space Grotesk 700 | `clamp(2.25rem, 5vw, 3.4rem)`, LH 1.08, max 22–28ch |
-| Page title (`.heading-1`) | Space Grotesk | 2–2.5rem |
-| Section claim (`.heading-2`, `.home-h2`) | Space Grotesk 600 | `clamp(1.5rem, 2.4vw, 2rem)`, LH 1.2 |
-| Card / FAQ evidence | Space Grotesk 600 | 1.15–1.35rem |
-| Prose / FAQ / lead | Hanken Grotesk | 1.0625rem, LH 1.7, **62–68ch** |
-| Kicker / tags / terminal | IBM Plex Mono | 0.72–0.8rem |
-
-**Kickers are status only** (Next up, Available, Booking). Color `--ink-muted`, not faint. Sentence headings replace “Topics / Global reach / From the community.”
-
-No serif. No Inter / JetBrains in the live UI (those names remain fallbacks only).
-
----
-
-## 3. Spacing & Layout
-
-| Class | Width | Use |
-|-------|-------|-----|
-| `container` | 1140px | Main layout |
-| `container-wide` / `.wide` | 920px | Wide objects |
-| `container-narrow` | 680px | Article / FAQ / bio |
-
-Home / Speaking / About section padding: `clamp(3.25rem, 7vw, 5.5rem)`.
-
-Related items: 1–2 spacing units. Groups: 4–6. Do not invent a second column measure on a prose page.
-
----
-
-## 4. Interactive Components
-
-### Buttons — three variants
-
-| Class | Style | Use |
-|-------|-------|-----|
-| `ds-btn ds-btn-primary` | `--accent-deep` fill, `--ink-on-accent` text | Primary CTAs |
-| `ds-btn ds-btn-secondary` | Neutral outline | Secondary |
-| `ds-btn-ghost` / text | Transparent | Tertiary / nav |
-
-Min-height 44px. Visible `:focus-visible` ring (`--accent` + `--bg` offset). Never `text-white` — use `text-ink-on-accent`.
-
-### Links
-
-| Type | Style |
-|------|-------|
-| Inline | Accent, underline **at rest** (not only hover) |
-| `ds-link` | Arrow + underline; hover draws emphasis, not the only cue |
-
-### Cards
-
-**Interactive:** hover/focus is border + background. No `translateY` lift. Cursor pointer. Whole card is the hit target.
-
-**Informational:** no hover elevation, no pointer, no click. Never mix.
-
-### New primitives (v2.1)
-
-| Class | Role |
-|-------|------|
-| `ds-claim` | First-person sentence link (replaces audience-router cards) |
-| `ds-proof` | Live numbers inside a prose line |
-| `ds-quote` | Unedited author + quote + source. No platform-color carnival on Home / Speaking |
-| `ds-faq` | Question `h2` + prose answer + optional evidence list |
-| `ds-bio` | Paste-ready short bio + copy button (`aria-label="Copy short bio"`, live region) |
-
-Platform chrome on social cards is allowed on `/appreciation` only.
-
-### Tags / chips
-
-Neutral outline + `text-ink-muted` by default. Selected: `bg-accent` + `text-ink-on-accent`. Interactive tags must do something.
-
----
-
-## 5. Images & Media
-
-Default: static. No hover zoom, no pointer, no click.
-
-Lightbox: icon overlay + zoom cursor, consistent across similar images.
-
-Hero mosaic is static. Do not imply a carousel unless it is one (keyboard, controls).
-
----
-
-## 6. Icons
-
-16–20px, 1–1.5 units from the label. Neutral unless the icon *is* the status (signal dot).
-
-**No emojis** in nav, card headers, tags, section titles, or CTAs. SVG only.
-
----
-
-## 7. Navigation
-
-Labels: 1–2 words. Talks, Workshops, Events, Blog, Projects.
-
-Parent mega-menu label is a link. Dropdown items are labels, no emoji.
-
----
-
-## 8. Motion
-
-Allowed: fade, small translate, subtle scale, hover color/border.
-
-Duration: 150–300ms interactions, up to 600ms reveals. `prefers-reduced-motion` respected. No new infinite motion except status pulse dots.
-
-Forbidden: layout-shifting width animations; bounce on primary UI; carousel motion without a carousel.
-
----
-
-## 9. Contrast checklist (both themes)
-
-- [ ] `--ink` on `--bg` / `--surface-1` / `--surface-2`
-- [ ] `--ink-muted` on `--bg` (body lead, kickers)
-- [ ] `--ink-faint` on `--bg` (captions only; ≥4.5:1)
-- [ ] `--ink-on-accent` on `--accent-deep` (buttons, skip link, selected chips)
-- [ ] `--ink-on-signal` on signal fills (agenda numbers)
-- [ ] Links ≥4.5:1; underline at rest for inline
-- [ ] Focus ring ≥3:1 against adjacent (WCAG 2.2)
-- [ ] `--warn` only at large/bold sizes on dark
-
-Do not use hardcoded `text-white`. Do not use `--ink-faint` for anything smaller than 14px if a check fails.
-
----
-
-## 10. Component checklist
-
-1. No emojis
-2. Semantic tokens only
-3. Contrast passes in light **and** dark
-4. Visible `:focus-visible`
-5. Hover matches interactive vs informational
-6. If it looks clickable, it is
-7. `prefers-reduced-motion`
-8. Correct button variant
-9. Tags neutral unless selected
-10. One `h1` per page; FAQ questions are `h2`
-
-## Page audit
-
-1. Visual noise — too much competing?
-2. Hierarchy — is the sentence obvious?
-3. Interactivity honest?
-4. Contrast in both themes?
-5. Alignment and measure (62–68ch for prose)?
-6. Kickers only for status?
-7. Primary action reachable and 44px?
-8. Accent used once, not everywhere?
+# UI rules: Design System v3 ("Panels & Bands, dark first")
+
+Tokens: `apps/web/src/styles/tokens.css` (the only place hex lives, besides the satori OG renderer and email
+styles). Primitives: `apps/web/src/styles/ds.css`. Components: `apps/web/src/components/v3/`. Page grammar and
+the "why": [`taste.md`](./taste.md). The design handoff this implements: V3 Round 1 (Figtree, yellow accent, skewed
+bands, numbered posters). If anything here disagrees with `tokens.css`, `tokens.css` wins. Mechanically enforced
+subset: `apps/web/scripts/ui-guardrails.mjs` + `conventions.mjs` (`pnpm lint`).
+
+## 1. Colour
+
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--ground` | `#0F0F10` ink | `#F8F4EB` cream | Page |
+| `--surface` | `#191A1D` | `#FFFDF8` | Cards, panels, inputs |
+| `--hairline` / `--hairline-strong` | `#2A2A2E` / `#44413C` | `#E2DBCD` / `#C9C0B0` | 1px borders / outline buttons, pills |
+| `--text` / `--text-muted` / `--text-faint` | `#F8F4EB` / `#C8C1B5` / `#8A8378` | `#0F0F10` / `#57534E` / `#6B655D` | Primary / body / meta |
+| `--yellow` | `#F4C63A` | same | **The single accent**: primary buttons, bands, active pills, big numbers |
+| `--accent-text` | yellow | `#17688F` | Kickers and small accent text (yellow text fails on cream) |
+| `--blue` | `#2E88B8` | same | Only as the band edge, video tiles |
+| `--panel*` | cream panel, ink text | ink panel, cream text | The one invitation panel per page |
+
+Rules: ink text on yellow, never white. Never ink-on-ink cards without a hairline. Blue is never text on ink below
+18px. No gradients except the band devices and image placeholders. Never use raw palette values for text: use the
+semantic tokens so the light theme works.
+
+## 2. Type (Figtree, self-hosted variable 300–900)
+
+| Role | Size / line / tracking / weight |
+|---|---|
+| Display H1 (`ds-h1`) | 52–56px / 0.95 / -0.045em / 800 (home up to 68px, `ds-h1--xl`) |
+| H2 (`ds-h2`) | 30–40px / 1.0 / -0.04em / 800 |
+| Small section heading (`ds-label`) | 14px / 700 / 0.12em / uppercase / accent |
+| Kicker (`ds-kicker`) | 12px / 700 / 0.14em / uppercase / accent |
+| Card title | 20–26px / 1.05 / -0.03em / 800 |
+| Body | 17px / 1.5 intro (`ds-lede`), 14.5–15.5px cards, articles 17–18px / 1.65–1.7 at 65ch |
+| Meta (`ds-meta`) | 12–13px, `--text-faint` |
+| Big numbers | 34–88px / 800 / -0.05em / 0.85–1 |
+
+`text-wrap: balance` on headlines, `pretty` on card text (both global).
+
+## 3. Space and shape
+
+Gutter 40px desktop / 20px phone (`--gutter`), max width 1200px (`ds-wrap`). Section padding 48–64px
+(`--section-y`). Card padding 20–28px, card gap 14px. Radius: 4px buttons/inputs, 6px cards/images, 999px pills.
+Nothing larger. **No shadows.** Separation is a hairline or a change of ground, never both.
+
+## 4. Graphic devices (code-native)
+
+1. **Band**: 8px bar under the nav, `var(--band)` (blue 12% → yellow). Pages opening with a skewed hero skip it
+   (`<BaseLayout band={false}>`).
+2. **Skewed panel**: `SkewHero` — yellow block at `skewX(-14deg)`, 8px blue edge, photo clipped in; stacks above
+   the headline on phones.
+3. **Stripe rule**: `ds-stripe`, 8px dashed yellow beside quotes and list items.
+4. **Numbered posters**: `PosterCard`, huge 01/02/03 cropped off the card edge.
+5. **Giant faded name**: "Faris" at ~540px, 3.5% opacity behind the home hero (`aria-hidden`).
+
+Illustrations (`Illustration.astro`): used unmodified. Faris only on the cream invitation panel, at most once per
+page. Celebrating duck only for genuine success/recognition. Curious duck for technical asides. Photos provide
+evidence, illustrations provide character.
+
+## 5. Interaction and motion
+
+- Hover = colour swap only (yellow ↔ cream buttons, border → yellow on cards, text → yellow on rows). No hover motion.
+- Focus: `outline: 3px solid yellow; outline-offset: 2px` on everything (global).
+- Filters (`FilterPills`): instant, URL-synced (`?topic=`), items fade in 150ms; reduced motion = none.
+- No scroll hijacking, cursor effects, looping decoration or autoplay video. `ds-reveal` is a fade only.
+- The home opener: once per session, Skip + Esc from 0s, nav usable underneath, reduced motion → static frame.
+- Mobile nav is a native `<dialog>`: focus trapped, Esc and backdrop tap close it.
+
+## 6. Accessibility
+
+WCAG 2.2 AA in both themes. Touch targets ≥ 44px. One `<h1>` per page; logical heading order. Every image has alt
+text (decorative art gets `alt=""`). Filters are `<button aria-pressed>`; segmented controls have `aria-pressed`
+or tab semantics; forms use `aria-invalid` + visible messages and move focus to the first error. Check 390px, 320px,
+tablet and 200% zoom: no horizontal scroll.
+
+## 7. Content rules in the UI
+
+- **No emojis** (country flags excepted). Use `Icon.astro` for play / listen / external / arrow glyphs.
+- **Numbers come from data.** Derived counts (`getSpeakingStats()`), dated metrics (`dateLabel`), never literals in copy.
+- Never "most watched" without a dated source. Never "essays"/"notes" for writing. No newsletter signup UI.
+- Forms show success only after the server confirms storage; failure says nothing was stored and keeps the text.
+- No `mailto:` anywhere in site UI (see `apps/web/CLAUDE.md`).
+
+## 8. Checklist for a new component or page
+
+1. Tokens and `ds-*` primitives only; scoped `<style>`; no hex, no `style="…"` strings, no Tailwind palette classes.
+2. Works at 320px with no overflow; grids collapse to one column below ~720px.
+3. Light theme reads correctly (semantic tokens).
+4. `data-track` on CTAs; `.md` mirror + OG card + `llms.txt` entry for new public pages (`add-site-page` skill).
+5. `pnpm lint` and `pnpm --filter web typecheck` pass; screenshots before/after in the PR.
