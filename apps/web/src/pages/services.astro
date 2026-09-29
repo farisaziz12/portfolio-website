@@ -1,0 +1,119 @@
+---
+/**
+ * /services ("How I can help"): the overview of every offer. V3 Consulting mock.
+ * /consulting redirects here; /services/speaking redirects to /speaking.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Kicker from '../components/v3/Kicker.astro';
+import Icon from '../components/v3/Icon.astro';
+import ServiceCard from '../components/services/ServiceCard.astro';
+import { getServiceOffers, getSiteSettings, getProfile, DEFAULT_SERVICES_INTRO } from '../lib/sanity/v3';
+import { serviceCards, howItStarts } from '../lib/services';
+import { breadcrumbs, SITE } from '../lib/seo';
+import { SERVICE_TYPES, titleFor } from 'shared';
+
+const [offers, settings, profile] = await Promise.all([getServiceOffers(), getSiteSettings(), getProfile()]);
+const cards = serviceCards(offers);
+const steps = howItStarts(profile.replyTime);
+const introCall = settings.discoveryCallUrl;
+const abs = (href: string) => (href.startsWith('http') ? href : `${SITE}${href}`);
+
+const schema = [
+  ...cards.map((c) => ({
+    '@type': 'Service',
+    '@id': `${SITE}/services#${c.type}`,
+    name: c.title,
+    serviceType: titleFor(SERVICE_TYPES, c.type),
+    description: `Reach out if ${c.reachOutIf} You get ${c.youGet}`,
+    audience: { '@type': 'Audience', audienceType: c.audience },
+    provider: { '@id': `${SITE}/#person` },
+    areaServed: 'Worldwide',
+    url: abs(c.primary.href),
+  })),
+  breadcrumbs([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+  ]),
+];
+---
+
+<BaseLayout
+  title="Services: how I can help | Faris Aziz"
+  description="Speaking and workshops, advisory on frontend, payments and engineering leadership, and 1:1 mentorship. A sentence is enough to start."
+  image="/og/services.png"
+  markdownAlternate="/services.md"
+  extraSchema={schema}
+>
+  <div class="ds-wrap">
+    <header class="head">
+      <div class="head__text">
+        <Kicker parts={['Services']} />
+        <h1 class="ds-h1 head__title">How I can help.</h1>
+        <p class="ds-lede head__lede">{DEFAULT_SERVICES_INTRO}</p>
+      </div>
+      {introCall && (
+        <a href={introCall} class="intro" data-track="services-intro-call">
+          <span class="intro__k">Not sure yet?</span>
+          <span class="intro__t">Book an intro call <Icon name="arrow" size={14} /></span>
+        </a>
+      )}
+    </header>
+
+    <section class="cards" aria-label="Ways to work together">
+      <div class="ds-grid-3">
+        {cards.map((card) => <ServiceCard card={card} />)}
+      </div>
+    </section>
+
+    <section class="starts" aria-labelledby="starts-title">
+      <h2 id="starts-title" class="starts__title">How it starts</h2>
+      <ol class="starts__steps">
+        {steps.map((s, i) => (
+          <li>
+            <span class="starts__step">{i + 1} · {s.title}</span>
+            <span class="starts__body">{s.body}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px 40px;
+    padding-block: clamp(36px, 5vw, 52px) 36px;
+  }
+  .head__text { display: flex; flex-direction: column; gap: 14px; max-width: 660px; min-width: 0; }
+  .head__title { font-size: clamp(38px, 5.6vw, 52px); }
+  .head__lede { font-size: 17px; }
+
+  .intro {
+    flex: none; display: flex; flex-direction: column; gap: 4px; padding: 16px 20px;
+    background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card);
+    color: rgb(var(--text)); text-decoration: none; transition: border-color 0.15s;
+  }
+  .intro:hover { border-color: rgb(var(--yellow)); }
+  .intro__k { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .intro__t { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 16px; }
+
+  .cards { padding-bottom: 48px; }
+
+  .starts {
+    display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px 28px; align-items: start;
+    border-top: 1px solid rgb(var(--hairline)); padding-top: 36px; margin-bottom: clamp(40px, 5vw, 56px);
+  }
+  .starts__title { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  .starts__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .starts__steps li { display: flex; flex-direction: column; gap: 6px; }
+  .starts__step { font-size: 13px; font-weight: 700; color: rgb(var(--accent-text)); }
+  .starts__body { font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
+
+  @media (max-width: 900px) {
+    .head { flex-direction: column; align-items: flex-start; }
+    .starts { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .starts__steps { grid-template-columns: 1fr; gap: 20px; }
+  }
+</style>

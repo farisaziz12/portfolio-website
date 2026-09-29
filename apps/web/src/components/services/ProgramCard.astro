@@ -1,0 +1,52 @@
+---
+/** A bookable mentorship programme (serviceOffer): best for, outcomes, format, price, booking link. */
+import type { ServiceOffer } from '../../lib/sanity/v3';
+import { offerPrice } from '../../lib/services';
+import Icon from '../v3/Icon.astro';
+
+interface Props {
+  offer: ServiceOffer;
+}
+const { offer: o } = Astro.props;
+const price = offerPrice(o);
+const external = o.bookingUrl ? /^https?:\/\//.test(o.bookingUrl) : false;
+---
+
+<article class="prog ds-card ds-card--fill">
+  {o.bestFor && <p class="ds-kicker">Best for · <span class="is-muted">{o.bestFor}</span></p>}
+  <h3 class="prog__title">{o.title}</h3>
+  {o.shortDescription && <p class="ds-body prog__desc">{o.shortDescription}</p>}
+  {o.outcomes.length > 0 && (
+    <ul class="prog__out">
+      {o.outcomes.map((x) => <li>{x}</li>)}
+    </ul>
+  )}
+  {(o.engagementFormat || price) && (
+    <dl class="ds-dl prog__dl">
+      {o.engagementFormat && (<><dt>Format</dt><dd>{o.engagementFormat}</dd></>)}
+      {price && (<><dt>Cost</dt><dd>{price}</dd></>)}
+    </dl>
+  )}
+  {o.bookingUrl && (
+    <div class="ds-card__foot">
+      <a
+        href={o.bookingUrl}
+        class="ds-link ds-link--sm"
+        data-track="mentorship-program-book"
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {o.bookingLabel || 'Book'} {external && <Icon name="external" size={10} />}
+      </a>
+    </div>
+  )}
+</article>
+
+<style>
+  .prog { gap: 10px; }
+  .prog__title { font-size: 20px; line-height: 1.08; letter-spacing: -0.03em; font-weight: 800; }
+  .prog__desc { margin: 0; }
+  .prog__out { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14.5px; color: rgb(var(--text-muted)); }
+  .prog__out li { position: relative; padding-left: 16px; }
+  .prog__out li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 7px; height: 7px; background: rgb(var(--yellow)); border-radius: 1px; }
+  .prog__dl { margin-top: 4px; }
+</style>

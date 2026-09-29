@@ -1,466 +1,197 @@
 ---
+/**
+ * /services/[slug]: CMS-driven SEO landing pages (serviceLandingPage), restyled
+ * to V3. Same content and section order as before; every section is optional.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ScrollReveal from '../../components/animations/ScrollReveal.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import { sanityFetch, urlFor } from '../../lib/sanity/client';
-import {
-  allServiceLandingPagesQuery,
-  serviceLandingPageBySlugQuery,
-} from '../../lib/sanity/queries';
+import Kicker from '../../components/v3/Kicker.astro';
+import SectionHead from '../../components/v3/SectionHead.astro';
+import StatRow from '../../components/v3/StatRow.astro';
+import InvitePanel from '../../components/v3/InvitePanel.astro';
+import LandingCards from '../../components/services/LandingCards.astro';
+import { getServiceLandingPages, getServiceLandingPage } from '../../lib/secondary-content';
+import { urlFor } from '../../lib/sanity/client';
+import { breadcrumbs, SITE } from '../../lib/seo';
 
-// Types
-interface ServiceLandingPage {
-  _id: string;
-  title: string;
-  slug: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  seoKeywords?: string[];
-  ogImage?: any;
-  heroTagline?: string;
-  heroHeadline: string;
-  heroSubheadline?: string;
-  heroPrimaryCta?: { text: string; url: string };
-  heroSecondaryCta?: { text: string; url: string };
-  problemTitle?: string;
-  painPoints?: Array<{ _key: string; title: string; description: string }>;
-  expertiseTitle?: string;
-  expertiseAreas?: Array<{ _key: string; title: string; description: string; icon?: string }>;
-  servicesTitle?: string;
-  serviceOfferings?: Array<{
-    _key: string;
-    name: string;
-    bestFor?: string;
-    includes?: string[];
-    outcome?: string;
-    highlightColor?: string;
-  }>;
-  audienceTitle?: string;
-  personas?: Array<{ _key: string; title: string; description: string; icon?: string }>;
-  proofTitle?: string;
-  stats?: Array<{ _key: string; value: string; label: string }>;
-  testimonials?: Array<{
-    _id: string;
-    quote: string;
-    author: string;
-    role?: string;
-    company?: string;
-    avatar?: any;
-  }>;
-  faqTitle?: string;
-  faqs?: Array<{ _key: string; question: string; answer: string }>;
-  ctaHeadline?: string;
-  ctaSubheadline?: string;
-  ctaButtonText?: string;
-  ctaButtonUrl?: string;
-  ctaSecondaryText?: string;
-}
-
-// Generate static paths
 export async function getStaticPaths() {
-  const pages = await sanityFetch<Array<{ slug: string }>>(allServiceLandingPagesQuery).catch(() => []);
-  return pages.map((page) => ({
-    params: { slug: page.slug },
-  }));
+  const pages = await getServiceLandingPages();
+  return pages.map((p) => ({ params: { slug: p.slug } }));
 }
 
-const { slug } = Astro.params;
-const page = await sanityFetch<ServiceLandingPage | null>(serviceLandingPageBySlugQuery, { slug }).catch(
-  () => null,
-);
+const { slug } = Astro.params as { slug: string };
+const page = await getServiceLandingPage(slug);
+if (!page) return Astro.redirect('/services');
 
-if (!page) {
-  return Astro.redirect('/404');
-}
+let ogImage = '/og/services.png';
+try {
+  if (page.ogImage?.asset) ogImage = urlFor(page.ogImage).width(1200).height(630).fit('crop').url();
+} catch {}
+
+const primary = page.heroPrimaryCta?.url ? { label: page.heroPrimaryCta.text || 'Get in touch', href: page.heroPrimaryCta.url } : undefined;
+const secondary = page.heroSecondaryCta?.url ? { label: page.heroSecondaryCta.text || 'Learn more', href: page.heroSecondaryCta.url } : undefined;
+const ctaHref = page.ctaButtonUrl || primary?.href || '/contact';
+const ext = (href: string) => (/^https?:\/\//.test(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+
+const schema = [
+  {
+    '@type': 'Service',
+    '@id': `${SITE}/services/${page.slug}#service`,
+    name: page.heroHeadline,
+    ...(page.seoDescription || page.heroSubheadline ? { description: page.seoDescription || page.heroSubheadline } : {}),
+    provider: { '@id': `${SITE}/#person` },
+    areaServed: 'Worldwide',
+    url: `${SITE}/services/${page.slug}`,
+  },
+  ...(page.faqs.length
+    ? [
+        {
+          '@type': 'FAQPage',
+          mainEntity: page.faqs.map((f) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
+        },
+      ]
+    : []),
+  breadcrumbs([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+    { name: page.title || page.heroHeadline, path: `/services/${page.slug}` },
+  ]),
+];
 ---
 
 <BaseLayout
-  title={page.seoTitle || page.heroHeadline}
-  description={page.seoDescription || page.heroSubheadline}
-  pathname={`/services/${page.slug}`}
-  image={page.ogImage ? urlFor(page.ogImage).width(1200).height(630).url() : undefined}
+  title={page.seoTitle || `${page.heroHeadline} | Faris Aziz`}
+  description={(page.seoDescription || page.heroSubheadline || page.heroHeadline).slice(0, 160)}
+  image={ogImage}
+  markdownAlternate={`/services/${page.slug}.md`}
+  extraSchema={schema}
 >
-  <!-- Hero Section -->
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      {page.heroTagline && (
-        <ScrollReveal animation="fade-up">
-          <Kicker>{page.heroTagline}</Kicker>
-        </ScrollReveal>
+  <div class="ds-wrap">
+    <header class="head">
+      <Kicker parts={['Services', page.heroTagline]} mutedFirst />
+      <h1 class="ds-h1">{page.heroHeadline}</h1>
+      {page.heroSubheadline && <p class="ds-lede">{page.heroSubheadline}</p>}
+      {(primary || secondary) && (
+        <div class="head__actions">
+          {primary && <a href={primary.href} class="ds-btn ds-btn--yellow ds-btn--lg" data-track={`landing-${page.slug}-primary`} {...ext(primary.href)}>{primary.label}</a>}
+          {secondary && <a href={secondary.href} class="ds-link" data-track={`landing-${page.slug}-secondary`} {...ext(secondary.href)}>{secondary.label}</a>}
+        </div>
       )}
+    </header>
 
-      <ScrollReveal animation="fade-up" delay={0.1}>
-        <h1 class="page-hero__title">
-          {page.heroHeadline}
-        </h1>
-      </ScrollReveal>
+    <LandingCards id="l-problem" title={page.problemTitle} fallbackTitle="Sound familiar?" items={page.painPoints} variant="rows" />
+    <LandingCards id="l-expertise" title={page.expertiseTitle} fallbackTitle="Where I can help" items={page.expertiseAreas} />
 
-      {page.heroSubheadline && (
-        <ScrollReveal animation="fade-up" delay={0.2}>
-          <p class="page-hero__lead">
-            {page.heroSubheadline}
-          </p>
-        </ScrollReveal>
-      )}
-
-      <ScrollReveal animation="fade-up" delay={0.3}>
-        <div class="page-hero__actions">
-          {page.heroPrimaryCta && (
-            <a href={page.heroPrimaryCta.url} class="ds-btn ds-btn-primary ds-btn-lg">
-              {page.heroPrimaryCta.text}
-              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </a>
-          )}
-          {page.heroSecondaryCta && (
-            <a href={page.heroSecondaryCta.url} class="ds-btn ds-btn-secondary ds-btn-lg">
-              {page.heroSecondaryCta.text}
-            </a>
-          )}
-        </div>
-      </ScrollReveal>
-    </div>
-  </header>
-
-  <!-- Problem Section -->
-  {page.painPoints && page.painPoints.length > 0 && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        <div class="max-w-4xl mx-auto">
-          {page.problemTitle && (
-            <ScrollReveal animation="fade-up">
-              <div class="page-section__heading">
-                <h2 class="page-h2">{page.problemTitle}</h2>
-              </div>
-            </ScrollReveal>
-          )}
-
-          <div class="space-y-6">
-            {page.painPoints.map((point, index) => (
-              <ScrollReveal animation="fade-up" delay={index * 0.1}>
-                <div class="ds-card p-8 border-l-4 border-l-danger/50">
-                  <h3 class="font-display font-bold text-xl text-ink mb-3">{point.title}</h3>
-                  <p class="text-ink-muted leading-relaxed">{point.description}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- Expertise Section -->
-  {page.expertiseAreas && page.expertiseAreas.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        {page.expertiseTitle && (
-          <ScrollReveal animation="fade-up">
-            <div class="page-section__heading">
-              <h2 class="page-h2">{page.expertiseTitle}</h2>
-            </div>
-          </ScrollReveal>
-        )}
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {page.expertiseAreas.map((area, index) => (
-            <ScrollReveal animation="fade-up" delay={index * 0.1}>
-              <div class="ds-card p-8 h-full">
-                {area.icon && (
-                  <div class="w-12 h-12 rounded-md bg-accent/10 border border-accent/30 flex items-center justify-center mb-6">
-                    <span class="text-2xl">{area.icon}</span>
-                  </div>
+    {page.serviceOfferings.length > 0 && (
+      <section class="sec" aria-labelledby="l-services">
+        <SectionHead id="l-services" title={page.servicesTitle || 'Ways to work together'} size="sm" />
+        <ul class="ds-grid-2 offers" role="list">
+          {page.serviceOfferings.map((o, i) => (
+            <li class="ds-card offer">
+              <span class="offer__n ds-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="offer__title">{o.name}</h3>
+              <dl class="offer__dl">
+                {o.bestFor && (<><dt>Best for</dt><dd>{o.bestFor}</dd></>)}
+                {o.includes && o.includes.length > 0 && (
+                  <>
+                    <dt>Includes</dt>
+                    <dd><ul class="offer__list">{o.includes.map((x) => <li>{x}</li>)}</ul></dd>
+                  </>
                 )}
-                <h3 class="font-display font-bold text-lg text-ink mb-3">{area.title}</h3>
-                <p class="text-ink-muted text-sm leading-relaxed">{area.description}</p>
-              </div>
-            </ScrollReveal>
+                {o.outcome && (<><dt>You get</dt><dd class="offer__outcome">{o.outcome}</dd></>)}
+              </dl>
+            </li>
           ))}
-        </div>
-      </div>
-    </section>
-  )}
+        </ul>
+      </section>
+    )}
 
-  <!-- Services Section -->
-  {page.serviceOfferings && page.serviceOfferings.length > 0 && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        {page.servicesTitle && (
-          <ScrollReveal animation="fade-up">
-            <div class="page-section__heading">
-              <h2 class="page-h2">{page.servicesTitle}</h2>
-            </div>
-          </ScrollReveal>
-        )}
+    <LandingCards id="l-audience" title={page.audienceTitle} fallbackTitle="Who this is for" items={page.personas} variant="grid-2" />
 
-        <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-          {page.serviceOfferings.map((service, index) => (
-            <ScrollReveal animation="fade-up" delay={index * 0.1}>
-              <div class="ds-card p-8 h-full">
-                <h3 class="font-display font-bold text-xl text-ink mb-2">{service.name}</h3>
-                {service.bestFor && (
-                  <p class="text-sm text-ink-muted mb-4">Best for: {service.bestFor}</p>
-                )}
-                {service.includes && service.includes.length > 0 && (
-                  <ul class="space-y-2 mb-6">
-                    {service.includes.map((item) => (
-                      <li class="flex items-start gap-2 text-ink-muted text-sm">
-                        <svg class="w-5 h-5 text-signal flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {service.outcome && (
-                  <div class="pt-4 border-t border-edge">
-                    <p class="text-xs text-ink-faint uppercase tracking-wider mb-1">Outcome</p>
-                    <p class="text-ink font-medium">{service.outcome}</p>
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
+    {(page.stats.length > 0 || page.testimonials.length > 0) && (
+      <section class="sec sec--proof" aria-labelledby="l-proof">
+        <SectionHead id="l-proof" title={page.proofTitle || 'Track record'} size="sm" />
+      </section>
+    )}
+  </div>
+
+  {page.stats.length > 0 && <StatRow stats={page.stats.map((s) => ({ value: s.value, label: s.label }))} />}
+
+  <div class="ds-wrap">
+    {page.testimonials.length > 0 && (
+      <ul class="ds-grid-2 quotes" role="list">
+        {page.testimonials.map((t) => (
+          <li class="ds-card">
+            <figure class="ds-stripe quote">
+              <blockquote class="quote__text">“{t.quote}”</blockquote>
+              <figcaption class="ds-meta">{[t.author, [t.role, t.company].filter(Boolean).join(' at ')].filter(Boolean).join(' · ')}</figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {page.faqs.length > 0 && (
+      <section class="sec" aria-labelledby="l-faq">
+        <SectionHead id="l-faq" title={page.faqTitle || 'Questions'} size="sm" />
+        <ul class="ds-rows faq">
+          {page.faqs.map((f) => (
+            <li>
+              <details class="faq__item">
+                <summary class="faq__q">{f.question}</summary>
+                <p class="faq__a">{f.answer}</p>
+              </details>
+            </li>
           ))}
-        </div>
-      </div>
-    </section>
-  )}
+        </ul>
+      </section>
+    )}
 
-  <!-- Audience Section -->
-  {page.personas && page.personas.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        {page.audienceTitle && (
-          <ScrollReveal animation="fade-up">
-            <div class="page-section__heading">
-              <h2 class="page-h2">{page.audienceTitle}</h2>
-            </div>
-          </ScrollReveal>
-        )}
-
-        <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {page.personas.map((persona, index) => (
-            <ScrollReveal animation="fade-up" delay={index * 0.1}>
-              <div class="ds-card p-8">
-                <div class="flex items-center gap-4 mb-4">
-                  {persona.icon && <span class="text-3xl">{persona.icon}</span>}
-                  <h3 class="font-display font-bold text-lg text-ink">{persona.title}</h3>
-                </div>
-                <p class="text-ink-muted leading-relaxed">{persona.description}</p>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- Social Proof Section -->
-  {(page.stats && page.stats.length > 0) && (
-    <section class="page-section page-section--alt">
-      <div class="container">
-        {page.proofTitle && (
-          <ScrollReveal animation="fade-up">
-            <div class="page-section__heading">
-              <h2 class="page-h2">{page.proofTitle}</h2>
-            </div>
-          </ScrollReveal>
-        )}
-
-        {page.stats && page.stats.length > 0 && (
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
-            {page.stats.map((stat, index) => (
-              <ScrollReveal animation="fade-up" delay={index * 0.1}>
-                <div class="text-center">
-                  <p class="ds-stat__value">{stat.value}</p>
-                  <p class="ds-stat__label">{stat.label}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        )}
-
-        {page.testimonials && page.testimonials.length > 0 && (
-          <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {page.testimonials.map((testimonial, index) => (
-              <ScrollReveal animation="fade-up" delay={index * 0.1}>
-                <div class="ds-card p-8">
-                  <blockquote class="text-ink-muted italic mb-6">"{testimonial.quote}"</blockquote>
-                  <div class="flex items-center gap-4">
-                    {testimonial.avatar && (
-                      <img
-                        src={urlFor(testimonial.avatar).width(80).height(80).url()}
-                        alt={testimonial.author}
-                        class="w-12 h-12 rounded-full object-cover"
-                      />
-                    )}
-                    <div>
-                      <p class="font-semibold text-ink">{testimonial.author}</p>
-                      {(testimonial.role || testimonial.company) && (
-                        <p class="text-ink-muted text-sm">
-                          {testimonial.role}{testimonial.role && testimonial.company && ' at '}{testimonial.company}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  )}
-
-  <!-- FAQ Section -->
-  {page.faqs && page.faqs.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        <div class="max-w-3xl mx-auto">
-          {page.faqTitle && (
-            <ScrollReveal animation="fade-up">
-              <div class="page-section__heading">
-                <h2 class="page-h2">{page.faqTitle || 'Frequently Asked Questions'}</h2>
-              </div>
-            </ScrollReveal>
-          )}
-
-          <div class="space-y-4">
-            {page.faqs.map((faq, index) => (
-              <ScrollReveal animation="fade-up" delay={index * 0.05}>
-                <details class="group ds-card">
-                  <summary class="flex justify-between items-center cursor-pointer p-6 font-display font-semibold text-ink">
-                    {faq.question}
-                    <svg class="w-5 h-5 text-ink-muted group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </summary>
-                  <div class="px-6 pb-6 text-ink-muted leading-relaxed">
-                    {faq.answer}
-                  </div>
-                </details>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- CTA Section -->
-  <section class="page-section">
-    <div class="container">
-      <div class="cta-panel">
-        <GridTexture class="cta-panel__texture" />
-        <div class="cta-panel__inner">
-          {page.ctaHeadline && (
-            <ScrollReveal animation="fade-up">
-              <h2 class="cta-panel__title">
-                {page.ctaHeadline}
-              </h2>
-            </ScrollReveal>
-          )}
-
-          {page.ctaSubheadline && (
-            <ScrollReveal animation="fade-up" delay={0.1}>
-              <p class="cta-panel__body">
-                {page.ctaSubheadline}
-              </p>
-            </ScrollReveal>
-          )}
-
-          <ScrollReveal animation="fade-up" delay={0.2}>
-            <div class="cta-panel__actions">
-              {page.ctaButtonUrl && (
-                <a href={page.ctaButtonUrl} class="ds-btn ds-btn-primary ds-btn-lg">
-                  {page.ctaButtonText || 'Get Started'}
-                  <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </a>
-              )}
-            </div>
-          </ScrollReveal>
-
-          {page.ctaSecondaryText && (
-            <ScrollReveal animation="fade-up" delay={0.3}>
-              <p class="cta-panel__note">{page.ctaSecondaryText}</p>
-            </ScrollReveal>
-          )}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": page.heroHeadline,
-    "description": page.seoDescription || page.heroSubheadline,
-    "provider": {
-      "@type": "Person",
-      "name": "Faris Aziz",
-      "url": "https://farisaziz.com"
-    },
-    "areaServed": "Worldwide",
-    "url": `https://farisaziz.com/services/${page.slug}`
-  })} />
+    <InvitePanel
+      class="panel"
+      kicker="Services"
+      headline={page.ctaHeadline || 'Tell me what’s going on.'}
+      body={page.ctaSubheadline || 'A sentence is enough to start. I reply within two working days.'}
+      primary={{ label: page.ctaButtonText || 'Get in touch', href: ctaHref }}
+      secondary={{ label: 'All services', href: '/services' }}
+      note={page.ctaSecondaryText}
+      art="faris-thinking"
+      track={`landing-${page.slug}-panel`}
+    />
+  </div>
 </BaseLayout>
 
 <style>
-  /* Neutral raised contact treatment — mirrors ContactPanel.astro so CMS-driven
-     CTA fields keep their conditional rendering while matching the v2 idiom. */
-  .cta-panel {
-    position: relative;
-    overflow: hidden;
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge-strong));
-    border-top: 3px solid rgb(var(--accent));
-    border-radius: 20px;
-    padding: clamp(3.5rem, 7vw, 5.5rem) clamp(2rem, 5vw, 4rem);
-    text-align: center;
+  .head { display: flex; flex-direction: column; gap: 14px; padding-block: clamp(32px, 5vw, 56px) clamp(32px, 5vw, 48px); max-width: 820px; }
+  .head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 8px; }
+  .sec { padding-block: clamp(32px, 5vw, 48px); border-top: 1px solid rgb(var(--hairline)); }
+  .sec--proof { padding-bottom: 0; }
+  .sec--proof :global(.shead) { margin-bottom: 22px; }
+
+  .offers { margin: 0; padding: 0; list-style: none; }
+  .offer { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+  .offer__n { font-size: 40px; line-height: 1; color: rgb(var(--accent-text)); }
+  .offer__title { font-size: clamp(22px, 2.3vw, 26px); line-height: 1.05; letter-spacing: -0.035em; font-weight: 800; }
+  .offer__dl { margin: 0; display: grid; gap: 4px; font-size: 15px; line-height: 1.55; }
+  .offer__dl dt { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .offer__dl dd { margin: 0 0 10px; color: rgb(var(--text-muted)); }
+  .offer__dl .offer__outcome { color: rgb(var(--text)); font-weight: 600; }
+  .offer__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .offer__list li { position: relative; padding-left: 16px; }
+  .offer__list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 7px; height: 7px; background: rgb(var(--yellow)); border-radius: 1px; }
+
+  .quotes { margin: 0; padding: clamp(24px, 4vw, 36px) 0 clamp(32px, 5vw, 48px); list-style: none; }
+  .quote { margin: 0; }
+  .quote__text { margin: 0 0 10px; font-size: 16px; line-height: 1.5; color: rgb(var(--text)); }
+
+  .faq__item { padding-block: 4px; }
+  .faq__q {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 16px; align-items: center;
+    min-height: 44px; padding-block: 14px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
   }
-  .cta-panel__texture {
-    opacity: 0.35;
-  }
-  .cta-panel__inner {
-    position: relative;
-    max-width: 60ch;
-    margin-inline: auto;
-  }
-  .cta-panel__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-  }
-  .cta-panel__body {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
-    color: rgb(var(--ink-muted));
-    margin-top: 1rem;
-  }
-  .cta-panel__actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.8rem;
-  }
-  @media (min-width: 640px) {
-    .cta-panel__actions { flex-direction: row; }
-  }
-  .cta-panel__note {
-    color: rgb(var(--ink-faint));
-    font-size: 0.92rem;
-    margin-top: 1.4rem;
-  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__q::after { content: '+'; flex: none; font-size: 22px; font-weight: 700; color: rgb(var(--accent-text)); }
+  .faq__item[open] .faq__q::after { content: '−'; }
+  .faq__q:hover { color: rgb(var(--accent-text)); }
+  .faq__a { margin: 0 0 18px; max-width: 70ch; font-size: 15.5px; line-height: 1.6; color: rgb(var(--text-muted)); }
+  .ds-wrap :global(.panel) { margin-block: clamp(24px, 4vw, 40px) clamp(40px, 5vw, 64px); }
 </style>

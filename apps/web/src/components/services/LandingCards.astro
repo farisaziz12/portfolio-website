@@ -1,0 +1,54 @@
+---
+/**
+ * A titled group of cards on a CMS service landing page (/services/[slug]):
+ * pain points (hairline rows with the stripe), expertise areas and personas (card grid).
+ * Emoji "icons" stored in the CMS are intentionally not rendered (no emoji in the UI).
+ */
+import SectionHead from '../v3/SectionHead.astro';
+import type { LandingCard } from '../../lib/secondary-content';
+
+interface Props {
+  id: string;
+  title?: string;
+  fallbackTitle: string;
+  items: LandingCard[];
+  variant?: 'rows' | 'grid-2' | 'grid-3';
+}
+const { id, title, fallbackTitle, items, variant = 'grid-3' } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class="lc" aria-labelledby={id}>
+    <SectionHead id={id} title={title || fallbackTitle} size="sm" />
+    {variant === 'rows' ? (
+      <ul class="ds-rows lc__rows">
+        {items.map((it) => (
+          <li class="lc__row">
+            <h3 class="lc__title ds-stripe">{it.title}</h3>
+            {it.description && <p class="lc__body">{it.description}</p>}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <ul class:list={[variant === 'grid-2' ? 'ds-grid-2' : 'ds-grid-3', 'lc__grid']} role="list">
+        {items.map((it) => (
+          <li class="ds-card lc__card">
+            <h3 class="lc__title">{it.title}</h3>
+            {it.description && <p class="lc__body">{it.description}</p>}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+)}
+
+<style>
+  .lc { padding-block: clamp(32px, 5vw, 48px); border-top: 1px solid rgb(var(--hairline)); }
+  .lc__grid { margin: 0; padding: 0; list-style: none; }
+  .lc__card { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+  .lc__title { font-size: 20px; line-height: 1.1; letter-spacing: -0.03em; font-weight: 800; }
+  .lc__body { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  .lc__rows { border-top: 0; }
+  .lc__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 8px 40px; padding-block: 20px; }
+  @media (max-width: 720px) { .lc__row { grid-template-columns: 1fr; } }
+</style>

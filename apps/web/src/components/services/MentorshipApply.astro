@@ -1,0 +1,72 @@
+---
+/**
+ * The "Apply for a seat" form section on /mentorship (target of the panel's
+ * Apply button). Hosts the React island and its styles.
+ */
+import MentorshipInquiryForm from '../islands/MentorshipInquiryForm';
+
+interface Props {
+  replyTime: string;
+  fallbackHref: string;
+}
+const { replyTime, fallbackHref } = Astro.props;
+---
+
+<section id="apply" class="apply" aria-labelledby="apply-title">
+  <div class="apply__intro">
+    <p class="ds-kicker">Apply for a seat</p>
+    <h2 id="apply-title" class="ds-h2 ds-h2--sm">Tell me where you’re headed.</h2>
+    <p class="ds-body">
+      Goal, budget, cadence. I read every one, reply within {replyTime}, and say so honestly when I’m full.
+    </p>
+    <p class="ds-meta">
+      Prefer a platform? <a href={fallbackHref} target="_blank" rel="noopener noreferrer" class="ds-textlink" data-track="mentorship-mentorcruise">Apply on MentorCruise</a>.
+    </p>
+  </div>
+  <div class="apply__form ds-card">
+    <MentorshipInquiryForm client:visible replyTime={replyTime} fallbackHref={fallbackHref} />
+  </div>
+</section>
+
+<style>
+  .apply {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 24px 56px; align-items: start;
+    border-top: 1px solid rgb(var(--hairline)); padding-block: clamp(36px, 5vw, 56px);
+  }
+  .apply__intro { display: flex; flex-direction: column; gap: 14px; }
+  .apply__intro .ds-body { margin: 0; max-width: 42ch; }
+  .apply__intro .ds-meta { margin: 0; }
+  @media (max-width: 900px) { .apply { grid-template-columns: 1fr; } }
+
+  /* Island markup (MentorshipInquiryForm.tsx) */
+  .apply :global(.ds-input), .apply :global(.ds-textarea) { background: rgb(var(--ground)); }
+  .apply :global(.mform) { display: flex; flex-direction: column; gap: 22px; }
+  .apply :global(.mform__row) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 560px) { .apply :global(.mform__row) { grid-template-columns: 1fr; } }
+  .apply :global(.mform__set) { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .apply :global(.mform__set legend) { padding: 0; margin-bottom: 10px; }
+  .apply :global(.mform__choices) { display: flex; flex-wrap: wrap; gap: 8px; }
+  .apply :global(.mform__opt) { position: relative; display: inline-flex; }
+  .apply :global(.mform__opt input) { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .apply :global(.mform__opt span) {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; box-sizing: border-box;
+    border: 1px solid rgb(var(--hairline-strong)); border-radius: 999px;
+    font: 700 13.5px/1.1 var(--font); color: rgb(var(--text)); transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .apply :global(.mform__choices--compact .mform__opt span) { min-height: 36px; padding: 6px 12px; font-size: 12.5px; }
+  .apply :global(.mform__opt:hover span) { border-color: rgb(var(--yellow)); }
+  .apply :global(.mform__opt input:checked + span) { background: rgb(var(--yellow)); border-color: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
+  .apply :global(.mform__opt input:focus-visible + span) { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+  .apply :global(.mform__error) {
+    border-left: 4px solid rgb(var(--yellow)); background: rgb(var(--ground)); padding: 12px 16px; border-radius: 2px;
+    font-size: 14.5px; line-height: 1.5; color: rgb(var(--text));
+  }
+  .apply :global(.mform__error p) { margin: 0; }
+  .apply :global(.mform__error p + p) { margin-top: 6px; color: rgb(var(--text-muted)); }
+  .apply :global(.mform__actions) { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+  .apply :global(.mform__done) { display: flex; flex-direction: column; gap: 10px; font-size: 15.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .apply :global(.mform__done p) { margin: 0; }
+  .apply :global(.mform__done strong) { color: rgb(var(--text)); }
+  .apply :global(.mform__done-title) { font-size: 26px; line-height: 1.05; letter-spacing: -0.03em; font-weight: 800; color: rgb(var(--text)); }
+  .apply :global(.mform__note) { font-size: 13px; color: rgb(var(--text-faint)); }
+</style>
