@@ -1,0 +1,248 @@
+#!/usr/bin/env python3
+"""
+Builds fixtures/sanity-dataset.json: an offline dataset for `SANITY_FIXTURES=1`.
+Content mirrors the V3 design handoff. It includes a few documents in the
+LEGACY V2 shape on purpose, so the fallback paths stay tested.
+Not production content. Never import it into the real dataset.
+"""
+import json, os
+
+def img(aid, w, h, alt, credit=None, **extra):
+    o = {"_type": "image", "asset": {"_type": "reference", "_ref": f"image-{aid}-{w}x{h}-jpg"}, "alt": alt}
+    if credit: o["credit"] = credit
+    o.update(extra)
+    return o
+
+PHOTOS = [
+    ("b1ae7c349483be8176fcab676e48a88e958ec52e", 6488, 4325, "Faris speaking under stage lighting", "Stage portrait", "portrait"),
+    ("0d739fe9e228e63bd5359f51426c202d1363fc6d", 6256, 4172, "Faris on a conference stage, wide", "Conference stage, wide", "stage"),
+    ("5b80e104550c6b67f5503564a0a030e82f0b34b6", 2856, 2142, "Faris running a workshop", "Workshop in progress", "workshop"),
+    ("9dae32e83775700b957d149806b774fb7f88698a", 2048, 1088, "A ZurichJS evening", "ZurichJS meetup", "community"),
+    ("8c1dec0d38844e17eb42865ebb7c879bfbd355af", 4032, 3024, "Faris speaking, mid-gesture", "Speaking, close", "speaking"),
+    ("247e8ebcfc22176df3240a49436667f325581768", 4928, 3279, "Conference audience and stage", "Event, audience", "event"),
+]
+docs = []
+for aid, w, h, *_ in PHOTOS:
+    docs.append({"_id": f"image-{aid}-{w}x{h}-jpg", "_type": "sanity.imageAsset",
+                 "url": f"https://cdn.sanity.io/images/94fb4yui/production/{aid}-{w}x{h}.jpg",
+                 "metadata": {"dimensions": {"width": w, "height": h, "aspectRatio": w / h}}})
+P = {p[5]: img(p[0], p[1], p[2], p[3], "Event photographer") for p in PHOTOS}
+
+def ref(i): return {"_type": "reference", "_ref": i}
+def slug(s): return {"_type": "slug", "current": s}
+
+docs += [
+  {"_id": "siteSettings", "_type": "siteSettings", "siteTitle": "Faris Aziz", "siteUrl": "https://faziz-dev.com",
+   "nowLine": "Software engineer · speaker · ZurichJS co-founder", "twitterHandle": "farisaziz12", "introEnabled": True},
+  {"_id": "speakerProfile", "_type": "speakerProfile", "name": "Faris Aziz", "pronunciation": "FAH-riss ah-ZEEZ",
+   "travelBase": "Geneva, Switzerland", "bioUpdatedAt": "2026-09-01",
+   "headshots": [dict(P[p[5]], _key=p[5], label=p[4], tag=p[5]) for p in PHOTOS]},
+  {"_id": "availability", "_type": "availability", "months": [
+     {"_key": "a", "month": "2026-10-01", "status": "some"}, {"_key": "b", "month": "2027-08-01", "status": "limited"}]},
+]
+
+# ── series ──
+series = [("react-summit", "React Summit", "conference"), ("cityjs", "CityJS", "conference"), ("zurichjs", "ZurichJS", "meetup"),
+          ("game-of-codes", "Game of Codes", "conference"), ("devs-ghent", "Devs.Ghent", "meetup"), ("whatthestack", "WhatTheStack", "conference"),
+          ("react-alicante", "React Alicante", "conference"), ("jsnation", "JSNation", "conference")]
+for s, n, k in series:
+    docs.append({"_id": f"series-{s}", "_type": "eventSeries", "name": n, "slug": slug(s), "kind": k, "isOwn": s == "zurichjs"})
+
+# ── talks ──
+talks = [
+  {"_id": "talk-caching", "title": "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions", "shortTitle": "the caching talk",
+   "slug": slug("caching-payloads-dark-arts"), "pillar": "engineering", "order": 1,
+   "summary": "Real-world data fetching at scale: BFF layers, granular payload shaping, and what to cache where.",
+   "abstract": "This talk breaks down real-world data fetching challenges at scale and how to solve them with modern patterns like the BFF layer, granular payload shaping, and caching that fits the data instead of the framework. One production example carried end to end: what the user saw, what the network did, and what we changed.",
+   "audience": "Frontend and full-stack engineers who own a data layer in production. Assumes you've shipped something that got slow.",
+   "takeaways": ["A decision table for what to cache, where, and for how long", "Payload shaping patterns that cut bytes without a rewrite", "A BFF checklist you can argue for on Monday"],
+   "duration": 30, "durationOptions": [20, 30, 45], "level": "Intermediate to senior", "topics": ["React", "Caching", "BFF"],
+   "thumbnail": P["speaking"], "alsoAsWorkshop": ref("workshop-react-arch"), "relatedTalks": [dict(ref("talk-resilient"), _key="r1")]},
+  {"_id": "talk-payments", "title": "Orchestrating Millions Across the Globe: Reactive Payments at Scale", "shortTitle": "the payments talk",
+   "slug": slug("reactive-payments-at-scale"), "pillar": "payments", "order": 2, "duration": 30,
+   "summary": "“Just integrate Stripe” works, until it doesn’t. Multi-provider orchestration and its failure modes.",
+   "audience": "Product engineers, payments and platform teams", "thumbnail": P["stage"]},
+  {"_id": "talk-resilient", "title": "Building Resilient UIs with React", "slug": slug("building-resilient-uis-with-react"), "pillar": "engineering",
+   "order": 3, "duration": 25, "summary": "React apps sit at the boundary of a distributed system. Design them to fail well.",
+   "abstract": "React applications sit at the boundary of a distributed system: APIs, third parties, feature flags. This session is about designing them to fail well.",
+   "audience": "React teams shipping to production"},
+  {"_id": "talk-senior", "title": "Growing into Senior and Lead Roles Early", "slug": slug("growing-into-senior-early"), "pillar": "careers", "order": 4,
+   "duration": 30, "summary": "Taking responsibility before you feel ready, and what that costs.", "audience": "Engineers two to six years in"},
+  {"_id": "talk-community", "title": "Why It's Called ZurichJS: Building a Community from Zero", "slug": slug("building-a-community-from-zero"), "pillar": "community",
+   "order": 5, "duration": 20, "summary": "Meetups to a conference in two years, and the systems that made it possible.", "audience": "Organisers and DevRel"},
+  # a V2-shaped talk (no pillar/summary, legacy assets) to exercise fallbacks
+  {"_id": "talk-legacy-next", "title": "Next.js at the Edge (2023 cut)", "slug": slug("nextjs-at-the-edge"), "duration": 30, "topics": ["Next.js"],
+   "isBookable": False, "assets": {"videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}},
+]
+for t in talks: t["_type"] = "talk"; docs.append(t)
+
+docs.append({"_id": "workshop-react-arch", "_type": "workshop", "title": "React Architecture in Production", "slug": slug("react-architecture-in-production"),
+  "pillar": "engineering", "summary": "The patterns that keep large React applications standing.",
+  "description": "A working session on the patterns that keep large React applications standing: atomic design that survives growth, reconciliation you can reason about, resilience engineering, and observability that tells you something before your users do.",
+  "duration": "3 h or full day (6.5 h)", "participants": {"min": 12, "max": 30}, "room": "Tables, power, reliable wifi, projector",
+  "after": "Repo, slides and resources stay available via the attendee link", "relatedTalk": ref("talk-caching"),
+  "prerequisites": ["Comfortable with React and TypeScript", "Own laptop, Node 20+, a GitHub account", "The repo link arrives the day before"],
+  "formats": [
+    {"_key": "f3", "_type": "workshopFormat", "label": "3-hour edition", "duration": "3 h", "agenda": [
+      {"_key": "1", "_type": "agendaItem", "at": "0:00", "title": "Warm-up: break something on purpose", "summary": "A live exercise that sets expectations and shows how failure actually looks in a React app."},
+      {"_key": "2", "_type": "agendaItem", "at": "0:25", "title": "Structure that survives growth", "summary": "Atomic design applied to a real codebase; where the boundaries go and why."},
+      {"_key": "3", "_type": "agendaItem", "at": "1:10", "title": "Reconciliation, for real", "summary": "What React does with your tree and the three mistakes that cost the most in production."},
+      {"_key": "4", "_type": "agendaItem", "at": "1:45", "title": "Break", "isBreak": True},
+      {"_key": "5", "_type": "agendaItem", "at": "2:00", "title": "Resilience engineering", "summary": "Retries, fallbacks, circuit breakers and chaos, in the UI layer."},
+      {"_key": "6", "_type": "agendaItem", "at": "2:40", "title": "Observability and alerting", "summary": "What to measure, what to alert on, and what to ignore. Wrap-up and resources."}]},
+    {"_key": "fd", "_type": "workshopFormat", "label": "Full day", "duration": "6.5 h", "agenda": [
+      {"_key": "1", "_type": "agendaItem", "at": "0:00", "title": "Warm-up: break something on purpose"},
+      {"_key": "2", "_type": "agendaItem", "at": "0:45", "title": "Structure that survives growth, with a refactor lab"},
+      {"_key": "3", "_type": "agendaItem", "at": "2:30", "title": "Lunch", "isBreak": True},
+      {"_key": "4", "_type": "agendaItem", "at": "3:30", "title": "Resilience engineering lab"},
+      {"_key": "5", "_type": "agendaItem", "at": "5:30", "title": "Observability, and your own action plan"}]}]})
+docs.append({"_id": "workshop-legacy", "_type": "workshop", "title": "Payments UI Deep Dive", "slug": slug("payments-ui-deep-dive"), "duration": "Full day",
+  "description": "Checkout flows that survive real traffic.", "agenda": [{"_key": "x", "_type": "object", "title": "Checkout anatomy", "duration": "1 hour"}]})
+
+# ── events ── (V3 shape unless marked legacy)
+def ev(i, title, date, city, country, series_id, kind, sessions, tz="Europe/Zurich", **kw):
+    d = {"_id": f"event-{i}", "_type": "event", "title": title, "slug": slug(i), "date": date, "timezone": tz, "kind": kind,
+         "location": {"city": city, "country": country, **kw.pop("loc", {})}, "sessions": sessions}
+    if series_id: d["series"] = ref(f"series-{series_id}")
+    d.update(kw); docs.append(d)
+def sess(key, role, talk=None, workshop=None, **kw):
+    s = {"_key": key, "_type": "session", "role": role}
+    if talk: s["talk"] = ref(talk)
+    if workshop: s["workshop"] = ref(workshop)
+    s.update(kw); return s
+
+ev("devs-ghent-2026", "Devs.Ghent", "2026-09-30", "Ghent", "Belgium", "devs-ghent", "meetup",
+   [sess("a", "speaker", "talk-payments", startsAt="2026-09-30T17:00:00Z")], tz="Europe/Brussels", url="https://devs.gent")
+ev("game-of-codes-2026", "Game of Codes 2026", "2026-10-09", "Niš", "Serbia", "game-of-codes", "conference",
+   [sess("a", "speaker", "talk-resilient", status="tba", durationMinutes=25)], tz="Europe/Belgrade",
+   loc={"venue": "Science & Technology Park"}, url="https://gameofcodes.rs", language="English")
+ev("react-alicante-2026", "React Alicante 2026", "2026-09-12", "Alicante", "Spain", "react-alicante", "conference",
+   [sess("a", "speaker", "talk-resilient", recording={"url": "https://www.youtube.com/watch?v=aaaaaaaaaaa"})], tz="Europe/Madrid")
+ev("zurichjs-conf-2026", "ZurichJS Conf 2026", "2026-09-10", "Zurich", "Switzerland", "zurichjs", "conference",
+   [sess("a", "organizer", title="Chair · host · platform")], endDate="2026-09-11", featured=True)
+ev("react-summit-us-2025", "React Summit US", "2025-11-18", "New York", "United States", "react-summit", "conference",
+   [sess("a", "speaker", "talk-caching", featured=True, recording={"url": "https://www.youtube.com/watch?v=bbbbbbbbbbb", "durationMinutes": 30},
+         slidesUrl="https://slides.example/caching.pdf", slidesNote="PDF, 4.2 MB"),
+    sess("b", "panel", title="Panel: Growing to senior")], tz="America/New_York", featured=True)
+ev("zurichjs-react-arch-2025", "ZurichJS · React Architecture workshop", "2025-11-12", "Zurich", "Switzerland", "zurichjs", "meetup",
+   [sess("a", "workshop", workshop="workshop-react-arch", detail="3-hour workshop")])
+ev("zurichjs-anniversary-2025", "ZurichJS 1st anniversary", "2025-11-05", "Zurich", "Switzerland", "zurichjs", "meetup", [sess("a", "host")])
+ev("whatthestack-2025", "WhatTheStack", "2025-09-20", "Skopje", "North Macedonia", "whatthestack", "conference",
+   [sess("a", "speaker", "talk-caching"), sess("b", "workshop", workshop="workshop-react-arch", detail="Full-day workshop")], tz="Europe/Skopje")
+ev("cityjs-singapore-2025", "CityJS Singapore", "2025-07-18", "Singapore", "Singapore", "cityjs", "conference", [sess("a", "speaker", "talk-payments")], tz="Asia/Singapore")
+ev("cityjs-athens-2025", "CityJS Athens", "2025-06-05", "Athens", "Greece", "cityjs", "conference", [sess("a", "speaker", "talk-caching")], tz="Europe/Athens")
+ev("jsnation-2025", "JSNation", "2025-06-12", "Amsterdam", "Netherlands", "jsnation", "conference", [sess("a", "attendee", detail="OSS Awards")], tz="Europe/Amsterdam")
+# legacy V2 events (no sessions[]; type + conference + talk + links)
+docs.append({"_id": "event-cityjs-london-2025", "_type": "event", "title": "CityJS London 2025", "slug": slug("cityjs-london-2025"), "type": "conference",
+  "conference": "CityJS", "date": "2025-04-16", "location": {"city": "London", "country": "United Kingdom"}, "talk": ref("talk-caching"),
+  "links": {"eventUrl": "https://london.cityjsconf.org", "videoUrl": "https://www.youtube.com/watch?v=ccccccccccc"}})
+docs.append({"_id": "event-react-paris-2025", "_type": "event", "title": "React Paris", "slug": slug("react-paris-2025"), "type": "hosting",
+  "conference": "React Paris", "date": "2025-03-20", "location": {"city": "Paris", "country": "France"}})
+docs.append({"_id": "event-podcast-legacy", "_type": "event", "title": "Life of Dev", "slug": slug("life-of-dev"), "type": "podcast",
+  "conference": "Life of Dev", "date": "2026-03-02", "location": {"isOnline": True}})
+
+# ── praise (V3) + legacy socialPost/testimonial ──
+def pr(i, quote, name, headline, platform, date, topic, **kw):
+    d = {"_id": f"praise-{i}", "_type": "praise", "quote": quote, "author": {"name": name, "headline": headline}, "platform": platform,
+         "date": date, "topic": topic, "url": kw.pop("url", f"https://example.com/post/{i}")}
+    d.update(kw); docs.append(d)
+pr("tejas", "Faris is one of the best speakers I've seen recently. The guy is going places.", "Tejas Kumar", "host of ConTejas Code, author of Fluent React", "linkedin", "2025-09-24", "stage", featured=True, order=1)
+pr("rajni", "One of the most impressive 20-minute sessions I've ever seen. 5× content with perfect clarity. He delivered 5× content with perfect clarity, no confusion, and a beautifully structured walkthrough of the entire caching optimization process.", "Rajni Gediya", "Staff Engineer", "linkedin", "2025-11-20", "talk", talk=ref("talk-caching"), event=ref("event-react-summit-us-2025"), featured=True,
+   pullQuote="One of the most impressive 20-minute sessions I've ever seen.")
+pr("darko", "You need a Faris Aziz on your conference, meetup, whatever. This guy's enthusiasm lights up rooms.", "Darko Bozhinovski", "WhatTheStack co-founder", "linkedin", "2025-09-22", "stage", featured=True, pullQuote="This guy's enthusiasm lights up rooms.")
+pr("ioannis", "An intense 3-hour crash course on production-ready patterns. The kind of tactical knowledge that immediately changes how you write code.", "Ioannis Krokos", "attendee, ZurichJS", "linkedin", "2025-11-14", "workshop", workshop=ref("workshop-react-arch"), featured=True)
+pr("hammad", "Whenever I need guidance about my career, there is one person I always turn to.", "Hammad Hassan Bajwa", "mentee", "linkedin", "2025-12-02", "mentoring", featured=True)
+pr("mark", "Faris is awesome, and you should go attend ZurichJS Conf!", "Mark Erikson", "Redux maintainer", "x", "2025-12-10", "community", featured=True, author={"name": "Mark Erikson", "handle": "@acemarke", "headline": "Redux maintainer"})
+pr("daniel", "His warm-up exercise is one of the best things I have seen for a workshop.", "Daniel Afonso", "Developer Advocate", "x", "2025-04-08", "workshop", label="On the warm-up", featured=True, author={"name": "Daniel Afonso", "handle": "@danieljcafonso", "headline": "Developer Advocate"})
+docs.append({"_id": "socialPost-legacy-1", "_type": "socialPost", "url": "https://bsky.app/profile/x/post/1", "platform": "bluesky", "author": "Sam Legacy",
+  "authorHandle": "@sam.bsky.social", "content": "Great session on resilient UIs at React Alicante, lots to take home.", "postDate": "2026-09-13", "context": "talk", "relatedTalk": ref("talk-resilient")})
+docs.append({"_id": "testimonial-legacy-1", "_type": "testimonial", "type": "mentorcruise", "quote": "Faris helped me land my first senior role with a clear plan.",
+  "author": "Priya Legacy", "role": "Senior Engineer", "company": "Acme", "date": "2025-10-01", "context": "mentored", "source": "https://mentorcruise.com/mentor/farisaziz/"})
+
+# ── metrics ──
+def m(i, value, label, domain, as_of, definition, **kw):
+    d = {"_id": f"metric-{i}", "_type": "metric", "value": value, "label": label, "domain": domain, "asOf": as_of, "definition": definition, "status": "approved"}
+    d.update(kw); docs.append(d)
+m("members", "4,500", "members across our groups", "community", "2026-07-01", "Unique members across ZurichJS meetup groups.", order=1)
+m("cfp", "436", "talk proposals, first Conf", "community", "2026-05-01", "CFP submissions received for ZurichJS Conf 2026.", order=2, period="2026")
+m("speakers", "40+", "speakers hosted at meetups", "community", "2026-07-01", "Distinct speakers at ZurichJS meetups.", order=3, period="2024–26")
+m("sponsors", "30+", "sponsors and partners", "community", "2026-07-01", "Organisations sponsoring or partnering since 2024.", order=4)
+m("china", "~14×", "new subscriptions in China", "engineering", "2025-06-01", "Monthly new subscriptions after vs before localised checkout.", context="After localising checkout and payment methods for the market. Smallpdf.", order=1)
+m("bundle", "−60%", "checkout bundle size", "engineering", "2025-03-01", "Gzipped JS on the checkout route, before vs after.", context="Payload shaping and code-splitting on the checkout path; the material behind the caching talk.", order=2)
+m("pending", "3×", "unconfirmed number", "engineering", "2025-01-01", "Hidden until approved.", status="needs-ok")
+
+docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJS", "slug": slug("zurichjs"), "role": "Co-founder and chair", "founded": 2024,
+  "city": "Zurich", "url": "https://zurichjs.com", "series": ref("series-zurichjs"), "headline": "I co-founded and lead ZurichJS.",
+  "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
+  "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first two-day ZurichJS Conf happened.",
+  "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["members", "cfp", "speakers", "sponsors"]],
+  "recognition": [{"_key": "g", "_type": "award", "title": "Global Community of the Year", "issuer": "OSS Awards at JSNation", "year": 2025, "confirmed": True}],
+  "pillars": [
+    {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "Hosting is counted separately from my own talks."},
+    {"_key": "t", "_type": "communityPillar", "kicker": "Teach", "title": "Workshops for the community, on the house", "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."},
+    {"_key": "b", "_type": "communityPillar", "kicker": "Build", "title": "The conference platform", "body": "Tickets, CFP and sponsor onboarding for ZurichJS Conf."}],
+  "aftermovie": {"title": "ZurichJS Conf 2026", "caption": "Two days, one stage, 436 talk proposals to choose from.", "published": False},
+  "photos": [dict(P["community"], _key="c1"), dict(P["event"], _key="c2")]})
+
+docs.append({"_id": "homePage", "_type": "homePage", "heroVariant": "band", "heroPhotos": [dict(P["stage"], _key="h1"), dict(P["workshop"], _key="h2"), dict(P["portrait"], _key="h3")],
+  "featured": [dict(ref("talk-caching"), _key="f1"), dict(ref("ext-contejas"), _key="f2"), dict(ref("ext-podrocket"), _key="f3")],
+  "praise": [dict(ref(f"praise-{k}"), _key=k) for k in ["tejas", "rajni", "darko", "ioannis", "hammad", "mark", "daniel"]],
+  "featuredQuote": ref("praise-rajni"), "community": ref("community-zurichjs")})
+
+# ── writing ──
+def block(text, key): return {"_type": "block", "_key": key, "style": "normal", "markDefs": [], "children": [{"_type": "span", "_key": key + "s", "text": text, "marks": []}]}
+lorem = "Production teaches you things no tutorial does. " * 60
+docs.append({"_id": "post-zurichjs-name", "_type": "blogPost", "title": "Why it's called ZurichJS", "slug": slug("why-its-called-zurichjs"), "published": True,
+  "publishedAt": "2026-03-09T09:00:00Z", "topic": "community", "excerpt": "The name started as something simple. Over time it came to represent something much bigger.",
+  "coverImage": P["community"], "body": [block(lorem, "b1"), {"_type": "block", "_key": "h", "style": "h2", "markDefs": [], "children": [{"_type": "span", "_key": "hs", "text": "Where the name came from", "marks": []}]}, block(lorem, "b2")]})
+docs.append({"_id": "post-npmx", "_type": "blogPost", "title": "Community, Open Source, and npmx", "slug": slug("community-open-source-npmx"), "published": True,
+  "publishedAt": "2026-03-02T09:00:00Z", "category": "announcement", "excerpt": "A fast-moving open source train that welcomes you aboard the moment you show up.", "body": [block(lorem * 2, "b1")]})
+docs.append({"_id": "post-2025-review", "_type": "blogPost", "title": "2025 in review: a year of exposure, compounding, and trusting my gut", "slug": slug("2025-in-review"),
+  "published": True, "publishedAt": "2026-01-05T09:00:00Z", "topic": "careers", "excerpt": "The year in talks, community and work.", "body": [block(lorem * 7, "b1")],
+  "corrections": [{"_key": "c1", "_type": "correction", "date": "2026-01-20", "note": "Corrected the member count to the dated figure (4,500 as of Jul 2026 had read 5,000)."}]})
+def ext(i, title, fmt, source, date, topic, **kw):
+    d = {"_id": f"ext-{i}", "_type": "externalPost", "title": title, "url": f"https://example.com/{i}", "format": fmt, "source": source, "publishedAt": date, "topic": topic}
+    d.update(kw); docs.append(d)
+ext("podrocket", "Caching, payloads, and other front-end dark arts", "podcast", "PodRocket", "2026-07-15", "engineering", durationMinutes=40, relatedTalk=ref("talk-caching"),
+    excerpt="The conversation behind the React Summit talk.")
+ext("jscraft", "Faris Aziz: Staff Engineer at Smallpdf and ZurichJS organiser", "podcast", "JS-Craft", "2026-07-02", "careers")
+ext("ai-craft", "AI Engineering: Are we trading craftsmanship for scale?", "video", "YouTube", "2026-06-10", "engineering")
+ext("contejas", "How to get promoted, build resilience, and lead with empathy", "podcast", "ConTejas Code", "2026-01-20", "careers")
+ext("ijs", "React 19.2 explained: updates, impact, and what to watch for", "article", "iJS", "2025-10-08", "engineering", episode="guest article")
+docs.append({"_id": "ext-legacy-spotify", "_type": "externalPost", "title": "Developer communities: what’s the secret behind ZurichJS’ rise?", "url": "https://open.spotify.com/x",
+  "type": "podcast", "source": "Spotify", "publishedAt": "2025-07-01"})  # legacy V2 shape: type, no format/topic
+
+# ── career, services, about, media ──
+for i, (name, role, label, desc) in enumerate([
+    ("Smallpdf", "Staff Software Engineer", "Now", "Monetization, checkout and frontend architecture for a product used by millions."),
+    ("ZurichJS", "Co-founder and chair", "2024 →", "Meetups, then ZurichJS Conf 2026."),
+    ("Navro", "Founding engineer and lead", "Earlier", None),
+    ("Fiit, FX Digital", "Software engineer", "Earlier", None),
+    ("Outside tech", "", "Before code", "Coaching, before the switch into engineering.")]):
+    d = {"_id": f"company-{i}", "_type": "company", "name": name, "role": role, "periodLabel": label, "order": i + 1}
+    if desc: d["description"] = desc
+    docs.append(d)
+docs.append({"_id": "company-private", "_type": "company", "name": "Unannounced", "role": "Secret", "isPublic": False, "order": 0})
+for i, (t, typ, aud, reach, get, cta) in enumerate([
+    ("Events: speaking and workshops", "events", "Conferences, meetups, podcasts, teams", "you’d like a talk, keynote, panel, podcast guest, or a hands-on workshop for your event or team.",
+     "a session shaped around your audience. Talks come with slides the same day; workshops with a repo you keep.", ("Invite me", "/invite")),
+    ("Advisory", "consulting", "Companies and founders · limited availability", "you want an outside view on frontend architecture, payments and monetization, engineering leadership, team structure, or go-to-market.",
+     "a close look at where you are, and a clear, written view of what to change first.", ("Tell me what’s going on", "/contact#message")),
+    ("Mentorship", "mentorship", "Individual engineers", "you’re working towards senior or lead, or want help with speaking and getting your work seen.",
+     "regular 1:1 conversations focused on your next step.", ("How mentorship works", "/mentorship"))]):
+    docs.append({"_id": f"offer-{i}", "_type": "serviceOffer", "title": t, "slug": slug(t.lower().split(':')[0].replace(' ', '-')), "serviceType": typ, "audience": aud,
+                 "reachOutIf": reach, "youGet": get, "primaryCta": {"label": cta[0], "href": cta[1]}, "order": i + 1,
+                 **({"secondaryCta": {"label": "See workshops", "href": "/workshops"}} if typ == "events" else {})})
+docs.append({"_id": "offer-mentor-monthly", "_type": "serviceOffer", "title": "Monthly mentorship", "slug": slug("monthly-mentorship"), "serviceType": "mentorship",
+  "shortDescription": "Two calls a month and async feedback in between.", "bestFor": "Engineers aiming for senior or lead", "outcomes": ["A written growth plan", "Feedback on real work", "Speaking prep"],
+  "bookingUrl": "https://mentorcruise.com/mentor/farisaziz/", "bookingLabel": "Apply on MentorCruise", "order": 5})
+docs.append({"_id": "page-about", "_type": "page", "identifier": "about", "heroImage": P["stage"], "content": [
+  block("Today I work as a software engineer on frontend and payment systems at scale: the checkout that has to work in every currency, the data layer that has to stay fast on a bad connection, the architecture decisions that only look obvious afterwards. Earlier I helped found and lead engineering at Navro, and before that I shipped at Fiit and FX Digital.", "a1"),
+  block("Speaking started as a way to explain that work to other engineers. It's now a second job I don't want to give up: talks and workshops across Europe, the US and Asia on production engineering, payments, and getting into leadership earlier than you feel ready for.", "a2"),
+  block("In 2024 I co-founded ZurichJS because Zurich didn't have the JavaScript community I wanted. I lead it today. It grew faster than I expected and, in September 2026, ran its first two-day conference.", "a3")]})
+docs.append({"_id": "media-1", "_type": "media", "type": "photo", "title": "React Summit US", "image": P["stage"], "event": ref("event-react-summit-us-2025"), "credit": "GitNation", "date": "2025-11-18"})
+docs.append({"_id": "media-2", "_type": "media", "type": "photo", "title": "ZurichJS evening", "image": P["community"], "credit": "ZurichJS", "date": "2025-11-05"})
+
+out = os.path.join(os.path.dirname(__file__), "sanity-dataset.json")
+json.dump(docs, open(out, "w"), ensure_ascii=False, indent=1)
+print(f"wrote {len(docs)} documents → {out}")

@@ -1,0 +1,68 @@
+---
+/**
+ * Responsive Sanity image: srcset from the CDN (hotspot-aware crops),
+ * intrinsic width/height to prevent layout shift, lazy by default.
+ * Pass `ratio` (w/h) to crop, e.g. 16/9 or 1.
+ */
+import { urlFor } from '../../lib/sanity/client';
+import type { SanityImage } from '../../lib/sanity/v3';
+
+interface Props {
+  image?: SanityImage | null;
+  alt?: string;
+  /** Crop to this aspect ratio (width / height). Omit for the original. */
+  ratio?: number;
+  widths?: number[];
+  sizes?: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'auto';
+  quality?: number;
+}
+
+const {
+  image,
+  alt,
+  ratio,
+  widths = [480, 800, 1200, 1600],
+  sizes = '100vw',
+  class: className,
+  loading = 'lazy',
+  fetchpriority,
+  quality = 78,
+} = Astro.props;
+
+const ok = Boolean(image?.asset && (image.asset._ref || image.asset._id || image.asset.url));
+const dims = image?.dimensions;
+const w0 = widths[widths.length - 1];
+const h0 = ratio ? Math.round(w0 / ratio) : dims ? Math.round(w0 / dims.aspectRatio) : undefined;
+
+function src(w: number) {
+  let b = urlFor(image!).width(w).quality(quality).auto('format');
+  if (ratio) b = b.height(Math.round(w / ratio)).fit('crop');
+  return b.url();
+}
+const srcset = ok ? widths.map((w) => `${src(w)} ${w}w`).join(', ') : '';
+const text = alt ?? image?.alt ?? '';
+---
+
+{ok ? (
+  <img
+    src={src(widths[Math.min(1, widths.length - 1)])}
+    srcset={srcset}
+    sizes={sizes}
+    width={w0}
+    height={h0}
+    alt={text}
+    loading={loading}
+    decoding="async"
+    fetchpriority={fetchpriority}
+    class={className}
+  />
+) : (
+  <span class:list={['ds-img-ph', className]} role={text ? 'img' : undefined} aria-label={text || undefined} aria-hidden={text ? undefined : 'true'}></span>
+)}
+
+<style is:global>
+  .ds-img-ph { display: block; background: repeating-linear-gradient(135deg, rgb(var(--surface)) 0 10px, rgb(var(--hairline)) 10px 11px); }
+</style>

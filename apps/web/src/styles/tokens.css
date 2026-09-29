@@ -1,0 +1,134 @@
+/* ==========================================================================
+   Design System v3 — "Panels & Bands, dark first"
+   Token source of truth. Values are RGB triplets so every token composes
+   with alpha: rgb(var(--yellow) / 0.2). Hex lives ONLY here (and in the
+   satori OG renderer + email styles, which can't read CSS variables).
+
+   Rules the tokens encode:
+   - Yellow is the single accent. Ink text on yellow, never white.
+   - Blue is an edge colour (band, video tiles), never small text on ink.
+   - One surface (#191A1D) on one ground (#0F0F10), separated by 1px
+     hairlines or a change of ground, never shadows.
+   ========================================================================== */
+
+:root {
+  /* Palette */
+  --c-ink: 15 15 16;            /* #0F0F10 */
+  --c-surface: 25 26 29;        /* #191A1D */
+  --c-hairline: 42 42 46;       /* #2A2A2E */
+  --c-hairline-strong: 68 65 60;/* #44413C */
+  --c-cream: 248 244 235;       /* #F8F4EB */
+  --c-cream-2: 255 253 248;     /* #FFFDF8 — light-theme surface */
+  --c-muted: 200 193 181;       /* #C8C1B5 */
+  --c-faint: 138 131 120;       /* #8A8378 */
+  --c-yellow: 244 198 58;       /* #F4C63A */
+  --c-blue: 46 136 184;         /* #2E88B8 */
+  --c-blue-text: 23 104 143;    /* #17688F — blue kicker on cream */
+  --c-cream-muted: 87 83 78;    /* #57534E — secondary text on cream */
+  --c-danger: 255 122 102;      /* #FF7A66 */
+
+  /* Semantic (dark = default) */
+  --ground: var(--c-ink);
+  --surface: var(--c-surface);
+  --hairline: var(--c-hairline);
+  --hairline-strong: var(--c-hairline-strong);
+  --text: var(--c-cream);
+  --text-muted: var(--c-muted);
+  --text-faint: var(--c-faint);
+  --yellow: var(--c-yellow);
+  --blue: var(--c-blue);
+  --on-yellow: var(--c-ink);
+  /* Kickers & small accent text: yellow on ink, blue on cream */
+  --accent-text: var(--c-yellow);
+  /* The one invitation panel per page: cream on ink (inverts in light) */
+  --panel: var(--c-cream);
+  --panel-text: var(--c-ink);
+  --panel-muted: var(--c-cream-muted);
+  --panel-kicker: var(--c-blue-text);
+  --panel-btn: var(--c-ink);
+  --panel-btn-text: var(--c-cream);
+  --danger: var(--c-danger);
+
+  /* Type */
+  --font: 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Space & shape */
+  --gutter: 40px;
+  --maxw: 1200px;
+  --section-y: 64px;
+  --radius-btn: 4px;
+  --radius-card: 6px;
+  --header-height: 72px;
+  --scroll-offset: 7rem;
+
+  /* Graphic devices */
+  --band: linear-gradient(90deg, rgb(var(--blue)) 0 12%, rgb(var(--yellow)) 12% 100%);
+  --band-v: linear-gradient(180deg, rgb(var(--blue)) 0 14%, rgb(var(--yellow)) 14% 100%);
+  --stripe: repeating-linear-gradient(180deg, rgb(var(--yellow)) 0 10px, transparent 10px 16px);
+  --skew: -14deg;
+  --ease: cubic-bezier(0.7, 0, 0.3, 1);
+
+  /* ── Legacy DS v2 aliases: untouched surfaces (admin, attendee pages)
+        inherit the V3 palette automatically. Don't use in new code. ── */
+  --bg: var(--ground);
+  --surface-1: var(--surface);
+  --surface-2: var(--surface);
+  --surface-3: var(--hairline);
+  --surface-raised: var(--surface);
+  --surface-overlay: var(--hairline);
+  --ink: var(--text);
+  --ink-muted: var(--text-muted);
+  --ink-faint: var(--text-faint);
+  --ink-on-accent: var(--on-yellow);
+  --ink-on-signal: var(--c-cream);
+  --edge: var(--hairline);
+  --edge-strong: var(--hairline-strong);
+  --accent: var(--yellow);
+  --accent-bright: var(--yellow);
+  --accent-deep: var(--yellow);
+  --accent-press: var(--c-cream);
+  --accent-hover: var(--c-cream);
+  --signal: var(--blue);
+  --signal-deep: var(--blue);
+  --warn: var(--yellow);
+  --font-display: var(--font);
+  --font-sans: var(--font);
+
+  color-scheme: dark;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --gutter: 20px;
+    --section-y: 48px;
+    --header-height: 60px;
+  }
+}
+
+/* Light theme: swap ink ↔ cream grounds; yellow bands and blue edge stay. */
+:root.light,
+:root[data-theme='light'] {
+  --ground: var(--c-cream);
+  --surface: var(--c-cream-2);
+  --hairline: 226 219 205;       /* #E2DBCD */
+  --hairline-strong: 201 192 176;/* #C9C0B0 */
+  --text: var(--c-ink);
+  --text-muted: var(--c-cream-muted);
+  --text-faint: 107 101 93;      /* #6B655D — ≥4.5:1 on cream */
+  --accent-text: var(--c-blue-text);
+  --panel: var(--c-ink);
+  --panel-text: var(--c-cream);
+  --panel-muted: var(--c-muted);
+  --panel-kicker: var(--c-yellow);
+  --panel-btn: var(--c-yellow);
+  --panel-btn-text: var(--c-ink);
+  --danger: 178 52 34;           /* #B23422 */
+  --ink-on-signal: var(--c-cream);
+  color-scheme: light;
+}
+
+:root.dark,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}

@@ -1,0 +1,63 @@
+---
+/**
+ * The one cream invitation panel per page, with the speaking avatar.
+ * Copy defaults to the Home page document's invitation panel.
+ */
+import Illustration from './Illustration.astro';
+import { bookingYears } from '../../lib/availability';
+
+interface Props {
+  kicker?: string;
+  headline?: string;
+  body?: string;
+  primary?: { label: string; href: string };
+  secondary?: { label: string; href: string };
+  /** Small print under the button. */
+  note?: string;
+  art?: 'faris-speaking' | 'faris-thinking' | 'none';
+  track?: string;
+  class?: string;
+}
+
+const {
+  kicker = `Booking ${bookingYears()}`,
+  headline = 'Invite me to your stage.',
+  body,
+  primary = { label: 'Invite me to speak', href: '/invite' },
+  secondary = { label: 'Press kit: bios, photos, rider', href: '/press-kit' },
+  note,
+  art = 'faris-speaking',
+  track = 'invite-panel',
+  class: className,
+} = Astro.props;
+---
+
+<aside class:list={['ds-panel ipanel', { 'ipanel--art': art !== 'none' }, className]} aria-label={headline}>
+  <div class="ipanel__copy">
+    <p class="ds-kicker">{kicker}</p>
+    <h2 class="ipanel__title">{headline}</h2>
+    {body && <p class="ipanel__body">{body}</p>}
+    <div class="ipanel__actions">
+      <a href={primary.href} class="ds-btn ds-btn--panel" data-track={track}>{primary.label}</a>
+      {secondary && <a href={secondary.href} class="ds-link ds-link--sm">{secondary.label}</a>}
+    </div>
+    {note && <p class="ipanel__note">{note}</p>}
+    <slot />
+  </div>
+  {art !== 'none' && <Illustration name={art} width={150} class="ipanel__art" />}
+</aside>
+
+<style>
+  .ipanel { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+  .ipanel:not(.ipanel--art) { grid-template-columns: 1fr; }
+  .ipanel__copy { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .ipanel__title { font-size: clamp(26px, 3vw, 32px); line-height: 1; letter-spacing: -0.04em; font-weight: 800; }
+  .ipanel__body { margin: 0; font-size: 15px; line-height: 1.5; max-width: 42ch; }
+  .ipanel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 6px; }
+  .ipanel__note { margin: 0; font-size: 12.5px; }
+  .ipanel :global(.ipanel__art) { width: 150px; height: auto; align-self: end; }
+  @media (max-width: 480px) {
+    .ipanel { grid-template-columns: 1fr; }
+    .ipanel :global(.ipanel__art) { width: 110px; justify-self: end; margin-top: -20px; }
+  }
+</style>

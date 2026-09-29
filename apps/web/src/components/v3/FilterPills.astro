@@ -1,0 +1,48 @@
+---
+/**
+ * A row of filter pills bound to one key. Place inside a [data-filter-root]
+ * (see lib/client/filters.ts); items carry `data-<key>="value other"`.
+ */
+interface Option {
+  value: string;
+  label: string;
+  count?: number;
+}
+interface Props {
+  name: string;
+  label?: string;
+  options: Option[];
+  allLabel?: string;
+  allCount?: number;
+  class?: string;
+}
+const { name, label, options, allLabel = 'All', allCount, class: className } = Astro.props;
+const all: Option = { value: 'all', label: allLabel, count: allCount };
+---
+
+<div class:list={['fpills', className]} role="group" aria-label={label ? `Filter by ${label.toLowerCase()}` : `Filter by ${name}`}>
+  {label && <span class="fpills__label">{label}</span>}
+  <div class="ds-pills">
+    {[all, ...options].map((o, i) => (
+      <button type="button" class="ds-pill" data-filter={name} data-value={o.value} aria-pressed={i === 0 ? 'true' : 'false'}>
+        {o.label}{typeof o.count === 'number' && <span class="ds-pill__count">· {o.count}</span>}
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { initFilters } from '../../lib/client/filters';
+  initFilters();
+  document.addEventListener('astro:page-load', initFilters);
+</script>
+
+<style>
+  .fpills { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+  .fpills__label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  :global([data-filter-item][hidden]), :global([data-filter-group][hidden]) { display: none !important; }
+  @media (prefers-reduced-motion: no-preference) {
+    :global([data-filter-item]) { animation: fpills-in 150ms ease-out; }
+  }
+  @keyframes fpills-in { from { opacity: 0.4; } to { opacity: 1; } }
+</style>

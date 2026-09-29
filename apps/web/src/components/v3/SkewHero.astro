@@ -1,0 +1,97 @@
+---
+/**
+ * The skewed-band hero: a yellow block at -14deg on the right with an 8px
+ * blue strip on its edge and a photo clipped into it. Text sits left.
+ * Below 720px the band + photo stack ABOVE the headline (Home Phone).
+ *
+ * Slots: default = text column · `aside` = content set on the yellow
+ * (big number) · `strip` = bottom-right ink strip ("Next up …").
+ * The optional giant faded word ("Faris") sits behind everything.
+ */
+import SanityImg from './SanityImg.astro';
+import type { SanityImage } from '../../lib/sanity/v3';
+
+interface Props {
+  image?: SanityImage | null;
+  /** Up to three photos: first spans the top, two below (the mosaic). */
+  mosaic?: (SanityImage | null | undefined)[];
+  imageAlt?: string;
+  /** object-position for the photo, e.g. "50% 30%". */
+  focus?: string;
+  /** Desktop height in px (auto on phone). */
+  height?: number;
+  /** Width of the yellow block (the photo is 8% narrower). */
+  bandWidth?: number;
+  giant?: string;
+  /** Loading priority: the hero photo is the LCP element. */
+  priority?: boolean;
+  class?: string;
+}
+
+const { image, mosaic, imageAlt, focus = '50% 30%', height = 520, bandWidth = 50, giant, priority = true, class: className } = Astro.props;
+const photos = (mosaic ?? []).filter((p): p is SanityImage => Boolean(p?.asset));
+const hasPhoto = Boolean(image?.asset) || photos.length > 0;
+const vars = `--hero-h:${height}px;--band-w:${bandWidth}%;--photo-w:${bandWidth - 8}%;--focus:${focus}`;
+const hasAside = Astro.slots.has('aside');
+---
+
+<section class:list={['skh', { 'skh--photo': hasPhoto, 'skh--aside': hasAside }, className]} style={vars}>
+  {giant && <div class="skh__giant" aria-hidden="true">{giant}</div>}
+  <div class="skh__art" aria-hidden={hasPhoto ? undefined : 'true'}>
+    <div class="skh__band"></div>
+    <div class="skh__edge"></div>
+    {photos.length > 1 ? (
+      <div class="skh__photo skh__mosaic">
+        {photos.slice(0, 3).map((p, i) => (
+          <SanityImg image={p} ratio={i === 0 ? 16 / 9 : 1} widths={i === 0 ? [640, 960, 1280] : [360, 600]} sizes={i === 0 ? '(max-width: 720px) 100vw, 46vw' : '(max-width: 720px) 50vw, 23vw'} loading={priority ? 'eager' : 'lazy'} fetchpriority={i === 0 && priority ? 'high' : undefined} class:list={['skh__img', { 'skh__img--wide': i === 0 }]} />
+        ))}
+      </div>
+    ) : hasPhoto ? (
+      <div class="skh__photo">
+        <SanityImg image={image ?? photos[0]} alt={imageAlt} widths={[640, 960, 1400]} sizes="(max-width: 720px) 100vw, 42vw" loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} class="skh__img" />
+      </div>
+    ) : null}
+    {hasAside && <div class="skh__aside"><slot name="aside" /></div>}
+  </div>
+  <div class="ds-wrap skh__text">
+    <div class="skh__col"><slot /></div>
+  </div>
+  {Astro.slots.has('strip') && <div class="skh__strip"><slot name="strip" /></div>}
+</section>
+
+<style>
+  .skh { position: relative; overflow: hidden; min-height: var(--hero-h); display: flex; align-items: flex-start; }
+  .skh__giant {
+    position: absolute; left: -30px; top: -80px; font-weight: 900; font-size: 540px; line-height: 0.8; letter-spacing: -0.07em;
+    color: rgb(var(--text)); opacity: 0.035; white-space: nowrap; pointer-events: none; user-select: none;
+  }
+  .skh__art { position: absolute; inset: 0; pointer-events: none; }
+  .skh__band, .skh__edge { position: absolute; top: 0; bottom: 0; transform: skewX(var(--skew)); transform-origin: top; }
+  .skh__band { right: -8%; width: var(--band-w); background: rgb(var(--yellow)); }
+  .skh__edge { right: calc(var(--photo-w) - 4px); width: 8px; background: rgb(var(--blue)); }
+  .skh__photo { position: absolute; right: 0; top: 0; bottom: 0; width: var(--photo-w); clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%); pointer-events: auto; }
+  .skh__photo :global(.skh__img) { width: 100%; height: 100%; object-fit: cover; object-position: var(--focus); display: block; }
+  .skh__mosaic { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 1.15fr 1fr; gap: 6px; background: rgb(var(--ground)); clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); width: calc(var(--photo-w) + 4%); }
+  .skh__mosaic :global(.skh__img--wide) { grid-column: 1 / -1; }
+  .skh__aside { position: absolute; right: var(--gutter); bottom: 48px; width: min(320px, calc(var(--band-w) - 14%)); color: rgb(var(--c-ink)); pointer-events: auto; }
+  .skh__text { position: relative; z-index: 1; padding-top: 60px; padding-bottom: 60px; }
+  .skh__col { display: flex; flex-direction: column; gap: 22px; max-width: min(520px, calc(100% - var(--band-w) - 2%)); }
+  .skh__strip { position: absolute; right: 0; bottom: 0; z-index: 2; }
+
+  @media (max-width: 900px) {
+    .skh__col { max-width: min(460px, 54%); }
+  }
+  @media (max-width: 720px) {
+    .skh { flex-direction: column; min-height: 0; }
+    .skh__giant { font-size: 300px; top: -40px; }
+    .skh__art { position: relative; inset: auto; height: 250px; width: 100%; flex: none; }
+    .skh--aside .skh__art { height: 210px; }
+    .skh__band { right: -14%; width: 72%; }
+    .skh__edge { right: calc(58% - 4px); }
+    .skh__photo, .skh__mosaic { width: 58%; }
+    .skh__aside { right: var(--gutter); bottom: 20px; width: 50%; }
+    .skh__text { padding-top: 24px; padding-bottom: 36px; }
+    .skh__col { max-width: none; gap: 18px; }
+    .skh__strip { position: relative; width: 100%; }
+  }
+</style>

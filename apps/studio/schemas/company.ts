@@ -1,8 +1,12 @@
 import { defineType, defineField } from 'sanity';
 
+/**
+ * One entry on the career timeline (Track record). Kept as `company` for
+ * data compatibility; think of it as "role at an organisation".
+ */
 export default defineType({
   name: 'company',
-  title: 'Company',
+  title: 'Career entry',
   type: 'document',
   fields: [
     defineField({
@@ -49,6 +53,21 @@ export default defineType({
       title: 'Period',
       type: 'string',
       description: 'e.g., "2022-2024" or "2022-Present"',
+    }),
+    defineField({
+      name: 'periodLabel',
+      title: 'Timeline label',
+      type: 'string',
+      description: 'Left column on the timeline: "Now", "2024 →", "Earlier", "Before code".',
+    }),
+    defineField({ name: 'startDate', title: 'Start', type: 'date' }),
+    defineField({ name: 'endDate', title: 'End', type: 'date', description: 'Empty = current.' }),
+    defineField({
+      name: 'isPublic',
+      title: 'Show publicly',
+      type: 'boolean',
+      initialValue: true,
+      description: 'Off keeps an unannounced role private until the reveal.',
     }),
     defineField({
       name: 'url',

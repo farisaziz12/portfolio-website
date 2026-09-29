@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity';
 
 export default defineType({
   name: 'impactMetric',
-  title: 'Impact Metric',
+  title: 'Impact Metric (legacy)',
   type: 'document',
   groups: [
     { name: 'content', title: 'Content', default: true },

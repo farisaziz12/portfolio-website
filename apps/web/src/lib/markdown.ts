@@ -17,8 +17,8 @@ const FOOTER = `
 
 ---
 
-Faris Aziz: Staff Software Engineer & Conference Speaker, Geneva.
-Site: https://faziz-dev.com · Invite to speak: https://faziz-dev.com/invite · Consulting: https://cal.com/farisaziz12/discovery-call · Mentorship: https://faziz-dev.com/mentorship
+Faris Aziz: software engineer, speaker, ZurichJS co-founder. Geneva, Switzerland.
+Site: https://faziz-dev.com · Invite to speak: https://faziz-dev.com/invite · Services: https://faziz-dev.com/services · Mentorship: https://faziz-dev.com/mentorship · Index for agents: https://faziz-dev.com/llms.txt
 LinkedIn: https://linkedin.com/in/farisaziz12 · GitHub: https://github.com/farisaziz12 · Bluesky: https://bsky.app/profile/farisaziz.com
 `;
 

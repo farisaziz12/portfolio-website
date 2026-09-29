@@ -1,0 +1,23 @@
+---
+/**
+ * Kicker: 12px uppercase eyebrow. Parts are joined with " · ". The first
+ * part can be muted (a breadcrumb-ish "SPEAKING · SCHEDULE").
+ */
+interface Props {
+  parts: (string | undefined | null | false)[];
+  mutedFirst?: boolean;
+  as?: 'p' | 'div' | 'span';
+  class?: string;
+}
+const { parts, mutedFirst = false, as: Tag = 'p', class: className } = Astro.props;
+const list = parts.filter((p): p is string => Boolean(p));
+---
+
+<Tag class:list={['ds-kicker', className]}>
+  {list.map((p, i) => (
+    <>
+      {i > 0 && <span aria-hidden="true"> · </span>}
+      <span class:list={[{ 'is-muted': mutedFirst && i === 0 }]}>{p}</span>
+    </>
+  ))}
+</Tag>

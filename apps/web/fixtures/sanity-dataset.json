@@ -1,0 +1,1813 @@
+[
+ {
+  "_id": "image-b1ae7c349483be8176fcab676e48a88e958ec52e-6488x4325-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/b1ae7c349483be8176fcab676e48a88e958ec52e-6488x4325.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 6488,
+    "height": 4325,
+    "aspectRatio": 1.500115606936416
+   }
+  }
+ },
+ {
+  "_id": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 6256,
+    "height": 4172,
+    "aspectRatio": 1.4995206136145733
+   }
+  }
+ },
+ {
+  "_id": "image-5b80e104550c6b67f5503564a0a030e82f0b34b6-2856x2142-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/5b80e104550c6b67f5503564a0a030e82f0b34b6-2856x2142.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 2856,
+    "height": 2142,
+    "aspectRatio": 1.3333333333333333
+   }
+  }
+ },
+ {
+  "_id": "image-9dae32e83775700b957d149806b774fb7f88698a-2048x1088-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/9dae32e83775700b957d149806b774fb7f88698a-2048x1088.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 2048,
+    "height": 1088,
+    "aspectRatio": 1.8823529411764706
+   }
+  }
+ },
+ {
+  "_id": "image-8c1dec0d38844e17eb42865ebb7c879bfbd355af-4032x3024-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/8c1dec0d38844e17eb42865ebb7c879bfbd355af-4032x3024.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 4032,
+    "height": 3024,
+    "aspectRatio": 1.3333333333333333
+   }
+  }
+ },
+ {
+  "_id": "image-247e8ebcfc22176df3240a49436667f325581768-4928x3279-jpg",
+  "_type": "sanity.imageAsset",
+  "url": "https://cdn.sanity.io/images/94fb4yui/production/247e8ebcfc22176df3240a49436667f325581768-4928x3279.jpg",
+  "metadata": {
+   "dimensions": {
+    "width": 4928,
+    "height": 3279,
+    "aspectRatio": 1.5028972247636474
+   }
+  }
+ },
+ {
+  "_id": "siteSettings",
+  "_type": "siteSettings",
+  "siteTitle": "Faris Aziz",
+  "siteUrl": "https://faziz-dev.com",
+  "nowLine": "Software engineer · speaker · ZurichJS co-founder",
+  "twitterHandle": "farisaziz12",
+  "introEnabled": true
+ },
+ {
+  "_id": "speakerProfile",
+  "_type": "speakerProfile",
+  "name": "Faris Aziz",
+  "pronunciation": "FAH-riss ah-ZEEZ",
+  "travelBase": "Geneva, Switzerland",
+  "bioUpdatedAt": "2026-09-01",
+  "headshots": [
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-b1ae7c349483be8176fcab676e48a88e958ec52e-6488x4325-jpg"
+    },
+    "alt": "Faris speaking under stage lighting",
+    "credit": "Event photographer",
+    "_key": "portrait",
+    "label": "Stage portrait",
+    "tag": "portrait"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg"
+    },
+    "alt": "Faris on a conference stage, wide",
+    "credit": "Event photographer",
+    "_key": "stage",
+    "label": "Conference stage, wide",
+    "tag": "stage"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-5b80e104550c6b67f5503564a0a030e82f0b34b6-2856x2142-jpg"
+    },
+    "alt": "Faris running a workshop",
+    "credit": "Event photographer",
+    "_key": "workshop",
+    "label": "Workshop in progress",
+    "tag": "workshop"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-9dae32e83775700b957d149806b774fb7f88698a-2048x1088-jpg"
+    },
+    "alt": "A ZurichJS evening",
+    "credit": "Event photographer",
+    "_key": "community",
+    "label": "ZurichJS meetup",
+    "tag": "community"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-8c1dec0d38844e17eb42865ebb7c879bfbd355af-4032x3024-jpg"
+    },
+    "alt": "Faris speaking, mid-gesture",
+    "credit": "Event photographer",
+    "_key": "speaking",
+    "label": "Speaking, close",
+    "tag": "speaking"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-247e8ebcfc22176df3240a49436667f325581768-4928x3279-jpg"
+    },
+    "alt": "Conference audience and stage",
+    "credit": "Event photographer",
+    "_key": "event",
+    "label": "Event, audience",
+    "tag": "event"
+   }
+  ]
+ },
+ {
+  "_id": "availability",
+  "_type": "availability",
+  "months": [
+   {
+    "_key": "a",
+    "month": "2026-10-01",
+    "status": "some"
+   },
+   {
+    "_key": "b",
+    "month": "2027-08-01",
+    "status": "limited"
+   }
+  ]
+ },
+ {
+  "_id": "series-react-summit",
+  "_type": "eventSeries",
+  "name": "React Summit",
+  "slug": {
+   "_type": "slug",
+   "current": "react-summit"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "series-cityjs",
+  "_type": "eventSeries",
+  "name": "CityJS",
+  "slug": {
+   "_type": "slug",
+   "current": "cityjs"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "series-zurichjs",
+  "_type": "eventSeries",
+  "name": "ZurichJS",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs"
+  },
+  "kind": "meetup",
+  "isOwn": true
+ },
+ {
+  "_id": "series-game-of-codes",
+  "_type": "eventSeries",
+  "name": "Game of Codes",
+  "slug": {
+   "_type": "slug",
+   "current": "game-of-codes"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "series-devs-ghent",
+  "_type": "eventSeries",
+  "name": "Devs.Ghent",
+  "slug": {
+   "_type": "slug",
+   "current": "devs-ghent"
+  },
+  "kind": "meetup",
+  "isOwn": false
+ },
+ {
+  "_id": "series-whatthestack",
+  "_type": "eventSeries",
+  "name": "WhatTheStack",
+  "slug": {
+   "_type": "slug",
+   "current": "whatthestack"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "series-react-alicante",
+  "_type": "eventSeries",
+  "name": "React Alicante",
+  "slug": {
+   "_type": "slug",
+   "current": "react-alicante"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "series-jsnation",
+  "_type": "eventSeries",
+  "name": "JSNation",
+  "slug": {
+   "_type": "slug",
+   "current": "jsnation"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
+  "_id": "talk-caching",
+  "title": "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions",
+  "shortTitle": "the caching talk",
+  "slug": {
+   "_type": "slug",
+   "current": "caching-payloads-dark-arts"
+  },
+  "pillar": "engineering",
+  "order": 1,
+  "summary": "Real-world data fetching at scale: BFF layers, granular payload shaping, and what to cache where.",
+  "abstract": "This talk breaks down real-world data fetching challenges at scale and how to solve them with modern patterns like the BFF layer, granular payload shaping, and caching that fits the data instead of the framework. One production example carried end to end: what the user saw, what the network did, and what we changed.",
+  "audience": "Frontend and full-stack engineers who own a data layer in production. Assumes you've shipped something that got slow.",
+  "takeaways": [
+   "A decision table for what to cache, where, and for how long",
+   "Payload shaping patterns that cut bytes without a rewrite",
+   "A BFF checklist you can argue for on Monday"
+  ],
+  "duration": 30,
+  "durationOptions": [
+   20,
+   30,
+   45
+  ],
+  "level": "Intermediate to senior",
+  "topics": [
+   "React",
+   "Caching",
+   "BFF"
+  ],
+  "thumbnail": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-8c1dec0d38844e17eb42865ebb7c879bfbd355af-4032x3024-jpg"
+   },
+   "alt": "Faris speaking, mid-gesture",
+   "credit": "Event photographer"
+  },
+  "alsoAsWorkshop": {
+   "_type": "reference",
+   "_ref": "workshop-react-arch"
+  },
+  "relatedTalks": [
+   {
+    "_type": "reference",
+    "_ref": "talk-resilient",
+    "_key": "r1"
+   }
+  ],
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-payments",
+  "title": "Orchestrating Millions Across the Globe: Reactive Payments at Scale",
+  "shortTitle": "the payments talk",
+  "slug": {
+   "_type": "slug",
+   "current": "reactive-payments-at-scale"
+  },
+  "pillar": "payments",
+  "order": 2,
+  "duration": 30,
+  "summary": "“Just integrate Stripe” works, until it doesn’t. Multi-provider orchestration and its failure modes.",
+  "audience": "Product engineers, payments and platform teams",
+  "thumbnail": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg"
+   },
+   "alt": "Faris on a conference stage, wide",
+   "credit": "Event photographer"
+  },
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-resilient",
+  "title": "Building Resilient UIs with React",
+  "slug": {
+   "_type": "slug",
+   "current": "building-resilient-uis-with-react"
+  },
+  "pillar": "engineering",
+  "order": 3,
+  "duration": 25,
+  "summary": "React apps sit at the boundary of a distributed system. Design them to fail well.",
+  "abstract": "React applications sit at the boundary of a distributed system: APIs, third parties, feature flags. This session is about designing them to fail well.",
+  "audience": "React teams shipping to production",
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-senior",
+  "title": "Growing into Senior and Lead Roles Early",
+  "slug": {
+   "_type": "slug",
+   "current": "growing-into-senior-early"
+  },
+  "pillar": "careers",
+  "order": 4,
+  "duration": 30,
+  "summary": "Taking responsibility before you feel ready, and what that costs.",
+  "audience": "Engineers two to six years in",
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-community",
+  "title": "Why It's Called ZurichJS: Building a Community from Zero",
+  "slug": {
+   "_type": "slug",
+   "current": "building-a-community-from-zero"
+  },
+  "pillar": "community",
+  "order": 5,
+  "duration": 20,
+  "summary": "Meetups to a conference in two years, and the systems that made it possible.",
+  "audience": "Organisers and DevRel",
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-legacy-next",
+  "title": "Next.js at the Edge (2023 cut)",
+  "slug": {
+   "_type": "slug",
+   "current": "nextjs-at-the-edge"
+  },
+  "duration": 30,
+  "topics": [
+   "Next.js"
+  ],
+  "isBookable": false,
+  "assets": {
+   "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  "_type": "talk"
+ },
+ {
+  "_id": "workshop-react-arch",
+  "_type": "workshop",
+  "title": "React Architecture in Production",
+  "slug": {
+   "_type": "slug",
+   "current": "react-architecture-in-production"
+  },
+  "pillar": "engineering",
+  "summary": "The patterns that keep large React applications standing.",
+  "description": "A working session on the patterns that keep large React applications standing: atomic design that survives growth, reconciliation you can reason about, resilience engineering, and observability that tells you something before your users do.",
+  "duration": "3 h or full day (6.5 h)",
+  "participants": {
+   "min": 12,
+   "max": 30
+  },
+  "room": "Tables, power, reliable wifi, projector",
+  "after": "Repo, slides and resources stay available via the attendee link",
+  "relatedTalk": {
+   "_type": "reference",
+   "_ref": "talk-caching"
+  },
+  "prerequisites": [
+   "Comfortable with React and TypeScript",
+   "Own laptop, Node 20+, a GitHub account",
+   "The repo link arrives the day before"
+  ],
+  "formats": [
+   {
+    "_key": "f3",
+    "_type": "workshopFormat",
+    "label": "3-hour edition",
+    "duration": "3 h",
+    "agenda": [
+     {
+      "_key": "1",
+      "_type": "agendaItem",
+      "at": "0:00",
+      "title": "Warm-up: break something on purpose",
+      "summary": "A live exercise that sets expectations and shows how failure actually looks in a React app."
+     },
+     {
+      "_key": "2",
+      "_type": "agendaItem",
+      "at": "0:25",
+      "title": "Structure that survives growth",
+      "summary": "Atomic design applied to a real codebase; where the boundaries go and why."
+     },
+     {
+      "_key": "3",
+      "_type": "agendaItem",
+      "at": "1:10",
+      "title": "Reconciliation, for real",
+      "summary": "What React does with your tree and the three mistakes that cost the most in production."
+     },
+     {
+      "_key": "4",
+      "_type": "agendaItem",
+      "at": "1:45",
+      "title": "Break",
+      "isBreak": true
+     },
+     {
+      "_key": "5",
+      "_type": "agendaItem",
+      "at": "2:00",
+      "title": "Resilience engineering",
+      "summary": "Retries, fallbacks, circuit breakers and chaos, in the UI layer."
+     },
+     {
+      "_key": "6",
+      "_type": "agendaItem",
+      "at": "2:40",
+      "title": "Observability and alerting",
+      "summary": "What to measure, what to alert on, and what to ignore. Wrap-up and resources."
+     }
+    ]
+   },
+   {
+    "_key": "fd",
+    "_type": "workshopFormat",
+    "label": "Full day",
+    "duration": "6.5 h",
+    "agenda": [
+     {
+      "_key": "1",
+      "_type": "agendaItem",
+      "at": "0:00",
+      "title": "Warm-up: break something on purpose"
+     },
+     {
+      "_key": "2",
+      "_type": "agendaItem",
+      "at": "0:45",
+      "title": "Structure that survives growth, with a refactor lab"
+     },
+     {
+      "_key": "3",
+      "_type": "agendaItem",
+      "at": "2:30",
+      "title": "Lunch",
+      "isBreak": true
+     },
+     {
+      "_key": "4",
+      "_type": "agendaItem",
+      "at": "3:30",
+      "title": "Resilience engineering lab"
+     },
+     {
+      "_key": "5",
+      "_type": "agendaItem",
+      "at": "5:30",
+      "title": "Observability, and your own action plan"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "workshop-legacy",
+  "_type": "workshop",
+  "title": "Payments UI Deep Dive",
+  "slug": {
+   "_type": "slug",
+   "current": "payments-ui-deep-dive"
+  },
+  "duration": "Full day",
+  "description": "Checkout flows that survive real traffic.",
+  "agenda": [
+   {
+    "_key": "x",
+    "_type": "object",
+    "title": "Checkout anatomy",
+    "duration": "1 hour"
+   }
+  ]
+ },
+ {
+  "_id": "event-devs-ghent-2026",
+  "_type": "event",
+  "title": "Devs.Ghent",
+  "slug": {
+   "_type": "slug",
+   "current": "devs-ghent-2026"
+  },
+  "date": "2026-09-30",
+  "timezone": "Europe/Brussels",
+  "kind": "meetup",
+  "location": {
+   "city": "Ghent",
+   "country": "Belgium"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-payments"
+    },
+    "startsAt": "2026-09-30T17:00:00Z"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-devs-ghent"
+  },
+  "url": "https://devs.gent"
+ },
+ {
+  "_id": "event-game-of-codes-2026",
+  "_type": "event",
+  "title": "Game of Codes 2026",
+  "slug": {
+   "_type": "slug",
+   "current": "game-of-codes-2026"
+  },
+  "date": "2026-10-09",
+  "timezone": "Europe/Belgrade",
+  "kind": "conference",
+  "location": {
+   "city": "Niš",
+   "country": "Serbia",
+   "venue": "Science & Technology Park"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-resilient"
+    },
+    "status": "tba",
+    "durationMinutes": 25
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-game-of-codes"
+  },
+  "url": "https://gameofcodes.rs",
+  "language": "English"
+ },
+ {
+  "_id": "event-react-alicante-2026",
+  "_type": "event",
+  "title": "React Alicante 2026",
+  "slug": {
+   "_type": "slug",
+   "current": "react-alicante-2026"
+  },
+  "date": "2026-09-12",
+  "timezone": "Europe/Madrid",
+  "kind": "conference",
+  "location": {
+   "city": "Alicante",
+   "country": "Spain"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-resilient"
+    },
+    "recording": {
+     "url": "https://www.youtube.com/watch?v=aaaaaaaaaaa"
+    }
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-react-alicante"
+  }
+ },
+ {
+  "_id": "event-zurichjs-conf-2026",
+  "_type": "event",
+  "title": "ZurichJS Conf 2026",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs-conf-2026"
+  },
+  "date": "2026-09-10",
+  "timezone": "Europe/Zurich",
+  "kind": "conference",
+  "location": {
+   "city": "Zurich",
+   "country": "Switzerland"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "organizer",
+    "title": "Chair · host · platform"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-zurichjs"
+  },
+  "endDate": "2026-09-11",
+  "featured": true
+ },
+ {
+  "_id": "event-react-summit-us-2025",
+  "_type": "event",
+  "title": "React Summit US",
+  "slug": {
+   "_type": "slug",
+   "current": "react-summit-us-2025"
+  },
+  "date": "2025-11-18",
+  "timezone": "America/New_York",
+  "kind": "conference",
+  "location": {
+   "city": "New York",
+   "country": "United States"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-caching"
+    },
+    "featured": true,
+    "recording": {
+     "url": "https://www.youtube.com/watch?v=bbbbbbbbbbb",
+     "durationMinutes": 30
+    },
+    "slidesUrl": "https://slides.example/caching.pdf",
+    "slidesNote": "PDF, 4.2 MB"
+   },
+   {
+    "_key": "b",
+    "_type": "session",
+    "role": "panel",
+    "title": "Panel: Growing to senior"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-react-summit"
+  },
+  "featured": true
+ },
+ {
+  "_id": "event-zurichjs-react-arch-2025",
+  "_type": "event",
+  "title": "ZurichJS · React Architecture workshop",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs-react-arch-2025"
+  },
+  "date": "2025-11-12",
+  "timezone": "Europe/Zurich",
+  "kind": "meetup",
+  "location": {
+   "city": "Zurich",
+   "country": "Switzerland"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "workshop",
+    "workshop": {
+     "_type": "reference",
+     "_ref": "workshop-react-arch"
+    },
+    "detail": "3-hour workshop"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-zurichjs"
+  }
+ },
+ {
+  "_id": "event-zurichjs-anniversary-2025",
+  "_type": "event",
+  "title": "ZurichJS 1st anniversary",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs-anniversary-2025"
+  },
+  "date": "2025-11-05",
+  "timezone": "Europe/Zurich",
+  "kind": "meetup",
+  "location": {
+   "city": "Zurich",
+   "country": "Switzerland"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "host"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-zurichjs"
+  }
+ },
+ {
+  "_id": "event-whatthestack-2025",
+  "_type": "event",
+  "title": "WhatTheStack",
+  "slug": {
+   "_type": "slug",
+   "current": "whatthestack-2025"
+  },
+  "date": "2025-09-20",
+  "timezone": "Europe/Skopje",
+  "kind": "conference",
+  "location": {
+   "city": "Skopje",
+   "country": "North Macedonia"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-caching"
+    }
+   },
+   {
+    "_key": "b",
+    "_type": "session",
+    "role": "workshop",
+    "workshop": {
+     "_type": "reference",
+     "_ref": "workshop-react-arch"
+    },
+    "detail": "Full-day workshop"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-whatthestack"
+  }
+ },
+ {
+  "_id": "event-cityjs-singapore-2025",
+  "_type": "event",
+  "title": "CityJS Singapore",
+  "slug": {
+   "_type": "slug",
+   "current": "cityjs-singapore-2025"
+  },
+  "date": "2025-07-18",
+  "timezone": "Asia/Singapore",
+  "kind": "conference",
+  "location": {
+   "city": "Singapore",
+   "country": "Singapore"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-payments"
+    }
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-cityjs"
+  }
+ },
+ {
+  "_id": "event-cityjs-athens-2025",
+  "_type": "event",
+  "title": "CityJS Athens",
+  "slug": {
+   "_type": "slug",
+   "current": "cityjs-athens-2025"
+  },
+  "date": "2025-06-05",
+  "timezone": "Europe/Athens",
+  "kind": "conference",
+  "location": {
+   "city": "Athens",
+   "country": "Greece"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-caching"
+    }
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-cityjs"
+  }
+ },
+ {
+  "_id": "event-jsnation-2025",
+  "_type": "event",
+  "title": "JSNation",
+  "slug": {
+   "_type": "slug",
+   "current": "jsnation-2025"
+  },
+  "date": "2025-06-12",
+  "timezone": "Europe/Amsterdam",
+  "kind": "conference",
+  "location": {
+   "city": "Amsterdam",
+   "country": "Netherlands"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "attendee",
+    "detail": "OSS Awards"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-jsnation"
+  }
+ },
+ {
+  "_id": "event-cityjs-london-2025",
+  "_type": "event",
+  "title": "CityJS London 2025",
+  "slug": {
+   "_type": "slug",
+   "current": "cityjs-london-2025"
+  },
+  "type": "conference",
+  "conference": "CityJS",
+  "date": "2025-04-16",
+  "location": {
+   "city": "London",
+   "country": "United Kingdom"
+  },
+  "talk": {
+   "_type": "reference",
+   "_ref": "talk-caching"
+  },
+  "links": {
+   "eventUrl": "https://london.cityjsconf.org",
+   "videoUrl": "https://www.youtube.com/watch?v=ccccccccccc"
+  }
+ },
+ {
+  "_id": "event-react-paris-2025",
+  "_type": "event",
+  "title": "React Paris",
+  "slug": {
+   "_type": "slug",
+   "current": "react-paris-2025"
+  },
+  "type": "hosting",
+  "conference": "React Paris",
+  "date": "2025-03-20",
+  "location": {
+   "city": "Paris",
+   "country": "France"
+  }
+ },
+ {
+  "_id": "event-podcast-legacy",
+  "_type": "event",
+  "title": "Life of Dev",
+  "slug": {
+   "_type": "slug",
+   "current": "life-of-dev"
+  },
+  "type": "podcast",
+  "conference": "Life of Dev",
+  "date": "2026-03-02",
+  "location": {
+   "isOnline": true
+  }
+ },
+ {
+  "_id": "praise-tejas",
+  "_type": "praise",
+  "quote": "Faris is one of the best speakers I've seen recently. The guy is going places.",
+  "author": {
+   "name": "Tejas Kumar",
+   "headline": "host of ConTejas Code, author of Fluent React"
+  },
+  "platform": "linkedin",
+  "date": "2025-09-24",
+  "topic": "stage",
+  "url": "https://example.com/post/tejas",
+  "featured": true,
+  "order": 1
+ },
+ {
+  "_id": "praise-rajni",
+  "_type": "praise",
+  "quote": "One of the most impressive 20-minute sessions I've ever seen. 5× content with perfect clarity. He delivered 5× content with perfect clarity, no confusion, and a beautifully structured walkthrough of the entire caching optimization process.",
+  "author": {
+   "name": "Rajni Gediya",
+   "headline": "Staff Engineer"
+  },
+  "platform": "linkedin",
+  "date": "2025-11-20",
+  "topic": "talk",
+  "url": "https://example.com/post/rajni",
+  "talk": {
+   "_type": "reference",
+   "_ref": "talk-caching"
+  },
+  "event": {
+   "_type": "reference",
+   "_ref": "event-react-summit-us-2025"
+  },
+  "featured": true,
+  "pullQuote": "One of the most impressive 20-minute sessions I've ever seen."
+ },
+ {
+  "_id": "praise-darko",
+  "_type": "praise",
+  "quote": "You need a Faris Aziz on your conference, meetup, whatever. This guy's enthusiasm lights up rooms.",
+  "author": {
+   "name": "Darko Bozhinovski",
+   "headline": "WhatTheStack co-founder"
+  },
+  "platform": "linkedin",
+  "date": "2025-09-22",
+  "topic": "stage",
+  "url": "https://example.com/post/darko",
+  "featured": true,
+  "pullQuote": "This guy's enthusiasm lights up rooms."
+ },
+ {
+  "_id": "praise-ioannis",
+  "_type": "praise",
+  "quote": "An intense 3-hour crash course on production-ready patterns. The kind of tactical knowledge that immediately changes how you write code.",
+  "author": {
+   "name": "Ioannis Krokos",
+   "headline": "attendee, ZurichJS"
+  },
+  "platform": "linkedin",
+  "date": "2025-11-14",
+  "topic": "workshop",
+  "url": "https://example.com/post/ioannis",
+  "workshop": {
+   "_type": "reference",
+   "_ref": "workshop-react-arch"
+  },
+  "featured": true
+ },
+ {
+  "_id": "praise-hammad",
+  "_type": "praise",
+  "quote": "Whenever I need guidance about my career, there is one person I always turn to.",
+  "author": {
+   "name": "Hammad Hassan Bajwa",
+   "headline": "mentee"
+  },
+  "platform": "linkedin",
+  "date": "2025-12-02",
+  "topic": "mentoring",
+  "url": "https://example.com/post/hammad",
+  "featured": true
+ },
+ {
+  "_id": "praise-mark",
+  "_type": "praise",
+  "quote": "Faris is awesome, and you should go attend ZurichJS Conf!",
+  "author": {
+   "name": "Mark Erikson",
+   "handle": "@acemarke",
+   "headline": "Redux maintainer"
+  },
+  "platform": "x",
+  "date": "2025-12-10",
+  "topic": "community",
+  "url": "https://example.com/post/mark",
+  "featured": true
+ },
+ {
+  "_id": "praise-daniel",
+  "_type": "praise",
+  "quote": "His warm-up exercise is one of the best things I have seen for a workshop.",
+  "author": {
+   "name": "Daniel Afonso",
+   "handle": "@danieljcafonso",
+   "headline": "Developer Advocate"
+  },
+  "platform": "x",
+  "date": "2025-04-08",
+  "topic": "workshop",
+  "url": "https://example.com/post/daniel",
+  "label": "On the warm-up",
+  "featured": true
+ },
+ {
+  "_id": "socialPost-legacy-1",
+  "_type": "socialPost",
+  "url": "https://bsky.app/profile/x/post/1",
+  "platform": "bluesky",
+  "author": "Sam Legacy",
+  "authorHandle": "@sam.bsky.social",
+  "content": "Great session on resilient UIs at React Alicante, lots to take home.",
+  "postDate": "2026-09-13",
+  "context": "talk",
+  "relatedTalk": {
+   "_type": "reference",
+   "_ref": "talk-resilient"
+  }
+ },
+ {
+  "_id": "testimonial-legacy-1",
+  "_type": "testimonial",
+  "type": "mentorcruise",
+  "quote": "Faris helped me land my first senior role with a clear plan.",
+  "author": "Priya Legacy",
+  "role": "Senior Engineer",
+  "company": "Acme",
+  "date": "2025-10-01",
+  "context": "mentored",
+  "source": "https://mentorcruise.com/mentor/farisaziz/"
+ },
+ {
+  "_id": "metric-members",
+  "_type": "metric",
+  "value": "4,500",
+  "label": "members across our groups",
+  "domain": "community",
+  "asOf": "2026-07-01",
+  "definition": "Unique members across ZurichJS meetup groups.",
+  "status": "approved",
+  "order": 1
+ },
+ {
+  "_id": "metric-cfp",
+  "_type": "metric",
+  "value": "436",
+  "label": "talk proposals, first Conf",
+  "domain": "community",
+  "asOf": "2026-05-01",
+  "definition": "CFP submissions received for ZurichJS Conf 2026.",
+  "status": "approved",
+  "order": 2,
+  "period": "2026"
+ },
+ {
+  "_id": "metric-speakers",
+  "_type": "metric",
+  "value": "40+",
+  "label": "speakers hosted at meetups",
+  "domain": "community",
+  "asOf": "2026-07-01",
+  "definition": "Distinct speakers at ZurichJS meetups.",
+  "status": "approved",
+  "order": 3,
+  "period": "2024–26"
+ },
+ {
+  "_id": "metric-sponsors",
+  "_type": "metric",
+  "value": "30+",
+  "label": "sponsors and partners",
+  "domain": "community",
+  "asOf": "2026-07-01",
+  "definition": "Organisations sponsoring or partnering since 2024.",
+  "status": "approved",
+  "order": 4
+ },
+ {
+  "_id": "metric-china",
+  "_type": "metric",
+  "value": "~14×",
+  "label": "new subscriptions in China",
+  "domain": "engineering",
+  "asOf": "2025-06-01",
+  "definition": "Monthly new subscriptions after vs before localised checkout.",
+  "status": "approved",
+  "context": "After localising checkout and payment methods for the market. Smallpdf.",
+  "order": 1
+ },
+ {
+  "_id": "metric-bundle",
+  "_type": "metric",
+  "value": "−60%",
+  "label": "checkout bundle size",
+  "domain": "engineering",
+  "asOf": "2025-03-01",
+  "definition": "Gzipped JS on the checkout route, before vs after.",
+  "status": "approved",
+  "context": "Payload shaping and code-splitting on the checkout path; the material behind the caching talk.",
+  "order": 2
+ },
+ {
+  "_id": "metric-pending",
+  "_type": "metric",
+  "value": "3×",
+  "label": "unconfirmed number",
+  "domain": "engineering",
+  "asOf": "2025-01-01",
+  "definition": "Hidden until approved.",
+  "status": "needs-ok"
+ },
+ {
+  "_id": "community-zurichjs",
+  "_type": "community",
+  "name": "ZurichJS",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs"
+  },
+  "role": "Co-founder and chair",
+  "founded": 2024,
+  "city": "Zurich",
+  "url": "https://zurichjs.com",
+  "series": {
+   "_type": "reference",
+   "_ref": "series-zurichjs"
+  },
+  "headline": "I co-founded and lead ZurichJS.",
+  "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
+  "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first two-day ZurichJS Conf happened.",
+  "metrics": [
+   {
+    "_type": "reference",
+    "_ref": "metric-members",
+    "_key": "members"
+   },
+   {
+    "_type": "reference",
+    "_ref": "metric-cfp",
+    "_key": "cfp"
+   },
+   {
+    "_type": "reference",
+    "_ref": "metric-speakers",
+    "_key": "speakers"
+   },
+   {
+    "_type": "reference",
+    "_ref": "metric-sponsors",
+    "_key": "sponsors"
+   }
+  ],
+  "recognition": [
+   {
+    "_key": "g",
+    "_type": "award",
+    "title": "Global Community of the Year",
+    "issuer": "OSS Awards at JSNation",
+    "year": 2025,
+    "confirmed": true
+   }
+  ],
+  "pillars": [
+   {
+    "_key": "h",
+    "_type": "communityPillar",
+    "kicker": "Host",
+    "title": "Most ZurichJS evenings since 2024",
+    "body": "Hosting is counted separately from my own talks."
+   },
+   {
+    "_key": "t",
+    "_type": "communityPillar",
+    "kicker": "Teach",
+    "title": "Workshops for the community, on the house",
+    "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."
+   },
+   {
+    "_key": "b",
+    "_type": "communityPillar",
+    "kicker": "Build",
+    "title": "The conference platform",
+    "body": "Tickets, CFP and sponsor onboarding for ZurichJS Conf."
+   }
+  ],
+  "aftermovie": {
+   "title": "ZurichJS Conf 2026",
+   "caption": "Two days, one stage, 436 talk proposals to choose from.",
+   "published": false
+  },
+  "photos": [
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-9dae32e83775700b957d149806b774fb7f88698a-2048x1088-jpg"
+    },
+    "alt": "A ZurichJS evening",
+    "credit": "Event photographer",
+    "_key": "c1"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-247e8ebcfc22176df3240a49436667f325581768-4928x3279-jpg"
+    },
+    "alt": "Conference audience and stage",
+    "credit": "Event photographer",
+    "_key": "c2"
+   }
+  ]
+ },
+ {
+  "_id": "homePage",
+  "_type": "homePage",
+  "heroVariant": "band",
+  "heroPhotos": [
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg"
+    },
+    "alt": "Faris on a conference stage, wide",
+    "credit": "Event photographer",
+    "_key": "h1"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-5b80e104550c6b67f5503564a0a030e82f0b34b6-2856x2142-jpg"
+    },
+    "alt": "Faris running a workshop",
+    "credit": "Event photographer",
+    "_key": "h2"
+   },
+   {
+    "_type": "image",
+    "asset": {
+     "_type": "reference",
+     "_ref": "image-b1ae7c349483be8176fcab676e48a88e958ec52e-6488x4325-jpg"
+    },
+    "alt": "Faris speaking under stage lighting",
+    "credit": "Event photographer",
+    "_key": "h3"
+   }
+  ],
+  "featured": [
+   {
+    "_type": "reference",
+    "_ref": "talk-caching",
+    "_key": "f1"
+   },
+   {
+    "_type": "reference",
+    "_ref": "ext-contejas",
+    "_key": "f2"
+   },
+   {
+    "_type": "reference",
+    "_ref": "ext-podrocket",
+    "_key": "f3"
+   }
+  ],
+  "praise": [
+   {
+    "_type": "reference",
+    "_ref": "praise-tejas",
+    "_key": "tejas"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-rajni",
+    "_key": "rajni"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-darko",
+    "_key": "darko"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-ioannis",
+    "_key": "ioannis"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-hammad",
+    "_key": "hammad"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-mark",
+    "_key": "mark"
+   },
+   {
+    "_type": "reference",
+    "_ref": "praise-daniel",
+    "_key": "daniel"
+   }
+  ],
+  "featuredQuote": {
+   "_type": "reference",
+   "_ref": "praise-rajni"
+  },
+  "community": {
+   "_type": "reference",
+   "_ref": "community-zurichjs"
+  }
+ },
+ {
+  "_id": "post-zurichjs-name",
+  "_type": "blogPost",
+  "title": "Why it's called ZurichJS",
+  "slug": {
+   "_type": "slug",
+   "current": "why-its-called-zurichjs"
+  },
+  "published": true,
+  "publishedAt": "2026-03-09T09:00:00Z",
+  "topic": "community",
+  "excerpt": "The name started as something simple. Over time it came to represent something much bigger.",
+  "coverImage": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-9dae32e83775700b957d149806b774fb7f88698a-2048x1088-jpg"
+   },
+   "alt": "A ZurichJS evening",
+   "credit": "Event photographer"
+  },
+  "body": [
+   {
+    "_type": "block",
+    "_key": "b1",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "b1s",
+      "text": "Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. ",
+      "marks": []
+     }
+    ]
+   },
+   {
+    "_type": "block",
+    "_key": "h",
+    "style": "h2",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "hs",
+      "text": "Where the name came from",
+      "marks": []
+     }
+    ]
+   },
+   {
+    "_type": "block",
+    "_key": "b2",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "b2s",
+      "text": "Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. ",
+      "marks": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "post-npmx",
+  "_type": "blogPost",
+  "title": "Community, Open Source, and npmx",
+  "slug": {
+   "_type": "slug",
+   "current": "community-open-source-npmx"
+  },
+  "published": true,
+  "publishedAt": "2026-03-02T09:00:00Z",
+  "category": "announcement",
+  "excerpt": "A fast-moving open source train that welcomes you aboard the moment you show up.",
+  "body": [
+   {
+    "_type": "block",
+    "_key": "b1",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "b1s",
+      "text": "Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. ",
+      "marks": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "post-2025-review",
+  "_type": "blogPost",
+  "title": "2025 in review: a year of exposure, compounding, and trusting my gut",
+  "slug": {
+   "_type": "slug",
+   "current": "2025-in-review"
+  },
+  "published": true,
+  "publishedAt": "2026-01-05T09:00:00Z",
+  "topic": "careers",
+  "excerpt": "The year in talks, community and work.",
+  "body": [
+   {
+    "_type": "block",
+    "_key": "b1",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "b1s",
+      "text": "Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. Production teaches you things no tutorial does. ",
+      "marks": []
+     }
+    ]
+   }
+  ],
+  "corrections": [
+   {
+    "_key": "c1",
+    "_type": "correction",
+    "date": "2026-01-20",
+    "note": "Corrected the member count to the dated figure (4,500 as of Jul 2026 had read 5,000)."
+   }
+  ]
+ },
+ {
+  "_id": "ext-podrocket",
+  "_type": "externalPost",
+  "title": "Caching, payloads, and other front-end dark arts",
+  "url": "https://example.com/podrocket",
+  "format": "podcast",
+  "source": "PodRocket",
+  "publishedAt": "2026-07-15",
+  "topic": "engineering",
+  "durationMinutes": 40,
+  "relatedTalk": {
+   "_type": "reference",
+   "_ref": "talk-caching"
+  },
+  "excerpt": "The conversation behind the React Summit talk."
+ },
+ {
+  "_id": "ext-jscraft",
+  "_type": "externalPost",
+  "title": "Faris Aziz: Staff Engineer at Smallpdf and ZurichJS organiser",
+  "url": "https://example.com/jscraft",
+  "format": "podcast",
+  "source": "JS-Craft",
+  "publishedAt": "2026-07-02",
+  "topic": "careers"
+ },
+ {
+  "_id": "ext-ai-craft",
+  "_type": "externalPost",
+  "title": "AI Engineering: Are we trading craftsmanship for scale?",
+  "url": "https://example.com/ai-craft",
+  "format": "video",
+  "source": "YouTube",
+  "publishedAt": "2026-06-10",
+  "topic": "engineering"
+ },
+ {
+  "_id": "ext-contejas",
+  "_type": "externalPost",
+  "title": "How to get promoted, build resilience, and lead with empathy",
+  "url": "https://example.com/contejas",
+  "format": "podcast",
+  "source": "ConTejas Code",
+  "publishedAt": "2026-01-20",
+  "topic": "careers"
+ },
+ {
+  "_id": "ext-ijs",
+  "_type": "externalPost",
+  "title": "React 19.2 explained: updates, impact, and what to watch for",
+  "url": "https://example.com/ijs",
+  "format": "article",
+  "source": "iJS",
+  "publishedAt": "2025-10-08",
+  "topic": "engineering",
+  "episode": "guest article"
+ },
+ {
+  "_id": "ext-legacy-spotify",
+  "_type": "externalPost",
+  "title": "Developer communities: what’s the secret behind ZurichJS’ rise?",
+  "url": "https://open.spotify.com/x",
+  "type": "podcast",
+  "source": "Spotify",
+  "publishedAt": "2025-07-01"
+ },
+ {
+  "_id": "company-0",
+  "_type": "company",
+  "name": "Smallpdf",
+  "role": "Staff Software Engineer",
+  "periodLabel": "Now",
+  "order": 1,
+  "description": "Monetization, checkout and frontend architecture for a product used by millions."
+ },
+ {
+  "_id": "company-1",
+  "_type": "company",
+  "name": "ZurichJS",
+  "role": "Co-founder and chair",
+  "periodLabel": "2024 →",
+  "order": 2,
+  "description": "Meetups, then ZurichJS Conf 2026."
+ },
+ {
+  "_id": "company-2",
+  "_type": "company",
+  "name": "Navro",
+  "role": "Founding engineer and lead",
+  "periodLabel": "Earlier",
+  "order": 3
+ },
+ {
+  "_id": "company-3",
+  "_type": "company",
+  "name": "Fiit, FX Digital",
+  "role": "Software engineer",
+  "periodLabel": "Earlier",
+  "order": 4
+ },
+ {
+  "_id": "company-4",
+  "_type": "company",
+  "name": "Outside tech",
+  "role": "",
+  "periodLabel": "Before code",
+  "order": 5,
+  "description": "Coaching, before the switch into engineering."
+ },
+ {
+  "_id": "company-private",
+  "_type": "company",
+  "name": "Unannounced",
+  "role": "Secret",
+  "isPublic": false,
+  "order": 0
+ },
+ {
+  "_id": "offer-0",
+  "_type": "serviceOffer",
+  "title": "Events: speaking and workshops",
+  "slug": {
+   "_type": "slug",
+   "current": "events"
+  },
+  "serviceType": "events",
+  "audience": "Conferences, meetups, podcasts, teams",
+  "reachOutIf": "you’d like a talk, keynote, panel, podcast guest, or a hands-on workshop for your event or team.",
+  "youGet": "a session shaped around your audience. Talks come with slides the same day; workshops with a repo you keep.",
+  "primaryCta": {
+   "label": "Invite me",
+   "href": "/invite"
+  },
+  "order": 1,
+  "secondaryCta": {
+   "label": "See workshops",
+   "href": "/workshops"
+  }
+ },
+ {
+  "_id": "offer-1",
+  "_type": "serviceOffer",
+  "title": "Advisory",
+  "slug": {
+   "_type": "slug",
+   "current": "advisory"
+  },
+  "serviceType": "consulting",
+  "audience": "Companies and founders · limited availability",
+  "reachOutIf": "you want an outside view on frontend architecture, payments and monetization, engineering leadership, team structure, or go-to-market.",
+  "youGet": "a close look at where you are, and a clear, written view of what to change first.",
+  "primaryCta": {
+   "label": "Tell me what’s going on",
+   "href": "/contact#message"
+  },
+  "order": 2
+ },
+ {
+  "_id": "offer-2",
+  "_type": "serviceOffer",
+  "title": "Mentorship",
+  "slug": {
+   "_type": "slug",
+   "current": "mentorship"
+  },
+  "serviceType": "mentorship",
+  "audience": "Individual engineers",
+  "reachOutIf": "you’re working towards senior or lead, or want help with speaking and getting your work seen.",
+  "youGet": "regular 1:1 conversations focused on your next step.",
+  "primaryCta": {
+   "label": "How mentorship works",
+   "href": "/mentorship"
+  },
+  "order": 3
+ },
+ {
+  "_id": "offer-mentor-monthly",
+  "_type": "serviceOffer",
+  "title": "Monthly mentorship",
+  "slug": {
+   "_type": "slug",
+   "current": "monthly-mentorship"
+  },
+  "serviceType": "mentorship",
+  "shortDescription": "Two calls a month and async feedback in between.",
+  "bestFor": "Engineers aiming for senior or lead",
+  "outcomes": [
+   "A written growth plan",
+   "Feedback on real work",
+   "Speaking prep"
+  ],
+  "bookingUrl": "https://mentorcruise.com/mentor/farisaziz/",
+  "bookingLabel": "Apply on MentorCruise",
+  "order": 5
+ },
+ {
+  "_id": "page-about",
+  "_type": "page",
+  "identifier": "about",
+  "heroImage": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg"
+   },
+   "alt": "Faris on a conference stage, wide",
+   "credit": "Event photographer"
+  },
+  "content": [
+   {
+    "_type": "block",
+    "_key": "a1",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "a1s",
+      "text": "Today I work as a software engineer on frontend and payment systems at scale: the checkout that has to work in every currency, the data layer that has to stay fast on a bad connection, the architecture decisions that only look obvious afterwards. Earlier I helped found and lead engineering at Navro, and before that I shipped at Fiit and FX Digital.",
+      "marks": []
+     }
+    ]
+   },
+   {
+    "_type": "block",
+    "_key": "a2",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "a2s",
+      "text": "Speaking started as a way to explain that work to other engineers. It's now a second job I don't want to give up: talks and workshops across Europe, the US and Asia on production engineering, payments, and getting into leadership earlier than you feel ready for.",
+      "marks": []
+     }
+    ]
+   },
+   {
+    "_type": "block",
+    "_key": "a3",
+    "style": "normal",
+    "markDefs": [],
+    "children": [
+     {
+      "_type": "span",
+      "_key": "a3s",
+      "text": "In 2024 I co-founded ZurichJS because Zurich didn't have the JavaScript community I wanted. I lead it today. It grew faster than I expected and, in September 2026, ran its first two-day conference.",
+      "marks": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "media-1",
+  "_type": "media",
+  "type": "photo",
+  "title": "React Summit US",
+  "image": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-0d739fe9e228e63bd5359f51426c202d1363fc6d-6256x4172-jpg"
+   },
+   "alt": "Faris on a conference stage, wide",
+   "credit": "Event photographer"
+  },
+  "event": {
+   "_type": "reference",
+   "_ref": "event-react-summit-us-2025"
+  },
+  "credit": "GitNation",
+  "date": "2025-11-18"
+ },
+ {
+  "_id": "media-2",
+  "_type": "media",
+  "type": "photo",
+  "title": "ZurichJS evening",
+  "image": {
+   "_type": "image",
+   "asset": {
+    "_type": "reference",
+    "_ref": "image-9dae32e83775700b957d149806b774fb7f88698a-2048x1088-jpg"
+   },
+   "alt": "A ZurichJS evening",
+   "credit": "Event photographer"
+  },
+  "credit": "ZurichJS",
+  "date": "2025-11-05"
+ }
+]

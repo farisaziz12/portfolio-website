@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity';
 
 export default defineType({
   name: 'servicePage',
-  title: 'Service Page',
+  title: 'Service Page (legacy)',
   type: 'document',
   fields: [
     defineField({

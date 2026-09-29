@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity';
 
 export default defineType({
   name: 'impactCategory',
-  title: 'Impact Category',
+  title: 'Impact Category (legacy)',
   type: 'document',
   fields: [
     defineField({

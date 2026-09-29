@@ -6,9 +6,9 @@ export default {
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     fontFamily: {
-      sans: ['Hanken Grotesk', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-      display: ['Space Grotesk', 'system-ui', 'sans-serif'],
-      mono: ['IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'monospace'],
+      sans: ['Figtree Variable', 'Figtree', 'system-ui', '-apple-system', 'sans-serif'],
+      display: ['Figtree Variable', 'Figtree', 'system-ui', 'sans-serif'],
+      mono: ['ui-monospace', 'SF Mono', 'Menlo', 'monospace'],
     },
     extend: {
       colors: {
@@ -80,18 +80,20 @@ export default {
         'container': '1140px',
       },
       borderRadius: {
-        'sm': '6px',
-        'DEFAULT': '10px',
-        'md': '10px',
-        'lg': '14px',
-        'xl': '20px',
-        '2xl': '28px',
+        // DS v3: 4px buttons/inputs, 6px cards/images. Nothing larger.
+        'sm': '4px',
+        'DEFAULT': '6px',
+        'md': '6px',
+        'lg': '6px',
+        'xl': '6px',
+        '2xl': '6px',
       },
       boxShadow: {
-        'soft': '0 1px 2px rgba(0,0,0,.4)',
-        'lifted': '0 8px 28px -10px rgba(0,0,0,.65)',
-        'tall': '0 24px 60px -20px rgba(0,0,0,.7)',
-        'accent': '0 14px 40px -14px rgba(61,123,255,.45)',
+        // DS v3: no shadows. Separation is a hairline or a change of ground.
+        'soft': 'none',
+        'lifted': 'none',
+        'tall': 'none',
+        'accent': 'none',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
@@ -124,7 +126,7 @@ export default {
           css: {
             '--tw-prose-body': 'rgb(var(--ink-muted))',
             '--tw-prose-headings': 'rgb(var(--ink))',
-            '--tw-prose-links': 'rgb(var(--accent-bright))',
+            '--tw-prose-links': 'rgb(var(--text))',
             '--tw-prose-bold': 'rgb(var(--ink))',
             '--tw-prose-quotes': 'rgb(var(--ink-muted))',
             '--tw-prose-code': 'rgb(var(--ink))',
@@ -132,7 +134,7 @@ export default {
             a: {
               textDecoration: 'underline',
               textUnderlineOffset: '3px',
-              textDecorationColor: 'rgb(var(--accent) / 0.4)',
+              textDecorationColor: 'rgb(var(--yellow))',
               '&:hover': {
                 textDecorationColor: 'rgb(var(--accent))',
               },

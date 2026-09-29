@@ -1,0 +1,118 @@
+---
+/**
+ * A quote. Three looks:
+ * - `card` (default): label kicker, quote, meta pinned to the bottom. Home/speaking grids.
+ * - `stripe`: quote beside the stripe rule. Talk / workshop / mentorship asides.
+ * - `platform`: styled like the network it came from (LinkedIn / X / Bluesky).
+ *   Every platform card links to the original post.
+ */
+import { PLATFORM_LABEL, shortQuote, monthYear, type Praise } from '../../lib/sanity/v3';
+import SanityImg from './SanityImg.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  praise: Praise;
+  variant?: 'card' | 'stripe' | 'platform';
+  /** Use the full quote instead of the pull quote. */
+  full?: boolean;
+  /** Extra context appended to the meta line ("about this talk at React Summit US"). */
+  context?: string;
+  class?: string;
+}
+
+const { praise: p, variant = 'card', full = false, context, class: className } = Astro.props;
+const text = full ? p.quote : shortQuote(p);
+const when = [PLATFORM_LABEL[p.platform] !== 'Direct' ? PLATFORM_LABEL[p.platform] : null, monthYear(p.date)].filter(Boolean).join(', ');
+const meta = [p.author.name, p.author.headline, when, context].filter(Boolean).join(' · ');
+const Tag = p.url ? 'a' : 'div';
+const linkAttrs = p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+const initials = p.author.name.split(/\s+/).map((n) => n[0]).slice(0, 2).join('');
+---
+
+{variant === 'card' && (
+  <figure class:list={['pq ds-card', className]}>
+    <figcaption class="ds-kicker">{p.label}</figcaption>
+    <blockquote class="pq__quote">“{text}”</blockquote>
+    <p class="pq__meta ds-meta">
+      {p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{meta}</a> : meta}
+    </p>
+  </figure>
+)}
+
+{variant === 'stripe' && (
+  <figure class:list={['pq-stripe ds-card', className]}>
+    <div class="ds-stripe">
+      <blockquote class="pq-stripe__quote">“{text}”</blockquote>
+      <figcaption class="ds-meta">
+        {p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{meta}</a> : meta}
+      </figcaption>
+    </div>
+  </figure>
+)}
+
+{variant === 'platform' && (
+  <Tag class:list={['pp', `pp--${p.platform}`, className]} {...linkAttrs}>
+    <div class="pp__head">
+      <span class="pp__avatar" aria-hidden="true">
+        {p.author.image?.asset ? <SanityImg image={p.author.image} alt="" ratio={1} widths={[80]} sizes="40px" /> : initials}
+      </span>
+      <span class="pp__who">
+        <span class="pp__name">{p.author.name}</span>
+        <span class="pp__sub">{p.platform === 'x' || p.platform === 'bluesky' ? p.author.handle || p.author.headline : p.author.headline}</span>
+      </span>
+      <span class="pp__mark" aria-label={PLATFORM_LABEL[p.platform]}>
+        {p.platform === 'linkedin' ? 'in' : p.platform === 'x' ? '𝕏' : p.platform === 'bluesky' ? 'b' : p.platform === 'mentorcruise' ? 'MC' : '“'}
+      </span>
+    </div>
+    <p class="pp__text">{p.quote}</p>
+    <div class="pp__foot">
+      <span>{p.label}</span>
+      <span>{monthYear(p.date)}{p.url && <> · view original <Icon name="external" size={10} /></>}</span>
+    </div>
+  </Tag>
+)}
+
+<style>
+  .pq { display: flex; flex-direction: column; gap: 12px; height: 100%; margin: 0; padding: 22px; }
+  .pq__quote { margin: 0; font-size: 15.5px; line-height: 1.45; color: rgb(var(--text)); text-wrap: pretty; }
+  .pq__meta { margin: auto 0 0; padding-top: 10px; }
+  .pq__meta a, .pq-stripe a { color: inherit; text-decoration: none; }
+  .pq__meta a:hover, .pq-stripe a:hover { color: rgb(var(--text)); text-decoration: underline; }
+
+  .pq-stripe { margin: 0; }
+  .pq-stripe__quote { margin: 0 0 10px; font-size: 17px; line-height: 1.45; color: rgb(var(--text)); }
+
+  /* Platform-styled cards: equal height, 6-line clamp, footer pinned */
+  .pp {
+    display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box; padding: 18px 20px;
+    text-decoration: none; border: 1px solid transparent; transition: border-color 0.15s;
+    font-family: var(--font);
+  }
+  a.pp:hover { border-color: rgb(var(--yellow)); }
+  .pp__head { display: flex; align-items: center; gap: 10px; }
+  .pp__avatar { width: 40px; height: 40px; flex: none; border-radius: 999px; overflow: hidden; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+  .pp__avatar :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .pp__who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .pp__name { font-weight: 700; font-size: 14.5px; }
+  .pp__sub { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pp__mark { font-weight: 800; font-size: 15px; flex: none; }
+  .pp__text { margin: 0; font-size: 14.5px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+  .pp__foot { margin-top: auto; display: flex; justify-content: space-between; gap: 10px; font-size: 12px; }
+
+  /* Network looks. Brand colours are the platforms', used only on their cards. */
+  .pp--linkedin { background: rgb(var(--c-cream-2)); color: rgb(var(--c-ink)); border-radius: 8px; border-color: rgb(224 223 220); }
+  .pp--linkedin .pp__avatar { background: rgb(var(--hairline) / 0.2); color: rgb(var(--c-ink)); }
+  .pp--linkedin .pp__sub, .pp--linkedin .pp__foot { color: rgb(0 0 0 / 0.6); }
+  .pp--linkedin .pp__mark { background: #0a66c2; color: #fff; border-radius: 3px; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
+  .pp--x { background: #000; color: #fff; border-radius: 16px; border-color: rgb(47 51 54); }
+  .pp--x .pp__avatar { background: rgb(47 51 54); color: #fff; }
+  .pp--x .pp__sub, .pp--x .pp__foot { color: rgb(113 118 123); }
+  .pp--bluesky { background: rgb(22 30 39); color: #fff; border-radius: 12px; border-color: rgb(46 64 82); }
+  .pp--bluesky .pp__avatar { background: rgb(46 64 82); color: #fff; }
+  .pp--bluesky .pp__mark { color: rgb(17 133 254); }
+  .pp--bluesky .pp__sub, .pp--bluesky .pp__foot { color: rgb(174 187 201); }
+  .pp--mentorcruise, .pp--direct { background: rgb(var(--surface)); color: rgb(var(--text)); border-radius: var(--radius-card); border-color: rgb(var(--hairline)); }
+  .pp--mentorcruise .pp__avatar, .pp--direct .pp__avatar { background: rgb(var(--hairline)); }
+  .pp--mentorcruise .pp__sub, .pp--mentorcruise .pp__foot, .pp--direct .pp__sub, .pp--direct .pp__foot { color: rgb(var(--text-faint)); }
+  .pp--mentorcruise .pp__mark, .pp--direct .pp__mark { color: rgb(var(--accent-text)); }
+</style>

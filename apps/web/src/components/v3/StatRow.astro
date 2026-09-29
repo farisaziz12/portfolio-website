@@ -1,0 +1,32 @@
+---
+/**
+ * Full-bleed stat row with hairline separators. Every stat carries a label
+ * and a dated/defined meta line: numbers never ship without context.
+ */
+export interface Stat {
+  value: string | number;
+  label: string;
+  meta?: string;
+}
+interface Props {
+  stats: Stat[];
+  class?: string;
+}
+const { stats, class: className } = Astro.props;
+---
+
+<dl class:list={['ds-stats srow', className]} style={`--cols:${stats.length}`}>
+  {stats.map((s) => (
+    <div>
+      <dt class="ds-stat__label">{s.label}{s.meta && <span class="srow__meta"> · {s.meta}</span>}</dt>
+      <dd class="ds-stat__num">{typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value}</dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .srow { margin: 0; }
+  .srow > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+  .srow dd { margin: 0; }
+  .srow__meta { color: rgb(var(--text-faint)); }
+</style>

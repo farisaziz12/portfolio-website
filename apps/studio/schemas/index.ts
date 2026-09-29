@@ -1,62 +1,88 @@
+// ─── Speaking ───────────────────────────────────────────────
 import talk from './talk';
-import event from './event';
 import workshop from './workshop';
-import project from './project';
-import media from './media';
-import testimonial from './testimonial';
-import socialPost from './socialPost';
-import company from './company';
-import externalPost from './externalPost';
-import blogPost from './blogPost';
-import page from './page';
-import speakerProfile from './speakerProfile';
-import impactCategory from './impactCategory';
-import impactMetric from './impactMetric';
-import impactMetricV2 from './impactMetricV2';
-import impactPage from './impactPage';
-import serviceOffer from './serviceOffer';
-import servicePage from './servicePage';
-import serviceLandingPage from './serviceLandingPage';
-import siteNavigation from './siteNavigation';
-import siteSettings from './siteSettings';
+import eventSeries from './eventSeries';
+import event from './event';
 import workshopInstance from './workshopInstance';
 
+// ─── Proof ──────────────────────────────────────────────────
+import praise from './praise';
+import metric from './metric';
+import community from './community';
+import company from './company';
+import project from './project';
+import media from './media';
+
+// ─── Writing ────────────────────────────────────────────────
+import blogPost from './blogPost';
+import externalPost from './externalPost';
+
+// ─── Services ───────────────────────────────────────────────
+import serviceOffer from './serviceOffer';
+import serviceLandingPage from './serviceLandingPage';
+
+// ─── Singletons & pages ─────────────────────────────────────
+import homePage from './homePage';
+import speakerProfile from './speakerProfile';
+import availability from './availability';
+import siteSettings from './siteSettings';
+import page from './page';
+
+// ─── Legacy V2 (read-only fallbacks until migrated, see docs/sanity-mcp-prompts.md)
+import socialPost from './legacy/socialPost';
+import testimonial from './legacy/testimonial';
+import impactMetric from './legacy/impactMetric';
+import impactMetricV2 from './legacy/impactMetricV2';
+import impactCategory from './legacy/impactCategory';
+import impactPage from './legacy/impactPage';
+import servicePage from './legacy/servicePage';
+import siteNavigation from './legacy/siteNavigation';
+
+export const SINGLETON_TYPES = ['homePage', 'speakerProfile', 'availability', 'siteSettings'] as const;
+
+export const LEGACY_TYPES = [
+  'socialPost',
+  'testimonial',
+  'impactMetric',
+  'impactMetricV2',
+  'impactCategory',
+  'impactPage',
+  'servicePage',
+  'siteNavigation',
+] as const;
+
 export const schemaTypes = [
-  // Core speaking content
   talk,
-  event,
   workshop,
+  eventSeries,
+  event,
   workshopInstance,
 
-  // Portfolio
-  project,
+  praise,
+  metric,
+  community,
   company,
-
-  // Media & social proof
+  project,
   media,
-  testimonial,
-  socialPost,
+
+  blogPost,
   externalPost,
 
-  // Blog
-  blogPost,
-
-  // Impact metrics
-  impactCategory,
-  impactMetric,
-  impactMetricV2,
-  impactPage,
-
-  // Services
   serviceOffer,
-  servicePage,
   serviceLandingPage,
 
-  // Site config
-  siteNavigation,
-  siteSettings,
-
-  // Pages & profile
-  page,
+  homePage,
   speakerProfile,
+  availability,
+  siteSettings,
+  page,
+
+  socialPost,
+  testimonial,
+  impactMetric,
+  impactMetricV2,
+  impactCategory,
+  impactPage,
+  servicePage,
+  siteNavigation,
 ];

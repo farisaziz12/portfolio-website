@@ -7,17 +7,24 @@ import vercel from '@astrojs/vercel';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://faziz-dev.com',
-  // /services (the old services hub) merged into /contact ("Work with me").
-  // The CMS-driven /services/[slug] landing pages still live under /services/.
+  // V3 IA. /services is the "How I can help" overview again; /consulting folds
+  // into it. /media folds into the press kit. CMS-driven /services/[slug]
+  // landing pages still live under /services/.
   redirects: {
-    '/services': '/contact',
+    '/services/speaking': '/speaking',
+    '/consulting': '/services',
+    '/media': '/press-kit',
+    '/schedule': '/events',
+    '/writing': '/blog',
+    '/track-record': '/impact',
   },
   integrations: [
     tailwind(),
     sitemap({
       filter: (page) =>
         !page.includes('/workshops/attend/') &&
-        !page.includes('/admin'),
+        !page.includes('/admin') &&
+        !page.includes('/og/'),
     }),
     react(),
   ],

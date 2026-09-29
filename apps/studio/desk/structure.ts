@@ -1,434 +1,134 @@
-import type { StructureBuilder } from 'sanity/structure';
+import type { StructureBuilder, ListItemBuilder } from 'sanity/structure';
+
+/**
+ * Studio navigation, organised by what you are trying to do rather than by
+ * schema type. Singletons open straight into their one document. Health
+ * checks ("Needs attention") surface the content gaps that the site would
+ * otherwise quietly paper over with fallbacks.
+ */
+
+const singleton = (S: StructureBuilder, type: string, title: string): ListItemBuilder =>
+  S.listItem()
+    .title(title)
+    .id(type)
+    .child(S.document().schemaType(type).documentId(type).title(title));
+
+const typeList = (S: StructureBuilder, type: string, title: string, ordering?: { field: string; direction: 'asc' | 'desc' }[]) => {
+  const list = S.documentTypeList(type).title(title);
+  return S.listItem().title(title).schemaType(type).child(ordering ? list.defaultOrdering(ordering) : list);
+};
+
+const filtered = (S: StructureBuilder, title: string, filter: string, ordering?: { field: string; direction: 'asc' | 'desc' }[]) => {
+  const list = S.documentList().title(title).filter(filter).apiVersion('2024-01-01');
+  return S.listItem().title(title).child(ordering ? list.defaultOrdering(ordering) : list);
+};
 
 export const deskStructure = (S: StructureBuilder) =>
   S.list()
     .title('Content')
     .items([
-      // Speaker Profile (singleton - quick access)
-      S.listItem()
-        .title('Speaker Profile')
-        .id('speakerProfile')
-        .child(
-          S.document()
-            .schemaType('speakerProfile')
-            .documentId('speakerProfile')
-            .title('Speaker Profile')
-        ),
+      singleton(S, 'homePage', 'Home page'),
+      singleton(S, 'speakerProfile', 'Profile & press kit'),
+      singleton(S, 'availability', 'Availability'),
 
       S.divider(),
 
-      // Speaking & Events
       S.listItem()
         .title('Speaking')
         .child(
           S.list()
-            .title('Speaking Content')
+            .title('Speaking')
             .items([
-              S.listItem()
-                .title('Talks')
-                .schemaType('talk')
-                .child(S.documentTypeList('talk').title('Talks')),
-              S.listItem()
-                .title('Workshops')
-                .schemaType('workshop')
-                .child(S.documentTypeList('workshop').title('Workshops')),
-              S.listItem()
-                .title('Workshop Instances')
-                .schemaType('workshopInstance')
-                .child(
-                  S.documentTypeList('workshopInstance')
-                    .title('Workshop Instances')
-                    .defaultOrdering([{ field: 'workshopDate', direction: 'desc' }])
-                ),
-              S.listItem()
-                .title('Events')
-                .schemaType('event')
-                .child(
-                  S.list()
-                    .title('Events')
-                    .items([
-                      S.listItem()
-                        .title('All Events')
-                        .child(
-                          S.documentTypeList('event')
-                            .title('All Events')
-                            .defaultOrdering([{ field: 'date', direction: 'desc' }])
-                        ),
-                      S.listItem()
-                        .title('Upcoming Events')
-                        .child(
-                          S.documentList()
-                            .title('Upcoming Events')
-                            .filter('_type == "event" && date >= now()')
-                            .defaultOrdering([{ field: 'date', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Past Events')
-                        .child(
-                          S.documentList()
-                            .title('Past Events')
-                            .filter('_type == "event" && date < now()')
-                            .defaultOrdering([{ field: 'date', direction: 'desc' }])
-                        ),
-                    ])
-                ),
-            ])
-        ),
-
-      S.divider(),
-
-      // Portfolio
-      S.listItem()
-        .title('Portfolio')
-        .child(
-          S.list()
-            .title('Portfolio')
-            .items([
-              S.listItem()
-                .title('Projects')
-                .schemaType('project')
-                .child(S.documentTypeList('project').title('Projects')),
-              S.listItem()
-                .title('Companies')
-                .schemaType('company')
-                .child(
-                  S.documentTypeList('company')
-                    .title('Companies')
-                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                ),
-            ])
-        ),
-
-      S.divider(),
-
-      // Media & Social Proof
-      S.listItem()
-        .title('Media & Social')
-        .child(
-          S.list()
-            .title('Media & Social')
-            .items([
-              S.listItem()
-                .title('Media Gallery')
-                .schemaType('media')
-                .child(
-                  S.list()
-                    .title('Media Gallery')
-                    .items([
-                      S.listItem()
-                        .title('All Media')
-                        .child(S.documentTypeList('media').title('All Media')),
-                      S.listItem()
-                        .title('Featured Media')
-                        .child(
-                          S.documentList()
-                            .title('Featured Media')
-                            .filter('_type == "media" && featured == true')
-                        ),
-                      S.listItem()
-                        .title('Photos')
-                        .child(
-                          S.documentList()
-                            .title('Photos')
-                            .filter('_type == "media" && type == "photo"')
-                        ),
-                    ])
-                ),
-              S.listItem()
-                .title('Testimonials')
-                .schemaType('testimonial')
-                .child(S.documentTypeList('testimonial').title('Testimonials')),
-              S.listItem()
-                .title('Social Posts')
-                .schemaType('socialPost')
-                .child(
-                  S.documentTypeList('socialPost')
-                    .title('Social Posts')
-                    .defaultOrdering([{ field: 'postDate', direction: 'desc' }])
-                ),
-              S.listItem()
-                .title('External Posts')
-                .schemaType('externalPost')
-                .child(
-                  S.documentTypeList('externalPost')
-                    .title('External Posts')
-                    .defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])
-                ),
-            ])
-        ),
-
-      S.divider(),
-
-      // Blog
-      S.listItem()
-        .title('Blog')
-        .schemaType('blogPost')
-        .child(
-          S.list()
-            .title('Blog Posts')
-            .items([
-              S.listItem()
-                .title('All Posts')
-                .child(
-                  S.documentTypeList('blogPost')
-                    .title('All Blog Posts')
-                    .defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])
-                ),
-              S.listItem()
-                .title('Featured Posts')
-                .child(
-                  S.documentList()
-                    .title('Featured Posts')
-                    .filter('_type == "blogPost" && featured == true')
-                    .defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])
-                ),
-              S.listItem()
-                .title('Drafts')
-                .child(
-                  S.documentList()
-                    .title('Draft Posts')
-                    .filter('_type == "blogPost" && published != true')
-                    .defaultOrdering([{ field: '_updatedAt', direction: 'desc' }])
-                ),
-            ])
-        ),
-
-      S.divider(),
-
-      // Impact Metrics
-      S.listItem()
-        .title('Impact')
-        .child(
-          S.list()
-            .title('Impact')
-            .items([
-              // Impact Page Settings (singleton)
-              S.listItem()
-                .title('Page Settings')
-                .id('impactPage')
-                .child(
-                  S.document()
-                    .schemaType('impactPage')
-                    .documentId('impactPage')
-                    .title('Impact Page Settings')
-                ),
+              typeList(S, 'talk', 'Talks', [{ field: 'order', direction: 'asc' }]),
+              typeList(S, 'workshop', 'Workshops'),
               S.divider(),
-              // Enhanced Metrics (V2)
-              S.listItem()
-                .title('Impact Metrics (Enhanced)')
-                .schemaType('impactMetricV2')
-                .child(
-                  S.list()
-                    .title('Impact Metrics')
-                    .items([
-                      S.listItem()
-                        .title('All Metrics')
-                        .child(
-                          S.documentTypeList('impactMetricV2')
-                            .title('All Metrics')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('By Domain')
-                        .child(
-                          S.list()
-                            .title('By Domain')
-                            .items([
-                              S.listItem()
-                                .title('Community')
-                                .child(
-                                  S.documentList()
-                                    .title('Community Metrics')
-                                    .filter('_type == "impactMetricV2" && domain == "community"')
-                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                                ),
-                              S.listItem()
-                                .title('Product / Monetization')
-                                .child(
-                                  S.documentList()
-                                    .title('Product Metrics')
-                                    .filter('_type == "impactMetricV2" && domain == "product"')
-                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                                ),
-                              S.listItem()
-                                .title('Engineering Leadership')
-                                .child(
-                                  S.documentList()
-                                    .title('Leadership Metrics')
-                                    .filter('_type == "impactMetricV2" && domain == "leadership"')
-                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                                ),
-                              S.listItem()
-                                .title('Speaking')
-                                .child(
-                                  S.documentList()
-                                    .title('Speaking Metrics')
-                                    .filter('_type == "impactMetricV2" && domain == "speaking"')
-                                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                                ),
-                            ])
-                        ),
-                      S.listItem()
-                        .title('Featured Metrics')
-                        .child(
-                          S.documentList()
-                            .title('Featured Metrics')
-                            .filter('_type == "impactMetricV2" && featured == true')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Highlight Strip')
-                        .child(
-                          S.documentList()
-                            .title('Highlight Strip Metrics')
-                            .filter('_type == "impactMetricV2" && highlightStrip == true')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                    ])
-                ),
+              filtered(S, 'Upcoming events', '_type == "event" && date >= now()', [{ field: 'date', direction: 'asc' }]),
+              filtered(S, 'Past events', '_type == "event" && date < now()', [{ field: 'date', direction: 'desc' }]),
+              typeList(S, 'eventSeries', 'Event series'),
               S.divider(),
-              // Legacy metrics (original schema)
-              S.listItem()
-                .title('Legacy Metrics')
-                .child(
-                  S.list()
-                    .title('Legacy Impact Metrics')
-                    .items([
-                      S.listItem()
-                        .title('Categories')
-                        .schemaType('impactCategory')
-                        .child(
-                          S.documentTypeList('impactCategory')
-                            .title('Impact Categories')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Metrics')
-                        .schemaType('impactMetric')
-                        .child(
-                          S.documentTypeList('impactMetric')
-                            .title('Legacy Metrics')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Sponsors')
-                        .child(
-                          S.documentList()
-                            .title('Sponsors')
-                            .filter('_type == "impactMetric" && metricType == "sponsor"')
-                        ),
-                    ])
-                ),
+              typeList(S, 'workshopInstance', 'Workshop deliveries (attendee pages)', [{ field: 'workshopDate', direction: 'desc' }]),
             ])
         ),
 
-      S.divider(),
+      S.listItem()
+        .title('Writing & conversations')
+        .child(
+          S.list()
+            .title('Writing & conversations')
+            .items([
+              typeList(S, 'blogPost', 'Posts on this site', [{ field: 'publishedAt', direction: 'desc' }]),
+              typeList(S, 'externalPost', 'Published elsewhere (articles, podcasts, video)', [{ field: 'publishedAt', direction: 'desc' }]),
+              filtered(S, 'Drafts', '_type == "blogPost" && published != true'),
+            ])
+        ),
 
-      // Services
+      S.listItem()
+        .title('Proof')
+        .child(
+          S.list()
+            .title('Proof')
+            .items([
+              typeList(S, 'praise', 'Praise', [{ field: 'date', direction: 'desc' }]),
+              typeList(S, 'metric', 'Metrics', [{ field: 'order', direction: 'asc' }]),
+              typeList(S, 'community', 'Communities'),
+              typeList(S, 'company', 'Career timeline', [{ field: 'order', direction: 'asc' }]),
+              typeList(S, 'project', 'Projects'),
+              typeList(S, 'media', 'Photos & media', [{ field: 'date', direction: 'desc' }]),
+            ])
+        ),
+
       S.listItem()
         .title('Services')
         .child(
           S.list()
             .title('Services')
             .items([
-              S.listItem()
-                .title('Landing Pages (SEO)')
-                .schemaType('serviceLandingPage')
-                .child(
-                  S.list()
-                    .title('Service Landing Pages')
-                    .items([
-                      S.listItem()
-                        .title('All Landing Pages')
-                        .child(
-                          S.documentTypeList('serviceLandingPage')
-                            .title('All Landing Pages')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Published')
-                        .child(
-                          S.documentList()
-                            .title('Published Landing Pages')
-                            .filter('_type == "serviceLandingPage" && published == true')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Drafts')
-                        .child(
-                          S.documentList()
-                            .title('Draft Landing Pages')
-                            .filter('_type == "serviceLandingPage" && published != true')
-                        ),
-                    ])
-                ),
-              S.divider(),
-              S.listItem()
-                .title('Service Pages')
-                .schemaType('servicePage')
-                .child(S.documentTypeList('servicePage').title('Service Pages')),
-              S.listItem()
-                .title('Service Offers')
-                .schemaType('serviceOffer')
-                .child(
-                  S.list()
-                    .title('Service Offers')
-                    .items([
-                      S.listItem()
-                        .title('All Offers')
-                        .child(
-                          S.documentTypeList('serviceOffer')
-                            .title('All Offers')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Consulting Offers')
-                        .child(
-                          S.documentList()
-                            .title('Consulting Offers')
-                            .filter('_type == "serviceOffer" && serviceType == "consulting"')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                      S.listItem()
-                        .title('Mentorship Offers')
-                        .child(
-                          S.documentList()
-                            .title('Mentorship Offers')
-                            .filter('_type == "serviceOffer" && serviceType == "mentorship"')
-                            .defaultOrdering([{ field: 'order', direction: 'asc' }])
-                        ),
-                    ])
-                ),
+              typeList(S, 'serviceOffer', 'Offers', [{ field: 'order', direction: 'asc' }]),
+              typeList(S, 'serviceLandingPage', 'SEO landing pages'),
             ])
+        ),
+
+      S.listItem()
+        .title('Pages & settings')
+        .child(
+          S.list()
+            .title('Pages & settings')
+            .items([typeList(S, 'page', 'Pages (About)'), singleton(S, 'siteSettings', 'Site settings')])
         ),
 
       S.divider(),
 
-      // Site Settings
       S.listItem()
-        .title('Site Settings')
+        .title('Needs attention')
         .child(
           S.list()
-            .title('Site Settings')
+            .title('Needs attention')
             .items([
-              // Global Settings (singleton)
-              S.listItem()
-                .title('Global Settings')
-                .id('siteSettings')
-                .child(
-                  S.document()
-                    .schemaType('siteSettings')
-                    .documentId('siteSettings')
-                    .title('Global Settings')
-                ),
-              S.listItem()
-                .title('Navigation')
-                .schemaType('siteNavigation')
-                .child(S.documentTypeList('siteNavigation').title('Navigation')),
-              S.listItem()
-                .title('Pages')
-                .schemaType('page')
-                .child(S.documentTypeList('page').title('Pages')),
+              filtered(S, 'Events without sessions', '_type == "event" && count(coalesce(sessions, [])) == 0', [{ field: 'date', direction: 'desc' }]),
+              filtered(S, 'Past sessions missing a recording', '_type == "event" && date < now() && count(sessions[role in ["speaker","keynote","lightning"] && !defined(recording.url) && status != "cancelled"]) > 0', [{ field: 'date', direction: 'desc' }]),
+              filtered(S, 'Events without a country', '_type == "event" && location.isOnline != true && !defined(location.country)'),
+              filtered(S, 'Talks without a pillar or summary', '_type == "talk" && isBookable != false && (!defined(pillar) || !defined(summary))'),
+              filtered(S, 'Praise without a link or date', '_type == "praise" && ((!defined(url) && platform != "direct") || !defined(date))'),
+              filtered(S, 'Metrics waiting for an OK', '_type == "metric" && status != "approved"'),
+              filtered(S, 'Writing without a topic or format', '(_type == "blogPost" && !defined(topic)) || (_type == "externalPost" && (!defined(format) || !defined(topic)))'),
+              filtered(S, 'Photos without alt or credit', '_type == "media" && type == "photo" && (!defined(image.alt) || !defined(credit))'),
+            ])
+        ),
+
+      S.listItem()
+        .title('Legacy (migrate, then delete)')
+        .child(
+          S.list()
+            .title('Legacy V2 types')
+            .items([
+              typeList(S, 'socialPost', 'Social posts → Praise'),
+              typeList(S, 'testimonial', 'Testimonials → Praise'),
+              typeList(S, 'impactMetricV2', 'Impact metrics (enhanced) → Metric'),
+              typeList(S, 'impactMetric', 'Impact metrics (v1) → Metric'),
+              typeList(S, 'impactCategory', 'Impact categories (unused)'),
+              typeList(S, 'impactPage', 'Impact page settings (unused)'),
+              typeList(S, 'servicePage', 'Service page (unused)'),
+              typeList(S, 'siteNavigation', 'Site navigation (unused)'),
             ])
         ),
     ]);

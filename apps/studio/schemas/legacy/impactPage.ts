@@ -6,7 +6,7 @@ import { defineType, defineField } from 'sanity';
  */
 export default defineType({
   name: 'impactPage',
-  title: 'Impact Page Settings',
+  title: 'Impact Page Settings (legacy)',
   type: 'document',
   groups: [
     { name: 'hero', title: 'Hero Section', default: true },

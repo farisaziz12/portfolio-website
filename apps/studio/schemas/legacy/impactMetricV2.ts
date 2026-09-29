@@ -6,7 +6,7 @@ import { defineType, defineField } from 'sanity';
  */
 export default defineType({
   name: 'impactMetricV2',
-  title: 'Impact Metric (Enhanced)',
+  title: 'Impact Metric (Enhanced) (legacy)',
   type: 'document',
   groups: [
     { name: 'main', title: 'Main', default: true },

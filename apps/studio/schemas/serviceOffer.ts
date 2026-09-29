@@ -1,8 +1,15 @@
 import { defineType, defineField } from 'sanity';
+import { SERVICE_TYPES, titleFor } from 'shared';
+import { cta } from './_fields';
 
+/**
+ * A way to work together. /services shows one card per type (Events, Advisory,
+ * Mentorship); /mentorship lists every mentorship offer. Legacy `consulting`
+ * offers render as Advisory.
+ */
 export default defineType({
   name: 'serviceOffer',
-  title: 'Service Offer',
+  title: 'Service offer',
   type: 'document',
   groups: [
     { name: 'content', title: 'Content', default: true },
@@ -31,8 +38,8 @@ export default defineType({
       type: 'string',
       options: {
         list: [
-          { title: 'Consulting', value: 'consulting' },
-          { title: 'Mentorship', value: 'mentorship' },
+          ...SERVICE_TYPES.map(({ value, title }) => ({ value, title })),
+          { title: 'Consulting (legacy → Advisory)', value: 'consulting' },
         ],
         layout: 'radio',
       },
@@ -49,11 +56,36 @@ export default defineType({
       group: 'content',
     }),
     defineField({
-      name: 'bestFor',
-      title: 'Best For',
+      name: 'audience',
+      title: 'Audience tag',
       type: 'string',
-      description: 'Who is this for? e.g., "CTOs evaluating frontend architecture"',
-      validation: (Rule) => Rule.required().max(100),
+      description: 'Top-right of the card: "Companies and founders · limited availability".',
+      group: 'content',
+    }),
+    defineField({
+      name: 'reachOutIf',
+      title: 'Reach out if',
+      type: 'text',
+      rows: 3,
+      description: 'Lower-case, finishes the sentence: "you want an outside view on frontend architecture…".',
+      group: 'content',
+    }),
+    defineField({
+      name: 'youGet',
+      title: 'You get',
+      type: 'text',
+      rows: 3,
+      description: 'Finishes the sentence: "a close look at where you are, and a clear, written view of what to change first."',
+      group: 'content',
+    }),
+    cta('primaryCta', 'Card button', 'content'),
+    cta('secondaryCta', 'Card secondary link', 'content'),
+    defineField({
+      name: 'bestFor',
+      title: 'Best for',
+      type: 'string',
+      description: 'Who is this for? Used on /mentorship offer cards.',
+      validation: (Rule) => Rule.max(100),
       group: 'content',
     }),
     defineField({
@@ -61,8 +93,8 @@ export default defineType({
       title: 'Outcomes',
       type: 'array',
       of: [{ type: 'string' }],
-      description: '3-5 specific outcomes clients can expect',
-      validation: (Rule) => Rule.required().min(3).max(5),
+      description: '3–5 specific outcomes (mentorship offer cards).',
+      validation: (Rule) => Rule.max(5),
       group: 'content',
     }),
     defineField({
@@ -77,7 +109,6 @@ export default defineType({
           { title: 'Project-based', value: 'project' },
         ],
       },
-      validation: (Rule) => Rule.required(),
       group: 'pricing',
     }),
     defineField({
@@ -130,7 +161,7 @@ export default defineType({
       title: 'Booking URL',
       type: 'url',
       description: 'Cal.com or Calendly link for this specific offer',
-      validation: (Rule) => Rule.required().uri({ scheme: ['http', 'https'] }),
+      validation: (Rule) => Rule.uri({ scheme: ['http', 'https'] }),
       group: 'pricing',
     }),
     defineField({
@@ -215,8 +246,8 @@ export default defineType({
       featured: 'featured',
     },
     prepare: ({ title, serviceType, featured }) => ({
-      title: `${featured ? '⭐ ' : ''}${title}`,
-      subtitle: serviceType === 'consulting' ? '💼 Consulting' : '🎓 Mentorship',
+      title: `${featured ? '★ ' : ''}${title}`,
+      subtitle: serviceType === 'consulting' ? 'Advisory (legacy consulting)' : titleFor(SERVICE_TYPES, serviceType),
     }),
   },
 });

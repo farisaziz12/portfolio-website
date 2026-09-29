@@ -29,6 +29,11 @@ interface Props {
   extraSchema?: Record<string, unknown>[];
   /** Optional markdown mirror of this page, exposed for AI agents. */
   markdownAlternate?: string;
+  /** Person description (the reviewed short bio). */
+  personDescription?: string;
+  /** Confirmed awards only; unconfirmed wording never ships. */
+  awards?: string[];
+  noindex?: boolean;
 }
 
 const {
@@ -49,6 +54,9 @@ const {
   socialLinks,
   extraSchema = [],
   markdownAlternate,
+  personDescription,
+  awards = [],
+  noindex = false,
 } = Astro.props;
 
 const siteUrl = propSiteUrl || import.meta.env.SITE || 'https://faziz-dev.com';
@@ -67,7 +75,7 @@ const sameAs = [
   'https://bsky.app/profile/farisaziz.com',
   socialLinks?.linkedin || 'https://linkedin.com/in/farisaziz12',
   socialLinks?.github || 'https://github.com/farisaziz12',
-  socialLinks?.twitterUrl || 'https://twitter.com/farisaziz12',
+  socialLinks?.twitterUrl || 'https://x.com/farisaziz12',
   socialLinks?.youtube || 'https://www.youtube.com/@faziz-dev',
   'https://mentorcruise.com/mentor/farisaziz/',
   'https://zurichjs.com',
@@ -81,13 +89,14 @@ const person: Record<string, unknown> = {
   jobTitle,
   address: { '@type': 'PostalAddress', addressLocality: 'Geneva', addressCountry: 'CH' },
   description:
-    'Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva. Cofounder of ZurichJS, winner of the JSNation Open Source Award. Speaks on React, Next.js, payment systems, developer experience, and engineering leadership. Available for talks, workshops, consulting, and mentorship.',
-  award: 'JSNation Open Source Award, for building the ZurichJS community',
+    personDescription ||
+    'Software engineer and conference speaker based in Geneva. Works on frontend and payment systems at scale, co-founded ZurichJS, and chairs ZurichJS Conf.',
+  ...(awards.length ? { award: awards.length === 1 ? awards[0] : awards } : {}),
   affiliation: {
     '@type': 'Organization',
     name: 'ZurichJS',
     url: 'https://zurichjs.com',
-    description: 'Award-winning JavaScript community and conference in Zurich, cofounded by Faris Aziz.',
+    description: 'JavaScript community and conference in Zurich, co-founded by Faris Aziz.',
   },
   knowsAbout: [
     'React',
@@ -142,6 +151,7 @@ const graph = {
 <meta name="title" content={fullTitle} />
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalUrl} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 {markdownAlternate && (
   <link rel="alternate" type="text/markdown" href={new URL(markdownAlternate, siteUrl).href} title={`${title} (Markdown)`} />
 )}
