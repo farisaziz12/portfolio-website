@@ -1,33 +1,34 @@
 import type { APIRoute } from 'astro';
 import { mdResponse } from '../lib/markdown';
-import { availabilityLabel } from '../lib/availability';
+import { getProfile } from '../lib/sanity/v3';
+
+const SITE = 'https://faziz-dev.com';
 
 export const GET: APIRoute = async () => {
+  const profile = await getProfile();
+  const socials = [
+    ['LinkedIn', profile.links.linkedin],
+    ['Bluesky', profile.links.bluesky],
+    ['X', profile.links.twitter],
+  ].filter((s): s is [string, string] => Boolean(s[1]));
+
   const body = [
-    `# Work with Faris Aziz`,
+    `# Contact Faris Aziz`,
     ``,
-    `> ${availabilityLabel('Available')}. Four ways to work together. Every route lands straight in Faris's inbox, and he replies within two days. He'd rather make something work than say no.`,
+    `> Two doors. Speaking and workshops go through the invitation form; everything else (podcasts, press, a question, a hello) goes through a short message form. Both reach Faris only; he replies within ${profile.replyTime}. There is no public email address.`,
     ``,
-    `## 1. Invite him to speak`,
+    `## 1. Speaking and workshops`,
     ``,
-    `Keynotes, conference talks, panels, and full-day workshops. Submit an invitation: https://faziz-dev.com/invite`,
+    `Invitation form: ${SITE}/invite (three required fields: name, email, and one line about the event, show or publication). Details for agents: ${SITE}/invite.md`,
     ``,
-    `## 2. Book a consulting call`,
+    `## 2. Everything else`,
     ``,
-    `Free 20-minute discovery call about architecture, performance, payments, or team enablement: https://cal.com/farisaziz12/discovery-call`,
+    `Message form (email + message): ${SITE}/contact#message. A confirmation with a reference number appears only once the message is stored.`,
     ``,
-    `## 3. Get mentored`,
+    socials.length ? `## Socials\n\n${socials.map(([l, u], i) => `- ${l}: ${u}${i === 0 ? ' (fastest)' : ''}`).join('\n')}` : '',
     ``,
-    `1:1 coaching for engineers: career strategy, skills, confidence. Send an inquiry: https://faziz-dev.com/mentorship`,
-    ``,
-    `## 4. Hire him full-time`,
-    ``,
-    `Faris is open to full-time roles: tech lead, staff/senior frontend engineer, full-stack (frontend-leaning), payments, product engineering, and founding engineer. Send the role and team details via the contact form: https://faziz-dev.com/contact?topic=role#message`,
-    ``,
-    `## Direct`,
-    ``,
-    `Contact form (goes straight to Faris's inbox): https://faziz-dev.com/contact#message · LinkedIn: https://linkedin.com/in/farisaziz12`,
+    `Press kit (bios, photos, rider): ${SITE}/press-kit`,
   ].join('\n');
 
-  return mdResponse(body, { footer: false });
+  return mdResponse(body);
 };

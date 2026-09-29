@@ -1,0 +1,130 @@
+---
+/**
+ * Press photos: one card per photo with a crop selector (Original · 1:1 ·
+ * 4:5 · 16:9). All four variants are built server-side (lib/press.ts) and
+ * carried as data attributes; a tiny script swaps the preview, the download
+ * URL and the pixel size. Without JS every card offers its original.
+ */
+import type { PressPhotoView } from '../../lib/press';
+
+interface Props {
+  photos: PressPhotoView[];
+}
+
+const { photos } = Astro.props;
+---
+
+<section class="photos" aria-labelledby="photos-h" id="photos">
+  <span id="headshots" class="photos__anchor" aria-hidden="true"></span>
+  <div class="photos__head">
+    <h2 id="photos-h" class="ds-label">Photos · {photos.length}</h2>
+    {photos.length > 0 && <span class="ds-meta">Pick a crop for each photo, then download. Full resolution, JPG.</span>}
+  </div>
+
+  {photos.length === 0 ? (
+    <div class="ds-card ds-card--dashed photos__empty">
+      <p class="photos__empty-title">Photos are on their way.</p>
+      <p class="ds-body">There are no downloadable photos here yet. Ask for them in your invitation and I’ll send a set.</p>
+      <a class="ds-link ds-link--sm" href="/invite" data-track="press_photos_empty_invite">Ask via the invite form</a>
+    </div>
+  ) : (
+    <ul class="photos__grid">
+      {photos.map((p) => {
+        const o = p.variants[0];
+        return (
+          <li class="photo" data-photo data-variants={JSON.stringify(p.variants.map((v) => ({ k: v.key, p: v.preview, pw: v.previewWidth, ph: v.previewHeight, d: v.download, f: v.filename, s: v.size })))}>
+            <span class="photo__frame">
+              <img
+                class:list={['photo__img', { 'is-tall': o.previewHeight > o.previewWidth }]}
+                src={o.preview}
+                width={o.previewWidth}
+                height={o.previewHeight}
+                style={{ '--ar': `${o.previewWidth} / ${o.previewHeight}`, '--r': (o.previewWidth / o.previewHeight).toFixed(4) }}
+                alt={p.alt}
+                loading="lazy"
+                decoding="async"
+                data-photo-img
+              />
+              <span class="photo__tag">{p.tag}</span>
+            </span>
+            <span class="photo__label">{p.label}{p.credit && <span class="photo__credit"> · Photo: {p.credit}</span>}</span>
+            <span class="photo__crops" role="group" aria-label={`Crop for ${p.label}`} data-photo-crops hidden>
+              {p.variants.map((v, i) => (
+                <button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-crop={v.key}>{v.label}</button>
+              ))}
+            </span>
+            <a class="photo__dl" href={o.download} download={o.filename} data-photo-dl data-track="press_photo_download">
+              <span>Download</span>
+              <span class="photo__size" data-photo-size>{o.size}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</section>
+
+<script>
+  interface V { k: string; p: string; pw: number; ph: number; d: string; f: string; s: string }
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-photo]:not([data-ready])').forEach((card) => {
+      card.dataset.ready = '1';
+      let variants: V[] = [];
+      try { variants = JSON.parse(card.dataset.variants || '[]'); } catch { return; }
+      const img = card.querySelector<HTMLImageElement>('[data-photo-img]');
+      const dl = card.querySelector<HTMLAnchorElement>('[data-photo-dl]');
+      const size = card.querySelector<HTMLElement>('[data-photo-size]');
+      const group = card.querySelector<HTMLElement>('[data-photo-crops]');
+      if (!img || !dl || !size || !group) return;
+      group.hidden = false;
+      const buttons = [...group.querySelectorAll<HTMLButtonElement>('[data-crop]')];
+      buttons.forEach((b) =>
+        b.addEventListener('click', () => {
+          const v = variants.find((x) => x.k === b.dataset.crop);
+          if (!v) return;
+          buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          img.width = v.pw;
+          img.height = v.ph;
+          img.classList.toggle('is-tall', v.ph > v.pw);
+          img.style.setProperty('--ar', `${v.pw} / ${v.ph}`);
+          img.style.setProperty('--r', (v.pw / v.ph).toFixed(4));
+          img.src = v.p;
+          dl.href = v.d;
+          dl.download = v.f;
+          size.textContent = v.s;
+        }),
+      );
+    });
+  }
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  .photos { display: flex; flex-direction: column; gap: 16px; }
+  .photos__anchor { position: absolute; }
+  .photos__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 20px; flex-wrap: wrap; }
+  .photos__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .photo { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); min-width: 0; }
+  .photo__frame { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: var(--radius-btn); overflow: hidden; background: rgb(var(--ground)); }
+  .photo__img { display: block; width: 100%; height: auto; aspect-ratio: var(--ar); object-fit: cover; }
+  /* Frame is square: a tall crop is as wide as its ratio × the frame. */
+  .photo__img.is-tall { width: calc(var(--r) * 100%); }
+  .photo__tag { position: absolute; left: 10px; top: 10px; padding: 5px 8px; border-radius: 3px; background: rgb(var(--c-ink)); color: rgb(var(--c-yellow)); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .photo__label { font-size: 13px; color: rgb(var(--text-muted)); }
+  .photo__credit { color: rgb(var(--text-faint)); }
+  .photo__crops { display: flex; border: 1px solid rgb(var(--hairline-strong)); border-radius: var(--radius-btn); overflow: hidden; }
+  .photo__crops[hidden] { display: none; }
+  .photo__crops button { flex: 1; min-height: 36px; padding: 7px 0; border: 0; background: transparent; color: rgb(var(--text-muted)); font: 700 12px/1 var(--font); cursor: pointer; }
+  .photo__crops button:hover { color: rgb(var(--text)); }
+  .photo__crops button[aria-pressed='true'] { background: rgb(var(--text)); color: rgb(var(--ground)); }
+  .photo__dl { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; padding: 10px 12px; box-sizing: border-box; border-radius: var(--radius-btn); background: rgb(var(--yellow)); color: rgb(var(--on-yellow)); font-weight: 800; font-size: 13.5px; text-decoration: none; transition: background-color 0.15s, color 0.15s; }
+  .photo__dl:hover { background: rgb(var(--text)); color: rgb(var(--ground)); }
+  .photo__size { font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .photos__empty { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .photos__empty-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+  .photos__empty .ds-body { margin: 0; }
+  @media (max-width: 1000px) { .photos__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .photos__grid { grid-template-columns: 1fr; } }
+  @media (pointer: coarse) { .photo__crops button { min-height: 44px; } }
+</style>

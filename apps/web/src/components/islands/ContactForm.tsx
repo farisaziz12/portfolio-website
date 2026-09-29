@@ -1,228 +1,158 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { identify, track, trackFormStarted } from '../../lib/analytics';
+import './inquiry-form.css';
 
-type Topic = 'role' | 'speaking' | 'consulting' | 'mentorship' | 'other';
+/**
+ * "Everything else" door on /contact: email + message → /api/contact (Resend).
+ * Same honesty rule as the invite form: success only on a 200 with a reference
+ * (the admin notification was accepted); 503 not-configured / 502 / network are
+ * failures and the text stays in the form. `?topic=role|press|…` is passed through.
+ */
 
-const TOPICS: { v: Topic; l: string }[] = [
-  { v: 'role', l: 'Full-time role' },
-  { v: 'speaking', l: 'Speaking' },
-  { v: 'consulting', l: 'Consulting' },
-  { v: 'mentorship', l: 'Mentorship' },
-  { v: 'other', l: 'Something else' },
-];
+type Status = 'form' | 'sending' | 'sent' | 'failed';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TOPICS = ['role', 'speaking', 'press', 'consulting', 'mentorship', 'other'];
 
-interface Fields {
-  name: string;
-  email: string;
-  company: string;
-  topic: Topic;
-  message: string;
+interface Props {
+  replyTime: string;
+  linkedin?: string;
 }
 
-const initial: Fields = {
-  name: '',
-  email: '',
-  company: '',
-  topic: 'other',
-  message: '',
-};
-
-// General contact form — every message goes through /api/contact (Resend),
-// never a mailto. The "Hire me full-time" door preselects topic=role via the
-// contact:topic custom event; other pages can deep-link with /contact?topic=….
-export default function ContactForm() {
-  const [fields, setFields] = useState<Fields>(initial);
-  const [errors, setErrors] = useState<Record<string, true>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+export default function ContactForm({ replyTime, linkedin }: Props) {
+  const uid = useId();
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [topic, setTopic] = useState('other');
+  const [errors, setErrors] = useState<{ email?: string; message?: string }>({});
+  const [status, setStatus] = useState<Status>('form');
+  const [ref, setRef] = useState('');
+  const emailRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Priority: pending door click (pre-hydration) > ?topic= deep link.
-    const pending = (window as any).__contactTopic as string | undefined;
-    const params = new URLSearchParams(window.location.search);
-    const topic = pending || params.get('topic');
-    if (topic && TOPICS.some((t) => t.v === topic)) {
-      setFields((f) => ({ ...f, topic: topic as Topic }));
-    }
-    delete (window as any).__contactTopic;
-    const onTopic = (e: Event) => {
-      const next = (e as CustomEvent<{ topic?: string }>).detail?.topic;
-      if (next && TOPICS.some((t) => t.v === next)) {
-        setFields((f) => ({ ...f, topic: next as Topic }));
-      }
-    };
-    window.addEventListener('contact:topic', onTopic);
-    return () => window.removeEventListener('contact:topic', onTopic);
+    const t = new URLSearchParams(window.location.search).get('topic');
+    if (t && TOPICS.includes(t)) setTopic(t);
   }, []);
 
-  function set<K extends keyof Fields>(key: K, value: Fields[K]) {
+  useEffect(() => {
+    if (status === 'sent' || status === 'failed') panelRef.current?.focus();
+  }, [status]);
+
+  function touch() {
     trackFormStarted('contact');
-    setFields((f) => ({ ...f, [key]: value }));
-    if (errors[key]) setErrors((e) => { const { [key]: _, ...rest } = e; return rest; });
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const next: Record<string, true> = {};
-    if (!fields.name.trim()) next.name = true;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) next.email = true;
-    if (!fields.message.trim()) next.message = true;
+    if (status === 'sending') return;
+    const next: typeof errors = {};
+    if (!email.trim()) next.email = 'Add an email address so I can reply.';
+    else if (!EMAIL_RE.test(email.trim())) next.email = "That doesn't look like an email address.";
+    if (!message.trim()) next.message = 'A sentence is enough.';
     setErrors(next);
-    if (Object.keys(next).length > 0) {
+    if (next.email || next.message) {
+      (next.email ? emailRef.current : messageRef.current)?.focus();
       track('form_validation_failed', { form: 'contact', fields: Object.keys(next) });
       return;
     }
 
-    setSubmitting(true);
-    setServerError(null);
+    setStatus('sending');
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fields),
+        body: JSON.stringify({ email, message, topic }),
       });
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
-        setServerError(body.error || 'Something went wrong. Try again in a moment.');
-        track('form_submit_failed', { form: 'contact', reason: 'server', status: res.status });
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; ref?: string; error?: string };
+      if (!res.ok || !body.ok || !body.ref) {
+        setStatus('failed');
+        track('form_submit_failed', { form: 'contact', reason: body.error || 'server', status: res.status });
         return;
       }
-      setSuccess(true);
-      identify(fields.email, {
-        name: fields.name.trim(),
-        company: fields.company.trim() || undefined,
-        last_contact_topic: fields.topic,
-      });
-      track('contact_form_submitted', {
-        topic: fields.topic,
-        has_company: Boolean(fields.company.trim()),
-        message_length: fields.message.trim().length,
-      });
+      setRef(body.ref);
+      setStatus('sent');
+      identify(email.trim(), { last_contact_topic: topic });
+      track('contact_form_submitted', { topic, has_company: false, message_length: message.trim().length });
     } catch {
-      setServerError("Couldn't reach the server. Try again in a moment.");
+      setStatus('failed');
       track('form_submit_failed', { form: 'contact', reason: 'network' });
-    } finally {
-      setSubmitting(false);
     }
   }
 
-  if (success) {
+  if (status === 'sent') {
     return (
-      <div className="invite-form__success">
-        <div className="invite-form__success-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
-            <path d="M5 12l5 5 9-11" />
-          </svg>
-        </div>
-        <h3 className="invite-form__success-title">Message sent</h3>
-        <p className="invite-form__success-body">Thanks, it's in my inbox. I'll get back to you within two days.</p>
+      <div className="contact-sent" ref={panelRef} tabIndex={-1} role="status">
+        <p className="ds-kicker">Received · ref {ref}</p>
+        <p className="contact-sent__title">It’s in my inbox. I’ll reply within {replyTime}.</p>
+        <button
+          type="button"
+          className="ds-link ds-link--sm contact-sent__again"
+          onClick={() => { setEmail(''); setMessage(''); setStatus('form'); }}
+        >
+          Send another
+        </button>
       </div>
     );
   }
 
+  const sending = status === 'sending';
+  const eId = `${uid}-email`;
+  const mId = `${uid}-message`;
+
   return (
-    <form className="invite-form" onSubmit={onSubmit} noValidate>
-      <h3 className="invite-form__title">Send me a message</h3>
-
-      <div className="invite-form__grid">
-        <Field label="Your name" htmlFor="c-name" error={errors.name}>
+    <form className="inq-form contact-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
+      {status === 'failed' && (
+        <div className="inq-failed contact-failed" ref={panelRef} tabIndex={-1} role="alert">
+          <p className="inq-failed__title">That didn’t go through, and nothing was stored.</p>
+          <p className="inq-failed__body">
+            Your message is still here. Try again in a minute
+            {linkedin ? <>, or reach me on <a className="ds-textlink" href={linkedin} rel="me noopener" target="_blank">LinkedIn</a></> : null}.
+          </p>
+        </div>
+      )}
+      <fieldset className="inq-fields contact-form__fields" disabled={sending}>
+        <div className="ds-field">
+          <label htmlFor={eId} className="ds-field__label">Your email<span className="req" aria-hidden="true"> *</span></label>
           <input
-            id="c-name"
-            className="invite-form__input"
-            value={fields.name}
-            onChange={(e) => set('name', e.target.value)}
-            placeholder="Ada Lovelace"
-            autoComplete="name"
-            required
-          />
-        </Field>
-
-        <Field label="Email" htmlFor="c-email" error={errors.email}>
-          <input
-            id="c-email"
+            ref={emailRef}
+            id={eId}
             type="email"
-            className="invite-form__input"
-            value={fields.email}
-            onChange={(e) => set('email', e.target.value)}
-            placeholder="ada@company.com"
+            inputMode="email"
             autoComplete="email"
-            required
+            className="ds-input"
+            value={email}
+            maxLength={320}
+            aria-required
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? `${eId}-err` : undefined}
+            onChange={(e) => { touch(); setEmail(e.target.value); if (errors.email) setErrors((x) => ({ ...x, email: undefined })); }}
           />
-        </Field>
-
-        <Field label="Company (optional)" htmlFor="c-company" full>
-          <input
-            id="c-company"
-            className="invite-form__input"
-            value={fields.company}
-            onChange={(e) => set('company', e.target.value)}
-            placeholder="Where you're building"
-            autoComplete="organization"
-          />
-        </Field>
-
-        <Field label="What's this about?" full>
-          <div className="invite-form__seg">
-            {TOPICS.map((opt) => (
-              <label key={opt.v}>
-                <input
-                  type="radio"
-                  name="topic"
-                  value={opt.v}
-                  checked={fields.topic === opt.v}
-                  onChange={() => set('topic', opt.v)}
-                />
-                <span>{opt.l}</span>
-              </label>
-            ))}
-          </div>
-        </Field>
-
-        <Field label="Your message" htmlFor="c-msg" error={errors.message} full>
+          {errors.email && <span id={`${eId}-err`} className="ds-field__error">{errors.email}</span>}
+        </div>
+        <div className="ds-field">
+          <label htmlFor={mId} className="ds-field__label">Message<span className="req" aria-hidden="true"> *</span></label>
           <textarea
-            id="c-msg"
-            className="invite-form__input invite-form__textarea"
-            value={fields.message}
-            onChange={(e) => set('message', e.target.value)}
-            placeholder={fields.topic === 'role' ? 'The role, the team, and what you’re shipping…' : 'What’s on your mind…'}
-            rows={5}
-            required
+            ref={messageRef}
+            id={mId}
+            rows={4}
+            className="ds-textarea"
+            value={message}
+            maxLength={5000}
+            aria-required
+            aria-invalid={errors.message ? true : undefined}
+            aria-describedby={errors.message ? `${mId}-err` : undefined}
+            onChange={(e) => { touch(); setMessage(e.target.value); if (errors.message) setErrors((x) => ({ ...x, message: undefined })); }}
           />
-        </Field>
+          {errors.message && <span id={`${mId}-err`} className="ds-field__error">{errors.message}</span>}
+        </div>
+      </fieldset>
+      <div className="inq-submit">
+        <button type="submit" className="ds-btn ds-btn--yellow" disabled={sending} data-track="contact_submit">
+          {sending ? 'Sending…' : status === 'failed' ? 'Try again' : 'Send'}
+        </button>
       </div>
-
-      {serverError && <p className="invite-form__server-error">{serverError}</p>}
-
-      <button type="submit" className="ds-btn ds-btn-primary ds-btn-lg invite-form__submit" disabled={submitting}>
-        {submitting ? 'Sending…' : 'Send message'}
-        {!submitting && (
-          <svg className="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
-            <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </button>
+      <p className="sr-only" aria-live="polite">{sending ? 'Sending your message.' : ''}</p>
     </form>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  error,
-  full,
-  children,
-}: {
-  label: string;
-  htmlFor?: string;
-  error?: boolean;
-  full?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={`invite-form__field ${full ? 'invite-form__field--full' : ''} ${error ? 'invite-form__field--error' : ''}`}>
-      {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : <span className="invite-form__label">{label}</span>}
-      {children}
-    </div>
   );
 }

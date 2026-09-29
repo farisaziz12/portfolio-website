@@ -1,0 +1,144 @@
+---
+/**
+ * Press-kit bios. Server-renders all three lengths (visible without JS); the
+ * script turns them into a Short / Medium / Long tablist with a Copy button
+ * ("Copied" for 1.6 s; clipboard API with a textarea fallback).
+ */
+import { BIO_TABS, wordCount } from '../../lib/press';
+import { monthYear } from '../../lib/sanity/v3';
+
+interface Props {
+  bios: { short?: string; medium?: string; long?: string; updatedAt?: string };
+}
+
+const { bios } = Astro.props;
+const updated = bios.updatedAt ? monthYear(bios.updatedAt) : '';
+const tabs = BIO_TABS.filter((t) => bios[t.key]).map((t) => ({
+  ...t,
+  text: bios[t.key]!,
+  meta: [t.label, `${wordCount(bios[t.key])} words`, 'third person', updated && `updated ${updated}`].filter(Boolean).join(' · '),
+}));
+---
+
+<section class="bio" id="bios" aria-labelledby="bio-h" data-bio-root>
+  <div class="bio__head">
+    <h2 id="bio-h" class="ds-label bio__label">Bio</h2>
+    <div class="ds-seg bio__tabs" role="tablist" aria-label="Bio length" data-bio-tablist hidden>
+      {tabs.map((t, i) => (
+        <button type="button" role="tab" id={`bio-tab-${t.key}`} aria-controls={`bio-panel-${t.key}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-bio-tab={t.key}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {tabs.map((t) => (
+    <div class="ds-card bio__panel" id={`bio-panel-${t.key}`} role="region" aria-labelledby={`bio-name-${t.key}`} data-bio-panel={t.key}>
+      <h3 class="bio__name" id={`bio-name-${t.key}`} data-bio-name>{t.label}</h3>
+      <p class="bio__text" data-bio-text>{t.text}</p>
+      <div class="bio__foot">
+        <span class="ds-meta">{t.meta}</span>
+        <button type="button" class="ds-btn ds-btn--yellow ds-btn--sm" data-bio-copy data-track="press_copy_bio" hidden>Copy bio</button>
+      </div>
+    </div>
+  ))}
+  <p class="sr-only" aria-live="polite" data-bio-live></p>
+</section>
+
+<script>
+  function copyText(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.className = 'sr-only';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-bio-root]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const tablist = root.querySelector<HTMLElement>('[data-bio-tablist]');
+      const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-bio-tab]')];
+      const panels = [...root.querySelectorAll<HTMLElement>('[data-bio-panel]')];
+      const live = root.querySelector<HTMLElement>('[data-bio-live]');
+      if (!tablist || !tabs.length) return;
+
+      tablist.hidden = false;
+      root.classList.add('is-tabbed');
+      panels.forEach((p) => {
+        p.setAttribute('role', 'tabpanel');
+        p.setAttribute('aria-labelledby', `bio-tab-${p.dataset.bioPanel}`);
+        p.tabIndex = 0;
+        p.querySelector<HTMLElement>('[data-bio-copy]')?.removeAttribute('hidden');
+      });
+
+      const select = (key: string, focus = false) => {
+        tabs.forEach((t) => {
+          const on = t.dataset.bioTab === key;
+          t.setAttribute('aria-selected', String(on));
+          t.tabIndex = on ? 0 : -1;
+          if (on && focus) t.focus();
+        });
+        panels.forEach((p) => (p.hidden = p.dataset.bioPanel !== key));
+      };
+      select(tabs[0].dataset.bioTab!);
+
+      tabs.forEach((t, i) => {
+        t.addEventListener('click', () => select(t.dataset.bioTab!));
+        t.addEventListener('keydown', (e) => {
+          const n = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -2;
+          if (n === -2) return;
+          e.preventDefault();
+          select(tabs[(n + tabs.length) % tabs.length].dataset.bioTab!, true);
+        });
+      });
+
+      panels.forEach((p) => {
+        const btn = p.querySelector<HTMLButtonElement>('[data-bio-copy]');
+        const text = p.querySelector<HTMLElement>('[data-bio-text]')?.textContent?.trim() ?? '';
+        let timer: number | undefined;
+        btn?.addEventListener('click', async () => {
+          try {
+            await copyText(text);
+            btn.textContent = 'Copied';
+            if (live) live.textContent = 'Bio copied to the clipboard.';
+          } catch {
+            btn.textContent = 'Select and copy';
+            const range = document.createRange();
+            range.selectNodeContents(p.querySelector('[data-bio-text]')!);
+            getSelection()?.removeAllRanges();
+            getSelection()?.addRange(range);
+          }
+          window.clearTimeout(timer);
+          timer = window.setTimeout(() => {
+            btn.textContent = 'Copy bio';
+            if (live) live.textContent = '';
+          }, 1600);
+        });
+      });
+    });
+  }
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  .bio { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .bio__head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .bio__tabs { border-radius: var(--radius-card); }
+  .bio__panel[hidden] { display: none; }
+  .bio__panel { display: flex; flex-direction: column; gap: 16px; padding: 26px 28px; }
+  .bio__name { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .is-tabbed .bio__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .bio__text { margin: 0; font-size: 17px; line-height: 1.65; color: rgb(var(--text)); text-wrap: pretty; }
+  .bio__foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-top: 1px solid rgb(var(--hairline)); padding-top: 14px; }
+  .bio__foot .ds-btn { min-width: 96px; }
+  @media (max-width: 720px) { .bio__panel { padding: 20px; } .bio__text { font-size: 16px; } }
+</style>
