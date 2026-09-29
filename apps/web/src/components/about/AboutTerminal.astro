@@ -1,0 +1,25 @@
+---
+/**
+ * The faris.sh Easter egg, moved out of the home hero. A compact prompt at
+ * the bottom of About's aside (the footer links to /about#terminal).
+ * Conference keywords (`alicante`) stay undocumented.
+ */
+import HeroTerminal from '../islands/HeroTerminal';
+import { getTerminalSecretRoutes } from '../../lib/terminal';
+
+const secretRoutes = await getTerminalSecretRoutes();
+---
+
+<div id="terminal" class="aterm">
+  <HeroTerminal client:visible mode="about" secretRoutes={secretRoutes} />
+</div>
+
+<style>
+  .aterm { scroll-margin-top: 96px; }
+  .aterm :global(.hero-terminal--compact) { background: transparent; border-color: rgb(var(--hairline)); }
+  .aterm :global(.hero-terminal--compact.hero-terminal--active) { border-color: rgb(var(--yellow)); }
+  .aterm :global(.hero-terminal--compact .ds-terminal__body) { padding: 10px 14px; font-size: 12.5px; line-height: 1.7; }
+  .aterm :global(.hero-terminal--compact .cmt) { color: rgb(var(--text-faint)); }
+  .aterm :global(.hero-terminal--compact .hero-terminal__body) { max-height: 190px; }
+  .aterm :global(.hero-terminal--compact .hero-terminal__inputrow) { min-height: 28px; }
+</style>

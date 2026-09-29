@@ -3,21 +3,23 @@ import { navigate } from 'astro:transitions/client';
 import { track } from '../../lib/analytics';
 
 /**
- * The hero terminal, made real. Renders exactly like the old static
- * `$ whoami` decoration until someone clicks into it — then it's a working
- * prompt with commands, tab-completion, history, and a couple of easter eggs.
+ * The site terminal, made real: a working prompt with commands,
+ * tab-completion, history, and a couple of easter eggs. It lives at the
+ * bottom of About (`mode="about"`, compact) and on the 404 page.
  */
 
 interface Line {
-  kind: 'cmd' | 'out' | 'cmt' | 'err';
+  kind: 'cmd' | 'out' | 'cmt' | 'err' | 'intro';
   text: string;
 }
 
 const HERO_LINES: Line[] = [
   { kind: 'cmd', text: 'whoami' },
-  { kind: 'out', text: 'Staff Engineer & Speaker' },
+  { kind: 'out', text: 'Software engineer & speaker' },
   { kind: 'cmt', text: "# this terminal works, try 'help'" },
 ];
+
+const ABOUT_LINES: Line[] = [{ kind: 'intro', text: 'the terminal lives here now. Type help.' }];
 
 const NOTFOUND_LINES: Line[] = [
   { kind: 'cmd', text: 'open .' },
@@ -29,21 +31,22 @@ const ROUTES: Record<string, { path: string; note: string }> = {
   talks: { path: '/talks', note: 'opening the talk catalogue…' },
   schedule: { path: '/events', note: 'pulling up the schedule…' },
   events: { path: '/events', note: 'pulling up the schedule…' },
-  book: { path: '/invite', note: 'opening the booking form…' },
-  invite: { path: '/invite', note: 'opening the booking form…' },
+  book: { path: '/invite', note: 'opening the invite form…' },
+  invite: { path: '/invite', note: 'opening the invite form…' },
   workshops: { path: '/workshops', note: 'loading workshops…' },
   presskit: { path: '/press-kit', note: 'grabbing bios & headshots…' },
-  consulting: { path: '/consulting', note: 'loading consulting…' },
+  services: { path: '/services', note: 'loading services…' },
   mentorship: { path: '/mentorship', note: 'loading mentorship…' },
+  community: { path: '/community', note: 'saying hi to ZurichJS…' },
   contact: { path: '/contact', note: 'opening all the doors…' },
-  blog: { path: '/blog', note: 'loading the blog…' },
-  about: { path: '/about', note: 'loading the bio…' },
+  blog: { path: '/blog', note: 'loading the writing…' },
+  about: { path: '/about', note: 'loading the story…' },
+  impact: { path: '/impact', note: 'loading the track record…' },
 };
 
 const COMMAND_NAMES = [
   'help',
   'whoami',
-  'hire',
   'ls',
   'clear',
   'theme',
@@ -63,7 +66,7 @@ function setTheme(next: 'light' | 'dark') {
 
 interface Props {
   name?: string;
-  mode?: 'hero' | 'notfound';
+  mode?: 'hero' | 'notfound' | 'about';
   /**
    * Extra commands that never show up in `help`, `ls`, or tab-completion:
    * conference keywords wired to live workshop attend pages.
@@ -72,7 +75,8 @@ interface Props {
 }
 
 export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretRoutes = {} }: Props) {
-  const [lines, setLines] = useState<Line[]>(mode === 'notfound' ? NOTFOUND_LINES : HERO_LINES);
+  const [lines, setLines] = useState<Line[]>(mode === 'notfound' ? NOTFOUND_LINES : mode === 'about' ? ABOUT_LINES : HERO_LINES);
+  const compact = mode === 'about';
 
   useEffect(() => {
     // On the 404 page, show the path the visitor actually asked for.
@@ -114,7 +118,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
       known:
         COMMAND_NAMES.includes(cmd) ||
         cmd in secretRoutes ||
-        ['sudo', 'konami', 'coffee', 'exit', 'hire-me', 'hiring'].includes(cmd),
+        ['sudo', 'konami', 'coffee', 'exit'].includes(cmd),
       mode,
     });
 
@@ -124,22 +128,22 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
     }
     if (cmd === 'help') {
       print(
-        { kind: 'out', text: 'talks · schedule · book · workshops · consulting · mentorship · contact · blog · about' },
-        { kind: 'out', text: 'hire · theme [dark|light] · whoami · ls · clear' },
+        { kind: 'out', text: 'talks · schedule · workshops · invite · services · mentorship · community' },
+        { kind: 'out', text: 'contact · blog · about · impact · theme [dark|light] · whoami · ls · clear' },
         { kind: 'cmt', text: '# and maybe one or two undocumented ones' }
       );
       return;
     }
     if (cmd === 'whoami') {
       print(
-        { kind: 'out', text: 'Faris Aziz · Staff Software Engineer & Conference Speaker, Geneva.' },
-        { kind: 'out', text: 'Cofounder of ZurichJS · JSNation OSS Award winner.' },
-        { kind: 'out', text: "React, Next.js & payments. Try 'talks' or 'book'." }
+        { kind: 'out', text: 'Faris Aziz · software engineer and speaker, Geneva.' },
+        { kind: 'out', text: 'Co-founder of ZurichJS.' },
+        { kind: 'out', text: "Frontend, payments & leadership. Try 'talks' or 'invite'." }
       );
       return;
     }
     if (cmd === 'ls') {
-      print({ kind: 'out', text: [...Object.keys(ROUTES).filter((k) => !['events', 'invite'].includes(k)), 'hire'].join('  ') });
+      print({ kind: 'out', text: Object.keys(ROUTES).filter((k) => !['events', 'book'].includes(k)).join('  ') });
       return;
     }
     if (cmd === 'theme') {
@@ -150,21 +154,8 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
       print({ kind: 'out', text: `theme set to ${next}` });
       return;
     }
-    if (cmd === 'hire' || cmd === 'hire-me' || cmd === 'hiring') {
-      print(
-        { kind: 'out', text: 'open to: tech lead · staff/senior frontend · full-stack (frontend-leaning)' },
-        { kind: 'out', text: 'payments · product engineering · founding engineer' },
-        { kind: 'out', text: "run 'contact': the hire door opens a short form straight to my inbox." }
-      );
-      return;
-    }
     if (cmd === 'sudo') {
-      if (args.join(' ').includes('hire')) {
-        print({ kind: 'out', text: 'permission granted. redirecting…' });
-        window.setTimeout(() => navigate('/contact?topic=role#message'), 650);
-      } else {
-        print({ kind: 'err', text: 'nice try. faris is not in the sudoers file.' });
-      }
+      print({ kind: 'err', text: 'nice try. faris is not in the sudoers file.' });
       return;
     }
     if (cmd === 'konami') {
@@ -179,7 +170,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
       return;
     }
     if (cmd === 'exit') {
-      print({ kind: 'cmt', text: "# there is no escape. only 'book'." });
+      print({ kind: 'cmt', text: "# there is no escape. only 'invite'." });
       return;
     }
     const route = ROUTES[cmd] || secretRoutes[cmd];
@@ -225,21 +216,27 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
 
   return (
     <div
-      className={`ds-terminal hero-terminal ${active ? 'hero-terminal--active' : ''}`}
+      className={`ds-terminal hero-terminal ${compact ? 'hero-terminal--compact' : ''} ${active ? 'hero-terminal--active' : ''}`}
       onClick={() => {
         setActive(true);
         inputRef.current?.focus();
       }}
     >
-      <div className="ds-terminal__bar">
-        <span className="ds-terminal__dots"><i></i><i></i><i></i></span>
-        <span className="ds-terminal__name">{name}</span>
-      </div>
+      {!compact && (
+        <div className="ds-terminal__bar">
+          <span className="ds-terminal__dots"><i></i><i></i><i></i></span>
+          <span className="ds-terminal__name">{name}</span>
+        </div>
+      )}
       <div className="ds-terminal__body hero-terminal__body" ref={bodyRef}>
         {lines.map((line, i) =>
           line.kind === 'cmd' ? (
             <div key={i}>
-              <span className="pr">$</span> <span className="cmd">{line.text}</span>
+              <span className="pr">{compact ? '›' : '$'}</span> <span className="cmd">{line.text}</span>
+            </div>
+          ) : line.kind === 'intro' ? (
+            <div key={i} className="cmt">
+              <span className="pr">{name} ›</span> {line.text}
             </div>
           ) : (
             <div key={i} className={line.kind === 'err' ? 'out hero-terminal__err' : line.kind}>
@@ -248,7 +245,7 @@ export default function HeroTerminal({ name = 'faris.sh', mode = 'hero', secretR
           )
         )}
         <div className="hero-terminal__inputrow">
-          <span className="pr">$</span>
+          <span className="pr">{compact ? '›' : '$'}</span>
           <input
             ref={inputRef}
             className="hero-terminal__input"

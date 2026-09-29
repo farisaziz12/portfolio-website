@@ -1,425 +1,80 @@
 ---
+/**
+ * About ("Story"): the entity home. First-person story from the About page
+ * document, a short facts box, links into the track record, and the
+ * faris.sh terminal that used to live in the home hero.
+ */
+import { PortableText } from 'astro-portabletext';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import Bio from '../components/design/Bio.astro';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { PROOF, FALLBACK_SPEAKER_STATS } from '../lib/proof';
-import { pageQuery, speakingStatsQuery, featuredTestimonialsQuery, featuredSocialPostsQuery, speakerProfileQuery } from '../lib/sanity/queries';
-import SocialWallIsland from '../components/islands/SocialWallIsland';
-import type { SocialPost } from '../lib/sanity/types';
-import { availabilityLabel } from '../lib/availability';
+import SkewHero from '../components/v3/SkewHero.astro';
+import Kicker from '../components/v3/Kicker.astro';
+import AboutAside from '../components/about/AboutAside.astro';
+import { getAboutPage, getProfile } from '../lib/sanity/v3';
+import { breadcrumbs } from '../lib/seo';
 
-interface Milestone {
-  _key: string;
-  title: string;
-  description: string;
-  emoji?: string;
-}
+const [about, profile] = await Promise.all([getAboutPage(), getProfile()]);
 
-interface PageContent {
-  heroImage?: any;
-  aboutHero?: {
-    greeting?: string;
-    name?: string;
-    role?: string;
-    location?: string;
-    bio?: string;
-    linkedinUrl?: string;
-  };
-  aboutJourney?: {
-    title?: string;
-    subtitle?: string;
-    milestones?: Milestone[];
-  };
-  aboutCta?: {
-    statusText?: string;
-    title?: string;
-    description?: string;
-    primaryCtaText?: string;
-    primaryCtaUrl?: string;
-    secondaryCtaText?: string;
-    secondaryCtaUrl?: string;
-  };
-  seo?: { metaTitle?: string; metaDescription?: string };
-}
+const hasStory = Array.isArray(about.content) && about.content.length > 0;
+// No story written yet: fall back to the medium bio, one paragraph per blank line.
+const fallback = (profile.bios.medium ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+const heroImage = about.heroImage?.asset ? about.heroImage : profile.photos[0];
+const kicker = about.kicker.split(/\s*·\s*/);
 
-interface SpeakingStats {
-  totalEvents: number;
-  countries: number;
-  cities: number;
-  talks: number;
-}
-
-interface SpeakerProfile {
-  bioShort?: string;
-}
-
-interface Testimonial {
-  _id: string;
-  quote: string;
-  author: string;
-  role?: string;
-  company?: string;
-  image?: unknown;
-}
-
-const [pageContent, stats, testimonials, socialPosts, profile] = await Promise.all([
-  sanityFetch<PageContent | null>(pageQuery, { identifier: 'about' }).catch(() => null),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
-  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
-  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
-  sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
-]);
-
-const heroImage = pageContent?.heroImage;
-const seo = pageContent?.seo;
-
-// Sanity milestones don't carry a year — fall back to the design's curated timeline
-// when Sanity returns nothing. If Sanity has milestones we render them but with no year tag.
-const sanityMilestones = pageContent?.aboutJourney?.milestones || [];
-const fallbackTimeline = [
-  {
-    year: '2015–2019',
-    title: 'Learning to ship',
-    desc: 'Cut my teeth building frontend systems where reliability wasn\'t optional. Learned that the hard problems live at the edges: the failures, the retries, the 3am pages.',
-  },
-  {
-    year: '2019–2022',
-    title: 'Payments at scale',
-    desc: 'Moved into fintech, building and scaling payment infrastructure across regions. Launched Alipay in APAC and watched local payment methods move real revenue.',
-  },
-  {
-    year: '2022–2024',
-    title: 'Leading teams',
-    desc: `Led a cross-functional squad of ${PROOF.engineersLed} engineers across two teams: frontend, backend, and the skip-level management in between.`,
-  },
-  {
-    year: '2024–now',
-    title: 'Staff, stages & community',
-    desc: `Staff Engineer by day; speaker, mentor, and ZurichJS cofounder the rest of the time. In under two years, ZurichJS grew into an award-winning community (JSNation Open Source Award) and one of Europe's most in-demand conferences.`,
-  },
-];
-
-const timelineItems =
-  sanityMilestones.length > 0
-    ? sanityMilestones.map((m) => ({ year: '', title: m.title, desc: m.description }))
-    : fallbackTimeline;
-
-const fallbackTestimonials: Testimonial[] = [
-  { _id: 'tk', quote: "Faris is one of the best speakers I've seen recently. An honor and delight to meet him. The guy is going places.", author: 'Tejas Kumar', role: 'DevRel', company: 'Conference host' },
-  { _id: 'hh', quote: 'Whenever I need guidance about my career, there is one person I always turn to. He\'s been a mentor and a constant source of insight.', author: 'Hammad Hassan', role: 'Full-Stack Engineer' },
-  { _id: 'rg', quote: 'An incredible engineer and human. I had the chance to meet Faris during the speaker session at ReactSummit.', author: 'Rajni Gediya', role: 'Staff Engineer', company: 'Mobile' },
-];
-// Real CMS content only: the hardcoded quotes have no photos, and mixed in
-// with avatar-rich social cards they read as broken images. They're a last
-// resort so the section isn't empty before Sanity has any data.
-const wallTestimonials =
-  testimonials.length > 0 ? testimonials.slice(0, 6)
-  : socialPosts.length > 0 ? []
-  : fallbackTestimonials;
-
-// Same social-card treatment as the home page: real posts + testimonials with
-// avatars, interleaved by SocialWallIsland. Image URLs resolve server-side.
-const socialPostImages: Record<string, string> = {};
-for (const p of socialPosts) {
-  if (p.authorImage) {
-    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
-  }
-}
-const testimonialImages: Record<string, string> = {};
-for (const t of wallTestimonials) {
-  if (t.image) {
-    try { testimonialImages[t._id] = urlFor(t.image).width(48).height(48).url(); } catch {}
-  }
-}
-const normalizedSocialPosts = socialPosts.map((p) => ({
-  _id: p._id,
-  platform: p.platform,
-  author: p.author,
-  authorRole: p.authorRole,
-  authorHandle: p.authorHandle,
-  content: p.content,
-  url: p.url,
-  postDate: p.postDate,
-}));
-const normalizedTestimonials = wallTestimonials.map((t) => ({
-  _id: t._id,
-  quote: t.quote,
-  author: t.author,
-  role: t.role,
-  company: t.company,
-}));
-const hasSocialContent = normalizedSocialPosts.length > 0 || normalizedTestimonials.length > 0;
-
-const headlineRole = pageContent?.aboutHero?.role;
-const headlineBio = pageContent?.aboutHero?.bio;
-const heroLocation = pageContent?.aboutHero?.location || 'Geneva';
-
-const shortBio =
-  profile?.bioShort ||
-  `Faris Aziz is a Staff Software Engineer and conference speaker based in ${heroLocation}. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and talks about resilient frontend systems and payment integrations.`;
-
-const ctaContent = {
-  status: pageContent?.aboutCta?.statusText || availabilityLabel('Available'),
-  title: pageContent?.aboutCta?.title || "Let's build something",
-  body: pageContent?.aboutCta?.description || "Speaking, consulting, or mentorship: if it involves shipping resilient software, I'm interested.",
-  primaryHref: pageContent?.aboutCta?.primaryCtaUrl || '/invite',
-  primaryLabel: pageContent?.aboutCta?.primaryCtaText || 'Invite me to speak',
-  secondaryHref: pageContent?.aboutCta?.secondaryCtaUrl || '/contact',
-  secondaryLabel: pageContent?.aboutCta?.secondaryCtaText || 'Work with me',
-};
+const description =
+  about.seo?.metaDescription ||
+  'Faris Aziz: software engineer on frontend and payment systems, conference speaker, and co-founder of ZurichJS. The long way into tech, in his own words.';
 ---
 
 <BaseLayout
-  title={seo?.metaTitle || 'About | Faris Aziz'}
-  description={seo?.metaDescription || `Staff Software Engineer and Conference Speaker based in ${heroLocation}, specializing in resilient frontend systems and payment integrations.`}
-  pathname="/about"
+  title={about.seo?.metaTitle || 'About | Faris Aziz'}
+  description={description.slice(0, 160)}
   image="/og/about.png"
   profilePage={true}
   markdownAlternate="/about.md"
+  band={false}
+  extraSchema={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }])]}
 >
-  <!-- HERO -->
-  <header class="about-hero">
-    <div class="container about-hero__grid">
-      <div>
-        <h1 class="about-hero__title heading-sentence">
-          Engineer first.<br />
-          <span class="accent-word">Speaker</span> because of it.
-        </h1>
-        <p class="about-hero__lead">
-          {headlineBio ||
-            `I'm a ${headlineRole || 'Staff Software Engineer'} based in ${heroLocation}. For a decade I've built resilient frontend systems and payment integrations, the kind where a dropped request means real money lost. Speaking came later: I had things worth saying because I'd shipped them.`}
-        </p>
-        <p class="about-hero__body">
-          Today I split my time between deep engineering work, mentoring engineers who want to grow, and talking on stages around the world about what actually works in production.
-        </p>
-        <p class="ds-proof">
-          <b>{stats.totalEvents}</b> speaking engagements across <b>{stats.countries}</b> countries,
-          cofounder of the award-winning ZurichJS community, available for keynotes, workshops, consulting, and mentorship.
-        </p>
-        <div class="about-hero__actions">
-          <a href="/contact" class="ds-btn ds-btn-primary">
-            Work with me
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-          <a href="/speaking" class="ds-btn ds-btn-secondary">See my talks</a>
-        </div>
-      </div>
-      <div class="about-portrait">
-        {heroImage ? (
-          <img
-            src={urlFor(heroImage).width(600).height(750).quality(90).url()}
-            alt={pageContent?.aboutHero?.name || 'Faris Aziz'}
-            loading="eager"
-          />
-        ) : (
-          <div class="about-portrait__placeholder">
-            <span>Portrait · 4:5</span>
-          </div>
-        )}
-      </div>
+  <SkewHero image={heroImage} imageAlt={heroImage?.alt || 'Faris Aziz speaking at a conference'} focus="50% 20%">
+    <Kicker parts={kicker} />
+    <h1 class="ds-h1 about__title">{about.title}</h1>
+    <p class="ds-lede about__intro">{about.intro}</p>
+  </SkewHero>
+
+  <div class="ds-wrap about__body">
+    <div class="story">
+      {hasStory ? (
+        <PortableText value={about.content as never} />
+      ) : (
+        fallback.map((p) => <p>{p}</p>)
+      )}
     </div>
-  </header>
-
-  <!-- JOURNEY -->
-  <section class="about-section">
-    <div class="container">
-      <div class="about-section__heading">
-        <h2 class="about-h2 ds-reveal">
-          {pageContent?.aboutJourney?.title || 'How I got here.'}
-        </h2>
-      </div>
-      <div class="about-timeline ds-reveal">
-        {timelineItems.map((m) => (
-          <div class="about-timeline__item">
-            {m.year && <div class="about-timeline__year">{m.year}</div>}
-            <h4 class="about-timeline__title">{m.title}</h4>
-            <p class="about-timeline__desc">{m.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- SOCIAL WALL -->
-  {hasSocialContent && (
-    <section class="about-section">
-      <div class="container">
-        <div class="about-section__heading">
-          <h2 class="about-h2 ds-reveal">Here's what people say.</h2>
-        </div>
-        <SocialWallIsland
-          client:visible
-          posts={normalizedSocialPosts}
-          testimonials={normalizedTestimonials}
-          socialPostImages={socialPostImages}
-          testimonialImages={testimonialImages}
-        />
-        <div style="text-align:center;margin-top:2rem;">
-          <a href="/appreciation" class="ds-link">
-            View all mentions
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  {shortBio && (
-    <section class="about-section">
-      <div class="container">
-        <Bio text={shortBio} />
-      </div>
-    </section>
-  )}
-
-  <!-- CTA -->
-  <section class="about-section about-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={ctaContent.status}
-          title={ctaContent.title}
-          body={ctaContent.body}
-          primaryHref={ctaContent.primaryHref}
-          primaryLabel={ctaContent.primaryLabel}
-          secondaryHref={ctaContent.secondaryHref}
-          secondaryLabel={ctaContent.secondaryLabel}
-        />
-      </div>
-    </div>
-  </section>
-
+    <AboutAside inShort={about.inShort} links={profile.links} />
+  </div>
 </BaseLayout>
 
 <style>
-  .about-hero {
-    border-bottom: 1px solid rgb(var(--edge));
-    padding-block: clamp(3.25rem, 7vw, 5.5rem);
-  }
-  .about-hero__grid {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: center;
-  }
-  @media (max-width: 840px) {
-    .about-hero__grid { grid-template-columns: 1fr; }
-  }
-  .about-hero__title {
-    margin-top: 0;
-  }
-  .about-hero__lead {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-    margin-top: 1.25rem;
-  }
-  .about-hero__body {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-    margin-top: 1rem;
-  }
-  .about-hero__actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
-  }
+  .about__title { margin: 0; text-wrap: balance; }
+  .about__intro { max-width: 44ch; }
 
-  .about-portrait {
-    aspect-ratio: 4 / 5;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgb(var(--surface-3));
-    box-shadow: inset 0 0 0 1px rgb(var(--edge));
+  .about__body {
+    display: grid; grid-template-columns: minmax(0, 680px) minmax(280px, 1fr); gap: 56px;
+    padding-top: 56px; padding-bottom: 64px; align-items: start;
   }
-  .about-portrait img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  .story { display: flex; flex-direction: column; gap: 28px; font-size: 18px; line-height: 1.7; color: rgb(var(--text)); min-width: 0; }
+  .story :global(p) { margin: 0; text-wrap: pretty; }
+  .story :global(h2), .story :global(h3) { margin: 12px 0 -8px; font-size: 24px; line-height: 1.1; letter-spacing: -0.03em; font-weight: 800; }
+  .story :global(ul), .story :global(ol) { margin: 0; padding-left: 1.2em; }
+  .story :global(a) {
+    color: rgb(var(--text)); text-decoration: underline; text-decoration-color: rgb(var(--yellow));
+    text-underline-offset: 0.2em; text-decoration-thickness: 1.5px;
   }
-  .about-portrait__placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgb(var(--ink-faint));
-    font-size: 0.85rem;
-  }
+  .story :global(a:hover) { color: rgb(var(--accent-text)); }
 
-  /* Section primitives */
-  .about-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
-  .about-section--contact { padding-top: 0; }
-  .about-section__heading {
-    margin-bottom: 1.8rem;
+  @media (max-width: 960px) {
+    .about__body { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
+    .story { max-width: 680px; }
   }
-  .about-h2 {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.5rem, 2.4vw, 2rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
+  @media (max-width: 720px) {
+    .story { font-size: 17px; gap: 22px; }
   }
-  /* Timeline */
-  .about-timeline {
-    max-width: 760px;
-    margin-inline: auto;
-    position: relative;
-    padding-left: 2rem;
-  }
-  .about-timeline::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: rgb(var(--edge));
-  }
-  .about-timeline__item {
-    position: relative;
-    padding-bottom: 2rem;
-  }
-  .about-timeline__item:last-child { padding-bottom: 0; }
-  .about-timeline__item::before {
-    content: '';
-    position: absolute;
-    left: -1.79rem;
-    top: 0.45rem;
-    width: 12px;
-    height: 12px;
-    border-radius: 999px;
-    background: rgb(var(--accent));
-    box-shadow: 0 0 0 4px rgb(var(--bg));
-  }
-  .about-timeline__year {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.74rem;
-    letter-spacing: 0.08em;
-    color: rgb(var(--accent-bright));
-  }
-  .about-timeline__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-    margin: 0.3rem 0;
-  }
-  .about-timeline__desc {
-    font-size: 1.0625rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.7;
-  }
-
 </style>

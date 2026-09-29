@@ -1,0 +1,46 @@
+---
+/**
+ * Engineering wins: approved, dated metrics only (the CMS status gate).
+ * Big yellow value, label, context, then the definition and date.
+ */
+import ImpactSplit from './ImpactSplit.astro';
+import type { Metric } from '../../lib/sanity/v3';
+
+interface Props {
+  metrics: Metric[];
+}
+const { metrics } = Astro.props;
+---
+
+{metrics.length > 0 && (
+  <ImpactSplit kicker="Engineering" title="Shipped, measured, corrected." id="engineering">
+    <p slot="head" class="ewins__lede">What changed, by how much, and when. Each figure carries its date and how it was measured.</p>
+    <ul class="ewins" role="list">
+      {metrics.map((m) => (
+        <li class="ds-card ewins__card">
+          <p class="ewins__value">{m.value}</p>
+          <h3 class="ewins__label">{m.label}{m.qualifier && <span class="ewins__qual"> {m.qualifier}</span>}</h3>
+          {m.context && <p class="ewins__context">{m.context}</p>}
+          {(m.definition || m.dateLabel) && (
+            <p class="ds-meta ewins__meta">{[m.definition, m.dateLabel].filter(Boolean).join(' · ')}</p>
+          )}
+        </li>
+      ))}
+    </ul>
+  </ImpactSplit>
+)}
+
+<style>
+  .ewins__lede { margin: 0; font-size: 14.5px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .ewins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; }
+  .ewins__card { display: flex; flex-direction: column; gap: 10px; padding: 24px; }
+  .ewins__value { margin: 0; font-size: 52px; font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; color: rgb(var(--accent-text)); overflow-wrap: anywhere; }
+  .ewins__label { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+  .ewins__qual { font-weight: 600; color: rgb(var(--text-muted)); }
+  .ewins__context { margin: 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  .ewins__meta { margin: auto 0 0; padding-top: 6px; }
+  @media (max-width: 720px) {
+    .ewins { grid-template-columns: 1fr; grid-auto-rows: auto; }
+    .ewins__value { font-size: 44px; }
+  }
+</style>

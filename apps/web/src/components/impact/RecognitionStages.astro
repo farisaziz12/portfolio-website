@@ -1,0 +1,92 @@
+---
+/**
+ * Recognition (confirmed awards on the cream panel, with the celebrating
+ * duck) + one featured quote, beside the stages chips and podcast line.
+ */
+import Illustration from '../v3/Illustration.astro';
+import Icon from '../v3/Icon.astro';
+import { shortQuote, type Award, type EventEdition, type Praise } from '../../lib/sanity/v3';
+
+interface Props {
+  awards: (Award & { community: string })[];
+  quote?: Praise;
+  moreQuotes: number;
+  stages: EventEdition[];
+  podcasts: string[];
+}
+const { awards, quote, moreQuotes, stages, podcasts } = Astro.props;
+const stageName = (e: EventEdition) => e.title.replace(/\s+(19|20)\d{2}$/, '');
+const podcastLine = podcasts.length > 4 ? [...podcasts.slice(0, 4), `and ${podcasts.length - 4} more`] : podcasts;
+const hasLeft = awards.length > 0 || Boolean(quote);
+---
+
+{(hasLeft || stages.length > 0) && (
+  <section class="recst" aria-label="Recognition and stages">
+    <div class="ds-wrap recst__grid">
+      {hasLeft && (
+        <div class="recst__col">
+          <h2 class="ds-kicker recst__h">{awards.length ? 'Recognition' : 'In their words'}</h2>
+          {awards.map((a, i) => (
+            <div class="ds-panel recst__award">
+              <div>
+                <h3 class="recst__title">{a.url ? <a href={a.url} target="_blank" rel="noopener noreferrer">{a.title}</a> : a.title}</h3>
+                <p class="recst__by">{[a.community, a.issuer, a.year].filter(Boolean).join(' · ')}</p>
+              </div>
+              {i === 0 && <Illustration name="duck-celebrating" width={96} class="recst__duck" />}
+            </div>
+          ))}
+          {quote && (
+            <a href="/appreciation" class="ds-card ds-card--link recst__quote" data-track="impact_praise">
+              <span class="recst__text">“{shortQuote(quote)}”</span>
+              <span class="ds-meta">{quote.author.name}{moreQuotes > 0 && ` · and ${moreQuotes} more on What people say`}</span>
+            </a>
+          )}
+        </div>
+      )}
+      {stages.length > 0 && (
+        <div class="recst__col">
+          <h2 class="ds-kicker recst__h">Stages</h2>
+          <ul class="recst__chips" role="list">
+            {stages.map((e) => (
+              <li><a href={`/events/${e.slug}`} class="recst__chip">{stageName(e)}</a></li>
+            ))}
+            <li><a href="/events" class="recst__chip recst__chip--dashed" data-track="impact_full_schedule">Full schedule <Icon name="arrow" size={12} /></a></li>
+          </ul>
+          {podcastLine.length > 0 && <p class="ds-meta recst__pods">Podcasts: {podcastLine.join(' · ')}</p>}
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .recst { border-top: 1px solid rgb(var(--hairline)); }
+  .recst__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; padding-top: 56px; padding-bottom: 64px; }
+  .recst__col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .recst__h { margin: 0; }
+  .recst__award { display: grid; grid-template-columns: minmax(0, 1fr) 100px; gap: 16px; align-items: center; padding: 24px; }
+  .recst__title { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; color: rgb(var(--panel-text)); }
+  .recst__title a { color: inherit; text-decoration: none; }
+  .recst__title a:hover { text-decoration: underline; text-decoration-color: rgb(var(--yellow)); }
+  .recst__award .recst__by { margin: 6px 0 0; font-size: 14px; color: rgb(var(--panel-muted)); }
+  .recst__award :global(.recst__duck) { width: 96px; height: auto; justify-self: end; }
+  .recst__quote { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; }
+  .recst__text { font-size: 17px; line-height: 1.45; color: rgb(var(--text)); text-wrap: pretty; }
+  .recst__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .recst__chip {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; box-sizing: border-box; padding: 10px 16px;
+    background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card);
+    font-weight: 800; font-size: 16px; color: rgb(var(--text)); text-decoration: none; transition: border-color 0.15s;
+  }
+  .recst__chip:hover { border-color: rgb(var(--yellow)); }
+  .recst__chip--dashed { background: transparent; border-style: dashed; border-color: rgb(var(--hairline-strong)); font-weight: 700; font-size: 14px; color: rgb(var(--text-muted)); }
+  .recst__pods { margin: 0; font-size: 13px; }
+  @media (max-width: 900px) {
+    .recst__grid { grid-template-columns: 1fr; gap: 40px; padding-top: 44px; padding-bottom: 48px; }
+  }
+  @media (max-width: 420px) {
+    .recst__award { grid-template-columns: minmax(0, 1fr) 72px; padding: 20px; }
+    .recst__award :global(.recst__duck) { width: 72px; }
+    .recst__title { font-size: 21px; }
+  }
+</style>

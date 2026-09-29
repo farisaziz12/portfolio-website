@@ -1,0 +1,91 @@
+---
+/**
+ * About's right column: the cream panel with the page's one Faris
+ * illustration, the "In short" facts, the track-record links and the terminal.
+ */
+import Illustration from '../v3/Illustration.astro';
+import AboutTerminal from './AboutTerminal.astro';
+import type { LabelledText, Profile } from '../../lib/sanity/v3';
+
+interface Props {
+  inShort: LabelledText[];
+  links: Profile['links'];
+}
+const { inShort, links } = Astro.props;
+
+const elsewhere = [
+  { label: 'LinkedIn', href: links.linkedin },
+  { label: 'Bluesky', href: links.bluesky },
+  { label: 'X', href: links.twitter },
+  { label: 'GitHub', href: links.github },
+  { label: 'YouTube', href: links.youtube },
+].filter((l): l is { label: string; href: string } => Boolean(l.href));
+
+const record = [
+  { label: 'Projects', href: '/projects' },
+  { label: 'Impact', href: '/impact' },
+  { label: 'Gallery', href: '/gallery' },
+  { label: 'Appreciation', href: '/appreciation' },
+];
+---
+
+<aside class="aside" aria-label="At a glance">
+  <div class="ds-panel aside__art">
+    <Illustration name="faris-thinking" width={240} />
+  </div>
+
+  <section class="ds-card aside__box" aria-labelledby="in-short">
+    <h2 id="in-short" class="aside__kicker">In short</h2>
+    <dl class="ds-dl aside__dl">
+      {inShort.map((row) => (
+        <>
+          <dt>{row.label}</dt>
+          <dd>{row.body}</dd>
+        </>
+      ))}
+      {elsewhere.length > 0 && (
+        <>
+          <dt>Elsewhere</dt>
+          <dd>
+            {elsewhere.map((l, i) => (
+              <>
+                {i > 0 && <span aria-hidden="true"> · </span>}
+                <a href={l.href} class="ds-textlink" target="_blank" rel="me noopener noreferrer" data-track={`about_elsewhere_${l.label.toLowerCase()}`}>{l.label}</a>
+              </>
+            ))}
+          </dd>
+        </>
+      )}
+    </dl>
+  </section>
+
+  <nav class="ds-card aside__box aside__record" aria-labelledby="track-record">
+    <h2 id="track-record" class="aside__kicker">Track record</h2>
+    <p class="aside__links">
+      {record.map((l, i) => (
+        <>
+          {i > 0 && <span aria-hidden="true"> · </span>}
+          <a href={l.href}>{l.label}</a>
+        </>
+      ))}
+    </p>
+    <p class="aside__note">What I've built, what it changed, the photos, and what people said about it.</p>
+  </nav>
+
+  <AboutTerminal />
+</aside>
+
+<style>
+  .aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .aside__art { display: flex; justify-content: center; padding: 24px; }
+  .aside__art :global(img) { width: 240px; max-width: 100%; height: auto; }
+  .aside__box { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .aside__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .aside__dl { grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; line-height: 1.5; }
+  .aside__dl dd { min-width: 0; overflow-wrap: anywhere; }
+  .aside__dl a { color: rgb(var(--text)); }
+  .aside__links { margin: 0; font-weight: 800; font-size: 16px; line-height: 1.3; }
+  .aside__links a { color: rgb(var(--text)); text-decoration: none; display: inline-block; padding-block: 4px; }
+  .aside__links a:hover { color: rgb(var(--accent-text)); }
+  .aside__note { margin: 0; font-size: 13px; line-height: 1.45; color: rgb(var(--text-muted)); }
+</style>

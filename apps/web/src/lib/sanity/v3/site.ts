@@ -289,7 +289,7 @@ export async function getMetricsByDomain(domain: MetricDomain): Promise<Metric[]
 export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(founded, 9999) asc) {
   _id, name, "slug": slug.current, role, founded, city, url, headline, caseStudyHeadline, summary,
   "pillars": coalesce(pillars[]{ kicker, title, body, link }, []),
-  "metrics": coalesce(metrics[]->[status == "approved"]{ ${METRIC_FIELDS} }, []),
+  "metrics": coalesce(metrics[]->{ ${METRIC_FIELDS}, status }, []),
   "recognition": coalesce(recognition[confirmed == true]{ title, issuer, year, url }, []),
   "aftermovie": aftermovie{ title, caption, url, "published": published == true && defined(url), credit, "poster": poster${IMAGE} },
   "photos": coalesce(photos[]${IMAGE}, []),
@@ -299,7 +299,12 @@ export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(fo
 export function getCommunities(): Promise<Community[]> {
   return memo('site:communities', async () => {
     const list = await load<Community[]>(communitiesQuery, []);
-    return list.map((c) => ({ ...c, metrics: (c.metrics ?? []).filter(Boolean).map(finishMetric) }));
+    return list.map((c) => ({
+      ...c,
+      metrics: ((c.metrics ?? []) as (Omit<Metric, 'dateLabel'> & { status?: string })[])
+        .filter((m) => m && m.status === 'approved')
+        .map(({ status: _status, ...m }) => finishMetric(m)),
+    }));
   });
 }
 

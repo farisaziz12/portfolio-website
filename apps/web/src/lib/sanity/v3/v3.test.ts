@@ -90,3 +90,12 @@ test('singletons merge over defaults; home featured resolves refs', async () => 
   const career = await v3.getCareer();
   assert.ok(!career.some((c) => c.name === 'Unannounced'), 'private roles stay private');
 });
+
+test('community: metric references resolve, approved only, dated', async () => {
+  const c = await v3.getPrimaryCommunity();
+  assert.equal(c?.name, 'ZurichJS');
+  assert.equal(c?.metrics.length, 4);
+  assert.ok(c?.metrics.every((m) => m.dateLabel));
+  assert.equal(c?.recognition.length, 1);
+  assert.equal(c?.aftermovie?.published, false);
+});
