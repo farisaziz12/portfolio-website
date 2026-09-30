@@ -9,7 +9,7 @@
     "astro": "astro",
     "lint": "eslint . && node scripts/ui-guardrails.mjs && node scripts/conventions.mjs --self-test && node scripts/conventions.mjs && tsx scripts/voice.ts",
     "typecheck": "astro check",
-    "test": "tsx --test src/**/*.test.ts",
+    "test": "tsx --test $(find src -name '*.test.ts' | sort)",
     "lint:ui": "node scripts/ui-guardrails.mjs",
     "lint:conventions": "node scripts/conventions.mjs --self-test && node scripts/conventions.mjs",
     "lint:voice": "tsx scripts/voice.ts",

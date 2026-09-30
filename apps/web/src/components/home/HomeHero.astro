@@ -3,21 +3,23 @@
  * Home hero. Variant `band` (default): SkewHero with the yellow band and the
  * photo mosaic (two or more hero photos) or a single photo clipped in.
  * Variant `fullbleed`: the photo behind the type with an ink scrim.
+ * Photos crop around the editor's hotspot (SanityImg sets --fp).
  * Bottom-right ink strip lists the next one or two appearances.
  */
 import SkewHero from '../v3/SkewHero.astro';
 import SanityImg from '../v3/SanityImg.astro';
-import { headlineParts, dayMonth, type HomePage, type EventEdition } from '../../lib/sanity/v3';
+import { headlineParts, dayMonth, type HomePage, type EventEdition, type SanityImage } from '../../lib/sanity/v3';
 
 interface Props {
   home: HomePage;
+  /** Hero photos, already resolved (Home page picks, else press photos). */
+  photos: SanityImage[];
   kicker: string;
   upcoming: EventEdition[];
 }
 
-const { home, kicker, upcoming } = Astro.props;
+const { home, photos, kicker, upcoming } = Astro.props;
 const parts = headlineParts(home.headline);
-const photos = home.heroPhotos.filter((p) => p?.asset);
 const next = upcoming.slice(0, 2);
 const variant = home.heroVariant === 'fullbleed' ? 'fullbleed' : 'band';
 const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.city);
@@ -100,7 +102,7 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
   /* Full-bleed variant */
   .hfb { position: relative; overflow: hidden; min-height: 640px; display: flex; align-items: flex-start; color: rgb(var(--c-cream)); background: rgb(var(--c-ink)); }
   .hfb__photo { position: absolute; inset: 0; }
-  .hfb__photo :global(.hfb__img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
+  .hfb__photo :global(.hfb__img) { width: 100%; height: 100%; object-fit: cover; object-position: var(--fp, 50% 35%); display: block; }
   .hfb__photo::after {
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(90deg, rgb(var(--c-ink) / 0.96) 0%, rgb(var(--c-ink) / 0.85) 42%, rgb(var(--c-ink) / 0.2) 75%, rgb(var(--c-ink) / 0) 100%);

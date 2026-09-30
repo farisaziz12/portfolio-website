@@ -2,10 +2,12 @@
 /**
  * Responsive Sanity image: srcset from the CDN (hotspot-aware crops),
  * intrinsic width/height to prevent layout shift, lazy by default.
- * Pass `ratio` (w/h) to crop, e.g. 16/9 or 1.
+ * Pass `ratio` (w/h) to crop, e.g. 16/9 or 1. Uncropped images expose the
+ * editor's hotspot as `--fp`, so `object-fit: cover` can use
+ * `object-position: var(--fp, <fallback>)`.
  */
 import { urlFor } from '../../lib/sanity/client';
-import type { SanityImage } from '../../lib/sanity/v3';
+import { hotspotFocus, type SanityImage } from '../../lib/sanity/v3';
 
 interface Props {
   image?: SanityImage | null;
@@ -44,6 +46,8 @@ function src(w: number) {
 }
 const srcset = ok ? widths.map((w) => `${src(w)} ${w}w`).join(', ') : '';
 const text = alt ?? image?.alt ?? '';
+// The CDN already crops ratio images around the hotspot.
+const fp = ok && !ratio ? hotspotFocus(image) : undefined;
 ---
 
 {ok ? (
@@ -58,6 +62,7 @@ const text = alt ?? image?.alt ?? '';
     decoding="async"
     fetchpriority={fetchpriority}
     class={className}
+    style={fp ? `--fp:${fp}` : undefined}
   />
 ) : (
   <span class:list={['ds-img-ph', className]} role={text ? 'img' : undefined} aria-label={text || undefined} aria-hidden={text ? undefined : 'true'}></span>

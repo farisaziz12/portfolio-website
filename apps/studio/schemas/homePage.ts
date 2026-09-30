@@ -37,7 +37,7 @@ export default defineType({
     defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 3, group: 'hero' }),
     cta('primaryCta', 'Primary button', 'hero'),
     cta('secondaryCta', 'Secondary link', 'hero'),
-    defineField({ name: 'heroPhotos', title: 'Hero photos', type: 'array', group: 'hero', of: [photoMember()], validation: (Rule) => Rule.max(3), description: 'First = main. Up to three for the mosaic.' }),
+    defineField({ name: 'heroPhotos', title: 'Hero photos', type: 'array', group: 'hero', of: [photoMember()], validation: (Rule) => Rule.max(3), description: 'First = main. Up to three for the mosaic. Leave empty to use the press photos (stage shots first). Set the hotspot on each photo: the hero crops around it.' }),
 
     defineField({
       name: 'featured',

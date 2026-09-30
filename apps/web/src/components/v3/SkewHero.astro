@@ -16,7 +16,7 @@ interface Props {
   /** Up to three photos: first spans the top, two below (the mosaic). */
   mosaic?: (SanityImage | null | undefined)[];
   imageAlt?: string;
-  /** object-position for the photo, e.g. "50% 30%". */
+  /** Fallback object-position when the photo has no hotspot, e.g. "50% 30%". */
   focus?: string;
   /** Desktop height in px (auto on phone). */
   height?: number;
@@ -70,7 +70,7 @@ const hasAside = Astro.slots.has('aside');
   .skh__band { right: -8%; width: var(--band-w); background: rgb(var(--yellow)); }
   .skh__edge { right: calc(var(--photo-w) - 4px); width: 8px; background: rgb(var(--blue)); }
   .skh__photo { position: absolute; right: 0; top: 0; bottom: 0; width: var(--photo-w); clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%); pointer-events: auto; }
-  .skh__photo :global(.skh__img) { width: 100%; height: 100%; object-fit: cover; object-position: var(--focus); display: block; }
+  .skh__photo :global(.skh__img) { width: 100%; height: 100%; object-fit: cover; object-position: var(--fp, var(--focus)); display: block; }
   .skh__mosaic { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 1.15fr 1fr; gap: 6px; background: rgb(var(--ground)); clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); width: calc(var(--photo-w) + 4%); }
   .skh__mosaic :global(.skh__img--wide) { grid-column: 1 / -1; }
   .skh__aside { position: absolute; right: var(--gutter); bottom: 48px; width: min(320px, calc(var(--band-w) - 14%)); color: rgb(var(--c-ink)); pointer-events: auto; }

@@ -22,6 +22,7 @@ import {
   getWriting,
   getSiteSettings,
   getProfile,
+  homeHeroPhotos,
   type FeaturedItem,
 } from '../lib/sanity/v3';
 
@@ -48,9 +49,10 @@ const onPosters = new Set(featured.filter((f): f is Extract<FeaturedItem, { kind
 const fresh = writing.filter((w) => !onPosters.has(w._id));
 const latest = [...fresh.filter((w) => w.format === 'article'), ...fresh.filter((w) => w.format !== 'article')].slice(0, 2);
 
-// Opener photos: the wide hero shot for the first cut, a portrait for the speaker card.
-const heroPhotos = home.heroPhotos.filter((p) => p?.asset);
-const portrait = heroPhotos[2] ?? profile.photos[0] ?? heroPhotos[0];
+// Hero photos (Home page picks, else the press photos). The opener uses the
+// wide shot for the first cut and a portrait for the speaker card.
+const heroPhotos = homeHeroPhotos(home.heroPhotos, profile.photos);
+const portrait = (home.heroPhotos.length ? heroPhotos[2] : undefined) ?? profile.photos.find((p) => p.tag === 'portrait') ?? profile.photos[0] ?? heroPhotos[0];
 
 const next = upcoming.slice(0, 5);
 const extraSchema = next.length
@@ -69,7 +71,7 @@ const extraSchema = next.length
 >
   {settings.introEnabled && <Opener wide={heroPhotos[0]} portrait={portrait} name={profile.name} line={kicker} />}
 
-  <HomeHero home={home} kicker={kicker} upcoming={upcoming} />
+  <HomeHero home={home} photos={heroPhotos} kicker={kicker} upcoming={upcoming} />
 
   <HomeFeatured items={featured} quote={praise.underPosters} podcasts={stats.podcasts} />
 

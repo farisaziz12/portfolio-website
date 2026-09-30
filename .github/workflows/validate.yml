@@ -29,6 +29,9 @@ jobs:
       - name: Lint (ESLint + UI guardrails + conventions)
         run: pnpm lint
 
+      - name: Unit tests (loaders, migration, view helpers)
+        run: pnpm test
+
       - name: Build Sanity Studio (validates schema)
         run: pnpm --filter studio build
         env:
