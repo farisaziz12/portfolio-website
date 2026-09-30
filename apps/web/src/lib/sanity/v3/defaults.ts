@@ -111,9 +111,9 @@ export const DEFAULT_PROFILE: Profile = {
 
 export const DEFAULT_ABOUT = {
   kicker: 'About · Geneva',
-  title: 'A builder at heart, who took the long way into tech.',
+  title: 'A builder at heart. Products, payments and a JavaScript community.',
   intro:
-    'I took a non-traditional route into tech, and what pulled me in was making things: products, systems, teams, a community. That’s still the part I care about most.',
+    "By day I build frontend and payment systems for products used by millions, and lead the teams that ship them. The rest of the time I'm on stage talking about it, or running ZurichJS.",
   inShort: [
     { label: 'Work', body: 'Frontend and payment systems at scale' },
     { label: 'Speak', body: 'Production, payments, careers, community' },

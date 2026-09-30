@@ -60,7 +60,7 @@ export async function getStaticPaths() {
       ...(members ? { mark: members.value, markLabel: members.label } : {}),
     },
     blog: { kicker: 'Writing & conversations', title: "What I've written, and what I've said out loud.", meta: 'Posts, guest articles, podcasts and video in one timeline.' },
-    about: { kicker: 'About · Geneva', title: 'A builder at heart, who took the long way into tech.', meta: byline },
+    about: { kicker: 'About · Geneva', title: 'A builder at heart. Products, payments and a JavaScript community.', meta: byline },
     impact: { kicker: 'Track record', title: 'The work, the stages, the community.', meta: 'Everything dated and defined.', mark: String(stats.countries), markLabel: 'countries spoken in' },
     appreciation: { kicker: 'What people say', title: 'What people have said about Faris.', meta: 'Every card links to the original post.' },
     services: { kicker: 'Services', title: 'How I can help.', meta: 'Events: speaking and workshops · Advisory · Mentorship. A sentence is enough to start.' },

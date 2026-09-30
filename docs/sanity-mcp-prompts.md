@@ -344,9 +344,12 @@ document for the conference platform (create a project if missing).
 ```text
 Goal: a first-person About story and a public career timeline.
 
-1. page (identifier "about"): kicker "About · Geneva"; title "A builder at heart, who took the long way
-   into tech."; subtitle (intro, 2 sentences); content (story, first person, 3–4 paragraphs: today's
-   work, how speaking started, ZurichJS). No headings, no lists, no numbers that go stale.
+1. page (identifier "about"), work first: kicker "About · Geneva"; title "A builder at heart. Products,
+   payments and a JavaScript community."; subtitle (intro, 2 sentences, today's work first: "By day I
+   build frontend and payment systems for products used by millions, and lead the teams that ship them.
+   The rest of the time I'm on stage talking about it, or running ZurichJS."); content (story, first
+   person, 3–4 paragraphs: today's work, how speaking started, ZurichJS; the route into tech last, in one
+   or two sentences). No headings, no lists, no numbers that go stale.
    inShort[]: Work / Speak / Build (label + one line). heroImage with alt + credit.
    Clear the legacy aboutHero/aboutWhatIDo/aboutJourney/aboutSkills/aboutCta objects after copying
    anything still true into the new fields.
