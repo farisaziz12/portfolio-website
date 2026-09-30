@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCatalogueTalks, getSpeakingStats, numberWord } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
-import { deliveredLine, inviteHref, lengthLabel, nextLine, pillarTitle } from '../lib/talks';
+import { deliveredLine, inviteHref, isNewTalk, lengthLabel, newTalkLine, nextLine, pillarTitle } from '../lib/talks';
 
 export const GET: APIRoute = async () => {
   const [talks, stats] = await Promise.all([getCatalogueTalks(), getSpeakingStats()]);
@@ -17,8 +17,8 @@ export const GET: APIRoute = async () => {
       t.audience ? `- Audience: ${t.audience}` : '',
       lengthLabel(t) ? `- Length: ${lengthLabel(t)}` : '',
       t.level ? `- Level: ${t.level}` : '',
-      `- Deliveries: ${deliveredLine(t)?.replace(/^delivered /, '') ?? 'none yet'}`,
-      nextLine(t) ? `- Upcoming: ${nextLine(t)!.replace(/^next: /, '')}` : '',
+      isNewTalk(t) ? `- Status: ${newTalkLine(t)}` : `- Deliveries: ${deliveredLine(t)?.replace(/^delivered /, '') ?? 'none yet'}`,
+      nextLine(t) && !isNewTalk(t) ? `- Upcoming: ${nextLine(t)!.replace(/^next: /, '')}` : '',
       t.recording ? `- Recording: ${t.recording.url}` : '',
       t.slidesUrl ? `- Slides: ${t.slidesUrl}` : '',
       `- Book it: ${SITE}${inviteHref(t)}`,

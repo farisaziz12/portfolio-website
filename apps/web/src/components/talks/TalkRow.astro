@@ -1,12 +1,13 @@
 ---
 /**
  * One catalogue row: thumbnail (talk image, else the recording's YouTube
- * frame, else the striped placeholder) with the yellow edge, pillar kicker,
+ * frame, else a "New" tile for talks not given yet, else the striped
+ * placeholder) with the yellow edge, pillar kicker,
  * title, summary, audience + derived meta, and a Watch / Details action.
  * The title link stretches over the row; the action stays its own target.
  */
-import { youtubeThumb, type TalkWithHistory } from '../../lib/sanity/v3';
-import { pillarTitle, talkMeta } from '../../lib/talks';
+import { monthYear, youtubeThumb, type TalkWithHistory } from '../../lib/sanity/v3';
+import { isNewTalk, pillarTitle, talkMeta } from '../../lib/talks';
 import SanityImg from '../v3/SanityImg.astro';
 
 interface Props {
@@ -16,6 +17,8 @@ const { talk: t } = Astro.props;
 const href = `/talks/${t.slug}`;
 const yt = t.thumbnail?.asset ? undefined : youtubeThumb(t.recording?.url);
 const meta = talkMeta(t);
+const fresh = isNewTalk(t);
+const premiere = t.nextDelivery ? `Premieres ${monthYear(t.nextDelivery.event.date)}` : 'Not given yet';
 // "Since 2024 · 2 versions": the talk has changed over the years.
 const firstYear = t.versions.map((v) => v.years.slice(0, 4)).filter(Boolean).sort()[0];
 const evolved = t.versions.length > 1 ? `${firstYear ? `Since ${firstYear} · ` : ''}${t.versions.length} versions` : '';
@@ -29,10 +32,16 @@ const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
       <SanityImg image={t.thumbnail} alt="" ratio={16 / 10} widths={[240, 400]} sizes="150px" class="trow__img" />
     ) : yt ? (
       <img src={yt} alt="" width="480" height="360" loading="lazy" decoding="async" class="trow__img" />
+    ) : fresh ? (
+      <span class="trow__new" aria-hidden="true">
+        <span class="trow__new-word">New</span>
+        <span class="trow__new-line">{premiere}</span>
+      </span>
     ) : (
       <span class="ds-img-ph trow__img" aria-hidden="true"></span>
     )}
     <span class="trow__edge" aria-hidden="true"></span>
+    {fresh && t.thumbnail?.asset && <span class="trow__tag" aria-hidden="true">New</span>}
   </span>
   <div class="trow__main">
     {t.pillar && <p class="ds-kicker trow__kicker">{pillarTitle(t.pillar)}</p>}
@@ -56,6 +65,16 @@ const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
   .trow { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr) 200px 120px; gap: 24px; align-items: center; padding: 22px 0; }
   .trow__thumb { position: relative; display: block; aspect-ratio: 16 / 10; border-radius: var(--radius-btn); overflow: hidden; background: rgb(var(--surface)); }
   .trow__thumb :global(.trow__img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .trow__new {
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 12px 0 20px;
+    background: repeating-linear-gradient(135deg, rgb(var(--surface)) 0 10px, rgb(var(--hairline) / 0.45) 10px 11px);
+  }
+  .trow__new-word { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: rgb(var(--accent-text)); }
+  .trow__new-line { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(var(--text-muted)); line-height: 1.25; }
+  .trow__tag {
+    position: absolute; right: 6px; bottom: 6px; padding: 2px 7px; border-radius: 999px; background: rgb(var(--yellow)); color: rgb(var(--on-yellow));
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  }
   .trow__edge { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: rgb(var(--yellow)); }
   .trow__main { min-width: 0; }
   .trow__kicker { letter-spacing: 0.12em; }
@@ -82,5 +101,8 @@ const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
     .trow__side { grid-column: 1 / -1; }
     .trow__action { grid-column: 1 / -1; grid-row: auto; justify-self: start; min-height: 44px; }
     .trow__edge { width: 4px; }
+    .trow__new { padding: 0 8px 0 12px; }
+    .trow__new-word { font-size: 20px; }
+    .trow__new-line { font-size: 9.5px; }
   }
 </style>

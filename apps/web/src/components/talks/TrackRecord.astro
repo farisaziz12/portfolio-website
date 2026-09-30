@@ -23,7 +23,7 @@ const numbers = [
   { value: stats.talksDelivered, label: `talks delivered · ${currentMonthYear()}` },
   { value: stats.countries, label: stats.cities ? `countries, ${stats.cities} cities` : 'countries' },
   { value: talks.length, label: `talks in the catalogue${topics ? ` · ${topics} topics` : ''}` },
-  ...(most && most.deliveredCount > 1 ? [{ value: `${most.deliveredCount}×`, label: `${most.shortTitle || most.title}, by request` }] : []),
+  ...(most && most.deliveredCount > 1 ? [{ value: `${most.deliveredCount}×`, label: most.shortTitle || most.title }] : []),
 ];
 const flags = stats.countryList.slice(0, flagLimit);
 const rest = stats.countryList.length - flags.length;

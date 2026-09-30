@@ -47,8 +47,20 @@ export function deliveredLine(t: TalkWithHistory): string | null {
   return `delivered ${t.deliveredCount}×${notable ? ` incl. ${eventWithYear(notable)}` : ''}`;
 }
 
+/** A talk nobody has seen yet: no past session of any version in its family. */
+export function isNewTalk(t: Pick<TalkWithHistory, 'deliveries'>): boolean {
+  return !t.deliveries.some((d) => !d.event.isUpcoming);
+}
+
+/** "premiere: Game of Codes, 9 Oct 2026" · "new, not given yet". */
+export function newTalkLine(t: TalkWithHistory): string {
+  const n = t.nextDelivery;
+  return n ? `premiere: ${eventShortName(n.event)}, ${fullDate(n.event.date)}` : 'new, not given yet';
+}
+
 /** Catalogue row meta: "30 min · recording · delivered 6× incl. React Summit US 2025". */
 export function talkMeta(t: TalkWithHistory): string {
+  if (isNewTalk(t)) return [t.duration ? `${t.duration} min` : null, newTalkLine(t)].filter(Boolean).join(' · ');
   return [t.duration ? `${t.duration} min` : null, t.recording ? 'recording' : null, nextLine(t) ?? deliveredLine(t)]
     .filter(Boolean)
     .join(' · ');
