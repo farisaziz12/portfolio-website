@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Press kit: ${profile.name}`,
     ``,
-    `> Bios in three lengths, pronunciation, photos with crops and credits, and the speaker rider. Copy what you need; nothing here requires an email. Invitations: ${SITE}/invite.`,
+    `> Bios, pronunciation, photos and the speaker rider for your programme. Take whatever you need. Invitations: ${SITE}/invite.`,
     ``,
     `## Name and links`,
     ``,

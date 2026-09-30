@@ -22,7 +22,6 @@
 @media (pointer: coarse) { .inq-pill { min-height: 44px; } }
 
 .inq-submit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.inq-submit__note { max-width: 40ch; }
 
 .inq-form[aria-busy='true'] .ds-input, .inq-form[aria-busy='true'] .ds-textarea { opacity: 0.7; }
 

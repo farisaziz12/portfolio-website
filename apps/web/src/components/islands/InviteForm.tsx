@@ -210,7 +210,6 @@ export default function InviteForm({ replyTime, art, pressKitHref = '/press-kit'
           <button type="submit" className="ds-btn ds-btn--yellow ds-btn--lg" disabled={sending} data-track="invite_submit">
             {sending ? 'Sending…' : status === 'failed' ? 'Try again' : 'Send it over'}
           </button>
-          <span className="ds-meta inq-submit__note">Goes to me only. Nothing here adds you to any list.</span>
         </div>
         <p className="sr-only" aria-live="polite">{sending ? 'Sending. The button stays disabled until the server confirms it stored the inquiry.' : ''}</p>
       </form>

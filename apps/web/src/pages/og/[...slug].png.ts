@@ -53,7 +53,7 @@ export async function getStaticPaths() {
     events: { kicker: 'Speaking · Schedule', title: "Where I'll be, and where I've been.", meta: `${stats.upcoming} upcoming · ${stats.countries} countries`, mark: String(stats.countries), markLabel: 'countries' },
     workshops: { kicker: 'Speaking · Workshops', title: 'Hands-on, 3 hours to a full day.', meta: 'You keep the repo and the resources after.' },
     invite: { kicker: 'Invite me', title: 'What did you have in mind?', meta: 'Conferences, meetups, podcasts, workshops, panels. I reply within two working days.' },
-    'press-kit': { kicker: 'Speaking · Press kit', title: 'Everything an organiser needs, on one page.', meta: 'Bios in three lengths, photos with credits and crops, the rider.' },
+    'press-kit': { kicker: 'Speaking · Press kit', title: 'Everything an organiser needs, on one page.', meta: 'Bios, photos and the practical bits for your programme.' },
     community: {
       kicker: 'Community',
       title: 'I host meetups, teach at them, and build the systems behind them.',
