@@ -26,6 +26,9 @@
   --c-blue-text: 23 104 143;    /* #17688F — blue kicker on cream */
   --c-cream-muted: 87 83 78;    /* #57534E — secondary text on cream */
   --c-danger: 255 122 102;      /* #FF7A66 */
+  --c-green: 108 196 140;       /* #6CC48C — "hosted" role */
+  --c-green-text: 33 118 70;    /* #217646 — green text on cream */
+  --c-yellow-text: 143 106 0;   /* #8F6A00 — yellow-family text on cream */
 
   /* Semantic (dark = default) */
   --ground: var(--c-ink);
@@ -48,6 +51,17 @@
   --panel-btn: var(--c-ink);
   --panel-btn-text: var(--c-cream);
   --danger: var(--c-danger);
+
+  /* Role identities: what I did at an event (ROLE_BUCKETS). --role-* fills pills,
+     dots and badge edges; --role-*-ink is the same identity as text. */
+  --role-spoke: var(--c-yellow);
+  --role-workshop: var(--c-blue);
+  --role-hosted: var(--c-green);
+  --role-attended: var(--c-faint);
+  --role-spoke-ink: var(--c-yellow);
+  --role-workshop-ink: 108 178 216;  /* #6CB2D8 — blue text on ink */
+  --role-hosted-ink: var(--c-green);
+  --role-attended-ink: var(--c-muted);
 
   /* Type */
   --font: 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -125,6 +139,11 @@
   --panel-btn-text: var(--c-ink);
   --danger: 178 52 34;           /* #B23422 */
   --ink-on-signal: var(--c-cream);
+  --role-attended: 168 160 148;      /* #A8A094 */
+  --role-spoke-ink: var(--c-yellow-text);
+  --role-workshop-ink: var(--c-blue-text);
+  --role-hosted-ink: var(--c-green-text);
+  --role-attended-ink: var(--text-faint);
   color-scheme: light;
 }
 

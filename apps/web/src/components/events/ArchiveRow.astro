@@ -21,7 +21,7 @@ const flag = flagFor(e);
     <span class="ds-row__title arow__title">{e.title}</span>
     <span class="arow__what">{sessionSummary(e)}</span>
     <span class="arow__place">{flag && <span class="arow__flag" aria-hidden="true">{flag}</span>}{placeShort(e)}</span>
-    {bucket && <span class:list={['ds-badge arow__badge', { 'is-muted': bucket === 'attended' }]}>{bucketBadge(bucket)}</span>}
+    {bucket && <span class="ds-role arow__badge" data-bucket={bucket}>{bucketBadge(bucket)}</span>}
   </a>
 </li>
 
@@ -35,8 +35,7 @@ const flag = flagFor(e);
   .arow__what { color: rgb(var(--text-muted)); overflow-wrap: anywhere; }
   .arow__place { color: rgb(var(--text-faint)); font-size: 13px; }
   .arow__flag { font-size: 16px; margin-right: 6px; }
-  .arow__badge { justify-self: end; color: rgb(var(--text-muted)); }
-  .arow__badge.is-muted { color: rgb(var(--text-faint)); }
+  .arow__badge { justify-self: end; }
   @media (max-width: 900px) {
     .arow { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 4px 16px; align-items: start; }
     .arow__date { grid-row: 1 / span 3; padding-top: 2px; }

@@ -18,6 +18,10 @@ subset: `apps/web/scripts/ui-guardrails.mjs` + `conventions.mjs` (`pnpm lint`).
 | `--accent-text` | yellow | `#17688F` | Kickers and small accent text (yellow text fails on cream) |
 | `--blue` | `#2E88B8` | same | Only as the band edge, video tiles |
 | `--panel*` | cream panel, ink text | ink panel, cream text | The one invitation panel per page |
+| `--role-spoke` / `-workshop` / `-hosted` / `-attended` | yellow / blue / `#6CC48C` green / faint | same fills; `-ink` text variants darken | **Role identity only**: what Faris did at an event. Set `data-bucket` on the element; use `.ds-role` badges and `FilterPills` `bucket` |
+
+Role colours appear only where a role is named (badge, pill, upcoming card edge) and always next to the role's
+label, never as the only signal. Attended is deliberately quiet (hollow dot).
 
 Rules: ink text on yellow, never white. Never ink-on-ink cards without a hairline. Blue is never text on ink below
 18px. No gradients except the band devices and image placeholders. Never use raw palette values for text: use the

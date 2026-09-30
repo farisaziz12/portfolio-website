@@ -14,7 +14,7 @@ const s = primarySession(e);
 const flag = flagFor(e);
 ---
 
-<a href={`/events/${e.slug}`} class="ds-card upc" data-track="events_upcoming_card">
+<a href={`/events/${e.slug}`} class="ds-card upc" data-bucket={s?.bucket} data-track="events_upcoming_card">
   <span class="upc__date">
     <span class="upc__day">{Number(e.date.slice(8, 10))}</span>
     <span class="upc__month">{monthYear(e.date)}</span>
@@ -28,11 +28,12 @@ const flag = flagFor(e);
 
 <style>
   .upc { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; padding: 24px; height: 100%; }
+  .upc[data-bucket] { box-shadow: inset 3px 0 0 rgb(var(--role)); }
   .upc__date { display: flex; flex-direction: column; }
   .upc__day { font-size: 44px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
   .upc__month { font-size: 13px; color: rgb(var(--text-muted)); margin-top: 4px; }
   .upc__main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .upc__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .upc__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--role-ink, var(--accent-text))); }
   .upc__title { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-wrap: balance; overflow-wrap: anywhere; }
   .upc__flag { font-size: 22px; margin-right: 8px; }
   .upc__meta { font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); text-wrap: pretty; }

@@ -109,6 +109,25 @@ a { color: inherit; }
 .ds-pill:hover { border-color: rgb(var(--yellow)); }
 .ds-pill[aria-pressed='true'], .ds-pill[aria-current='page'], .ds-pill.is-active { background: rgb(var(--yellow)); border-color: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
 .ds-pill .ds-pill__count { font-weight: 600; opacity: 0.8; }
+
+/* Role identity (data-bucket = spoke | workshop | hosted | attended). One colour
+   per role everywhere: filter pills, archive badges, upcoming rows and cards. */
+[data-bucket='spoke'] { --role: var(--role-spoke); --role-ink: var(--role-spoke-ink); }
+[data-bucket='workshop'] { --role: var(--role-workshop); --role-ink: var(--role-workshop-ink); }
+[data-bucket='hosted'] { --role: var(--role-hosted); --role-ink: var(--role-hosted-ink); }
+[data-bucket='attended'] { --role: var(--role-attended); --role-ink: var(--role-attended-ink); }
+.ds-role {
+  display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 8px; border-radius: 999px;
+  border: 1px solid rgb(var(--role, var(--hairline-strong)) / 0.55); background: rgb(var(--role, var(--hairline-strong)) / 0.1);
+  font-size: 12px; font-weight: 700; color: rgb(var(--role-ink, var(--text))); white-space: nowrap;
+}
+.ds-role::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--role, var(--text-faint))); flex: none; }
+.ds-role[data-bucket='attended']::before { background: transparent; box-shadow: inset 0 0 0 1.5px rgb(var(--role)); }
+.ds-pill[data-bucket]::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--role)); flex: none; }
+.ds-pill[data-bucket='attended']::before { background: transparent; box-shadow: inset 0 0 0 1.5px rgb(var(--role)); }
+.ds-pill[data-bucket]:hover { border-color: rgb(var(--role)); }
+.ds-pill[data-bucket][aria-pressed='true'] { background: rgb(var(--role)); border-color: rgb(var(--role)); color: rgb(var(--c-ink)); }
+.ds-pill[data-bucket][aria-pressed='true']::before { background: rgb(var(--c-ink)); box-shadow: none; }
 .ds-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .ds-seg { display: inline-flex; border: 1px solid rgb(var(--hairline-strong)); border-radius: var(--radius-btn); overflow: hidden; }

@@ -23,7 +23,7 @@ for (const e of past) {
   if (g) g.events.push(e);
   else years.push({ year: y, events: [e] });
 }
-const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title }));
+const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title, bucket: b.value }));
 
 const schema = [
   breadcrumbs([
@@ -46,8 +46,8 @@ const schema = [
       <p class="ds-kicker"><a href="/speaking" class="is-muted ev-crumb">Speaking</a><span aria-hidden="true"> · </span>Schedule</p>
       <h1 class="ds-h1">Where I'll be, and where I've been.</h1>
       <p class="ds-lede">
-        Upcoming first. The archive separates what I did at each event: spoke, ran a workshop, hosted, or just attended.
-        Status is computed from the event's own timezone, so Alicante doesn't stay “upcoming” a week late.
+        What's coming up, then everywhere I've been. Some I spoke at, some I ran a workshop, some I hosted,
+        and a few I just went to listen.
       </p>
     </header>
 

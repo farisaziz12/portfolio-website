@@ -7,6 +7,8 @@ interface Option {
   value: string;
   label: string;
   count?: number;
+  /** Role filters: colours the pill with that role's identity (ds.css). */
+  bucket?: string;
 }
 interface Props {
   name: string;
@@ -24,7 +26,7 @@ const all: Option = { value: 'all', label: allLabel, count: allCount };
   {label && <span class="fpills__label">{label}</span>}
   <div class="ds-pills">
     {[all, ...options].map((o, i) => (
-      <button type="button" class="ds-pill" data-filter={name} data-value={o.value} aria-pressed={i === 0 ? 'true' : 'false'}>
+      <button type="button" class="ds-pill" data-filter={name} data-value={o.value} data-bucket={o.bucket} aria-pressed={i === 0 ? 'true' : 'false'}>
         {o.label}{typeof o.count === 'number' && <span class="ds-pill__count">· {o.count}</span>}
       </button>
     ))}

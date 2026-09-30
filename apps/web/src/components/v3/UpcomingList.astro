@@ -21,6 +21,7 @@ const rows = events.slice(0, limit).map((e) => {
     day: Number(e.date.slice(8, 10)),
     month: monthYear(e.date),
     meta: [titleFor(EVENT_KINDS, e.kind) || null, eventPlace(e, { venue: true }), s ? sessionLine(s) : null].filter(Boolean).join(' · '),
+    bucket: s?.bucket,
     badge: s?.bucket === 'spoke' ? 'Speaking' : ROLE_BUCKETS.find((b) => b.value === s?.bucket)?.title,
   };
 });
@@ -35,7 +36,7 @@ const rows = events.slice(0, limit).map((e) => {
           <span class="ds-row__title uplist__title">{flags && <span aria-hidden="true">{getCountryFlag(r.e.location.country)} </span>}{r.e.title}</span>
           <span class="uplist__meta">{r.meta}</span>
         </span>
-        {r.badge && <span class="ds-badge">{r.badge}</span>}
+        {r.badge && <span class="ds-role" data-bucket={r.bucket}>{r.badge}</span>}
       </a>
     </li>
   ))}
@@ -51,6 +52,6 @@ const rows = events.slice(0, limit).map((e) => {
   .uplist__meta { font-size: 13.5px; color: rgb(var(--text-muted)); }
   @media (max-width: 560px) {
     .uplist__row { grid-template-columns: 56px 1fr; }
-    .uplist__row .ds-badge { grid-column: 2; justify-self: start; }
+    .uplist__row .ds-role { grid-column: 2; justify-self: start; }
   }
 </style>

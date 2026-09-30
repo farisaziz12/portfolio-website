@@ -51,7 +51,7 @@ export const VOICE_RULES: VoiceRule[] = [
   { id: 'sales', pattern: w('look no further|rest assured|take (?:it|your \\w+) to the next level|reach out|don\'?t hesitate'), say: 'ask plainly: "Tell me about it"' },
   { id: 'essays', pattern: w('essays?'), say: 'writing, articles, posts' },
   // Copy that explains the page, the counting or the code instead of saying something.
-  { id: 'narrating', pattern: w("counted separately|so (?:a|the|any) [\\w ]{1,24} can be shared|(?:filters?|pills?|tabs?) (?:write|sync|update)s? (?:to )?the URL|this (?:page|section) (?:is|lists|shows|collects|brings together)|as you can see|below you'?ll find"), say: 'cut it: let the page show it' },
+  { id: 'narrating', pattern: w("counted separately|so (?:a|the|any) [\\w ]{1,24} can be shared|(?:filters?|pills?|tabs?) (?:write|sync|update)s? (?:to )?the URL|this (?:page|section) (?:is|lists|shows|collects|brings together)|as you can see|below you'?ll find|(?:is|are) (?:computed|derived|calculated|generated) (?:from|in|by)"), say: 'cut it: let the page show it' },
 
   // Punctuation.
   { id: 'em-dash', pattern: /(?<!>)\s—\s|\w—\w/g, say: 'comma, colon, full stop or brackets' },

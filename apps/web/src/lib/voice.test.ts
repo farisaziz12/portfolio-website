@@ -13,6 +13,7 @@ test('voice: flags the usual tells', () => {
   assert.deepEqual(rules("It's not just a meetup, it's a movement."), ['not-just']);
   assert.deepEqual(rules('Available upon request, unmodified.'), ['formal', 'formal']);
   assert.deepEqual(rules('Filters write to the URL, so a filtered view can be shared.'), ['narrating', 'narrating']);
+  assert.deepEqual(rules("Status is computed from the event's own timezone."), ['narrating']);
   assert.deepEqual(rules('Payments at scale — what breaks first'), ['em-dash']);
 });
 

@@ -35,7 +35,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Schedule: where I'll be, and where I've been · Faris Aziz`,
     ``,
-    `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Status is computed in each event's own timezone. Invite me: ${SITE}/invite`,
+    `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
     ``,
     `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.eventRecords} event records. As of ${stats.asOf}.`,
     stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
