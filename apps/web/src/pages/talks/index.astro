@@ -10,10 +10,10 @@ import TrackRecord from '../../components/talks/TrackRecord.astro';
 import TalkRow from '../../components/talks/TalkRow.astro';
 import { TALK_SORTS, byPopularity, talkSortKeys } from '../../lib/talks';
 import { TOPICS } from 'shared';
-import { getAllPraise, getCatalogueTalks, getSpeakingStats, getUpcomingEvents, numberWord } from '../../lib/sanity/v3';
+import { getAllPraise, getCatalogueTalks, getProfile, getSpeakingStats, getUpcomingEvents, numberWord } from '../../lib/sanity/v3';
 import { breadcrumbs, itemList } from '../../lib/seo';
 
-const [catalogue, stats, upcomingAll, praise] = await Promise.all([getCatalogueTalks(), getSpeakingStats(), getUpcomingEvents(), getAllPraise()]);
+const [catalogue, stats, upcomingAll, praise, profile] = await Promise.all([getCatalogueTalks(), getSpeakingStats(), getUpcomingEvents(), getAllPraise(), getProfile()]);
 // Default order: most popular. The sort control re-orders client-side (?sort=recent|newest).
 const talks = [...catalogue].sort(byPopularity);
 
@@ -91,7 +91,7 @@ const description = `${n} conference talks on production engineering, payments a
       <aside class="ds-card tcustom" aria-labelledby="tcustom-title">
         <div>
           <h2 id="tcustom-title" class="tcustom__title">Need something built for your theme?</h2>
-          <p class="tcustom__body">Tell me what you'd like your audience to leave with. I'll propose a talk within two days.</p>
+          <p class="tcustom__body">Tell me what you'd like your audience to leave with. I'll propose a talk within {profile.replyTime}.</p>
         </div>
         <a href="/invite" class="ds-btn ds-btn--yellow" data-track="talks-custom">Get in touch</a>
       </aside>

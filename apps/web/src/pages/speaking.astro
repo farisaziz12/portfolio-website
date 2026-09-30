@@ -108,7 +108,7 @@ const description = `Talks and workshops on production engineering, payments at 
     )}
     <InvitePanel
       headline="Tell me about your event."
-      body="Three required fields. I reply within two days. Community meetups are usually on the house."
+      body={`Three required fields. I reply within ${profile.replyTime}. Community meetups are usually on the house.`}
       primary={{ label: 'Invite me', href: '/invite' }}
       secondary={{ label: 'Press kit', href: '/press-kit' }}
       track="speaking-invite-panel"
