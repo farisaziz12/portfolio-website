@@ -4,7 +4,7 @@
  * Each loader merges CMS values over the approved defaults field by field.
  */
 import groq from 'groq';
-import type { MetricDomain } from 'shared';
+import { formatLegacyMetric, type MetricDomain } from 'shared';
 import { monthYear } from './dates';
 import { DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
@@ -225,7 +225,6 @@ interface RawLegacyMetric {
 }
 
 const LEGACY_DOMAIN: Record<string, MetricDomain> = { community: 'community', product: 'engineering', leadership: 'career', speaking: 'speaking' };
-const UNIT_SUFFIX: Record<string, string> = { percent: '%', multiplier: '×', plus: '+' };
 
 export function finishMetric(m: Omit<Metric, 'dateLabel'>): Metric {
   return { ...m, dateLabel: m.period || (m.asOf ? monthYear(m.asOf) : undefined) };
@@ -245,7 +244,7 @@ export function getMetrics(): Promise<Metric[]> {
     return (legacy ?? []).map((l) =>
       finishMetric({
         _id: l._id,
-        value: `${l.prefix ?? ''}${typeof l.headlineNumber === 'number' ? l.headlineNumber.toLocaleString('en-US') : l.headlineNumber ?? ''}${UNIT_SUFFIX[l.unit ?? ''] ?? ''}`,
+        value: formatLegacyMetric(l),
         label: l.label ?? '',
         period: l.timeWindow,
         context: l.contextNote,

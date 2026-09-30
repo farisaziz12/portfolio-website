@@ -321,6 +321,11 @@ Goal: a first-person About story and a public career timeline.
    the timeline label ("2024 →", "2021–2023") and order, so fill them for every entry. periodLabel only
    to override ("Before code"); clear labels like "Earlier" once dates exist. description (one line,
    only where needed), isPublic (false for anything not announced yet).
+3. Agency roles are ONE entry with clients[]: FX Digital (Junior Front-End Developer, 2019–2021) with
+   clients Discovery+ (connected devices app), Eurosport (Connected TV apps reaching millions of users
+   worldwide), GCN. Merge the separate Discovery+ / Eurosport / GCN entries into it (keep their urls and
+   one-line descriptions as client notes), then delete the separate entries.
+4. Delete the "Software Engineering Mentor · MentorCruise" career entry (mentoring lives on /mentorship).
 ```
 
 ## Prompt 10: Services

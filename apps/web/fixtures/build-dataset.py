@@ -219,7 +219,7 @@ for i, (name, role, start, end, label, desc) in enumerate([
     ("Smallpdf", "Staff Software Engineer", "2023-01-01", None, None, "Monetization, checkout and frontend architecture for a product used by millions."),
     ("ZurichJS", "Co-founder and chair", "2024-03-01", None, None, "Meetups, then ZurichJS Conf 2026."),
     ("Navro", "Founding engineer and lead", "2021-06-01", "2022-12-31", None, None),
-    ("Fiit, FX Digital", "Software engineer", "2019-01-01", "2021-05-31", None, None),
+    ("FX Digital", "Junior Front-End Developer", "2019-06-01", "2021-05-31", None, None),
     ("Outside tech", "", None, None, "Before code", "Coaching, before the switch into engineering.")]):
     d = {"_id": f"company-{i}", "_type": "company", "name": name, "role": role, "order": i + 1}
     if start: d["startDate"] = start
@@ -227,6 +227,10 @@ for i, (name, role, start, end, label, desc) in enumerate([
     if label: d["periodLabel"] = label
     if desc: d["description"] = desc
     docs.append(d)
+docs[-2]["clients"] = [  # FX Digital: one role, three clients
+    {"_key": "dplus", "_type": "careerClient", "name": "Discovery+", "url": "https://www.discoveryplus.com/", "note": "connected devices app"},
+    {"_key": "euro", "_type": "careerClient", "name": "Eurosport", "url": "https://www.eurosport.com/", "note": "Connected TV apps for millions of viewers"},
+    {"_key": "gcn", "_type": "careerClient", "name": "GCN", "url": "https://www.globalcyclingnetwork.com/"}]
 docs.append({"_id": "company-private", "_type": "company", "name": "Unannounced", "role": "Secret", "isPublic": False, "order": 0})
 for i, (t, typ, aud, reach, get, cta) in enumerate([
     ("Events: speaking and workshops", "events", "Conferences, meetups, podcasts, teams", "you’d like a talk, keynote, panel, podcast guest, or a hands-on workshop for your event or team.",

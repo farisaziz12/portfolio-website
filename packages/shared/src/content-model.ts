@@ -199,3 +199,29 @@ export type ServiceType = (typeof SERVICE_TYPES)[number]['value'];
 export function titleFor<V extends string>(list: readonly Option<V>[], value?: string | null): string {
   return list.find((o) => o.value === value)?.title ?? value ?? '';
 }
+
+// ─── Legacy metric display ──────────────────────────────────────────────────
+
+/**
+ * Display string for a V2 impactMetricV2 number: headlineNumber 4.5 + unit "k"
+ * → "4.5K". Used by the site's legacy fallback and the V3 migration, so a
+ * migrated metric reads exactly like the old one did.
+ */
+export function formatLegacyMetric(m: { headlineNumber?: number | string | null; prefix?: string | null; unit?: string | null }): string {
+  const raw = m.headlineNumber;
+  if (raw === undefined || raw === null || raw === '') return '';
+  const n = typeof raw === 'number' ? raw.toLocaleString('en-US') : String(raw);
+  const prefix = m.prefix ?? '';
+  switch (m.unit) {
+    case 'k': return `${prefix}${n}K`;
+    case 'm': return `${prefix}${n}M`;
+    case 'percent': return `${prefix}${n}%`;
+    case 'x': case 'multiplier': return `${prefix}${n}×`;
+    case 'plus': return `${prefix}${n}+`;
+    case 'chf': return `${prefix || 'CHF '}${n}`;
+    case 'eur': return `${prefix || '€'}${n}`;
+    case 'usd': return `${prefix || '$'}${n}`;
+    case 'rating': return `${prefix}${n}/5`;
+    default: return `${prefix}${n}`;
+  }
+}

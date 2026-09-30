@@ -34,7 +34,7 @@ export const GET: APIRoute = async () => {
     d.engineering.length ? `## Engineering: shipped, measured, corrected\n\n${d.engineering.map(metricLine).join('\n')}\n` : '',
     d.career.length
       ? `## Career: a non-traditional route to building things\n\n${d.career
-          .map((c) => `- ${c.periodLabel || c.period || ''}${c.periodLabel || c.period ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.description ? `. ${c.description}` : ''}`)
+          .map((c) => `- ${c.periodLabel || c.period || ''}${c.periodLabel || c.period ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.description ? `. ${c.description}` : ''}${c.clients?.length ? `. Clients: ${c.clients.map((cl) => (cl.note ? `${cl.name} (${cl.note})` : cl.name)).join(', ')}` : ''}`)
           .join('\n')}\n\nThe longer story: ${SITE}/about\n`
       : '',
     d.awards.length

@@ -82,6 +82,24 @@ export default defineType({
       description: 'Main achievement or contribution',
     }),
     defineField({
+      name: 'clients',
+      title: 'Clients',
+      description: 'Agency or consulting roles: who you built for. One career entry, many clients (FX Digital → Discovery+, Eurosport, GCN).',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'careerClient',
+          fields: [
+            defineField({ name: 'name', title: 'Client', type: 'string', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'url', title: 'Link', type: 'url' }),
+            defineField({ name: 'note', title: 'What you worked on', type: 'string', description: 'A few words: "Connected TV apps".' }),
+          ],
+          preview: { select: { title: 'name', subtitle: 'note' } },
+        },
+      ],
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',

@@ -17,7 +17,7 @@
  * 10. (with deleteLegacy) delete migrated socialPost/testimonial/impactMetricV2 and the unused
  *     impactMetric, impactCategory, impactPage, servicePage, siteNavigation documents.
  */
-import { LEGACY_EVENT_TYPE_ROLE, LEGACY_EXTERNAL_TYPE_FORMAT } from '../../packages/shared/src/content-model';
+import { LEGACY_EVENT_TYPE_ROLE, LEGACY_EXTERNAL_TYPE_FORMAT, formatLegacyMetric } from '../../packages/shared/src/content-model';
 
 export type Doc = { _id: string; _type: string; [k: string]: unknown };
 
@@ -58,7 +58,6 @@ const TESTIMONIAL_TOPIC: Record<string, string> = {
   collaboration: 'work',
 };
 const LEGACY_METRIC_DOMAIN: Record<string, string> = { community: 'community', product: 'engineering', leadership: 'career', speaking: 'speaking' };
-const UNIT_SUFFIX: Record<string, string> = { percent: '%', multiplier: '×', plus: '+' };
 
 const ref = (id: unknown) => (id && typeof id === 'object' && '_ref' in id ? { _type: 'reference', _ref: (id as { _ref: string })._ref } : undefined);
 const isDraft = (d: Doc) => d._id.startsWith('drafts.');
@@ -209,8 +208,7 @@ export function planMigration(docs: Doc[], opts: { deleteLegacy?: boolean } = {}
   for (const m of byType('impactMetricV2')) {
     const id = `metric-${key(m._id)}`;
     if (migratedMetrics.has(id)) continue;
-    const n = m.headlineNumber;
-    const value = `${m.prefix ?? ''}${typeof n === 'number' ? n.toLocaleString('en-US') : n ?? ''}${UNIT_SUFFIX[String(m.unit ?? '')] ?? ''}`;
+    const value = formatLegacyMetric(m);
     mutations.push({
       createIfNotExists: {
         _id: id,

@@ -109,7 +109,8 @@ or paste an external URL; add a poster frame; switch **Published** on. Uploaded 
 
 ### Career timeline
 **Proof → Career timeline**: set Start and End (empty = current). The label ("2024 →", "2021–2023") and order
-come from the dates; `Timeline label` only overrides.
+come from the dates; `Timeline label` only overrides. Agency work is one entry with **Clients** (name, link,
+what you worked on), not an entry per client.
 
 ### Press photos
 **Profile & press kit → Press photos**: label, tag (also the download filename), alt, credit, and **set the hotspot**

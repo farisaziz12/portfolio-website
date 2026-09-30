@@ -57,3 +57,12 @@ test('idempotent: planning again on migrated data is a no-op', () => {
   const again = planMigration(once, { deleteLegacy: true });
   assert.deepEqual(again.mutations, [], JSON.stringify(again.mutations.slice(0, 3)));
 });
+
+test('legacy metric units keep their suffix (4.5 + k → 4.5K)', async () => {
+  const { formatLegacyMetric } = await import('../../packages/shared/src/content-model');
+  assert.equal(formatLegacyMetric({ headlineNumber: 4.5, unit: 'k' }), '4.5K');
+  assert.equal(formatLegacyMetric({ headlineNumber: 12, unit: 'm', prefix: '€' }), '€12M');
+  assert.equal(formatLegacyMetric({ headlineNumber: 4500, unit: 'number' }), '4,500');
+  assert.equal(formatLegacyMetric({ headlineNumber: 3, unit: 'x' }), '3×');
+  assert.equal(formatLegacyMetric({ headlineNumber: 99.9, unit: 'percent' }), '99.9%');
+});

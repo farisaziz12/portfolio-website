@@ -1611,11 +1611,33 @@
  {
   "_id": "company-3",
   "_type": "company",
-  "name": "Fiit, FX Digital",
-  "role": "Software engineer",
+  "name": "FX Digital",
+  "role": "Junior Front-End Developer",
   "order": 4,
-  "startDate": "2019-01-01",
-  "endDate": "2021-05-31"
+  "startDate": "2019-06-01",
+  "endDate": "2021-05-31",
+  "clients": [
+   {
+    "_key": "dplus",
+    "_type": "careerClient",
+    "name": "Discovery+",
+    "url": "https://www.discoveryplus.com/",
+    "note": "connected devices app"
+   },
+   {
+    "_key": "euro",
+    "_type": "careerClient",
+    "name": "Eurosport",
+    "url": "https://www.eurosport.com/",
+    "note": "Connected TV apps for millions of viewers"
+   },
+   {
+    "_key": "gcn",
+    "_type": "careerClient",
+    "name": "GCN",
+    "url": "https://www.globalcyclingnetwork.com/"
+   }
+  ]
  },
  {
   "_id": "company-4",

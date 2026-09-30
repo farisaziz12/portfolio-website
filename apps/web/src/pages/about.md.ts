@@ -41,7 +41,7 @@ export const GET: APIRoute = async () => {
     ``,
     `- Talks delivered: ${stats.talksDelivered} (delivered talk sessions from event records; hosting and attending excluded; as of ${currentMonthYear()})`,
     `- Countries spoken in: ${stats.countries} · cities: ${stats.cities}`,
-    ...(career.length ? career.map((c) => `- ${c.periodLabel ?? ''}${c.periodLabel ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}`) : []),
+    ...(career.length ? career.map((c) => `- ${c.periodLabel ?? ''}${c.periodLabel ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.clients?.length ? ` (clients: ${c.clients.map((cl) => cl.name).join(', ')})` : ''}`) : []),
     ...awards.map((a) => `- Recognition: ${a}`),
     ``,
     `## Bios`,

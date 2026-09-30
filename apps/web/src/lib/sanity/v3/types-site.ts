@@ -231,6 +231,8 @@ export interface CareerEntry {
   highlight?: string;
   url?: string;
   order?: number;
+  /** Agency/consulting roles: who the work was for. */
+  clients?: { name: string; url?: string; note?: string }[];
 }
 
 export interface SpeakingStats {

@@ -75,7 +75,8 @@ export function getServiceOffers(): Promise<ServiceOffer[]> {
 }
 
 export const careerQuery = groq`*[_type == "company" && isPublic != false] | order(coalesce(order, 999) asc, coalesce(endDate, "9999") desc, startDate desc) {
-  _id, name, role, periodLabel, period, startDate, endDate, description, highlight, url, order
+  _id, name, role, periodLabel, period, startDate, endDate, description, highlight, url, order,
+  "clients": coalesce(clients[defined(name)]{ name, url, note }, [])
 }`;
 
 /**
