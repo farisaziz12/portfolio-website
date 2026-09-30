@@ -93,7 +93,7 @@ export function firstSentence(p: Pick<Praise, 'quote' | 'pullQuote'>, max = 90):
   return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:.\s]+$/, '')}…`;
 }
 
-/** "Invite me to give it" → the invite form, pre-filled. */
+/** "Invite me to give this talk" → the invite form, pre-filled. */
 export function inviteHref(t: Pick<TalkWithHistory, 'title'>): string {
   return `/invite?kind=conference&talk=${encodeURIComponent(t.title)}`;
 }

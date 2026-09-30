@@ -69,7 +69,7 @@ export const GET: APIRoute = async ({ props }) => {
       ? ''
       : `## Booking\n\n` +
         [
-          `- Invite me to give it: ${SITE}${inviteHref(talk)}`,
+          `- Invite me to give this talk: ${SITE}${inviteHref(talk)}`,
           `- Setup: ${talk.setup || profile.rider[0]?.body || 'own laptop'}`,
           talk.alsoAsWorkshop ? `- Also as a workshop: [${talk.alsoAsWorkshop.title}](${SITE}/workshops/${talk.alsoAsWorkshop.slug}.md)` : '',
           `- I reply within ${profile.replyTime}. Press kit and rider: ${SITE}/press-kit`,

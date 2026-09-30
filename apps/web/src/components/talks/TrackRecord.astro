@@ -43,14 +43,19 @@ const rest = stats.countryList.length - flags.length;
         ))}
       </dl>
       {quotes.length > 0 && (
-        <p class="trk__quotes">
-          {quotes.map((q, i) => (
-            <>
-              {i > 0 && <span aria-hidden="true"> · </span>}
-              <q>{firstSentence(q)}</q> <span class="trk__who">— {q.author.name}</span>
-            </>
+        <ul class="trk__quotes" role="list">
+          {quotes.map((q) => (
+            <li>
+              <figure class="trk__quote">
+                <blockquote class="trk__q"><p>{firstSentence(q)}</p></blockquote>
+                <figcaption class="trk__who">
+                  <span class="trk__name">{q.author.name}</span>
+                  {q.author.headline && <span class="trk__role">{q.author.headline}</span>}
+                </figcaption>
+              </figure>
+            </li>
           ))}
-        </p>
+        </ul>
       )}
     </div>
     <div class="trk__col">
@@ -99,9 +104,17 @@ const rest = stats.countryList.length - flags.length;
   .trk__nums > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
   .trk__num { margin: 0; font-size: 40px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
   .trk__label { margin-top: 4px; font-size: 12.5px; color: rgb(var(--text-muted)); }
-  .trk__quotes { margin: 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
-  .trk__quotes q { quotes: '“' '”'; }
-  .trk__who { color: rgb(var(--text-faint)); }
+  /* One quote per block: the words, then who said them on their own line. */
+  .trk__quotes { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .trk__quote { margin: 0; padding-left: 14px; border-left: 3px solid rgb(var(--yellow)); display: flex; flex-direction: column; gap: 6px; }
+  .trk__q { margin: 0; }
+  .trk__q p { margin: 0; font-size: 14.5px; line-height: 1.5; color: rgb(var(--text)); text-wrap: pretty; }
+  .trk__q p::before { content: '“'; }
+  .trk__q p::after { content: '”'; }
+  .trk__who { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12.5px; }
+  .trk__name { font-weight: 800; color: rgb(var(--text)); }
+  .trk__name::before { content: '— '; color: rgb(var(--text-faint)); font-weight: 600; }
+  .trk__role { color: rgb(var(--text-faint)); }
   .trk__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .trk__all { font-size: 12.5px; color: rgb(var(--text-muted)); text-decoration: none; border-bottom: 1px solid rgb(var(--hairline-strong)); }
   .trk__all:hover { color: rgb(var(--text)); border-color: rgb(var(--yellow)); }
