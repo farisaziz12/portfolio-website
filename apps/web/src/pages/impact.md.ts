@@ -2,14 +2,23 @@ import type { APIRoute } from 'astro';
 import { mdResponse } from '../lib/markdown';
 import { impactData } from '../lib/impact';
 import { SITE } from '../lib/seo';
+import { METRIC_AREAS } from 'shared';
 import { fullDate, monthYear, type Metric } from '../lib/sanity/v3';
 
 function metricLine(m: Metric): string {
-  const when = m.dateLabel ? ` (${m.dateLabel})` : '';
+  const when = m.dateLabel || m.company ? ` (${[m.company, m.dateLabel].filter(Boolean).join(', ')})` : '';
   const def = m.definition ? ` Definition: ${m.definition}` : '';
   const ctx = m.context ? ` ${m.context}` : '';
   const src = m.sourceUrl ? ` Source: ${m.sourceUrl}` : '';
   return `- **${m.value}** ${m.label}${m.qualifier ? ` ${m.qualifier}` : ''}${when}.${ctx}${def}${src}`;
+}
+
+/** Engineering numbers grouped by area (unassigned last). */
+function engineeringByArea(list: Metric[]): string {
+  const groups = [...METRIC_AREAS.map((a) => ({ title: a.title, items: list.filter((m) => m.area === a.value) })), { title: 'Other', items: list.filter((m) => !m.area) }];
+  const used = groups.filter((g) => g.items.length);
+  if (used.length < 2) return list.map(metricLine).join('\n');
+  return used.map((g) => `### ${g.title}\n\n${g.items.map(metricLine).join('\n')}`).join('\n\n');
 }
 
 export const GET: APIRoute = async () => {
@@ -31,7 +40,7 @@ export const GET: APIRoute = async () => {
     `- **${s.podcasts}** podcast appearances${d.podcastPeriod ? ` (${d.podcastPeriod})` : ''}: podcast episodes in the writing and media list.${d.podcastSources.length ? ` Shows: ${d.podcastSources.join(', ')}.` : ''}`,
     ``,
     d.communityMetrics.length ? `## Community${d.community ? ` (${d.community.name})` : ''}\n\n${d.communityMetrics.map(metricLine).join('\n')}\n` : '',
-    d.engineering.length ? `## Engineering: shipped, measured, corrected\n\n${d.engineering.map(metricLine).join('\n')}\n` : '',
+    d.engineering.length ? `## Engineering: shipped, measured, corrected\n\n${engineeringByArea(d.engineering)}\n` : '',
     d.career.length
       ? `## Career: a non-traditional route to building things\n\n${d.career
           .map((c) => `- ${c.periodLabel || c.period || ''}${c.periodLabel || c.period ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.description ? `. ${c.description}` : ''}${c.clients?.length ? `. Clients: ${c.clients.map((cl) => (cl.note ? `${cl.name} (${cl.note})` : cl.name)).join(', ')}` : ''}`)

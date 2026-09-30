@@ -1,22 +1,26 @@
 ---
 /**
  * Engineering wins: approved, dated metrics only (the CMS status gate).
- * Big yellow value, label, context, then the definition and date.
+ * Up to four headline cards (metric.featured, else the first four), then the
+ * explorer with every figure once there are more than the cards show.
  */
 import ImpactSplit from './ImpactSplit.astro';
+import MetricExplorer from './MetricExplorer.astro';
 import type { Metric } from '../../lib/sanity/v3';
 
 interface Props {
   metrics: Metric[];
 }
 const { metrics } = Astro.props;
+const featured = metrics.filter((m) => m.featured);
+const headline = (featured.length ? featured : metrics).slice(0, 4);
 ---
 
 {metrics.length > 0 && (
   <ImpactSplit kicker="Engineering" title="Shipped, measured, corrected." id="engineering">
-    <p slot="head" class="ewins__lede">What changed, by how much, and when. Each figure carries its date and how it was measured.</p>
+    <p slot="head" class="ewins__lede">What changed, by how much, and when.</p>
     <ul class="ewins" role="list">
-      {metrics.map((m) => (
+      {headline.map((m) => (
         <li class="ds-card ewins__card">
           <p class="ewins__value">{m.value}</p>
           <h3 class="ewins__label">{m.label}{m.qualifier && <span class="ewins__qual"> {m.qualifier}</span>}</h3>
@@ -27,6 +31,7 @@ const { metrics } = Astro.props;
         </li>
       ))}
     </ul>
+    {metrics.length > headline.length && <MetricExplorer metrics={metrics} />}
   </ImpactSplit>
 )}
 

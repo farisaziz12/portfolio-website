@@ -1,5 +1,5 @@
 /** Writing, proof and site shapes (see types.ts for speaking). */
-import type { AvailabilityStatus, MetricDomain, PraisePlatform, PraiseTopic, PublicationFormat, ServiceType, Topic } from 'shared';
+import type { AvailabilityStatus, MetricArea, MetricDomain, PraisePlatform, PraiseTopic, PublicationFormat, ServiceType, Topic } from 'shared';
 import type { SanityImage, TalkRef, TalkWithHistory, WorkshopRef, Cta } from './types';
 
 export interface WritingItem {
@@ -60,6 +60,12 @@ export interface Metric {
   definition?: string;
   context?: string;
   domain: MetricDomain;
+  /** Engineering only: what it's about (METRIC_AREAS). */
+  area?: MetricArea;
+  /** Engineering headline card. */
+  featured?: boolean;
+  /** The career entry it belongs to ("Smallpdf"). */
+  company?: string;
   sourceUrl?: string;
   order?: number;
   legacy?: boolean;

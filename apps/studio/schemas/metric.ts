@@ -1,5 +1,5 @@
 import { defineType, defineField } from 'sanity';
-import { METRIC_DOMAINS, METRIC_STATUSES, titleFor } from 'shared';
+import { METRIC_AREAS, METRIC_DOMAINS, METRIC_STATUSES, titleFor } from 'shared';
 import { options, orderField } from './_fields';
 
 /**
@@ -44,6 +44,22 @@ export default defineType({
     }),
     defineField({ name: 'context', title: 'Context', type: 'text', rows: 2, description: 'One honest sentence for cards ("After localising checkout…").' }),
     defineField({ name: 'domain', title: 'Domain', type: 'string', options: { list: options(METRIC_DOMAINS), layout: 'radio', direction: 'horizontal' }, validation: (Rule) => Rule.required() }),
+    defineField({
+      name: 'area',
+      title: 'Area',
+      type: 'string',
+      description: 'What the number is about. Drives the filter on Track record.',
+      options: { list: options(METRIC_AREAS) },
+      hidden: ({ document }) => document?.domain !== 'engineering',
+    }),
+    defineField({
+      name: 'featured',
+      title: 'Headline',
+      type: 'boolean',
+      description: 'Show as a big card at the top of Engineering (pick up to four). Everything else is in the explorer below.',
+      initialValue: false,
+      hidden: ({ document }) => document?.domain !== 'engineering',
+    }),
     defineField({ name: 'community', title: 'Community', type: 'reference', to: [{ type: 'community' }], hidden: ({ document }) => document?.domain !== 'community' }),
     defineField({ name: 'company', title: 'Company / role', type: 'reference', to: [{ type: 'company' }], hidden: ({ document }) => document?.domain !== 'engineering' && document?.domain !== 'career' }),
     defineField({ name: 'sourceUrl', title: 'Source', type: 'url' }),
@@ -59,10 +75,10 @@ export default defineType({
     orderField(),
   ],
   preview: {
-    select: { value: 'value', label: 'label', asOf: 'asOf', domain: 'domain', status: 'status' },
-    prepare: ({ value, label, asOf, domain, status }) => ({
+    select: { value: 'value', label: 'label', asOf: 'asOf', domain: 'domain', area: 'area', status: 'status' },
+    prepare: ({ value, label, asOf, domain, area, status }) => ({
       title: `${value} ${label}`,
-      subtitle: [titleFor(METRIC_DOMAINS, domain), asOf, status === 'approved' ? null : titleFor(METRIC_STATUSES, status)].filter(Boolean).join(' · '),
+      subtitle: [titleFor(METRIC_AREAS, area) || titleFor(METRIC_DOMAINS, domain), asOf, status === 'approved' ? null : titleFor(METRIC_STATUSES, status)].filter(Boolean).join(' · '),
     }),
   },
   orderings: [{ title: 'Order', name: 'order', by: [{ field: 'order', direction: 'asc' }] }],

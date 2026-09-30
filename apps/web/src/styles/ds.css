@@ -110,6 +110,9 @@ a { color: inherit; }
 .ds-pill[aria-pressed='true'], .ds-pill[aria-current='page'], .ds-pill.is-active { background: rgb(var(--yellow)); border-color: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
 .ds-pill .ds-pill__count { font-weight: 600; opacity: 0.8; }
 
+/* Filter empty states use display:flex/grid; `hidden` must still win. */
+[data-filter-empty][hidden], [data-filter-item][hidden], [data-filter-group][hidden] { display: none !important; }
+
 /* Role identity (data-bucket = spoke | workshop | hosted | attended). One colour
    per role everywhere: filter pills, archive badges, upcoming rows and cards. */
 [data-bucket='spoke'] { --role: var(--role-spoke); --role-ink: var(--role-spoke-ink); }

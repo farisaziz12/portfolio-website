@@ -168,8 +168,21 @@ m("members", "4,500", "members across our groups", "community", "2026-07-01", "U
 m("cfp", "436", "talk proposals, first Conf", "community", "2026-05-01", "CFP submissions received for ZurichJS Conf 2026.", order=2, period="2026")
 m("speakers", "40+", "speakers hosted at meetups", "community", "2026-07-01", "Distinct speakers at ZurichJS meetups.", order=3, period="2024–26")
 m("sponsors", "30+", "sponsors and partners", "community", "2026-07-01", "Organisations sponsoring or partnering since 2024.", order=4)
-m("china", "~14×", "new subscriptions in China", "engineering", "2025-06-01", "Monthly new subscriptions after vs before localised checkout.", context="After localising checkout and payment methods for the market. Smallpdf.", order=1)
-m("bundle", "−60%", "checkout bundle size", "engineering", "2025-03-01", "Gzipped JS on the checkout route, before vs after.", context="Payload shaping and code-splitting on the checkout path; the material behind the caching talk.", order=2)
+# Engineering sample figures (offline fixture only; real ones live in Sanity). company-0 = Smallpdf, company-2 = Navro.
+SPDF = {"_type": "reference", "_ref": "company-0"}
+NAVRO = {"_type": "reference", "_ref": "company-2"}
+m("china", "~14×", "new subscriptions in China", "engineering", "2025-06-01", "Monthly new subscriptions after vs before localised checkout.", context="After localising checkout and payment methods for the market.", order=1, area="growth", company=SPDF, featured=True)
+m("bundle", "−60%", "checkout bundle size", "engineering", "2025-03-01", "Gzipped JS on the checkout route, before vs after.", context="Payload shaping and code-splitting on the checkout path; the material behind the caching talk.", order=2, area="performance", company=SPDF, featured=True)
+m("methods", "12", "local payment methods shipped", "engineering", "2025-09-01", "Payment methods live in checkout beyond cards and PayPal.", order=3, area="payments", company=SPDF, featured=True)
+m("auth", "+9 pts", "card authorisation rate", "engineering", "2025-11-01", "Share of card attempts authorised, 30 days before vs after retry routing.", context="Smart retries and a second acquirer for soft declines.", order=4, area="payments", company=SPDF, featured=True)
+m("lcp", "−1.2 s", "checkout LCP on 4G", "engineering", "2025-04-01", "p75 Largest Contentful Paint on the checkout route, real-user data.", order=5, area="performance", company=SPDF)
+m("uptime", "99.98%", "checkout availability", "engineering", "2025-12-31", "Successful checkout page loads over a calendar year.", period="2025", order=6, area="reliability", company=SPDF)
+m("incidents", "−70%", "payment incidents", "engineering", "2025-12-31", "Sev-2+ incidents on the payments path, 2025 vs 2024.", period="2025 vs 2024", order=7, area="reliability", company=SPDF)
+m("paywall", "+18%", "trial starts from the paywall", "engineering", "2024-10-01", "Trial starts per paywall view, A/B test over four weeks.", order=8, area="product", company=SPDF)
+m("ds", "40+", "shared UI components", "engineering", "2024-06-01", "Components in the design system used by more than one product team.", order=9, area="platform", company=SPDF)
+m("ci", "−55%", "CI time per pull request", "engineering", "2024-02-01", "Median pipeline duration, month before vs month after caching and sharding.", order=10, area="platform", company=SPDF)
+m("team", "0 → 8", "engineers hired and onboarded", "engineering", "2022-12-31", "Engineers who joined the team I led, from first hire.", period="2021–22", order=11, area="leadership", company=NAVRO)
+m("payouts", "30+", "payout currencies at launch", "engineering", "2022-06-01", "Currencies supported for cross-border payroll payouts on day one.", order=12, area="payments", company=NAVRO)
 m("pending", "3×", "unconfirmed number", "engineering", "2025-01-01", "Hidden until approved.", status="needs-ok")
 
 docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJS", "slug": slug("zurichjs"), "role": "Co-founder and chair", "founded": 2024,

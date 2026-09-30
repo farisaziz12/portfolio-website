@@ -1157,8 +1157,14 @@
   "asOf": "2025-06-01",
   "definition": "Monthly new subscriptions after vs before localised checkout.",
   "status": "approved",
-  "context": "After localising checkout and payment methods for the market. Smallpdf.",
-  "order": 1
+  "context": "After localising checkout and payment methods for the market.",
+  "order": 1,
+  "area": "growth",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  },
+  "featured": true
  },
  {
   "_id": "metric-bundle",
@@ -1170,7 +1176,179 @@
   "definition": "Gzipped JS on the checkout route, before vs after.",
   "status": "approved",
   "context": "Payload shaping and code-splitting on the checkout path; the material behind the caching talk.",
-  "order": 2
+  "order": 2,
+  "area": "performance",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  },
+  "featured": true
+ },
+ {
+  "_id": "metric-methods",
+  "_type": "metric",
+  "value": "12",
+  "label": "local payment methods shipped",
+  "domain": "engineering",
+  "asOf": "2025-09-01",
+  "definition": "Payment methods live in checkout beyond cards and PayPal.",
+  "status": "approved",
+  "order": 3,
+  "area": "payments",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  },
+  "featured": true
+ },
+ {
+  "_id": "metric-auth",
+  "_type": "metric",
+  "value": "+9 pts",
+  "label": "card authorisation rate",
+  "domain": "engineering",
+  "asOf": "2025-11-01",
+  "definition": "Share of card attempts authorised, 30 days before vs after retry routing.",
+  "status": "approved",
+  "context": "Smart retries and a second acquirer for soft declines.",
+  "order": 4,
+  "area": "payments",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  },
+  "featured": true
+ },
+ {
+  "_id": "metric-lcp",
+  "_type": "metric",
+  "value": "−1.2 s",
+  "label": "checkout LCP on 4G",
+  "domain": "engineering",
+  "asOf": "2025-04-01",
+  "definition": "p75 Largest Contentful Paint on the checkout route, real-user data.",
+  "status": "approved",
+  "order": 5,
+  "area": "performance",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-uptime",
+  "_type": "metric",
+  "value": "99.98%",
+  "label": "checkout availability",
+  "domain": "engineering",
+  "asOf": "2025-12-31",
+  "definition": "Successful checkout page loads over a calendar year.",
+  "status": "approved",
+  "period": "2025",
+  "order": 6,
+  "area": "reliability",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-incidents",
+  "_type": "metric",
+  "value": "−70%",
+  "label": "payment incidents",
+  "domain": "engineering",
+  "asOf": "2025-12-31",
+  "definition": "Sev-2+ incidents on the payments path, 2025 vs 2024.",
+  "status": "approved",
+  "period": "2025 vs 2024",
+  "order": 7,
+  "area": "reliability",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-paywall",
+  "_type": "metric",
+  "value": "+18%",
+  "label": "trial starts from the paywall",
+  "domain": "engineering",
+  "asOf": "2024-10-01",
+  "definition": "Trial starts per paywall view, A/B test over four weeks.",
+  "status": "approved",
+  "order": 8,
+  "area": "product",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-ds",
+  "_type": "metric",
+  "value": "40+",
+  "label": "shared UI components",
+  "domain": "engineering",
+  "asOf": "2024-06-01",
+  "definition": "Components in the design system used by more than one product team.",
+  "status": "approved",
+  "order": 9,
+  "area": "platform",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-ci",
+  "_type": "metric",
+  "value": "−55%",
+  "label": "CI time per pull request",
+  "domain": "engineering",
+  "asOf": "2024-02-01",
+  "definition": "Median pipeline duration, month before vs month after caching and sharding.",
+  "status": "approved",
+  "order": 10,
+  "area": "platform",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-0"
+  }
+ },
+ {
+  "_id": "metric-team",
+  "_type": "metric",
+  "value": "0 → 8",
+  "label": "engineers hired and onboarded",
+  "domain": "engineering",
+  "asOf": "2022-12-31",
+  "definition": "Engineers who joined the team I led, from first hire.",
+  "status": "approved",
+  "period": "2021–22",
+  "order": 11,
+  "area": "leadership",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-2"
+  }
+ },
+ {
+  "_id": "metric-payouts",
+  "_type": "metric",
+  "value": "30+",
+  "label": "payout currencies at launch",
+  "domain": "engineering",
+  "asOf": "2022-06-01",
+  "definition": "Currencies supported for cross-border payroll payouts on day one.",
+  "status": "approved",
+  "order": 12,
+  "area": "payments",
+  "company": {
+   "_type": "reference",
+   "_ref": "company-2"
+  }
  },
  {
   "_id": "metric-pending",

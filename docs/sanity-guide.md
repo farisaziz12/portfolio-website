@@ -99,6 +99,11 @@ number? Add a **Correction** instead of silently editing.
 Derived from your events: a month with 1–2 confirmed appearances shows "Some dates taken", 3+ shows "Limited".
 **Availability** holds overrides only (a holiday, a month kept free, a note). "Already booked" lists upcoming events.
 
+### Engineering numbers (the /impact explorer)
+Every approved engineering **Metric** appears in the explorer on /impact, filterable by **Area** and company
+(`/impact?area=payments` is shareable). Tick **Headline** on up to four for the big cards. Got a pile of wins?
+Paste them into Prompt 5b in `sanity-mcp-prompts.md`: it drafts the metrics for you to approve.
+
 ### Approve a number
 **Needs attention → Metrics waiting for an OK** (or **Proof → Metrics**): check value, definition and date, set
 **Status → Approved for public use**, Publish. Nothing unapproved is ever shown.

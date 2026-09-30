@@ -17,7 +17,7 @@
  * 10. (with deleteLegacy) delete migrated socialPost/testimonial/impactMetricV2 and the unused
  *     impactMetric, impactCategory, impactPage, servicePage, siteNavigation documents.
  */
-import { LEGACY_EVENT_TYPE_ROLE, LEGACY_EXTERNAL_TYPE_FORMAT, formatLegacyMetric } from '../../packages/shared/src/content-model';
+import { LEGACY_EVENT_TYPE_ROLE, LEGACY_EXTERNAL_TYPE_FORMAT, LEGACY_METRIC_AREA, formatLegacyMetric } from '../../packages/shared/src/content-model';
 
 export type Doc = { _id: string; _type: string; [k: string]: unknown };
 
@@ -220,6 +220,7 @@ export function planMigration(docs: Doc[], opts: { deleteLegacy?: boolean } = {}
         definition: 'TODO: one sentence on how this is counted.',
         ...(m.contextNote ? { context: m.contextNote } : {}),
         domain: LEGACY_METRIC_DOMAIN[String(m.domain ?? '')] ?? 'engineering',
+        ...(LEGACY_METRIC_AREA[String(m.domain ?? '')] ? { area: LEGACY_METRIC_AREA[String(m.domain ?? '')] } : {}),
         status: 'needs-ok',
         ...(typeof m.order === 'number' ? { order: m.order } : {}),
       },

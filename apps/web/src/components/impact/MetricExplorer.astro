@@ -1,0 +1,94 @@
+---
+/**
+ * Every approved engineering number in one compact, filterable list (area ·
+ * company). URL-synced via lib/client/filters (?area=payments), so "all my
+ * payments numbers" is a link. Works without JS: everything shows.
+ */
+import { METRIC_AREAS, titleFor } from 'shared';
+import FilterPills from '../v3/FilterPills.astro';
+import type { Metric } from '../../lib/sanity/v3';
+
+interface Props {
+  metrics: Metric[];
+}
+const { metrics } = Astro.props;
+
+const count = <K extends string>(get: (m: Metric) => K | undefined) => {
+  const map = new Map<K, number>();
+  for (const m of metrics) {
+    const k = get(m);
+    if (k) map.set(k, (map.get(k) ?? 0) + 1);
+  }
+  return map;
+};
+const areas = count((m) => m.area);
+const companies = count((m) => m.company);
+const areaOptions = METRIC_AREAS.filter((a) => areas.has(a.value)).map((a) => ({ value: a.value, label: a.title, count: areas.get(a.value) }));
+const companyOptions = [...companies].map(([name, n]) => ({ value: slug(name), label: name, count: n }));
+
+function slug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+---
+
+<div class="mex" data-filter-root id="all-figures">
+  <div class="mex__head">
+    <h3 class="mex__title">All <span data-filter-shown>{metrics.length}</span> figures</h3>
+    {areaOptions.length > 1 && <FilterPills name="area" label="Area" options={areaOptions} allCount={metrics.length} />}
+    {companyOptions.length > 1 && <FilterPills name="company" label="Where" options={companyOptions} />}
+  </div>
+
+  <ol class="ds-rows mex__list" role="list">
+    {metrics.map((m) => (
+      <li class="mex__row" data-filter-item data-area={m.area ?? ''} data-company={m.company ? slug(m.company) : ''}>
+        <span class="mex__value">{m.value}</span>
+        <div class="mex__main">
+          <p class="mex__label">{m.label}{m.qualifier && <span class="mex__qual"> {m.qualifier}</span>}</p>
+          {m.context && <p class="mex__context">{m.context}</p>}
+          {m.definition && (
+            <p class="ds-meta mex__def">
+              {m.definition}
+              {m.sourceUrl && <> <a href={m.sourceUrl} target="_blank" rel="noopener noreferrer" class="ds-textlink">Source</a></>}
+            </p>
+          )}
+        </div>
+        <span class="mex__where">
+          {[m.company, m.dateLabel].filter(Boolean).join(' · ')}
+          {m.area && <span class="mex__area">{titleFor(METRIC_AREAS, m.area)}</span>}
+        </span>
+      </li>
+    ))}
+  </ol>
+
+  <div class="mex__empty" data-filter-empty hidden>
+    <p>No figures for that combination.</p>
+    <button type="button" class="ds-btn ds-btn--outline ds-btn--sm" data-filter-reset>Show everything</button>
+  </div>
+</div>
+
+<style>
+  .mex { display: flex; flex-direction: column; gap: 18px; margin-top: 40px; }
+  .mex__head { display: flex; flex-direction: column; gap: 12px; }
+  .mex__title { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .mex__list { list-style: none; margin: 0; padding: 0; }
+  .mex__row {
+    display: grid; grid-template-columns: 120px minmax(0, 1fr) 150px; gap: 20px; align-items: baseline;
+    padding: 16px 0; border-top: 1px solid rgb(var(--hairline));
+  }
+  .mex__row:last-child { border-bottom: 1px solid rgb(var(--hairline)); }
+  .mex__value { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: rgb(var(--accent-text)); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .mex__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .mex__main p { margin: 0; }
+  .mex__label { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.3; }
+  .mex__qual { font-weight: 600; color: rgb(var(--text-muted)); }
+  .mex__context { font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  .mex__def { line-height: 1.5; }
+  .mex__where { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: 13px; color: rgb(var(--text-faint)); text-align: right; }
+  .mex__area { font-size: 12px; font-weight: 700; color: rgb(var(--text-muted)); }
+  .mex__empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: rgb(var(--text-muted)); }
+  .mex__empty p { margin: 0; }
+  @media (max-width: 720px) {
+    .mex__row { grid-template-columns: 1fr; gap: 6px; }
+    .mex__where { flex-direction: row; align-items: baseline; gap: 10px; text-align: left; }
+  }
+</style>

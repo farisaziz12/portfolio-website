@@ -169,6 +169,22 @@ export const METRIC_DOMAINS = [
 
 export type MetricDomain = (typeof METRIC_DOMAINS)[number]['value'];
 
+/** What an engineering number is about: the filter on /impact. */
+export const METRIC_AREAS = [
+  { value: 'payments', title: 'Payments & checkout' },
+  { value: 'growth', title: 'Revenue & growth' },
+  { value: 'performance', title: 'Performance' },
+  { value: 'reliability', title: 'Reliability' },
+  { value: 'product', title: 'Product & UX' },
+  { value: 'platform', title: 'Platform & DX' },
+  { value: 'leadership', title: 'Team & leadership' },
+] as const satisfies readonly Option[];
+
+export type MetricArea = (typeof METRIC_AREAS)[number]['value'];
+
+/** V2 impactMetricV2.domain → V3 area (engineering numbers only). */
+export const LEGACY_METRIC_AREA: Record<string, MetricArea> = { product: 'product', leadership: 'leadership' };
+
 /** Only `approved` metrics render publicly. */
 export const METRIC_STATUSES = [
   { value: 'draft', title: 'Draft (hidden)' },

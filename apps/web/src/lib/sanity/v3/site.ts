@@ -4,7 +4,7 @@
  * Each loader merges CMS values over the approved defaults field by field.
  */
 import groq from 'groq';
-import { formatLegacyMetric, type MetricDomain } from 'shared';
+import { formatLegacyMetric, LEGACY_METRIC_AREA, type MetricDomain } from 'shared';
 import { monthYear } from './dates';
 import { DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
@@ -203,7 +203,7 @@ export function getProfile(): Promise<Profile> {
 
 // ─── Metrics ───────────────────────────────────────────────────────────────
 
-const METRIC_FIELDS = `_id, value, label, qualifier, asOf, period, definition, context, domain, sourceUrl, order`;
+const METRIC_FIELDS = `_id, value, label, qualifier, asOf, period, definition, context, domain, area, featured, "company": company->name, sourceUrl, order`;
 
 export const metricsQuery = groq`{
   "metrics": *[_type == "metric" && status == "approved"] | order(coalesce(order, 999) asc) { ${METRIC_FIELDS} },
@@ -249,6 +249,7 @@ export function getMetrics(): Promise<Metric[]> {
         period: l.timeWindow,
         context: l.contextNote,
         domain: LEGACY_DOMAIN[l.domain ?? ''] ?? 'engineering',
+        area: LEGACY_METRIC_AREA[l.domain ?? ''],
         order: l.order,
         legacy: true,
       })

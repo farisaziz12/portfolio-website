@@ -244,9 +244,32 @@ Goal: every number on the site is dated, defined and approved by Faris.
    first Conf; meetup speakers hosted; sponsors & partners.
 3. Engineering (domain engineering, company → Smallpdf etc.): only numbers Faris has cleared for
    public use. Transaction volume is VOLUME, not revenue, and needs currency + period in the definition.
+   Set area (payments | growth | performance | reliability | product | platform | leadership) on every
+   engineering metric: it drives the explorer filter on /impact. Mark up to four as featured (headline).
 4. Leave status at "needs-ok" for everything you created or changed and list them for Faris to approve.
    Delete duplicates. Don't create metrics for speaking counts (talks delivered, countries): the site
    derives those from sessions.
+```
+
+## Prompt 5b: Brag list → metrics
+
+Paste your wins as rough notes after this prompt (one per line, any format: "cut checkout JS 60% in
+2025", "launched 12 local payment methods", "hired the first 8 engineers at Navro"). The MCP turns them
+into metric drafts; you approve them in Studio.
+
+```text
+Turn the list below into engineering metric documents. For each line:
+- value exactly as it should display ("−60%", "12", "0 → 8"), label (lower case, what it counts),
+  company → the matching career entry, area (payments | growth | performance | reliability | product |
+  platform | leadership), asOf (or period for a range), definition (one sentence: how it's counted and
+  compared: before vs after, which window, which source), context (optional, one plain sentence).
+- status "needs-ok". Never approve. Never invent a number, date or definition: if a line doesn't give
+  one, leave the field empty and ask me in "Questions for Faris".
+- Skip duplicates of existing metrics (same label + company); show them as "already there".
+Show the table first (value · label · company · area · asOf · definition · questions), wait for my OK,
+then create drafts. Voice rules apply to label and context (see house rules).
+
+List:
 ```
 
 ## Prompt 6: Praise
