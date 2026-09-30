@@ -1,7 +1,7 @@
 ---
 /**
  * One "How I can help" card: yellow number, audience tag, title, stacked
- * "Reach out if" / "You get" labels, CTAs pinned to the bottom.
+ * "Get in touch if" / "You get" labels, CTAs pinned to the bottom.
  */
 import type { ServiceCardData } from '../../lib/services';
 
@@ -22,7 +22,7 @@ const ext = (href: string) => (external(href) ? { target: '_blank', rel: 'noopen
   </div>
   <H id={`svc-${card.type}`} class="svc__title">{card.title}</H>
   <dl class="svc__dl">
-    <dt>Reach out if</dt>
+    <dt>Get in touch if</dt>
     <dd>{card.reachOutIf}</dd>
     <dt>You get</dt>
     <dd>{card.youGet}</dd>

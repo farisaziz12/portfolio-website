@@ -1,3 +1,5 @@
+import { withVoiceCheck } from './_fields';
+
 // ─── Speaking ───────────────────────────────────────────────
 import talk from './talk';
 import workshop from './workshop';
@@ -51,31 +53,32 @@ export const LEGACY_TYPES = [
   'siteNavigation',
 ] as const;
 
+/** Types whose prose gets the voice warning (praise quotes stay verbatim). */
 export const schemaTypes = [
-  talk,
-  workshop,
-  eventSeries,
-  event,
+  withVoiceCheck(talk),
+  withVoiceCheck(workshop),
+  withVoiceCheck(eventSeries),
+  withVoiceCheck(event),
   workshopInstance,
 
   praise,
-  metric,
-  community,
-  company,
-  project,
+  withVoiceCheck(metric),
+  withVoiceCheck(community),
+  withVoiceCheck(company),
+  withVoiceCheck(project),
   media,
 
-  blogPost,
-  externalPost,
+  withVoiceCheck(blogPost),
+  withVoiceCheck(externalPost),
 
-  serviceOffer,
-  serviceLandingPage,
+  withVoiceCheck(serviceOffer),
+  withVoiceCheck(serviceLandingPage),
 
-  homePage,
-  speakerProfile,
-  availability,
-  siteSettings,
-  page,
+  withVoiceCheck(homePage),
+  withVoiceCheck(speakerProfile),
+  withVoiceCheck(availability),
+  withVoiceCheck(siteSettings),
+  withVoiceCheck(page),
 
   socialPost,
   testimonial,

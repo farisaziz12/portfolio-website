@@ -128,6 +128,13 @@ Public history = an event session with role "workshop". The token-gated attendee
 - **No contact emails or `mailto:` in content.** Contact goes through the site's forms.
 - **Unannounced roles** stay out of public copy (`siteSettings.nowLine` and `company.isPublic` are the switches).
 
+## Voice
+
+Every copy-bearing document shows a yellow **Sounds AI-written** warning when a field uses a phrase from the
+AI-tell list (`packages/shared/src/voice.ts`): field, phrase and a plainer alternative. It never blocks
+publishing. `pnpm voice:cms` lists them all; Prompt 13 in `sanity-mcp-prompts.md` cleans them up. Guide:
+[`voice.md`](./voice.md).
+
 ## Health checks
 
 Studio → **Needs attention** lists events without sessions, past talks without recordings, events without a country,

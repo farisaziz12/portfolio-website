@@ -40,7 +40,7 @@ export const GET: APIRoute = async () => {
   const statLine = [
     `${stats.talksDelivered} talks delivered`,
     stats.workshopsDelivered ? `${stats.workshopsDelivered} workshops delivered` : null,
-    stats.hosted ? `${stats.hosted} events hosted (counted separately)` : null,
+    stats.hosted ? `${stats.hosted} events hosted (not included in talks)` : null,
     `${stats.countries} countries`,
     stats.podcasts ? `${stats.podcasts} podcast appearances` : null,
     `${stats.catalogueTalks} talks in the current catalogue`,

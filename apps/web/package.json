@@ -7,11 +7,13 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint . && node scripts/ui-guardrails.mjs && node scripts/conventions.mjs --self-test && node scripts/conventions.mjs",
+    "lint": "eslint . && node scripts/ui-guardrails.mjs && node scripts/conventions.mjs --self-test && node scripts/conventions.mjs && tsx scripts/voice.ts",
     "typecheck": "astro check",
     "test": "tsx --test src/**/*.test.ts",
     "lint:ui": "node scripts/ui-guardrails.mjs",
-    "lint:conventions": "node scripts/conventions.mjs --self-test && node scripts/conventions.mjs"
+    "lint:conventions": "node scripts/conventions.mjs --self-test && node scripts/conventions.mjs",
+    "lint:voice": "tsx scripts/voice.ts",
+    "voice:cms": "tsx scripts/voice.ts --cms"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

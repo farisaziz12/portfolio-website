@@ -179,7 +179,7 @@ docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJ
   "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["members", "cfp", "speakers", "sponsors"]],
   "recognition": [{"_key": "g", "_type": "award", "title": "Open Source Award: Global Community with the Highest Impact", "issuer": "Open Source Awards", "year": 2026, "confirmed": True}],
   "pillars": [
-    {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "Hosting is counted separately from my own talks."},
+    {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "I open most evenings, introduce the speakers and keep the Q&A moving."},
     {"_key": "t", "_type": "communityPillar", "kicker": "Teach", "title": "Workshops for the community, on the house", "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."},
     {"_key": "b", "_type": "communityPillar", "kicker": "Build", "title": "The conference platform", "body": "Tickets, CFP and sponsor onboarding for ZurichJS Conf."}],
   "aftermovie": {"title": "ZurichJS Conf 2026", "caption": "Two days, one stage, 436 talk proposals to choose from.", "published": False},

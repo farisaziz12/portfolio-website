@@ -28,7 +28,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
             <Text style={s.paragraph}>
-              Thanks for subscribing! I'll reach out when I'm speaking at a conference near you.
+              Thanks for subscribing. I'll email you when I'm speaking at a conference near you.
             </Text>
 
             <Text style={s.paragraph}>

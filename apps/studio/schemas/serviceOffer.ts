@@ -64,7 +64,7 @@ export default defineType({
     }),
     defineField({
       name: 'reachOutIf',
-      title: 'Reach out if',
+      title: 'Get in touch if',
       type: 'text',
       rows: 3,
       description: 'Lower-case, finishes the sentence: "you want an outside view on frontend architecture…".',

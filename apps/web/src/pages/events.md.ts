@@ -37,7 +37,7 @@ export const GET: APIRoute = async () => {
     ``,
     `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Status is computed in each event's own timezone. Invite me: ${SITE}/invite`,
     ``,
-    `Counted separately (delivered sessions): ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.eventRecords} event records. As of ${stats.asOf}.`,
+    `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.eventRecords} event records. As of ${stats.asOf}.`,
     stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
     ``,
     `## Upcoming (${upcoming.length} confirmed)`,

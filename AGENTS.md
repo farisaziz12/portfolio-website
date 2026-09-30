@@ -29,6 +29,7 @@ pnpm --filter web lint:conventions
 pnpm --filter web typecheck     # astro check
 pnpm test         # loader contract tests + migration tests
 pnpm migrate:v3   # V2 → V3 content migration (dry-run by default)
+pnpm voice:cms    # AI-tell report for Sanity content (SANITY_FIXTURES=1 offline, --json for agents)
 ```
 
 The site must still render without Sanity/Resend/PostHog credentials (empty states / hardcoded proof fallbacks). Missing env is not a crash.
@@ -42,6 +43,7 @@ The site must still render without Sanity/Resend/PostHog credentials (empty stat
 | Tokens, a11y, no emojis, component checklist | `docs/ui-rules.md` (tokens in `global.css` win if they disagree) |
 | Content model, talk vs event, editing recipes | `docs/sanity-guide.md` |
 | Migrating / cleaning content with the Sanity MCP | `docs/sanity-mcp-prompts.md` |
+| Writing or reviewing any copy (voice, AI tells) | `docs/voice.md` · skill `voice-copy` |
 | Events, identify, recordings | `docs/measurement.md` |
 | Cursor rules / skills / MCPs | `.cursor/README.md` |
 
@@ -60,6 +62,7 @@ Nested `AGENTS.md` files in `apps/web` and `apps/studio` apply when you work in 
 9. **Agent surface stays in sync.** New/renamed public pages need a `.md` mirror, an `llms.txt.ts` entry, and an OG card in `pages/og/[...slug].png.ts`.
 10. **Do not reimplement** theme, scroll-reveal, `data-track` analytics, or cal.com modal — they live in `BaseLayout.astro`.
 11. **Do not add analytics events** unless a decision depends on them. If you do, update `AnalyticsEvent` and `docs/measurement.md` together.
+12. **Copy sounds like Faris, not an AI.** `pnpm lint` fails on AI tells in site copy (`packages/shared/src/voice.ts`); read `docs/voice.md` before writing copy. Never edit praise quotes.
 
 ## MCPs for this repo
 

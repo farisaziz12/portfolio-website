@@ -25,13 +25,6 @@ for (const e of past) {
 }
 const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title }));
 
-const counted = [
-  `${stats.talksDelivered} talks delivered`,
-  `${stats.workshopsDelivered} workshops`,
-  `${stats.hosted} hosted`,
-  `${stats.attended} attended`,
-].join(', ');
-
 const schema = [
   breadcrumbs([
     { name: 'Speaking', path: '/speaking' },
@@ -103,10 +96,6 @@ const schema = [
         <button type="button" class="ds-btn ds-btn--outline ds-btn--sm" data-filter-reset>Show everything</button>
       </div>
       {!past.length && <p class="ev-empty">Nothing here yet.</p>}
-
-      <p class="ev-note ds-meta">
-        Counted separately: {counted}. Filters write to the URL (?role=hosted), so a filtered view can be shared.
-      </p>
     </section>
   </div>
 </BaseLayout>
@@ -135,5 +124,4 @@ const schema = [
   .ev-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; border-top: 1px solid rgb(var(--hairline)); }
   .ev-empty p, p.ev-empty { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
   .ev-empty[hidden] { display: none; }
-  .ev-note { margin: 0; line-height: 1.5; }
 </style>

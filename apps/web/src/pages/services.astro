@@ -24,7 +24,7 @@ const schema = [
     '@id': `${SITE}/services#${c.type}`,
     name: c.title,
     serviceType: titleFor(SERVICE_TYPES, c.type),
-    description: `Reach out if ${c.reachOutIf} You get ${c.youGet}`,
+    description: `Get in touch if ${c.reachOutIf} You get ${c.youGet}`,
     audience: { '@type': 'Audience', audienceType: c.audience },
     provider: { '@id': `${SITE}/#person` },
     areaServed: 'Worldwide',

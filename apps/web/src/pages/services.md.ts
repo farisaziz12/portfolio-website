@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
       `## ${c.n} ${c.title}`,
       ``,
       `- For: ${c.audience}`,
-      `- Reach out if ${c.reachOutIf}`,
+      `- Get in touch if ${c.reachOutIf}`,
       `- You get ${c.youGet}`,
       `- ${c.primary.label}: ${abs(c.primary.href)}`,
       c.secondary ? `- ${c.secondary.label}: ${abs(c.secondary.href)}` : '',

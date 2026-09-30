@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm run --parallel -r dev",
     "build": "pnpm run -r build",
-    "lint": "eslint . && pnpm --filter web lint:ui && pnpm --filter web lint:conventions",
+    "lint": "eslint . && pnpm --filter web lint:ui && pnpm --filter web lint:conventions && pnpm --filter web lint:voice",
     "typecheck": "pnpm run -r typecheck",
     "studio": "pnpm --filter studio dev",
     "web": "pnpm --filter web dev",
@@ -14,7 +14,8 @@
     "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts",
     "migrate:v3": "tsx scripts/migrate-v3/run.ts",
     "test:migrate": "tsx --test scripts/migrate-v3/transform.test.ts",
-    "test": "pnpm --filter web test && pnpm test:migrate"
+    "test": "pnpm --filter web test && pnpm test:migrate",
+    "voice:cms": "pnpm --filter web voice:cms"
   },
   "dependencies": {
     "@sanity/client": "^6.24.1"

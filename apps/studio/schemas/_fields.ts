@@ -3,7 +3,7 @@
  * and ordering the same way (one GROQ projection fits all).
  */
 import { defineField, defineArrayMember } from 'sanity';
-import type { Option } from 'shared';
+import { collectText, describeTells, type Option } from 'shared';
 
 export const options = <V extends string>(list: readonly Option<V>[]) =>
   list.map(({ value, title }) => ({ value, title }));
@@ -110,3 +110,19 @@ export const slugField = (source = 'title', group?: string) =>
     options: { source, maxLength: 96 },
     validation: (Rule) => Rule.required(),
   });
+
+/**
+ * Document-level warning listing phrases that read as machine-written
+ * (rules: packages/shared/src/voice.ts, guide: docs/voice.md). A warning,
+ * never a blocker: publish is always allowed. Quotes (praise) are exempt.
+ */
+export const withVoiceCheck = <T extends { type: string; validation?: unknown }>(schema: T): T => ({
+  ...schema,
+  validation: (Rule: { custom: (fn: (doc: unknown) => true | string) => { warning: () => unknown } }) =>
+    Rule.custom((doc) => {
+      const lines = describeTells(collectText(doc));
+      if (!lines.length) return true;
+      const more = lines.length > 6 ? ` … and ${lines.length - 6} more` : '';
+      return `Sounds AI-written (docs/voice.md): ${lines.slice(0, 6).join(' · ')}${more}`;
+    }).warning(),
+});

@@ -60,7 +60,7 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
 
   (function () {
     if (!POSTHOG_KEY) {
-      console.debug('[posthog] PUBLIC_POSTHOG_KEY not set — analytics disabled');
+      console.debug('[posthog] PUBLIC_POSTHOG_KEY not set: analytics disabled');
       return;
     }
     // Local dev never pollutes production analytics.

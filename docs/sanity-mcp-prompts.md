@@ -57,7 +57,8 @@ Voice and style:
 - Site copy is first person, casual and direct ("I build…", "I reply within two days"). Bios are third
   person. Short sentences. Concrete over clever. Write like Faris talks, not like a brand guideline: no
   "available upon request", "unmodified", "leverage", "seamless", "robust", "in today's landscape";
-  no stacked colons and triples. Read it out loud: if it sounds like an AI wrote it, rewrite it. No marketing adjectives (world-class, passionate,
+  no stacked colons and triples, no em dashes. Read it out loud: if it sounds like an AI wrote it,
+  rewrite it (full list of tells: Prompt 13). No marketing adjectives (world-class, passionate,
   cutting-edge, rockstar, ninja, guru, thought leader). No exclamation marks outside quotes.
 - No emojis anywhere in content (country names drive the flag emoji automatically).
 - Never use the words "essays" or "notes" for writing. Never claim "most watched/most popular" without
@@ -329,7 +330,7 @@ Goal: three service cards and the mentorship offers.
 
 serviceOffer per type, in order:
 - events: title "Events: speaking and workshops", audience "Conferences, meetups, podcasts, teams",
-  reachOutIf (lower case, finishes "Reach out if…"), youGet (finishes "You get…"), primaryCta
+  reachOutIf (lower case, finishes "Get in touch if…"), youGet (finishes "You get…"), primaryCta
   {"Invite me", "/invite"}, secondaryCta {"See workshops", "/workshops"}.
 - advisory (legacy "consulting" offers become advisory): title "Advisory", audience "Companies and
   founders · limited availability", reachOutIf/youGet, primaryCta {"Tell me what's going on",
@@ -368,6 +369,38 @@ Final pass across the whole dataset. Read-only first, then propose fixes as a ta
    all zero, tell me to run `pnpm migrate:v3 --apply --delete-legacy`.
 6. List "Questions for Faris" (facts only he can confirm): award wording/year, engineering figures for
    public use, career dates, aftermovie URL, availability month statuses, unannounced roles.
+```
+
+## Prompt 13: Voice sweep (AI tells)
+
+Run any time content has been added. Get the findings first, locally:
+`pnpm voice:cms --json > voice.json` (the same rules the Studio warning uses; see `docs/voice.md`), then paste
+the JSON after this prompt. Without it, the MCP scans itself using the list below.
+
+```text
+Voice sweep. Goal: every piece of copy sounds like Faris talking, not like an AI wrote it.
+Scope: all published documents EXCEPT praise.quote (other people's words stay verbatim) and slugs,
+names, dates and URLs (never change facts while fixing voice).
+
+Flag and rewrite:
+- Words: leverage, utilise, harness, seamless, robust, effortless, delve, deep dive, dive into, elevate,
+  unlock, empower, supercharge, crucial, pivotal, paramount, passionate, thought leader, visionary,
+  world-class, cutting-edge, game-changing, journey, embark, showcase, boasts, resonates, curated,
+  bespoke, comprehensive, meticulous, nuanced, synergy, holistic, innovative, streamline, actionable,
+  upon request, unmodified, prior to, in order to, facilitate, reach out, don't hesitate, essays.
+- Shapes: "not just X, it's Y" / "more than just"; scene-setting ("In today's fast-paced…");
+  setup lines ("Here's the thing:", "The best part?", "The result?"); "Whether you're…";
+  copy that narrates the page or the counting ("This section lists…", "counted separately");
+  reflexive triples; stacked colons; em dashes (use a comma, colon or full stop).
+- Register: legal or brand-guideline tone ("available on request, unmodified") → how he'd say it
+  ("Just ask. Please keep it as it is.").
+
+Rewrite rules: first person on site copy, third person in bios. Short sentences. Keep the meaning and
+every fact; change the fewest words that fix it. Don't add adjectives, numbers or claims.
+
+Output one table: document id · field · current → proposed · tell. Wait for my OK, then write drafts.
+After publishing, I'll re-run `pnpm voice:cms`; the goal is zero findings (a talk title someone else
+chose may stay; list those as "kept on purpose").
 ```
 
 ---
