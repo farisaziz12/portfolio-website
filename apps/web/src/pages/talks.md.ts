@@ -2,10 +2,11 @@ import type { APIRoute } from 'astro';
 import { getCatalogueTalks, getSpeakingStats, numberWord } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
-import { deliveredLine, inviteHref, isNewTalk, lengthLabel, newTalkLine, nextLine, pillarTitle } from '../lib/talks';
+import { byPopularity, deliveredLine, inviteHref, isNewTalk, lengthLabel, newTalkLine, nextLine, pillarTitle } from '../lib/talks';
 
 export const GET: APIRoute = async () => {
-  const [talks, stats] = await Promise.all([getCatalogueTalks(), getSpeakingStats()]);
+  const [catalogue, stats] = await Promise.all([getCatalogueTalks(), getSpeakingStats()]);
+  const talks = [...catalogue].sort(byPopularity);
 
   const entries = talks.map((t) =>
     [

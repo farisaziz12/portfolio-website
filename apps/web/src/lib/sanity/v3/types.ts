@@ -112,6 +112,8 @@ export interface Talk {
   setup?: string;
   isBookable: boolean;
   order?: number;
+  /** When the talk document was created in Sanity ("Newest" sort). */
+  _createdAt?: string;
   version?: string;
   versionNotes?: string;
   parentId?: string;

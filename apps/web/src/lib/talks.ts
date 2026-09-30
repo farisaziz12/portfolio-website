@@ -97,3 +97,28 @@ export function firstSentence(p: Pick<Praise, 'quote' | 'pullQuote'>, max = 90):
 export function inviteHref(t: Pick<TalkWithHistory, 'title'>): string {
   return `/invite?kind=conference&talk=${encodeURIComponent(t.title)}`;
 }
+
+/** Catalogue sort orders: "Most popular" (default), "Recently given", "Newest". */
+export const TALK_SORTS = [
+  { value: 'popular', label: 'Most popular' },
+  { value: 'recent', label: 'Recently given' },
+  { value: 'newest', label: 'Newest' },
+] as const;
+
+export type TalkSort = (typeof TALK_SORTS)[number]['value'];
+
+/** Sort keys carried on each catalogue row (data attributes) so the client can re-order. */
+export function talkSortKeys(t: TalkWithHistory) {
+  return {
+    popular: t.deliveredCount,
+    recent: t.lastDelivery?.event.date ?? '',
+    newest: t._createdAt ?? t.versions[0]?.firstDelivered ?? '',
+  };
+}
+
+/** Server order = "Most popular": most given, then most recently given, then editor order. */
+export function byPopularity(a: TalkWithHistory, b: TalkWithHistory): number {
+  const ka = talkSortKeys(a);
+  const kb = talkSortKeys(b);
+  return kb.popular - ka.popular || kb.recent.localeCompare(ka.recent) || (a.order ?? 999) - (b.order ?? 999);
+}
