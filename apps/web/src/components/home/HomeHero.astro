@@ -1,7 +1,7 @@
 ---
 /**
- * Home hero. Variant `band` (default): SkewHero with the yellow band and the
- * photo mosaic (two or more hero photos) or a single photo clipped in.
+ * Home hero. Variant `band` (default): SkewHero with the yellow band and one
+ * photo clipped in (the first hero photo; no mosaic).
  * Variant `fullbleed`: the photo behind the type with an ink scrim.
  * Photos crop around the editor's hotspot (SanityImg sets --fp).
  * Bottom-right ink strip lists the next one or two appearances.
@@ -26,7 +26,7 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
 ---
 
 {variant === 'band' ? (
-  <SkewHero image={photos[0]} mosaic={photos.length >= 2 ? photos : undefined} focus="60% 40%" height={620} bandWidth={50} giant="Faris" class="hh">
+  <SkewHero image={photos[0]} focus="60% 40%" height={620} bandWidth={50} giant="Faris" class="hh">
     <p class="ds-kicker">{kicker}</p>
     <h1 class="hh__h1">{parts.map((p) => (p.mark ? <span class="ds-mark">{p.text}</span> : p.text))}</h1>
     <p class="hh__intro">{home.intro}</p>

@@ -22,7 +22,8 @@ definition, every quote links to its source. These prompts get it there.
    into `praise`, `impactMetricV2` into hidden `metric`s, `externalPost.type` into `format`, legacy workshop agendas
    into `formats[]`, profile `bioFull`/`technicalRequirements` into `bioLong`/`rider[]`, and `consulting` offers into
    `advisory`. Run it again: the plan should be empty. Keep `--delete-legacy` for after step 5.
-4. **Run the prompts below in order**, one session per prompt (0 → 12). Each prompt proposes changes as a table and
+4. **Run the prompts below in order**, one session per prompt (0 → 12). Prompts 13 (voice) and 14 (visual
+   consistency) can run any time after that, and again whenever content is added. Each prompt proposes changes as a table and
    waits for your OK before writing. It writes to **drafts**; you publish in Studio (or tell the agent to publish).
 5. When Prompt 12 reports zero gaps: `pnpm migrate:v3 --apply --delete-legacy` removes the migrated V2 documents
    and the unused legacy types. Then the `Legacy` section of the Studio is empty.
@@ -142,7 +143,7 @@ Goal: one of each singleton, with the fixed ids the Studio opens, and complete.
 3. homePage (id "homePage"): heroVariant "band"; headline "I sit at the intersection of [product
    engineering], [monetization] and [technical leadership]." (brackets = underlined); intro (first
    person, two sentences); primaryCta {label "Invite me to speak", href "/invite"}; secondaryCta
-   {"Where I'll be next", "/events"}; heroPhotos: pick 1–3 stage/workshop photos from the press photos;
+   {"Where I'll be next", "/events"}; heroPhotos: pick one stage/workshop photo from the press photos (the hero shows only the first);
    featured: exactly three references — the flagship talk with a recording first, then the two most
    recent podcast externalPosts; featuredQuote: the best praise about the flagship talk; praise: seven
    featured praise refs (the first is the big spotlight quote); community: the ZurichJS community doc;
@@ -442,6 +443,55 @@ every fact; change the fewest words that fix it. Don't add adjectives, numbers o
 Output one table: document id · field · current → proposed · tell. Wait for my OK, then write drafts.
 After publishing, I'll re-run `pnpm voice:cms`; the goal is zero findings (a talk title someone else
 chose may stay; list those as "kept on purpose").
+```
+
+## Prompt 14: Visual consistency (photos, crops, covers)
+
+Run after Prompt 11, and again whenever photos are added. The site crops every photo to a fixed shape and
+centres the crop on the photo's **hotspot**, so a missing hotspot is the most common reason a face gets cut off.
+
+```text
+Visual consistency pass. Goal: every photo the site shows is sharp, well cropped, described and
+consistent with the others in the same place. Read-only first; propose changes as a table; wait for my OK.
+You cannot set a hotspot through the API reliably by eye: list the photos that need one and I'll set it
+in Studio (drag the circle onto the face or the stage). Never replace or delete an asset.
+
+Where each photo appears and the shape the site crops it to:
+- homePage.heroPhotos[]: the hero shows the FIRST photo only, one image clipped into the band (cover
+  crop around the hotspot); the third, if set, is the opener's square speaker card. Empty = the site
+  uses speakerProfile.headshots (stage shots first). Want: a landscape stage or workshop shot, Faris
+  clearly visible, at least 1920 px wide.
+- speakerProfile.headshots[]: press kit crops 1:1, 4:5 and 16:9 around the hotspot; the "portrait" tag
+  is the opener's speaker card (square). Want: at least 2000 px on the short side, one photo per tag,
+  tag in portrait|stage|workshop|community|speaking|event.
+- talk.thumbnail: talk rows 16:10, talk page backdrop full width. Want: a stage photo of THAT talk,
+  landscape, at least 1600 px wide. No slide screenshots, logos or text-heavy images.
+- event.coverImage: event aside 4:3. Want: a photo from the day (before the event: the venue),
+  at least 1200 px wide. Not the conference logo (that goes on eventSeries.logo).
+- blogPost.coverImage: 2:1 on the article, 16:9 in lists. externalPost.image: 16:9 in lists.
+- praise.author.image: square avatar, 1:1. Want: the person's own profile photo, face centred.
+- community.photos[]: 16:9 (32:9 when there is only one); aftermovie.poster 2:1 and 16:8.5.
+- media (type photo).image: gallery 3:2. project.image 16:9, project screenshots 16:10.
+
+Check, per photo (use asset->metadata.dimensions for size):
+1. Hotspot missing on any photo above → "needs hotspot" list (document, field, what's in the photo).
+2. Too small for where it's used (widths above) → list with the actual size; suggest a better photo
+   from media or headshots if one exists.
+3. Wrong orientation for the slot (a portrait photo as a talk thumbnail or hero) → suggest a swap.
+4. alt: missing, generic ("image", "photo", a filename) or describing the file instead of the picture.
+   Write alt as what a sighted person sees, one sentence, no "image of": "Faris on stage at React
+   Summit US 2025, wide shot". Don't guess names of other people; say "an attendee" instead.
+5. credit: missing on photos someone else took → "Questions for Faris" (never invent a photographer).
+6. caption (where used): sentence case, no trailing full stop, what and where: "On stage at CityJS
+   Athens 2025". Same pattern everywhere.
+7. Repetition: the same asset used as the thumbnail of several talks or the cover of several events,
+   or the same photo three times on the home page (hero + community + posters). Suggest alternatives
+   from media photos attached to the right event.
+8. Consistency inside a list: all talk thumbnails are stage photos (not a mix of stage, headshot and
+   logo); all event covers are photos, not logos; all praise avatars are photos, not platform logos.
+
+Output: one table per check (document id · field · issue · proposed fix), then the "needs hotspot" list,
+then "Questions for Faris". After I set hotspots, re-run checks 1–3 and show the before/after counts.
 ```
 
 ---
