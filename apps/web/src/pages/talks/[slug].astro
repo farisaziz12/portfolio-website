@@ -50,6 +50,7 @@ const description = (talk.seo?.metaDescription || talk.summary || `A talk by Far
   title={talk.seo?.metaTitle || talk.title}
   description={description}
   image={`/og/talks/${talk.slug}.png`}
+  content={{ type: 'talk', slug: talk.slug, title: talk.title, pillar: talk.pillar, status, versions: talk.versions.length, has_recording: Boolean(talk.recording) }}
   markdownAlternate={`/talks/${talk.slug}.md`}
   band={false}
   extraSchema={[

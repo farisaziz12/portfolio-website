@@ -169,7 +169,7 @@ export default function MentorshipInquiryForm({ fallbackHref, replyTime = 'two w
   const errId = (k: ErrKey) => (errors[k] ? `m-${k}-err` : undefined);
 
   return (
-    <form className="mform" method="post" onSubmit={onSubmit} noValidate aria-busy={submitting}>
+    <form data-form="mentorship" className="mform" method="post" onSubmit={onSubmit} noValidate aria-busy={submitting}>
       <div className="mform__row">
         <Field id="m-name" label="Your name" required error={errors.name && ERR_TEXT.name}>
           <input id="m-name" className="ds-input" value={fields.name} onChange={(e) => set('name', e.target.value)} autoComplete="name" required aria-invalid={errors.name ? 'true' : undefined} aria-describedby={errId('name')} />

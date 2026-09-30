@@ -15,7 +15,7 @@ export const allTalksQuery = groq`*[_type == "talk" && defined(slug.current)] | 
   _id, title, shortTitle, "slug": slug.current, pillar, summary, abstract, audience,
   "takeaways": coalesce(takeaways, []), "tags": coalesce(topics, []),
   duration, "durationOptions": coalesce(durationOptions, []), level, setup,
-  "isBookable": isBookable != false, "currentFlag": isCurrentVersion, _createdAt, order, version, versionNotes,
+  "isBookable": isBookable == true, "currentFlag": isCurrentVersion, _createdAt, order, version, versionNotes,
   "parentId": parentTalk._ref,
   "thumbnail": coalesce(thumbnail, assets.thumbnailImage)${IMAGE},
   "repoUrl": assets.repoUrl, "fallbackVideoUrl": assets.videoUrl, "fallbackSlidesUrl": assets.slidesUrl,

@@ -54,6 +54,12 @@ function apply(root: HTMLElement, state: Record<string, string>, pushUrl: boolea
   }
 }
 
+/** Tell analytics (posthog.astro) a filter changed; the list stays analytics-agnostic. */
+function announce(root: HTMLElement, key: string, value: string) {
+  const shown = root.querySelectorAll('[data-filter-item]:not([hidden])').length;
+  document.dispatchEvent(new CustomEvent('filters:change', { detail: { key, value, shown } }));
+}
+
 export function initFilters() {
   document.querySelectorAll<HTMLElement>('[data-filter-root]').forEach((root) => {
     if (root.dataset.filterReady) return;
@@ -73,11 +79,13 @@ export function initFilters() {
       if (pill && root.contains(pill)) {
         state[pill.dataset.filter!] = pill.dataset.value!;
         apply(root, state, true);
+        announce(root, pill.dataset.filter!, pill.dataset.value!);
         return;
       }
       if (target.closest('[data-filter-reset]')) {
         for (const key of keys) state[key] = 'all';
         apply(root, state, true);
+        announce(root, 'reset', 'all');
       }
     });
   });

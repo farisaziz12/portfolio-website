@@ -46,6 +46,7 @@ const schema = [
   title={w.seo?.metaTitle || `${w.title} · Workshop | Faris Aziz`}
   description={description}
   image={`/og/workshops/${w.slug}.png`}
+  content={{ type: 'workshop', slug: w.slug, title: w.title, pillar: w.pillar, bookable: w.isBookable }}
   imageAlt={`${w.title}, a hands-on workshop by Faris Aziz`}
   markdownAlternate={`/workshops/${w.slug}.md`}
   extraSchema={schema}

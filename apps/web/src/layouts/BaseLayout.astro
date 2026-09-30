@@ -31,6 +31,8 @@ interface Props {
   /** 8px band under the header. Off for pages whose hero carries the skewed band. */
   band?: boolean;
   noindex?: boolean;
+  /** What this page is, for analytics (content_viewed): { type: 'talk', slug, title, … }. */
+  content?: Record<string, string | number | boolean | undefined>;
 }
 
 const [settings, profile, communities] = await Promise.all([getSiteSettings(), getProfile(), getCommunities()]);
@@ -52,6 +54,7 @@ const {
   markdownAlternate,
   band = true,
   noindex = false,
+  content,
 } = Astro.props;
 ---
 
@@ -60,6 +63,7 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    {content && <meta name="analytics:content" content={JSON.stringify(content)} />}
     <meta name="theme-color" content="#0F0F10" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#F8F4EB" media="(prefers-color-scheme: light)" />
     <link rel="alternate" type="application/rss+xml" title="Faris Aziz: writing" href="/rss.xml" />

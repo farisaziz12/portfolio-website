@@ -211,7 +211,7 @@ Goal: one timeline for written + podcasts + video, with consistent metadata.
 ```text
 Goal: a catalogue where every bookable talk reads the same way.
 
-For every talk with isBookable != false and isCurrentVersion != false:
+For every talk with isBookable == true (unset counts as NOT bookable) and isCurrentVersion != false:
 - pillar: engineering | payments | careers | community (one).
 - shortTitle: how people refer to it ("the caching talk", "the payments talk"); lower case.
 - summary: ONE sentence, ≤ 160 chars, concrete, no marketing ("Data fetching when the network, the
@@ -233,8 +233,9 @@ Scale" 2024 → "Caching, Payloads, and Other Dark Arts" 2025), or the same talk
 - version: a short label ("2024", "2025 US tour"); versionNotes: one plain sentence on what changed;
 - exactly one isCurrentVersion=true (the one to book); the others false. Sessions stay on the version
   that was actually given (the site shows "as <old title>" in the history).
-Bookable: set isBookable explicitly on every talk. true only for talks Faris would give today; false
-retires it (never delete: its sessions still count and its page stays for the recording).
+Bookable: only isBookable == true is listed on /talks; unset or false keeps a talk off the catalogue.
+Set it true only for talks Faris would give today (never delete the others: their sessions still count
+and their pages stay for the recording).
 Show the family table (family · version · title · years given · current? · bookable?) for my OK first.
 Move any talk-level assets.videoUrl/slidesUrl onto the session where it was recorded; then clear them.
 Clear legacy homepageFeatured / viewCount / firstDelivered.

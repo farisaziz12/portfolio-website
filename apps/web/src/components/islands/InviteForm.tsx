@@ -168,7 +168,7 @@ export default function InviteForm({ replyTime, art, pressKitHref = '/press-kit'
         </div>
       )}
 
-      <form ref={formRef} className="inq-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
+      <form ref={formRef} data-form="invite" className="inq-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
         <fieldset className="inq-kinds" disabled={sending}>
           <legend className="ds-field__label">What’s it for?</legend>
           <div className="ds-pills">

@@ -40,6 +40,8 @@ export const deskStructure = (S: StructureBuilder) =>
             .title('Speaking')
             .items([
               typeList(S, 'talk', 'Talks', [{ field: 'order', direction: 'asc' }]),
+              filtered(S, 'Talks on the catalogue (bookable)', '_type == "talk" && isBookable == true', [{ field: 'order', direction: 'asc' }]),
+              filtered(S, 'Talks not bookable', '_type == "talk" && isBookable != true', [{ field: 'title', direction: 'asc' }]),
               typeList(S, 'workshop', 'Workshops'),
               S.divider(),
               filtered(S, 'Upcoming events', '_type == "event" && date >= now()', [{ field: 'date', direction: 'asc' }]),
@@ -107,7 +109,7 @@ export const deskStructure = (S: StructureBuilder) =>
               filtered(S, 'Events without sessions', '_type == "event" && count(coalesce(sessions, [])) == 0', [{ field: 'date', direction: 'desc' }]),
               filtered(S, 'Past sessions missing a recording', '_type == "event" && date < now() && count(sessions[role in ["speaker","keynote","lightning"] && !defined(recording.url) && status != "cancelled"]) > 0', [{ field: 'date', direction: 'desc' }]),
               filtered(S, 'Events without a country', '_type == "event" && location.isOnline != true && !defined(location.country)'),
-              filtered(S, 'Talks without a pillar or summary', '_type == "talk" && isBookable != false && (!defined(pillar) || !defined(summary))'),
+              filtered(S, 'Talks without a pillar or summary', '_type == "talk" && isBookable == true && (!defined(pillar) || !defined(summary))'),
               filtered(S, 'Praise without a link or date', '_type == "praise" && ((!defined(url) && platform != "direct") || !defined(date))'),
               filtered(S, 'Metrics waiting for an OK', '_type == "metric" && status != "approved"'),
               filtered(S, 'Writing without a topic or format', '(_type == "blogPost" && !defined(topic)) || (_type == "externalPost" && (!defined(format) || !defined(topic)))'),

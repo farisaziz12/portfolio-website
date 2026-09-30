@@ -25,7 +25,7 @@ const tabs = BIO_TABS.filter((t) => bios[t.key]).map((t) => ({
     <h2 id="bio-h" class="ds-label bio__label">Bio</h2>
     <div class="ds-seg bio__tabs" role="tablist" aria-label="Bio length" data-bio-tablist hidden>
       {tabs.map((t, i) => (
-        <button type="button" role="tab" id={`bio-tab-${t.key}`} aria-controls={`bio-panel-${t.key}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-bio-tab={t.key}>
+        <button type="button" role="tab" id={`bio-tab-${t.key}`} aria-controls={`bio-panel-${t.key}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-bio-tab={t.key} data-track="press_bio_tab" data-track-label={t.key}>
           {t.label}
         </button>
       ))}

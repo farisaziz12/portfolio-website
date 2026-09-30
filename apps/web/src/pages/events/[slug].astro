@@ -70,6 +70,7 @@ const description = [
   title={`${e.title} · ${fullDate(e.date)} | Faris Aziz`}
   description={description}
   image={`/og/events/${e.slug}.png`}
+  content={{ type: 'event', slug: e.slug, title: e.title, upcoming: e.isUpcoming, roles: e.buckets.join(' '), country: e.location.country }}
   markdownAlternate={`/events/${e.slug}.md`}
   extraSchema={[
     eventSchema(e),

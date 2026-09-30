@@ -81,7 +81,10 @@ talks = [
   {"_id": "talk-legacy-next", "title": "Next.js at the Edge (2023 cut)", "slug": slug("nextjs-at-the-edge"), "duration": 30, "topics": ["Next.js"],
    "isBookable": False, "assets": {"videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}},
 ]
-for t in talks: t["_type"] = "talk"; docs.append(t)
+for t in talks:
+    t["_type"] = "talk"
+    t.setdefault("isBookable", t["_id"] in {"talk-caching", "talk-payments", "talk-resilient", "talk-senior", "talk-community"})
+    docs.append(t)
 
 docs.append({"_id": "workshop-react-arch", "_type": "workshop", "title": "React Architecture in Production", "slug": slug("react-architecture-in-production"),
   "pillar": "engineering", "summary": "The patterns that keep large React applications standing.",

@@ -42,6 +42,7 @@ const description = (post.seoDescription || post.excerpt || `${post.title}, by F
   title={`${post.seoTitle || post.title} | Faris Aziz`}
   description={description}
   image={`/og/blog/${slug}.png`}
+  content={{ type: 'post', slug, title: post.title, topic: post.topic }}
   imageAlt={post.title}
   article={true}
   publishedTime={post.publishedAt}

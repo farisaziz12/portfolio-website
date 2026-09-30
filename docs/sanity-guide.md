@@ -81,7 +81,8 @@ same loaders: publish once, every surface updates.
 `audience`, three `takeaways`, `duration` + `durationOptions`, `level`, `thumbnail`. New cut of an existing talk:
 set `parentTalk` → the original, a `version` label and **What changed**; mark only one version current. The
 catalogue lists one entry per family (the current, bookable version); the talk page shows "How this talk
-evolved" and the full delivery history. **Bookable** off retires a talk without deleting it.
+evolved" and the full delivery history. Only talks with **Bookable** switched on are listed (the default is off), so a new talk stays off /talks until
+you switch it on. Studio → Speaking → **Talks on the catalogue** / **Talks not bookable** shows both sides.
 
 ### Add praise
 **Praise** → paste the `quote` verbatim, pick `platform`, add the `url` of the original post and its `date`,

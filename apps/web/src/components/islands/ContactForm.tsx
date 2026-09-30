@@ -101,7 +101,7 @@ export default function ContactForm({ replyTime, linkedin }: Props) {
   const mId = `${uid}-message`;
 
   return (
-    <form className="inq-form contact-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
+    <form data-form="contact" className="inq-form contact-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
       {status === 'failed' && (
         <div className="inq-failed contact-failed" ref={panelRef} tabIndex={-1} role="alert">
           <p className="inq-failed__title">That didn’t go through, and nothing was stored.</p>

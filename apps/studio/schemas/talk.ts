@@ -121,8 +121,8 @@ export default defineType({
       title: 'Bookable',
       type: 'boolean',
       group: 'booking',
-      description: 'Off = retired: kept for history, hidden from the catalogue.',
-      initialValue: true,
+      description: 'On = listed on /talks and bookable. Off (the default) keeps it off the catalogue; its page and sessions stay.',
+      initialValue: false,
     }),
     orderField('booking'),
 

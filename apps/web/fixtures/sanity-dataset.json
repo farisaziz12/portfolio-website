@@ -319,7 +319,8 @@
     "_key": "r1"
    }
   ],
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": true
  },
  {
   "_id": "talk-payments",
@@ -343,7 +344,8 @@
    "alt": "Faris on a conference stage, wide",
    "credit": "Event photographer"
   },
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": true
  },
  {
   "_id": "talk-resilient",
@@ -358,7 +360,8 @@
   "summary": "React apps sit at the boundary of a distributed system. Design them to fail well.",
   "abstract": "React applications sit at the boundary of a distributed system: APIs, third parties, feature flags. This session is about designing them to fail well.",
   "audience": "React teams shipping to production",
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": true
  },
  {
   "_id": "talk-senior",
@@ -372,7 +375,8 @@
   "duration": 30,
   "summary": "Taking responsibility before you feel ready, and what that costs.",
   "audience": "Engineers two to six years in",
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": true
  },
  {
   "_id": "talk-community",
@@ -386,7 +390,8 @@
   "duration": 20,
   "summary": "Meetups to a conference in two years, and the systems that made it possible.",
   "audience": "Organisers and DevRel",
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": true
  },
  {
   "_id": "talk-caching-v1",
@@ -401,7 +406,8 @@
   "version": "2024",
   "isCurrentVersion": false,
   "versionNotes": "The first cut: BFF and caching only, one example app.",
-  "_type": "talk"
+  "_type": "talk",
+  "isBookable": false
  },
  {
   "_id": "talk-legacy-next",
