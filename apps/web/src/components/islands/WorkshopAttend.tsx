@@ -7,6 +7,7 @@ import type { WorkshopAttendProps } from './workshop/types';
 import { useSectionContent } from './workshop/useSectionContent';
 import { useWorkshopSession } from './workshop/useWorkshopSession';
 import { getVisitedSections, persistVisitedSections } from './workshop/user-storage';
+import './workshop/attend.css';
 
 export type { WorkshopAttendProps } from './workshop/types';
 
@@ -92,7 +93,7 @@ export default function WorkshopAttend({
   if (activeSection !== null && sections[activeSection]) {
     const section = sections[activeSection];
     return (
-      <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
+      <div className="wsa wsa--wide">
         <SectionView
           section={section}
           index={activeSection}
@@ -110,7 +111,7 @@ export default function WorkshopAttend({
   }
 
   return (
-    <div className="py-12 md:py-16 px-5 sm:px-8 lg:px-12">
+    <div className="wsa">
       <ScheduleView
         userName={user.name.split(' ')[0]}
         title={title}
@@ -122,37 +123,17 @@ export default function WorkshopAttend({
       />
 
       {overallFeedbackUrl && visited.size >= sections.length && (
-        <div className="max-w-3xl mx-auto mt-16">
-          <div className="rounded-xl border border-[rgb(var(--edge))] bg-[rgb(var(--surface-raised))] p-6 text-center">
-            <h3 className="text-lg font-display font-semibold text-[rgb(var(--ink))] mb-2">
-              You've completed all sections!
-            </h3>
-            <p className="text-sm text-[rgb(var(--ink-muted))] mb-4">
-              One last thing: your overall feedback helps me improve future workshops.
-            </p>
-            <a
-              href={overallFeedbackUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors"
-            >
-              Share Feedback
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </a>
-          </div>
+        <div className="ds-card wsa-done">
+          <p className="ds-kicker">All sections opened</p>
+          <h2>That's the lot.</h2>
+          <p className="ds-body">One last thing: tell me how the whole workshop went. It shapes the next one.</p>
+          <a href={overallFeedbackUrl} target="_blank" rel="noopener noreferrer" className="ds-btn ds-btn--yellow" data-track="workshop_overall_feedback">
+            Share feedback
+          </a>
         </div>
       )}
 
-      <p className="text-xs text-[rgb(var(--ink-faint))] text-center mt-12">
-        Materials available until {closeDate}.
-      </p>
+      <p className="wsa-foot">The materials stay open until {closeDate}.</p>
     </div>
   );
 }

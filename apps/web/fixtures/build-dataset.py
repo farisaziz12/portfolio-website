@@ -115,6 +115,21 @@ docs.append({"_id": "workshop-legacy", "_type": "workshop", "title": "Payments U
   "participants": {"min": 10, "max": 24},
   "agenda": [{"_key": "x", "_type": "object", "title": "Checkout anatomy", "duration": "1 hour"}]})
 
+# ── workshop deliveries (token-gated attendee pages): open, upcoming, closed ──
+def wsi(i, token, date, **kw):
+    blk = lambda k, t, style="normal": {"_key": k, "_type": "block", "style": style, "markDefs": [], "children": [{"_key": k + "s", "_type": "span", "marks": [], "text": t}]}
+    d = {"_id": f"wsi-{i}", "_type": "workshopInstance", "title": "React Architecture in Production", "event": "ZurichJS · November edition",
+         "token": {"_type": "slug", "current": token}, "workshopDate": date, "accessDurationDays": 30, "forceClose": False,
+         "repoUrl": "https://github.com/farisaziz12/react-architecture-workshop", "overallFeedbackUrl": "https://forms.gle/example",
+         "sections": [
+            {"_key": "s1", "_type": "workshopSection", "title": "Warm-up: break something on purpose", "content": [blk("a", "Clone the repo and run it."), blk("b", "Then break the data layer on purpose and watch what the UI does.")]},
+            {"_key": "s2", "_type": "workshopSection", "title": "Structure that survives growth", "content": [blk("c", "Atomic design, applied to the repo you just broke.")]},
+            {"_key": "s3", "_type": "workshopSection", "title": "Resilience engineering", "sectionFeedbackUrl": "https://forms.gle/example", "content": [blk("d", "Retries, fallbacks and circuit breakers in the UI layer.")]}]}
+    d.update(kw); docs.append(d)
+wsi("open", "demo-open", "2026-09-28")
+wsi("upcoming", "demo-upcoming", "2026-11-20")
+wsi("closed", "demo-closed", "2026-06-01", forceClose=True)
+
 # ── events ── (V3 shape unless marked legacy)
 def ev(i, title, date, city, country, series_id, kind, sessions, tz="Europe/Zurich", **kw):
     d = {"_id": f"event-{i}", "_type": "event", "title": title, "slug": slug(i), "date": date, "timezone": tz, "kind": kind,

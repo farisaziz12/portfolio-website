@@ -586,6 +586,291 @@
   ]
  },
  {
+  "_id": "wsi-open",
+  "_type": "workshopInstance",
+  "title": "React Architecture in Production",
+  "event": "ZurichJS · November edition",
+  "token": {
+   "_type": "slug",
+   "current": "demo-open"
+  },
+  "workshopDate": "2026-09-28",
+  "accessDurationDays": 30,
+  "forceClose": false,
+  "repoUrl": "https://github.com/farisaziz12/react-architecture-workshop",
+  "overallFeedbackUrl": "https://forms.gle/example",
+  "sections": [
+   {
+    "_key": "s1",
+    "_type": "workshopSection",
+    "title": "Warm-up: break something on purpose",
+    "content": [
+     {
+      "_key": "a",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "as",
+        "_type": "span",
+        "marks": [],
+        "text": "Clone the repo and run it."
+       }
+      ]
+     },
+     {
+      "_key": "b",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "bs",
+        "_type": "span",
+        "marks": [],
+        "text": "Then break the data layer on purpose and watch what the UI does."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s2",
+    "_type": "workshopSection",
+    "title": "Structure that survives growth",
+    "content": [
+     {
+      "_key": "c",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "cs",
+        "_type": "span",
+        "marks": [],
+        "text": "Atomic design, applied to the repo you just broke."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s3",
+    "_type": "workshopSection",
+    "title": "Resilience engineering",
+    "sectionFeedbackUrl": "https://forms.gle/example",
+    "content": [
+     {
+      "_key": "d",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "ds",
+        "_type": "span",
+        "marks": [],
+        "text": "Retries, fallbacks and circuit breakers in the UI layer."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "wsi-upcoming",
+  "_type": "workshopInstance",
+  "title": "React Architecture in Production",
+  "event": "ZurichJS · November edition",
+  "token": {
+   "_type": "slug",
+   "current": "demo-upcoming"
+  },
+  "workshopDate": "2026-11-20",
+  "accessDurationDays": 30,
+  "forceClose": false,
+  "repoUrl": "https://github.com/farisaziz12/react-architecture-workshop",
+  "overallFeedbackUrl": "https://forms.gle/example",
+  "sections": [
+   {
+    "_key": "s1",
+    "_type": "workshopSection",
+    "title": "Warm-up: break something on purpose",
+    "content": [
+     {
+      "_key": "a",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "as",
+        "_type": "span",
+        "marks": [],
+        "text": "Clone the repo and run it."
+       }
+      ]
+     },
+     {
+      "_key": "b",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "bs",
+        "_type": "span",
+        "marks": [],
+        "text": "Then break the data layer on purpose and watch what the UI does."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s2",
+    "_type": "workshopSection",
+    "title": "Structure that survives growth",
+    "content": [
+     {
+      "_key": "c",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "cs",
+        "_type": "span",
+        "marks": [],
+        "text": "Atomic design, applied to the repo you just broke."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s3",
+    "_type": "workshopSection",
+    "title": "Resilience engineering",
+    "sectionFeedbackUrl": "https://forms.gle/example",
+    "content": [
+     {
+      "_key": "d",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "ds",
+        "_type": "span",
+        "marks": [],
+        "text": "Retries, fallbacks and circuit breakers in the UI layer."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "_id": "wsi-closed",
+  "_type": "workshopInstance",
+  "title": "React Architecture in Production",
+  "event": "ZurichJS · November edition",
+  "token": {
+   "_type": "slug",
+   "current": "demo-closed"
+  },
+  "workshopDate": "2026-06-01",
+  "accessDurationDays": 30,
+  "forceClose": true,
+  "repoUrl": "https://github.com/farisaziz12/react-architecture-workshop",
+  "overallFeedbackUrl": "https://forms.gle/example",
+  "sections": [
+   {
+    "_key": "s1",
+    "_type": "workshopSection",
+    "title": "Warm-up: break something on purpose",
+    "content": [
+     {
+      "_key": "a",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "as",
+        "_type": "span",
+        "marks": [],
+        "text": "Clone the repo and run it."
+       }
+      ]
+     },
+     {
+      "_key": "b",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "bs",
+        "_type": "span",
+        "marks": [],
+        "text": "Then break the data layer on purpose and watch what the UI does."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s2",
+    "_type": "workshopSection",
+    "title": "Structure that survives growth",
+    "content": [
+     {
+      "_key": "c",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "cs",
+        "_type": "span",
+        "marks": [],
+        "text": "Atomic design, applied to the repo you just broke."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "_key": "s3",
+    "_type": "workshopSection",
+    "title": "Resilience engineering",
+    "sectionFeedbackUrl": "https://forms.gle/example",
+    "content": [
+     {
+      "_key": "d",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+       {
+        "_key": "ds",
+        "_type": "span",
+        "marks": [],
+        "text": "Retries, fallbacks and circuit breakers in the UI layer."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
   "_id": "event-devs-ghent-2026",
   "_type": "event",
   "title": "Devs.Ghent",
