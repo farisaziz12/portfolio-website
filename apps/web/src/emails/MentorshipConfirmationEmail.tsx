@@ -1,9 +1,7 @@
-import {
-  Body, Container, Head, Heading, Html, Link, Preview,
-  Section, Text, Hr,
-} from '@react-email/components'
+import { Body, Container, Head, Heading, Html, Preview, Section, Text } from '@react-email/components'
 import * as React from 'react'
 import * as s from './styles'
+import { EmailFooter, EmailHeader, EmailSignature } from './parts'
 
 interface Props {
   name?: string
@@ -16,11 +14,7 @@ export function MentorshipConfirmationEmail({ name }: Props) {
       <Preview>Thanks · I'll reply within two days</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
-          <Section style={s.terminalHeader}>
-            <Text style={s.terminalDots}>● ● ●</Text>
-            <Text style={s.terminalText}>$ ack mentorship-inquiry</Text>
-            <Text style={s.terminalOutput}>Inquiry received. Reading through.</Text>
-          </Section>
+          <EmailHeader label="Inquiry received" />
 
           <Section style={s.content}>
             <Heading style={s.heading}>Thanks, got it</Heading>
@@ -42,16 +36,10 @@ export function MentorshipConfirmationEmail({ name }: Props) {
               code samples, a recent project, the specific situation that prompted this.
             </Text>
 
-            <Hr style={s.divider} />
-            <Text style={s.signature}>– Faris</Text>
-            <Text style={s.signatureLink}>
-              <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
-            </Text>
+            <EmailSignature />
           </Section>
 
-          <Section style={s.footer}>
-            <Text style={s.footerText}>You received this because you submitted a mentorship inquiry at faziz-dev.com.</Text>
-          </Section>
+          <EmailFooter reason={"You received this because you submitted a mentorship inquiry at faziz-dev.com."} />
         </Container>
       </Body>
     </Html>

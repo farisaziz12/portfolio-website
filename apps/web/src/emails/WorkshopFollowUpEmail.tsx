@@ -1,9 +1,7 @@
-import {
-  Body, Container, Head, Heading, Html, Link, Preview,
-  Section, Text, Button, Hr,
-} from '@react-email/components'
+import { Body, Container, Head, Heading, Html, Preview, Section, Text, Button } from '@react-email/components'
 import * as React from 'react'
 import * as s from './styles'
+import { EmailFooter, EmailHeader, EmailSignature } from './parts'
 
 interface Props {
   name: string
@@ -19,11 +17,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
       <Preview>Thanks for joining {event} · quick feedback?</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
-          <Section style={s.terminalHeader}>
-            <Text style={s.terminalDots}>● ● ●</Text>
-            <Text style={s.terminalText}>$ echo "Thanks for attending!"</Text>
-            <Text style={s.terminalOutput}>Workshop complete. Feedback appreciated.</Text>
-          </Section>
+          <EmailHeader label="Workshop · thank you" />
 
           <Section style={s.content}>
             <Heading style={s.heading}>Thanks for joining {event}</Heading>
@@ -36,7 +30,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
 
             {feedbackUrl && (
               <Section style={s.buttonSection}>
-                <Button style={s.primaryButton} href={feedbackUrl}>Share Quick Feedback</Button>
+                <Button style={s.primaryButton} href={feedbackUrl}>Share quick feedback</Button>
               </Section>
             )}
 
@@ -48,20 +42,13 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
             </Text>
 
             <Section style={s.buttonSection}>
-              <Button style={s.secondaryButton} href="https://faziz-dev.com/workshops">Browse Workshops</Button>
+              <Button style={s.secondaryButton} href="https://faziz-dev.com/workshops">Browse workshops</Button>
             </Section>
 
-            <Hr style={s.divider} />
-            <Text style={s.signature}>– Faris Aziz</Text>
-            <Text style={s.signatureLink}>
-              <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
-            </Text>
+            <EmailSignature />
           </Section>
 
-          <Section style={s.footer}>
-            <Text style={s.footerText}>You received this because you attended a workshop session.</Text>
-            <Text style={s.footerText}><Link href="{{{unsubscribe_url}}}" style={s.link}>Unsubscribe</Link></Text>
-          </Section>
+          <EmailFooter reason={"You received this because you attended a workshop session."} unsubscribe />
         </Container>
       </Body>
     </Html>

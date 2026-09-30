@@ -93,33 +93,34 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 
 ### Design tokens
 
-`src/emails/styles.ts` mirrors Design System v2 from `src/styles/global.css`. Email clients don't support CSS variables, so values are hex literals — keep both in sync when the palette changes.
+`src/emails/styles.ts` mirrors Design System v3 ("Panels & Bands") from `src/styles/tokens.css`. Email clients don't support CSS variables or gradients reliably, so values are hex literals and the brand band is two table cells. Keep both in sync when the palette changes.
 
 | Token | Hex | Used for |
 |---|---|---|
-| `--bg` | `#0A0C10` | Page/body background |
-| `--surface-1` | `#151A23` | Terminal header, raised cards |
-| `--ink` | `#F3F5F8` | Headings, bold body |
-| `--ink-muted` | `#A9B4C2` | Body text |
-| `--ink-faint` | `#6A7686` | Footer, labels, kickers |
-| `--edge` | `#232B36` | Borders, dividers |
-| `--edge-strong` | `#34404F` | Secondary button border |
-| `--accent` | `#3D7BFF` | Primary button background |
-| `--accent-bright` | `#6AA1FF` | Links, terminal command text |
+| `--c-ink` | `#0F0F10` | Page/body background |
+| `--c-surface` | `#191A1D` | Message card |
+| `--c-hairline` / `-strong` | `#2A2A2E` / `#44413C` | Rules, table rows |
+| `--c-cream` | `#F8F4EB` | Headings, strong text, secondary button |
+| `--c-muted` | `#C8C1B5` | Body text |
+| `--c-faint` | `#8A8378` | Labels, footer |
+| `--c-yellow` | `#F4C63A` | The one accent: primary button (ink text), links, kickers, band |
+| `--c-blue` | `#2E88B8` | Band edge only |
 
-**Fonts:** Space Grotesk (headings) → Hanken Grotesk (body) → IBM Plex Mono / JetBrains Mono (terminal/kicker). All declared with fallbacks because email clients won't load webfonts.
+**Font:** Figtree first, then system sans (email clients mostly won't load the webfont; the stack degrades cleanly).
 
-**Structure rhythm** every template follows:
-1. **Terminal header** — `● ● ●` dots + `$ ack <slug>` command + one-line status output. Sets the brand voice.
-2. **Content** — `Kicker` (mono uppercase eyebrow, admin emails only) → `Heading` → body paragraphs/tables/buttons.
-3. **Signature + footer** — `— Faris` line + faziz-dev.com link + footer disclaimer.
+**Structure rhythm** every template follows (shared parts in `src/emails/parts.tsx`):
+1. **`<EmailHeader label="…">`**: the blue/yellow band, the "Faris Aziz" wordmark and a short yellow label ("Invite received", "New invite").
+2. **Content**: `kicker` (admin emails) → `heading` → paragraphs / detail table / `longText` card / buttons (`primaryButton` yellow, `secondaryButton` outline).
+3. **`<EmailSignature />` + `<EmailFooter reason="…" unsubscribe?>`**: "– Faris", the site link, why they got it, and an unsubscribe link for audience emails.
+
+Copy follows `docs/voice.md` (the voice lint scans `src/emails`): no exclamation marks, sentence-case buttons.
 
 ---
 
 ## Adding a new email
 
 1. Create `src/emails/MyNewEmail.tsx`. Import `@react-email/components` primitives and styles via `import * as s from './styles'`.
-2. Mirror the terminal-header → content → signature → footer structure of an existing template (start by copying `InviteConfirmationEmail.tsx` for submitter-facing, or `InviteAdminEmail.tsx` for ops-facing).
+2. Mirror the `EmailHeader` → content → `EmailSignature` → `EmailFooter` structure of an existing template (start by copying `InviteConfirmationEmail.tsx` for submitter-facing, or `InviteAdminEmail.tsx` for ops-facing).
 3. Use only style objects from `styles.ts`. If you need a value that isn't there, add it to `styles.ts` first — never hard-code hex in templates.
 4. In your API route, import `sendOrLog` from `../../lib/email` (don't `new Resend(...)` directly). Pass `context` so log lines are scoped (e.g. `'invite:confirm'`).
 5. Decide explicitly: is this email critical? If yes, check `outcome.ok` and return 502 on failure. If best-effort, just `await` and move on.
