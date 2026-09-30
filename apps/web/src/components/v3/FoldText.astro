@@ -1,0 +1,71 @@
+---
+/**
+ * Long CMS text with progressive disclosure: paragraphs from blank lines,
+ * single line breaks kept, the first `visible` sentences shown and the rest
+ * folded behind "Read more" (lib/text.ts). The full text is always in the
+ * HTML; without JS nothing is hidden.
+ */
+import { foldText } from '../../lib/text';
+
+interface Props {
+  text?: string;
+  visible?: number;
+  class?: string;
+  /** Names what expands, for screen readers: "the full premise". */
+  what?: string;
+}
+const { text, visible = 5, class: className, what = 'the rest' } = Astro.props;
+const { paragraphs, hasMore } = foldText(text, visible);
+const id = `fold-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+{paragraphs.length > 0 && (
+  <div class:list={['fold', className]} data-fold={hasMore ? '' : undefined} id={id}>
+    {paragraphs.map((p) => (
+      <p class="fold__p" data-fold-extra={p.extra ? '' : undefined}>
+        {p.segments.map((s) => (s.extra ? <span data-fold-extra>{s.text}</span> : s.text))}
+      </p>
+    ))}
+    {hasMore && (
+      <button type="button" class="fold__toggle" aria-controls={id} aria-expanded="false" hidden data-fold-toggle>
+        <span class="fold__more">Read more<span class="sr-only">: {what}</span></span>
+        <span class="fold__less">Show less</span>
+      </button>
+    )}
+  </div>
+)}
+
+<script>
+  function initFold() {
+    document.querySelectorAll<HTMLElement>('[data-fold]:not([data-fold-ready])').forEach((root) => {
+      const btn = root.querySelector<HTMLButtonElement>('[data-fold-toggle]');
+      if (!btn) return;
+      root.dataset.foldReady = '';
+      root.classList.add('is-folded');
+      btn.hidden = false;
+      btn.addEventListener('click', () => {
+        const open = root.classList.toggle('is-folded') === false;
+        btn.setAttribute('aria-expanded', String(open));
+        if (!open) root.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+    });
+  }
+  initFold();
+  document.addEventListener('astro:page-load', initFold);
+</script>
+
+<style>
+  .fold { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  .fold__p { margin: 0; white-space: pre-line; }
+  .fold.is-folded [data-fold-extra] { display: none; }
+  .fold__toggle {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer;
+    font: 800 14px/1 var(--font); color: rgb(var(--text)); text-decoration: underline; text-decoration-color: rgb(var(--yellow));
+    text-decoration-thickness: 2px; text-underline-offset: 0.35em;
+  }
+  .fold__toggle[hidden] { display: none; }
+  .fold__toggle:hover { color: rgb(var(--accent-text)); }
+  .fold__toggle:focus-visible { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; border-radius: 2px; }
+  .fold .fold__less, .fold.is-folded .fold__more { display: inline; }
+  .fold .fold__more, .fold.is-folded .fold__less { display: none; }
+</style>

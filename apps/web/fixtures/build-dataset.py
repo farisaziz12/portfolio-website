@@ -64,6 +64,7 @@ talks = [
   {"_id": "talk-payments", "title": "Orchestrating Millions Across the Globe: Reactive Payments at Scale", "shortTitle": "the payments talk",
    "slug": slug("reactive-payments-at-scale"), "pillar": "payments", "order": 2, "duration": 30,
    "summary": "“Just integrate Stripe” works, until it doesn’t. Multi-provider orchestration and its failure modes.",
+   "abstract": "“Just integrate Stripe” works, until it doesn’t. At a few million payments a month you run more than one provider, in more than one currency, with more than one way to fail. This talk follows one checkout from click to settlement.\n\nWe look at routing between providers, retries that don’t double-charge, and what the UI should say while a payment is still pending. Then the failure modes: soft declines, timeouts that succeeded, webhooks that arrive twice or never.\nEach one comes with the fix we shipped.\n\nYou leave with a map of where payments break and a short list of patterns that keep the checkout honest.",
    "audience": "Product engineers, payments and platform teams", "thumbnail": P["stage"]},
   {"_id": "talk-resilient", "title": "Building Resilient UIs with React", "slug": slug("building-resilient-uis-with-react"), "pillar": "engineering",
    "order": 3, "duration": 25, "summary": "React apps sit at the boundary of a distributed system. Design them to fail well.",

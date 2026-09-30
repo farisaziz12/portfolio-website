@@ -10,6 +10,7 @@ import TalkHero from '../../components/talks/TalkHero.astro';
 import DeliveryList from '../../components/talks/DeliveryList.astro';
 import TalkAside from '../../components/talks/TalkAside.astro';
 import TalkVersions from '../../components/talks/TalkVersions.astro';
+import FoldText from '../../components/v3/FoldText.astro';
 import { getCatalogueTalks, getPraiseFor, getProfile, getTalks, getWriting, type TalkWithHistory } from '../../lib/sanity/v3';
 import { breadcrumbs, talkSchema } from '../../lib/seo';
 import { currentVersionOf, eventShortName, talkStatus } from '../../lib/talks';
@@ -92,7 +93,7 @@ const description = (talk.seo?.metaDescription || talk.summary || `A talk by Far
         {premise && (
           <section class="tpage__block" aria-labelledby="premise-title">
             <h2 id="premise-title" class="tpage__h2">The premise</h2>
-            <p class="tpage__premise">{premise}</p>
+            <FoldText text={premise} visible={5} class="tpage__premise" what="the full premise" />
           </section>
         )}
 
@@ -135,7 +136,7 @@ const description = (talk.seo?.metaDescription || talk.summary || `A talk by Far
   .tpage__main { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
   .tpage__block { display: flex; flex-direction: column; gap: 12px; }
   .tpage__h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
-  .tpage__premise { margin: 0; font-size: 17px; line-height: 1.65; color: rgb(var(--text-muted)); max-width: 65ch; }
+  .tpage__block :global(.tpage__premise) { font-size: 17px; line-height: 1.65; color: rgb(var(--text-muted)); max-width: 65ch; }
   .tpage__two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
   .tpage__col { display: flex; flex-direction: column; gap: 10px; }
   .tpage__text { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); }
