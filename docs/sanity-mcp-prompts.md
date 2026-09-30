@@ -225,8 +225,17 @@ For every talk with isBookable != false and isCurrentVersion != false:
 - alsoAsWorkshop: reference if a workshop covers it; relatedTalks: up to two ("Pairs well with").
 - thumbnail: a stage photo of this talk with alt + credit (from media or the event cover).
 - order: catalogue order (flagship first).
-Versions: in each parentTalk family exactly one isCurrentVersion=true; older cuts keep their sessions.
-Retire talks nobody should book anymore with isBookable=false (never delete: their sessions still count).
+Versions (one talk, many years): a talk whose title or abstract changed over time is ONE family, not
+separate talks. List every talk, then propose families: same idea, renamed or re-cut ("Data Fetching at
+Scale" 2024 → "Caching, Payloads, and Other Dark Arts" 2025), or the same talk in another length/format
+(a 20-min cut of a 30-min talk is a durationOption, not a new talk). For each family:
+- the original has no parentTalk; every later cut sets parentTalk → the original (one level only);
+- version: a short label ("2024", "2025 US tour"); versionNotes: one plain sentence on what changed;
+- exactly one isCurrentVersion=true (the one to book); the others false. Sessions stay on the version
+  that was actually given (the site shows "as <old title>" in the history).
+Bookable: set isBookable explicitly on every talk. true only for talks Faris would give today; false
+retires it (never delete: its sessions still count and its page stays for the recording).
+Show the family table (family · version · title · years given · current? · bookable?) for my OK first.
 Move any talk-level assets.videoUrl/slidesUrl onto the session where it was recorded; then clear them.
 Clear legacy homepageFeatured / viewCount / firstDelivered.
 ```

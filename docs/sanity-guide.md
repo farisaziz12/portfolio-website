@@ -79,7 +79,9 @@ same loaders: publish once, every surface updates.
 ### Add a bookable talk
 **Talk** → `title`, `shortTitle` ("the caching talk"), `pillar`, one-sentence `summary`, `abstract` (the premise),
 `audience`, three `takeaways`, `duration` + `durationOptions`, `level`, `thumbnail`. New cut of an existing talk:
-set `parentTalk`, mark only one version current.
+set `parentTalk` → the original, a `version` label and **What changed**; mark only one version current. The
+catalogue lists one entry per family (the current, bookable version); the talk page shows "How this talk
+evolved" and the full delivery history. **Bookable** off retires a talk without deleting it.
 
 ### Add praise
 **Praise** → paste the `quote` verbatim, pick `platform`, add the `url` of the original post and its `date`,
