@@ -40,23 +40,32 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 
 <script is:inline>
   // Decide before paint so the overlay never flashes in late (see header).
-  (function () {
-    var d = document.documentElement;
+  (() => {
+    const d = document.documentElement;
     try {
-      var nav = performance.getEntriesByType('navigation')[0];
-      var home = new URL((nav && nav.name) || location.href).pathname === '/';
+      const nav = performance.getEntriesByType('navigation')[0];
+      const home = new URL((nav && nav.name) || location.href).pathname === '/';
       // A ViewTransitions route change to / re-runs this: never play or swoop then.
-      if (window.__opBooted || !home) { d.removeAttribute('data-intro'); return; }
+      if (window.__opBooted || !home) {
+        d.removeAttribute('data-intro');
+        return;
+      }
       window.__opBooted = true;
-      var replay = /[?&]intro=replay/.test(location.search);
-      var seen = true;
-      try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
-      var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var mode = replay || !seen ? 'play' : reduced ? 'none' : 'skip';
+      const replay = /[?&]intro=replay/.test(location.search);
+      let seen = true;
+      try {
+        seen = sessionStorage.getItem('introSeen') === '1';
+      } catch {
+        /* storage blocked: stay quiet */
+      }
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const mode = replay || !seen ? 'play' : reduced ? 'none' : 'skip';
       d.setAttribute('data-intro', mode);
       // If the opener script never runs, don't leave the curtain up.
-      if (mode === 'play') setTimeout(function () { if (!window.__opPlaying) d.removeAttribute('data-intro'); }, 2500);
-    } catch (e) { d.removeAttribute('data-intro'); }
+      if (mode === 'play') setTimeout(() => { if (!window.__opPlaying) d.removeAttribute('data-intro'); }, 2500);
+    } catch {
+      d.removeAttribute('data-intro');
+    }
   })();
 </script>
 <div class="op" data-opener hidden>
@@ -262,7 +271,10 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   function ready(el: HTMLElement): Promise<void> {
     const img = el.querySelector<HTMLImageElement>('.op__photo');
     const decoded = img ? (img.complete ? Promise.resolve() : img.decode().catch(() => undefined)) : Promise.resolve();
-    return Promise.race([decoded.then(() => undefined), new Promise<void>((r) => window.setTimeout(r, 700))]);
+    const timeout = new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 700);
+    });
+    return Promise.race([decoded.then(() => undefined), timeout]);
   }
 
   /** Not eligible: let the CSS swoop finish, then get out of the way. */
