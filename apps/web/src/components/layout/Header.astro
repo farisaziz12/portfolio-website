@@ -3,7 +3,10 @@
  * Site header: brand · five primary links · Invite me. Sections with
  * children get a pill sub-nav, then the 8px band (skipped on pages whose
  * hero carries the skewed band itself). Mobile: a native <dialog> drawer —
- * focus is trapped, Esc and backdrop taps close it.
+ * focus is trapped, Esc and backdrop taps close it. Opening: a skewed yellow
+ * band sweeps across (the opener's wipe), the panel slides in and the links
+ * cascade; closing plays a quick reverse before the dialog closes. Only
+ * transform/opacity animate; reduced motion gets a plain fade.
  */
 import ThemeToggle from '../islands/ThemeToggle';
 import CommandPalette from '../islands/CommandPalette';
@@ -61,6 +64,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
 </header>
 
 <dialog id="siteDrawer" class="drawer" aria-label="Site menu">
+  <span class="drawer__wipe" aria-hidden="true"></span>
   <div class="drawer__head">
     <a href="/" class="hdr__brand">Faris Aziz</a>
     <button type="button" class="hdr__menu" data-drawer-close>Close</button>
@@ -118,10 +122,47 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
 
   .drawer {
     width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; padding: 0; border: 0;
-    background: rgb(var(--ground)); color: rgb(var(--text)); overscroll-behavior: contain;
+    background: transparent; color: rgb(var(--text)); overscroll-behavior: contain; overflow: hidden;
   }
-  .drawer::backdrop { background: rgb(var(--c-ink) / 0.6); }
   .drawer[open] { display: flex; flex-direction: column; }
+  /* The panel is the dialog's content; it slides while the dialog itself stays put. */
+  .drawer > :not(.drawer__wipe) { position: relative; z-index: 1; background: rgb(var(--ground)); }
+  .drawer__nav { background: rgb(var(--ground)); }
+  .drawer::backdrop { background: rgb(var(--c-ink) / 0); transition: background-color 0.3s ease; }
+  .drawer.is-open::backdrop { background: rgb(var(--c-ink) / 0.6); }
+
+  .drawer > :not(.drawer__wipe) { transform: translate3d(0, -14px, 0); opacity: 0; transition: transform 0.42s var(--ease-out-soft), opacity 0.3s ease; }
+  .drawer.is-open > :not(.drawer__wipe) { transform: none; opacity: 1; }
+  .drawer__group, .drawer__foot { transform: translate3d(0, 16px, 0); opacity: 0; transition: transform 0.45s var(--ease-out-soft), opacity 0.35s ease; }
+  .drawer.is-open .drawer__group, .drawer.is-open .drawer__foot { transform: none; opacity: 1; }
+  .drawer.is-open .drawer__group:nth-child(1) { transition-delay: 0.12s; }
+  .drawer.is-open .drawer__group:nth-child(2) { transition-delay: 0.16s; }
+  .drawer.is-open .drawer__group:nth-child(3) { transition-delay: 0.2s; }
+  .drawer.is-open .drawer__group:nth-child(4) { transition-delay: 0.24s; }
+  .drawer.is-open .drawer__group:nth-child(5) { transition-delay: 0.28s; }
+  .drawer.is-open .drawer__group:nth-child(n + 6) { transition-delay: 0.32s; }
+  .drawer.is-open .drawer__foot { transition-delay: 0.3s; }
+  /* Closing: everything leaves together, faster than it arrived. */
+  .drawer.is-closing > :not(.drawer__wipe), .drawer.is-closing .drawer__group, .drawer.is-closing .drawer__foot {
+    transition-duration: 0.22s; transition-delay: 0s; transition-timing-function: ease-in;
+  }
+
+  /* Brand wipe: a skewed yellow band with the blue edge sweeps across once on open. */
+  .drawer__wipe {
+    position: fixed; inset: -10% auto -10% 0; z-index: 2; width: 70vw; pointer-events: none;
+    background: linear-gradient(90deg, rgb(var(--blue)) 0 10%, rgb(var(--yellow)) 10% 100%);
+    transform: translate3d(-140%, 0, 0) skewX(var(--skew)); visibility: hidden; will-change: transform;
+  }
+  .drawer.is-open .drawer__wipe { visibility: visible; animation: drawer-wipe 0.56s cubic-bezier(0.7, 0, 0.3, 1) both; }
+  @keyframes drawer-wipe {
+    from { transform: translate3d(-140%, 0, 0) skewX(var(--skew)); }
+    to { transform: translate3d(260%, 0, 0) skewX(var(--skew)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer__wipe { display: none; }
+    .drawer > :not(.drawer__wipe), .drawer__group, .drawer__foot { transform: none !important; transition: opacity 0.15s ease !important; transition-delay: 0s !important; }
+  }
   .drawer__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); min-height: var(--header-height); border-bottom: 8px solid transparent; border-image: var(--band) 1; }
   .drawer__head .hdr__menu { display: inline-flex; align-items: center; }
   .drawer__nav { flex: 1; overflow-y: auto; padding: 12px var(--gutter) 24px; }
@@ -145,23 +186,53 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
     if (!drawer || drawer.dataset.ready) return;
     drawer.dataset.ready = '1';
     const opener = document.querySelector<HTMLButtonElement>('[data-drawer-open]');
-    const close = () => drawer.open && drawer.close();
-    opener?.addEventListener('click', () => {
+    const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = 0;
+
+    const open = () => {
+      if (drawer.open) return;
+      window.clearTimeout(closing);
+      drawer.classList.remove('is-open', 'is-closing');
       drawer.showModal();
-      opener.setAttribute('aria-expanded', 'true');
+      opener?.setAttribute('aria-expanded', 'true');
+      // Next frame, so the transition starts from the closed state.
+      requestAnimationFrame(() => requestAnimationFrame(() => drawer.classList.add('is-open')));
+    };
+    const close = (instant = false) => {
+      if (!drawer.open || drawer.classList.contains('is-closing')) return;
+      if (instant) {
+        drawer.classList.remove('is-open');
+        drawer.close();
+        return;
+      }
+      drawer.classList.add('is-closing');
+      drawer.classList.remove('is-open');
+      closing = window.setTimeout(() => {
+        drawer.classList.remove('is-closing');
+        drawer.close();
+      }, reduced() ? 150 : 230);
+    };
+
+    opener?.addEventListener('click', open);
+    // Esc: play the same close instead of the dialog's instant one.
+    drawer.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      close();
     });
     drawer.addEventListener('close', () => {
+      drawer.classList.remove('is-open', 'is-closing');
       opener?.setAttribute('aria-expanded', 'false');
-      opener?.focus();
+      opener?.focus({ preventScroll: true });
     });
-    drawer.querySelector('[data-drawer-close]')?.addEventListener('click', close);
+    drawer.querySelector('[data-drawer-close]')?.addEventListener('click', () => close());
     // Tap on the backdrop (outside the content box) closes.
     drawer.addEventListener('click', (e) => {
       if (e.target === drawer) close();
     });
-    drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+    // Navigating: close at once so the next page isn't covered mid-animation.
+    drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => close(true)));
     // Leaving the mobile breakpoint with the drawer open would strand it.
-    window.matchMedia('(min-width: 901px)').addEventListener('change', (m) => m.matches && close());
+    window.matchMedia('(min-width: 901px)').addEventListener('change', (m) => m.matches && close(true));
 
     // "Replay intro" only for returning visitors (the intro already played).
     const replay = document.querySelector<HTMLAnchorElement>('[data-replay-intro]');

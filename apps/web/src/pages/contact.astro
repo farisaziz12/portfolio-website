@@ -15,7 +15,7 @@ const socials = [
 
 <BaseLayout
   title="Contact · Faris Aziz"
-  description="Two ways to reach Faris Aziz: the invitation form for speaking and workshops, and a short message form for podcasts, press and everything else."
+  description="Get in touch with Faris Aziz: the invite form for speaking and workshops, or a quick message for podcasts, press, questions or just saying hi."
   image="/og/contact.png"
   markdownAlternate="/contact.md"
   extraSchema={[breadcrumbs([{ name: 'Contact', path: '/contact' }])]}
@@ -23,10 +23,10 @@ const socials = [
   <div class="ds-wrap contact">
     <header class="contact__intro">
       <p class="ds-kicker">Contact</p>
-      <h1 class="ds-h1 contact__h1">Two doors. Pick the right one.</h1>
+      <h1 class="ds-h1 contact__h1">Hey, what's on your mind?</h1>
       <p class="ds-lede contact__lede">
-        Speaking and workshops have their own form so nothing gets lost. Everything else, including podcasts and press,
-        comes here or to my socials.
+        Want me to speak or run a workshop? The invite form is the quickest way, it asks the right questions up front.
+        For anything else, like a podcast, press, a random question or just saying hi, drop me a message here.
       </p>
       {socials.length > 0 && (
         <p class="contact__socials">{socials.map((s, i) => (<>{i > 0 && ', then '}<a class="ds-textlink" href={s.href} rel="me noopener" target="_blank" data-track={`contact_social_${s.label.toLowerCase()}`}>{s.label}</a>{i === 0 && ' is the fastest way to reach me'}</>))}.</p>
@@ -38,7 +38,7 @@ const socials = [
         <span class="contact__invite-text">
           <span class="ds-kicker">Speaking · workshops</span>
           <span class="contact__invite-title">Invite me to your event</span>
-          <span class="contact__invite-body">Three required fields. Reply within {profile.replyTime}.</span>
+          <span class="contact__invite-body">Three quick questions and you're done. I'll get back to you within {profile.replyTime}.</span>
         </span>
         <Illustration name="faris-speaking" width={110} class="contact__art" loading="eager" />
       </a>
@@ -47,7 +47,6 @@ const socials = [
         <p class="ds-kicker">Everything else</p>
         <h2 id="else-h" class="contact__else-title">Podcasts, press, a question, a hello</h2>
         <ContactForm client:visible replyTime={profile.replyTime} linkedin={profile.links.linkedin} />
-        <p class="ds-meta">Same rule as the invitation form: you only see a confirmation once the message is stored.</p>
       </section>
     </div>
   </div>

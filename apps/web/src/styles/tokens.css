@@ -82,6 +82,7 @@
   --stripe: repeating-linear-gradient(180deg, rgb(var(--yellow)) 0 10px, transparent 10px 16px);
   --skew: -14deg;
   --ease: cubic-bezier(0.7, 0, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── Legacy DS v2 aliases: untouched surfaces (admin, attendee pages)
         inherit the V3 palette automatically. Don't use in new code. ── */
