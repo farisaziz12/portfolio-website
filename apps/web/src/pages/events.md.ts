@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
     const rows = past
       .filter((e) => yearOf(e.date) === y)
       .map((e) => {
-        const role = e.buckets.map(bucketBadge).join(' + ') || bucketBadge(primarySession(e)?.bucket);
+        const role = e.buckets.map((b) => bucketBadge(b, e.isUpcoming)).join(' + ') || bucketBadge(primarySession(e)?.bucket, e.isUpcoming);
         const what = liveSessions(e).map(sessionShort).join(' · ');
         return `- ${monthYear(e.date)}: **${e.title}** (${eventPlace(e)}) · ${role}${what ? ` · ${what}` : ''} · ${SITE}/events/${e.slug}`;
       });

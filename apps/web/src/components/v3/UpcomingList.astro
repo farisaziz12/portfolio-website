@@ -3,9 +3,10 @@
  * Upcoming appearances as hairline rows: big day + month, title, one meta
  * line (kind · place · what), and an explicit role badge.
  */
-import { ROLE_BUCKETS, EVENT_KINDS, titleFor } from 'shared';
+import { EVENT_KINDS, titleFor } from 'shared';
 import { eventPlace, primarySession, sessionLine, monthYear, type EventEdition } from '../../lib/sanity/v3';
 import { getCountryFlag } from '../../lib/flags';
+import { bucketBadge } from '../../lib/events-view';
 
 interface Props {
   events: EventEdition[];
@@ -22,7 +23,7 @@ const rows = events.slice(0, limit).map((e) => {
     month: monthYear(e.date),
     meta: [titleFor(EVENT_KINDS, e.kind) || null, eventPlace(e, { venue: true }), s ? sessionLine(s) : null].filter(Boolean).join(' · '),
     bucket: s?.bucket,
-    badge: s?.bucket === 'spoke' ? 'Speaking' : ROLE_BUCKETS.find((b) => b.value === s?.bucket)?.title,
+    badge: bucketBadge(s?.bucket, e.isUpcoming),
   };
 });
 ---

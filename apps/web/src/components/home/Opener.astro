@@ -10,6 +10,12 @@
  * `?intro=replay` or the `intro:replay` document event (header link).
  * Skip button + Esc from 0s; the overlay starts below the header so the nav
  * stays clickable. Reduced motion → static title frame, 400ms fade.
+ *
+ * No flash: an inline script right before the overlay decides BEFORE first
+ * paint (html[data-intro]): "play" shows the overlay at once as a short
+ * pre-roll (ink frame, "F.", the band growing), and the cuts start when the
+ * first photo is ready (max 700ms). "skip" (already seen this session) shows
+ * the same frame for an instant, then it swoops up and the hero rises in.
  * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
  */
 import SanityImg from '../v3/SanityImg.astro';
@@ -32,7 +38,32 @@ const rest = parts.slice(1).join(', ');
 const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 ---
 
+<script is:inline>
+  // Decide before paint so the overlay never flashes in late (see header).
+  (function () {
+    var d = document.documentElement;
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      var home = new URL((nav && nav.name) || location.href).pathname === '/';
+      // A ViewTransitions route change to / re-runs this: never play or swoop then.
+      if (window.__opBooted || !home) { d.removeAttribute('data-intro'); return; }
+      window.__opBooted = true;
+      var replay = /[?&]intro=replay/.test(location.search);
+      var seen = true;
+      try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
+      var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var mode = replay || !seen ? 'play' : reduced ? 'none' : 'skip';
+      d.setAttribute('data-intro', mode);
+      // If the opener script never runs, don't leave the curtain up.
+      if (mode === 'play') setTimeout(function () { if (!window.__opPlaying) d.removeAttribute('data-intro'); }, 2500);
+    } catch (e) { d.removeAttribute('data-intro'); }
+  })();
+</script>
 <div class="op" data-opener hidden>
+  <div class="op__pre" aria-hidden="true">
+    <div class="op__pre-mark">{given.charAt(0)}<span>.</span></div>
+    <div class="op__pre-band"><span class="op__pre-blue"></span><span class="op__pre-yellow"></span></div>
+  </div>
   <div class="op__cut op__s1" aria-hidden="true">
     {wide?.asset && <SanityImg image={wide} alt="" widths={[960, 1600]} sizes="100vw" loading="eager" class="op__photo" />}
     <div class="op__wipe"></div>
@@ -70,6 +101,27 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     overflow: hidden; background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); container-type: inline-size; cursor: pointer;
   }
   .op[hidden] { display: none !important; }
+  /* Decided before paint: the overlay is up from the first frame. */
+  :global(html[data-intro='play']) .op[hidden], :global(html[data-intro='skip']) .op[hidden] { display: block !important; }
+
+  /* Pre-roll: the video's opening frame while the first photo loads. */
+  .op__pre { position: absolute; inset: 0; background: rgb(var(--c-ink)); }
+  .op__pre-mark { position: absolute; left: 5cqw; top: 5cqw; font-weight: 900; font-size: 14cqw; line-height: 0.8; letter-spacing: -0.06em; color: rgb(var(--c-cream)); opacity: 0.12; }
+  .op__pre-mark span { color: rgb(var(--c-blue)); }
+  .op__pre-band { position: absolute; left: 0; bottom: 0; height: 8px; width: 100%; display: flex; transform-origin: left; animation: op-pre-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .op__pre-blue { width: 12%; background: rgb(var(--c-blue)); }
+  .op__pre-yellow { flex: 1; background: rgb(var(--c-yellow)); }
+  @keyframes op-pre-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* Not playing: the curtain swoops up and away, the hero rises in. */
+  :global(html[data-intro='skip']) .op { animation: op-swoop 0.55s cubic-bezier(0.7, 0, 0.3, 1) 0.08s both; cursor: default; }
+  :global(html[data-intro='skip']) .op .op__skip { display: none; }
+  :global(html[data-intro='skip'] .hh) { animation: op-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both; }
+  @keyframes op-swoop {
+    from { transform: none; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    to { transform: translateY(-4%); clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); visibility: hidden; }
+  }
+  @keyframes op-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   .op__cut { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
 
   /* Cut 1: stage photo, white diagonal wipe, "F." */
@@ -159,6 +211,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     const hadFocus = el.contains(document.activeElement);
     el.hidden = true;
     el.classList.remove('is-play', 'is-static');
+    document.documentElement.removeAttribute('data-intro');
     document.querySelectorAll<HTMLElement>('[data-replay-intro]').forEach((a) => (a.hidden = false));
     if (hadFocus) {
       const h1 = document.querySelector<HTMLElement>('main h1');
@@ -171,6 +224,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 
   function play(el: HTMLElement) {
     stop?.();
+    (window as unknown as { __opPlaying?: boolean }).__opPlaying = true;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try { sessionStorage.setItem(KEY, '1'); } catch { /* storage blocked */ }
     // Start below the header so the nav stays visible and clickable.
@@ -204,25 +258,41 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     };
   }
 
+  /** The first cut's photo, decoded (or 700ms, whichever is first): the pre-roll covers the wait. */
+  function ready(el: HTMLElement): Promise<void> {
+    const img = el.querySelector<HTMLImageElement>('.op__photo');
+    const decoded = img ? (img.complete ? Promise.resolve() : img.decode().catch(() => undefined)) : Promise.resolve();
+    return Promise.race([decoded.then(() => undefined), new Promise<void>((r) => window.setTimeout(r, 700))]);
+  }
+
+  /** Not eligible: let the CSS swoop finish, then get out of the way. */
+  function swoop(el: HTMLElement) {
+    const done = () => {
+      el.hidden = true;
+      document.documentElement.removeAttribute('data-intro');
+      document.querySelectorAll<HTMLElement>('[data-replay-intro]').forEach((a) => (a.hidden = false));
+    };
+    el.addEventListener('animationend', (e) => { if (e.target === el) done(); }, { once: true });
+    window.setTimeout(done, 900); // safety net
+  }
+
   function init() {
     const isFirst = firstRun;
     firstRun = false;
     const el = document.querySelector<HTMLElement>('[data-opener]');
     if (!el || el.dataset.ready) return;
     el.dataset.ready = '1';
+    const mode = document.documentElement.getAttribute('data-intro');
 
     const url = new URL(location.href);
     if (url.searchParams.get('intro') === 'replay') {
       url.searchParams.delete('intro');
       history.replaceState(history.state, '', url.pathname + url.search + url.hash);
-      play(el);
-      return;
     }
-    // Only on a full load of `/`: never when a route change brought us here.
+    // Only on a full load of `/` (the inline script already checked); never on a route change.
     if (!isFirst || !initialLoadWasHome()) return;
-    let seen = true;
-    try { seen = sessionStorage.getItem(KEY) === '1'; } catch { /* storage blocked: stay quiet */ }
-    if (!seen) play(el);
+    if (mode === 'skip') return swoop(el);
+    if (mode === 'play') void ready(el).then(() => play(el));
   }
 
   init();

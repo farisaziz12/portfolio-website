@@ -34,10 +34,12 @@ const shown = rows.slice(0, limit);
 const more = rows.length - shown.length;
 const delivered = deliveries.filter((d) => !d.event.isUpcoming).length;
 const upcoming = deliveries.length - delivered;
+// Tense follows the rows: only upcoming dates → future; a mix → both.
+const heading = !delivered && upcoming ? "Where it's being given" : upcoming ? "Where it's been given, and where it's next" : "Where it's been delivered";
 ---
 
 <section class="dl" aria-labelledby="dl-title">
-  <h2 id="dl-title" class="dl__h2">Where it's been delivered</h2>
+  <h2 id="dl-title" class="dl__h2">{heading}</h2>
   {rows.length > 0 ? (
     <>
       <ol class="ds-rows dl__rows">

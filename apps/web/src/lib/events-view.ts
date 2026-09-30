@@ -18,26 +18,37 @@ export function bucketVerb(b?: RoleBucket): string {
   return b ? BUCKET_VERB[b] : '';
 }
 
-export function bucketBadge(b?: RoleBucket): string {
-  return ROLE_BUCKETS.find((r) => r.value === b)?.badge ?? '';
+/** Role badge in the right tense: "Spoke" / "Hosted" once past, "Speaking" / "Hosting" before. */
+export function bucketBadge(b?: RoleBucket, upcoming = false): string {
+  if (!b) return '';
+  return upcoming ? BUCKET_VERB[b] : ROLE_BUCKETS.find((r) => r.value === b)?.badge ?? '';
 }
 
-/** Session format word for the session meta line ("Talk · 25 min · …"). */
-const ROLE_FORMAT: Record<SessionRole, string> = {
-  speaker: 'Talk',
-  keynote: 'Keynote',
-  lightning: 'Lightning talk',
-  workshop: 'Workshop',
-  panel: 'Panel',
-  host: 'Hosting',
-  organizer: 'Organising',
-  judge: 'Judging',
-  mentor: 'Mentoring',
-  guest: 'Guest appearance',
-  attendee: 'Attending',
+/**
+ * Session format word for the session meta line ("Talk · 25 min · …"). Nouns
+ * (Talk, Keynote, Panel) read the same either way; activities take the
+ * event's tense: "Hosting" before, "Hosted" once the session is delivered.
+ */
+const ROLE_FORMAT: Record<SessionRole, [upcoming: string, past: string]> = {
+  speaker: ['Talk', 'Talk'],
+  keynote: ['Keynote', 'Keynote'],
+  lightning: ['Lightning talk', 'Lightning talk'],
+  workshop: ['Workshop', 'Workshop'],
+  panel: ['Panel', 'Panel'],
+  host: ['Hosting', 'Hosted'],
+  organizer: ['Organising', 'Organised'],
+  judge: ['Judging', 'Judged'],
+  mentor: ['Mentoring', 'Mentored'],
+  guest: ['Guest appearance', 'Guest appearance'],
+  attendee: ['Attending', 'Attended'],
 };
+/** Past = the session was delivered (events.ts resolves past, non-cancelled sessions to `delivered`). */
+export function isPastSession(s: Pick<Session, 'status'>): boolean {
+  return s.status === 'delivered';
+}
 export function sessionFormat(s: Session): string {
-  return ROLE_FORMAT[s.role] ?? 'Session';
+  const f = ROLE_FORMAT[s.role];
+  return f ? f[isPastSession(s) ? 1 : 0] : 'Session';
 }
 
 /** Explicit role for the badge: "Role: speaker". */

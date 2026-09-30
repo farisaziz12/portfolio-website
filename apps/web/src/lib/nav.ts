@@ -16,7 +16,6 @@ export interface NavSection extends NavLink {
 }
 
 export const PRIMARY_NAV: NavSection[] = [
-  { label: 'Writing', href: '/blog', match: ['/blog'] },
   {
     label: 'Speaking',
     href: '/speaking',
@@ -30,6 +29,7 @@ export const PRIMARY_NAV: NavSection[] = [
       { label: 'Invite me', href: '/invite' },
     ],
   },
+  { label: 'Writing', href: '/blog', match: ['/blog'] },
   { label: 'Community', href: '/community', match: ['/community'] },
   {
     label: 'About',
@@ -57,11 +57,11 @@ export const PRIMARY_NAV: NavSection[] = [
 export const INVITE_CTA: NavLink = { label: 'Invite me', href: '/invite' };
 
 export const FOOTER_PRIMARY: NavLink[] = [
-  { label: 'Writing', href: '/blog' },
   { label: 'Speaking', href: '/speaking' },
   { label: 'Schedule', href: '/events' },
   { label: 'Talks', href: '/talks' },
   { label: 'Workshops', href: '/workshops' },
+  { label: 'Writing', href: '/blog' },
   { label: 'Community', href: '/community' },
   { label: 'About', href: '/about' },
   { label: 'Press kit', href: '/press-kit' },

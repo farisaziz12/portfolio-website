@@ -21,7 +21,7 @@ const flag = flagFor(e);
     <span class="ds-row__title arow__title">{e.title}</span>
     <span class="arow__what">{sessionSummary(e)}</span>
     <span class="arow__place">{flag && <span class="arow__flag" aria-hidden="true">{flag}</span>}{placeShort(e)}</span>
-    {bucket && <span class="ds-role arow__badge" data-bucket={bucket}>{bucketBadge(bucket)}</span>}
+    {bucket && <span class="ds-role arow__badge" data-bucket={bucket}>{bucketBadge(bucket, e.isUpcoming)}</span>}
   </a>
 </li>
 

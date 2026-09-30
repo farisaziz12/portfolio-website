@@ -1081,6 +1081,33 @@
   }
  },
  {
+  "_id": "event-zurichjs-december-2026",
+  "_type": "event",
+  "title": "ZurichJS December meetup",
+  "slug": {
+   "_type": "slug",
+   "current": "zurichjs-december-2026"
+  },
+  "date": "2026-12-03",
+  "timezone": "Europe/Zurich",
+  "kind": "meetup",
+  "location": {
+   "city": "Zurich",
+   "country": "Switzerland"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "host"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-zurichjs"
+  }
+ },
+ {
   "_id": "event-zurichjs-anniversary-2025",
   "_type": "event",
   "title": "ZurichJS 1st anniversary",

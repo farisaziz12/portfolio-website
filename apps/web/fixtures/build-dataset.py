@@ -157,6 +157,7 @@ ev("react-summit-us-2025", "React Summit US", "2025-11-18", "New York", "United 
     sess("b", "panel", title="Panel: Growing to senior")], tz="America/New_York", featured=True)
 ev("zurichjs-react-arch-2025", "ZurichJS · React Architecture workshop", "2025-11-12", "Zurich", "Switzerland", "zurichjs", "meetup",
    [sess("a", "workshop", workshop="workshop-react-arch", detail="3-hour workshop")])
+ev("zurichjs-december-2026", "ZurichJS December meetup", "2026-12-03", "Zurich", "Switzerland", "zurichjs", "meetup", [sess("a", "host")])
 ev("zurichjs-anniversary-2025", "ZurichJS 1st anniversary", "2025-11-05", "Zurich", "Switzerland", "zurichjs", "meetup", [sess("a", "host")])
 ev("whatthestack-2025", "WhatTheStack", "2025-09-20", "Skopje", "North Macedonia", "whatthestack", "conference",
    [sess("a", "speaker", "talk-caching"), sess("b", "workshop", workshop="workshop-react-arch", detail="Full-day workshop")], tz="Europe/Skopje")
