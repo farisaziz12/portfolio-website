@@ -96,7 +96,12 @@ export interface Community {
   aftermovie?: {
     title?: string;
     caption?: string;
+    /** External URL, or the uploaded file's URL when there's no external one. */
     url?: string;
+    /** Uploaded video file (plays inline on /community). */
+    fileUrl?: string;
+    mimeType?: string;
+    captionsUrl?: string;
     published: boolean;
     credit?: string;
     poster?: SanityImage;
@@ -151,6 +156,10 @@ export interface AvailabilityMonth {
   month: string;
   status: AvailabilityStatus;
   note?: string;
+  /** Confirmed upcoming appearances that month. */
+  booked: number;
+  /** `events` = derived from the calendar; `override` = set in the Availability document. */
+  source: 'events' | 'override';
 }
 
 export interface SiteSettings {
@@ -213,8 +222,11 @@ export interface CareerEntry {
   _id: string;
   name: string;
   role?: string;
+  /** Resolved label: manual periodLabel, else derived from the dates. */
   periodLabel?: string;
   period?: string;
+  startDate?: string;
+  endDate?: string;
   description?: string;
   highlight?: string;
   url?: string;

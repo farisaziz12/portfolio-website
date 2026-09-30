@@ -23,7 +23,12 @@ const photos = c.photos.filter((p) => p?.asset).slice(0, award ? 2 : 3);
 const poster = film?.poster?.asset ? film.poster : c.photos[0];
 const kicker = ['Community', c.city, c.founded ? `since ${c.founded}` : null].filter(Boolean).join(' · ');
 const FilmTag = filmLive ? 'a' : 'div';
-const filmAttrs = filmLive ? { href: film!.url, target: '_blank', rel: 'noopener noreferrer', 'data-track': 'home-aftermovie' } : {};
+// An uploaded film plays inline on /community; an external one opens where it's hosted.
+const filmAttrs = !filmLive
+  ? {}
+  : film!.fileUrl
+    ? { href: '/community#aftermovie', 'data-track': 'home-aftermovie' }
+    : { href: film!.url, target: '_blank', rel: 'noopener noreferrer', 'data-track': 'home-aftermovie' };
 ---
 
 <section class="hc" aria-labelledby="home-community">

@@ -1,10 +1,9 @@
 ---
 /**
  * About's right column: the cream panel with the page's one Faris
- * illustration, the "In short" facts, the track-record links and the terminal.
+ * illustration, the "In short" facts and the track-record links.
  */
 import Illustration from '../v3/Illustration.astro';
-import AboutTerminal from './AboutTerminal.astro';
 import type { LabelledText, Profile } from '../../lib/sanity/v3';
 
 interface Props {
@@ -72,7 +71,6 @@ const record = [
     <p class="aside__note">What I've built, what it changed, the photos, and what people said about it.</p>
   </nav>
 
-  <AboutTerminal />
 </aside>
 
 <style>

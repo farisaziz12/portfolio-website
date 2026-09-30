@@ -7,6 +7,7 @@
 import SanityImg from '../v3/SanityImg.astro';
 import Icon from '../v3/Icon.astro';
 import type { Community, SanityImage } from '../../lib/sanity/v3';
+import { urlFor } from '../../lib/sanity/client';
 
 interface Props {
   community: Community;
@@ -52,7 +53,23 @@ const filmTitle = film?.title ? `Aftermovie · ${film.title}` : 'Aftermovie';
     </div>
 
     <div class="cs__media">
-      {published ? (
+      {published && film?.fileUrl ? (
+        <figure class="cs__film cs__film--video" id="aftermovie">
+          <video
+            controls
+            preload="none"
+            playsinline
+            poster={poster?.asset ? urlFor(poster).width(1200).height(600).fit('crop').url() : undefined}
+            aria-label={filmTitle}
+          >
+            <source src={film.fileUrl} type={film.mimeType || 'video/mp4'} />
+            {film.captionsUrl && <track kind="captions" src={film.captionsUrl} srclang="en" label="English" default />}
+          </video>
+          <figcaption class="cs__film-cap">
+            {film.caption || filmTitle}{film.credit && <> · Crew: {film.credit}</>} · <a href={film.fileUrl}>Direct link</a>
+          </figcaption>
+        </figure>
+      ) : published ? (
         <a href={film!.url} class="cs__film cs__film--live" target="_blank" rel="noopener noreferrer" data-track="community-aftermovie">
           {poster && <SanityImg image={poster} alt="" ratio={2} widths={[600, 1000]} sizes="(max-width: 720px) 100vw, 45vw" class="cs__poster" />}
           <span class="cs__film-in">
@@ -104,6 +121,10 @@ const filmTitle = film?.title ? `Aftermovie · ${film.title}` : 'Aftermovie';
   .cs__media { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .cs__film { position: relative; display: block; aspect-ratio: 2 / 1; min-height: 190px; overflow: hidden; border-radius: var(--radius-card); background: rgb(var(--ground)); border: 1px solid rgb(var(--hairline)); color: rgb(var(--text)); text-decoration: none; }
   .cs__film--live:hover { border-color: rgb(var(--yellow)); }
+  .cs__film--video { aspect-ratio: auto; min-height: 0; margin: 0; background: none; border: 0; }
+  .cs__film--video video { display: block; width: 100%; aspect-ratio: 16 / 9; background: rgb(var(--c-ink)); border-radius: var(--radius-card); }
+  .cs__film-cap { margin-top: 8px; font-size: 12.5px; color: rgb(var(--text-faint)); }
+  .cs__film-cap a { color: inherit; }
   .cs__film :global(.cs__poster) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: grayscale(0.5); }
   .cs__film--live :global(.cs__poster) { opacity: 0.6; filter: none; }
   .cs__film-in { position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }

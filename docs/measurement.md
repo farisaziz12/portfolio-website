@@ -75,7 +75,6 @@ project settings).
 | `form_submit_failed` | Server error or network failure on submit | `form`, `reason` (`server` / `network`), `status` |
 | `scroll_depth` | 25/50/75/100% scroll milestones, once per pageview | `depth`, `path` |
 | `outbound_link_click` | Click on an external link (cal.com excluded) | `href`, `domain`, `label`, `path` |
-| `terminal_command` | A command is executed in the hero/404 terminal | `command`, `known`, `mode` |
 | `command_palette_opened` | ⌘K palette opened | `path` |
 | `command_palette_action` | A palette command is run | `command`, `group`, `href` |
 | `$pageview`, `$pageleave`, `$autocapture`, `$exception`, … | PostHog defaults | — |
@@ -94,13 +93,12 @@ the session recordings for that page.
 
 ## Insights worth pinning
 
-- `cta_click` breakdown by `cta` — which surfaces actually drive action (mega-menu vs footer vs panels vs sticky bar vs terminal-adjacent CTAs).
+- `cta_click` breakdown by `cta` — which surfaces actually drive action (header vs footer vs panels vs posters).
 - `contact_form_submitted` by `topic` over time — is the full-time-role door pulling?
 - `form_validation_failed` by `fields` — a recurring field points at confusing copy or layout.
 - `email_entered` with no `*_submitted` in the same session — identified warm leads who bailed mid-form; the session recording shows why.
 - `scroll_depth` ≥75 on `/talks`, `/consulting`, `/mentorship` — is the long-form content read or skipped?
 - `outbound_link_click` by `domain` — where the site leaks attention (GitHub, LinkedIn, YouTube…).
-- `terminal_command` where `known = false` — what people *try* to type is a feature wishlist.
 - `workshop_section_viewed` breakdown by `section_key` for a given `instance` — which sections attendees open.
 - Referrer breakdown filtered to AI surfaces (`chatgpt.com`, `perplexity.ai`, `claude.ai`, `copilot.microsoft.com`) — low volume, disproportionate intent; watch conversion rate per source.
 - Session recordings on `/invite`, `/contact`, `/consulting`, `/mentorship` (the gate only records these) — watch a handful weekly for friction.

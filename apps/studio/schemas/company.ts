@@ -58,10 +58,10 @@ export default defineType({
       name: 'periodLabel',
       title: 'Timeline label',
       type: 'string',
-      description: 'Left column on the timeline: "Now", "2024 →", "Earlier", "Before code".',
+      description: 'Optional. Leave empty and the timeline shows the dates ("2024 →" while current, "2021–2023" once ended). Fill it only to override ("Now", "Before code").',
     }),
-    defineField({ name: 'startDate', title: 'Start', type: 'date' }),
-    defineField({ name: 'endDate', title: 'End', type: 'date', description: 'Empty = current.' }),
+    defineField({ name: 'startDate', title: 'Start', type: 'date', description: 'Drives the timeline label and order.' }),
+    defineField({ name: 'endDate', title: 'End', type: 'date', description: 'Empty = current role.' }),
     defineField({
       name: 'isPublic',
       title: 'Show publicly',

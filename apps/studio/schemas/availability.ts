@@ -3,8 +3,10 @@ import { AVAILABILITY_STATUSES, titleFor } from 'shared';
 import { options } from './_fields';
 
 /**
- * Singleton: the 12-month availability calendar on /invite. Months without an
- * entry show as open. The "Already booked" list is derived from events.
+ * Singleton: OVERRIDES for the 12-month availability calendar on /invite.
+ * Every month is derived from your events automatically (1–2 confirmed
+ * appearances = some dates taken, 3+ = limited). Add a month here only to
+ * override that: a holiday, a month you're keeping free, a note.
  */
 export default defineType({
   name: 'availability',
@@ -13,7 +15,8 @@ export default defineType({
   fields: [
     defineField({
       name: 'months',
-      title: 'Months',
+      title: 'Month overrides',
+      description: 'Optional. Months are derived from your events; add one only to override it.',
       type: 'array',
       of: [
         defineArrayMember({

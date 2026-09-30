@@ -55,7 +55,9 @@ The content model (V3):
 
 Voice and style:
 - Site copy is first person, casual and direct ("I build…", "I reply within two days"). Bios are third
-  person. Short sentences. Concrete over clever. No marketing adjectives (world-class, passionate,
+  person. Short sentences. Concrete over clever. Write like Faris talks, not like a brand guideline: no
+  "available upon request", "unmodified", "leverage", "seamless", "robust", "in today's landscape";
+  no stacked colons and triples. Read it out loud: if it sounds like an AI wrote it, rewrite it. No marketing adjectives (world-class, passionate,
   cutting-edge, rockstar, ninja, guru, thought leader). No exclamation marks outside quotes.
 - No emojis anywhere in content (country names drive the flag emoji automatically).
 - Never use the words "essays" or "notes" for writing. Never claim "most watched/most popular" without
@@ -144,9 +146,11 @@ Goal: one of each singleton, with the fixed ids the Studio opens, and complete.
    recent podcast externalPosts; featuredQuote: the best praise about the flagship talk; praise: seven
    featured praise refs (the first is the big spotlight quote); community: the ZurichJS community doc;
    invitePanel headline "Invite me to your stage." + body.
-4. availability (id "availability"): months[] for the next 12 months where status isn't "open"
-   (open | some | limited). Ask me for the statuses; propose "some" for months that already have 2+
-   upcoming events. leadTime: "Six weeks is comfortable; shorter is often fine."
+4. availability (id "availability"): the calendar is DERIVED from upcoming events (1–2 confirmed
+   appearances in a month = "some dates taken", 3+ = "limited"), so months[] holds overrides only.
+   Remove any month entry that just repeats what the events already say. Keep/add entries only for
+   months that differ from the events (a holiday, a month kept free) and give them a note.
+   leadTime: "Six weeks is comfortable; shorter is often fine."
 ```
 
 ## Prompt 2: Events, series and sessions
@@ -292,9 +296,12 @@ caseStudyHeadline "Co-founded in 2024. A conference by 2026.", summary (first pe
 why it exists, what Faris does — chairs, hosts, built the platform — and the first two-day Conf).
 pillars[3]: Host / Teach / Build, each {kicker, title, body (one or two sentences), link}.
 metrics: references to the four community metrics (prompt 5). recognition[]: {title, issuer, year,
-url, confirmed} — set confirmed=false until Faris confirms the exact wording and year (unconfirmed
-awards are hidden). aftermovie: {title, caption, url, published=false until the film is public,
-credit, poster}. photos: 2–4 meetup/conference photos with alt + credit. platformProject: the project
+url, confirmed}. The confirmed award (Faris, Sep 2026): title "Open Source Award: Global Community
+with the Highest Impact", year 2026, confirmed=true; ask for the issuer's exact name (e.g. "Open Source
+Awards at JSNation") and a link. Any other award stays confirmed=false until Faris confirms wording
+and year. aftermovie: {title, caption, credit, poster, video (upload the MP4 in Studio: it plays on
+/community with captions) or url (YouTube/Vimeo), captions (.vtt), published=false until the film is
+public}. photos: 2–4 meetup/conference photos with alt + credit. platformProject: the project
 document for the conference platform (create a project if missing).
 ```
 
@@ -309,9 +316,10 @@ Goal: a first-person About story and a public career timeline.
    inShort[]: Work / Speak / Build (label + one line). heroImage with alt + credit.
    Clear the legacy aboutHero/aboutWhatIDo/aboutJourney/aboutSkills/aboutCta objects after copying
    anything still true into the new fields.
-2. company (Career entry) documents: name, role, periodLabel ("Now", "2024 →", "Earlier", "Before
-   code"), startDate/endDate when known, description (one line, only for the entries that need it),
-   order (newest first), isPublic (false for anything not announced yet).
+2. company (Career entry) documents: name, role, startDate and endDate (empty = current) — these drive
+   the timeline label ("2024 →", "2021–2023") and order, so fill them for every entry. periodLabel only
+   to override ("Before code"); clear labels like "Earlier" once dates exist. description (one line,
+   only where needed), isPublic (false for anything not announced yet).
 ```
 
 ## Prompt 10: Services
@@ -366,11 +374,12 @@ Final pass across the whole dataset. Read-only first, then propose fixes as a ta
 
 ### Open items from the design review (only Faris can close these)
 
-- Confirm Smallpdf engineering figures for public use (metrics stay `needs-ok` until then).
-- Career dates; award wording and year (`community.recognition[].confirmed`).
+- Approve engineering figures: Studio → Needs attention → Metrics waiting for an OK (or Proof → Metrics) → open each metric, check value/definition/date, set Status to "Approved for public use", Publish.
+- Career dates: enter them on each Career entry in Studio (they drive the timeline).
+- Award: "Open Source Award: Global Community with the Highest Impact" (2026) is confirmed; the issuer's exact name and a link are still to add.
 - Currency and period for platform transaction volume (volume, not revenue).
-- Real aftermovie URL (`community.aftermovie.published` stays false until then).
+- Aftermovie: upload the file on the ZurichJS community document (Aftermovie → Video file, plus captions .vtt) or paste a YouTube/Vimeo URL, then switch Published on.
 - Bluesky praise posts (none collected yet).
-- Availability month statuses.
+- Availability: derived from events; add month overrides only for holidays or months kept free.
 - The next role stays out of public copy until announced: it's a one-string swap of `siteSettings.nowLine`
   and one `company` entry (`isPublic`).

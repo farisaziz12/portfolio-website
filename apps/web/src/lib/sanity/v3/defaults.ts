@@ -106,7 +106,7 @@ export const DEFAULT_PROFILE: Profile = {
   rider: DEFAULT_RIDER,
   goodToKnow: DEFAULT_GOOD_TO_KNOW,
   avatarNote:
-    'Available for event graphics on request, unmodified: no mirroring, recolouring or added logos. The ZurichJS mark on the shirt is part of the artwork.',
+    "Happy for you to use the cartoon me on your event graphics. Just ask and I'll send the files. Please keep it as it is: no flipping, recolouring or extra logos. The ZurichJS logo on the shirt stays.",
 };
 
 export const DEFAULT_ABOUT = {

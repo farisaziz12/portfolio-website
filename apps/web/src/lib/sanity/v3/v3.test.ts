@@ -86,9 +86,21 @@ test('singletons merge over defaults; home featured resolves refs', async () => 
   assert.equal(featured[0].kind, 'talk');
   const avail = await v3.getAvailability(new Date('2026-09-15'));
   assert.equal(avail.months.length, 12);
+  // Derived from events: Devs.Ghent (Sep 30) and Game of Codes (Oct 9).
+  assert.deepEqual([avail.months[0].status, avail.months[0].source, avail.months[0].booked], ['some', 'events', 1]);
   assert.equal(avail.months[1].status, 'some');
+  assert.equal(avail.months[2].status, 'open');
+  // A CMS month entry overrides the derived status.
+  const aug = avail.months.find((m) => m.month === '2027-08')!;
+  assert.deepEqual([aug.status, aug.source, aug.note], ['limited', 'override', 'Summer break']);
+  assert.equal(v3.statusFromBookings(3), 'limited');
   const career = await v3.getCareer();
   assert.ok(!career.some((c) => c.name === 'Unannounced'), 'private roles stay private');
+  assert.deepEqual(
+    career.map((c) => c.periodLabel),
+    ['2023 →', '2024 →', '2021–2022', '2019–2021', 'Before code'],
+    'labels derive from dates; manual label wins'
+  );
 });
 
 test('community: metric references resolve, approved only, dated', async () => {

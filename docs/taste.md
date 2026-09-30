@@ -40,10 +40,9 @@ Score every finding **keep**, **translate**, or **reject** for this site — nev
 identity: Figtree, one yellow accent, skewed bands with a blue edge, numbered posters, a 3.6s conference-style opener.
 
 **Keep (Faris-only):** invite forms, the skewed band + stage photo, numbered posters for featured work, unedited
-quotes styled like their platform, derived role-specific counts, the deck-kit illustrations (used unmodified), the
-terminal as an Easter egg on /about.
+quotes styled like their platform, derived role-specific counts, the deck-kit illustrations (used unmodified).
 
-**Removed in V3:** the terminal hero, photo-mosaic-as-hero-grid, quarter recap, reach map, the four equal
+**Removed in V3:** the terminal (hero and Easter egg), photo-mosaic-as-hero-grid, quarter recap, reach map, the four equal
 "I speak / work / mentor / write" routes, the "91 talks" counter (replaced by derived counts that exclude hosting and
 attending), the newsletter signup, electric blue as an accent.
 

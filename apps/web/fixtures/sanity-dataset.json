@@ -167,14 +167,10 @@
   "_type": "availability",
   "months": [
    {
-    "_key": "a",
-    "month": "2026-10-01",
-    "status": "some"
-   },
-   {
     "_key": "b",
     "month": "2027-08-01",
-    "status": "limited"
+    "status": "limited",
+    "note": "Summer break"
    }
   ]
  },
@@ -1231,9 +1227,9 @@
    {
     "_key": "g",
     "_type": "award",
-    "title": "Global Community of the Year",
-    "issuer": "OSS Awards at JSNation",
-    "year": 2025,
+    "title": "Open Source Award: Global Community with the Highest Impact",
+    "issuer": "Open Source Awards",
+    "year": 2026,
     "confirmed": true
    }
   ],
@@ -1590,8 +1586,8 @@
   "_type": "company",
   "name": "Smallpdf",
   "role": "Staff Software Engineer",
-  "periodLabel": "Now",
   "order": 1,
+  "startDate": "2023-01-01",
   "description": "Monetization, checkout and frontend architecture for a product used by millions."
  },
  {
@@ -1599,8 +1595,8 @@
   "_type": "company",
   "name": "ZurichJS",
   "role": "Co-founder and chair",
-  "periodLabel": "2024 →",
   "order": 2,
+  "startDate": "2024-03-01",
   "description": "Meetups, then ZurichJS Conf 2026."
  },
  {
@@ -1608,24 +1604,26 @@
   "_type": "company",
   "name": "Navro",
   "role": "Founding engineer and lead",
-  "periodLabel": "Earlier",
-  "order": 3
+  "order": 3,
+  "startDate": "2021-06-01",
+  "endDate": "2022-12-31"
  },
  {
   "_id": "company-3",
   "_type": "company",
   "name": "Fiit, FX Digital",
   "role": "Software engineer",
-  "periodLabel": "Earlier",
-  "order": 4
+  "order": 4,
+  "startDate": "2019-01-01",
+  "endDate": "2021-05-31"
  },
  {
   "_id": "company-4",
   "_type": "company",
   "name": "Outside tech",
   "role": "",
-  "periodLabel": "Before code",
   "order": 5,
+  "periodLabel": "Before code",
   "description": "Coaching, before the switch into engineering."
  },
  {

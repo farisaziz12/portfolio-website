@@ -57,7 +57,7 @@ export const GET: APIRoute = async () => {
           )
           .join('\n')
       : `No downloadable photos are published yet. Ask for a set via ${SITE}/invite.`,
-    profile.avatarNote ? `## Illustrated avatar\n\n${profile.avatarNote}` : '',
+    profile.avatarNote ? `## The cartoon version\n\n${profile.avatarNote}` : '',
   ].join('\n');
 
   return mdResponse(body);

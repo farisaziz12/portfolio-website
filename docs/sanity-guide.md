@@ -96,8 +96,20 @@ Posts on this site: **Posts on this site** (`blogPost`, with `topic`). Guest art
 number? Add a **Correction** instead of silently editing.
 
 ### Availability
-**Availability** → add a month only when it isn't open: "Some dates taken" or "Limited". "Already booked" on the
-invite page comes from upcoming events automatically.
+Derived from your events: a month with 1–2 confirmed appearances shows "Some dates taken", 3+ shows "Limited".
+**Availability** holds overrides only (a holiday, a month kept free, a note). "Already booked" lists upcoming events.
+
+### Approve a number
+**Needs attention → Metrics waiting for an OK** (or **Proof → Metrics**): check value, definition and date, set
+**Status → Approved for public use**, Publish. Nothing unapproved is ever shown.
+
+### Aftermovie
+**Proof → Communities → ZurichJS → Aftermovie & photos**: upload the **Video file** (MP4) and **Captions (.vtt)**,
+or paste an external URL; add a poster frame; switch **Published** on. Uploaded files play inline on /community.
+
+### Career timeline
+**Proof → Career timeline**: set Start and End (empty = current). The label ("2024 →", "2021–2023") and order
+come from the dates; `Timeline label` only overrides.
 
 ### Press photos
 **Profile & press kit → Press photos**: label, tag (also the download filename), alt, credit, and **set the hotspot**

@@ -37,8 +37,9 @@ docs += [
   {"_id": "speakerProfile", "_type": "speakerProfile", "name": "Faris Aziz", "pronunciation": "FAH-riss ah-ZEEZ",
    "travelBase": "Geneva, Switzerland", "bioUpdatedAt": "2026-09-01",
    "headshots": [dict(P[p[5]], _key=p[5], label=p[4], tag=p[5]) for p in PHOTOS]},
+  # Months are derived from events; this is one override (a month kept free).
   {"_id": "availability", "_type": "availability", "months": [
-     {"_key": "a", "month": "2026-10-01", "status": "some"}, {"_key": "b", "month": "2027-08-01", "status": "limited"}]},
+     {"_key": "b", "month": "2027-08-01", "status": "limited", "note": "Summer break"}]},
 ]
 
 # ── series ──
@@ -176,7 +177,7 @@ docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJ
   "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
   "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first two-day ZurichJS Conf happened.",
   "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["members", "cfp", "speakers", "sponsors"]],
-  "recognition": [{"_key": "g", "_type": "award", "title": "Global Community of the Year", "issuer": "OSS Awards at JSNation", "year": 2025, "confirmed": True}],
+  "recognition": [{"_key": "g", "_type": "award", "title": "Open Source Award: Global Community with the Highest Impact", "issuer": "Open Source Awards", "year": 2026, "confirmed": True}],
   "pillars": [
     {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "Hosting is counted separately from my own talks."},
     {"_key": "t", "_type": "communityPillar", "kicker": "Teach", "title": "Workshops for the community, on the house", "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."},
@@ -213,13 +214,17 @@ docs.append({"_id": "ext-legacy-spotify", "_type": "externalPost", "title": "Dev
   "type": "podcast", "source": "Spotify", "publishedAt": "2025-07-01"})  # legacy V2 shape: type, no format/topic
 
 # ── career, services, about, media ──
-for i, (name, role, label, desc) in enumerate([
-    ("Smallpdf", "Staff Software Engineer", "Now", "Monetization, checkout and frontend architecture for a product used by millions."),
-    ("ZurichJS", "Co-founder and chair", "2024 →", "Meetups, then ZurichJS Conf 2026."),
-    ("Navro", "Founding engineer and lead", "Earlier", None),
-    ("Fiit, FX Digital", "Software engineer", "Earlier", None),
-    ("Outside tech", "", "Before code", "Coaching, before the switch into engineering.")]):
-    d = {"_id": f"company-{i}", "_type": "company", "name": name, "role": role, "periodLabel": label, "order": i + 1}
+# Labels derive from dates; "Before code" shows a manual override.
+for i, (name, role, start, end, label, desc) in enumerate([
+    ("Smallpdf", "Staff Software Engineer", "2023-01-01", None, None, "Monetization, checkout and frontend architecture for a product used by millions."),
+    ("ZurichJS", "Co-founder and chair", "2024-03-01", None, None, "Meetups, then ZurichJS Conf 2026."),
+    ("Navro", "Founding engineer and lead", "2021-06-01", "2022-12-31", None, None),
+    ("Fiit, FX Digital", "Software engineer", "2019-01-01", "2021-05-31", None, None),
+    ("Outside tech", "", None, None, "Before code", "Coaching, before the switch into engineering.")]):
+    d = {"_id": f"company-{i}", "_type": "company", "name": name, "role": role, "order": i + 1}
+    if start: d["startDate"] = start
+    if end: d["endDate"] = end
+    if label: d["periodLabel"] = label
     if desc: d["description"] = desc
     docs.append(d)
 docs.append({"_id": "company-private", "_type": "company", "name": "Unannounced", "role": "Secret", "isPublic": False, "order": 0})

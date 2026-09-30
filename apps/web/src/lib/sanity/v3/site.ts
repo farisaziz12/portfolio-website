@@ -4,20 +4,17 @@
  * Each loader merges CMS values over the approved defaults field by field.
  */
 import groq from 'groq';
-import type { AvailabilityStatus, MetricDomain, ServiceType } from 'shared';
+import type { MetricDomain } from 'shared';
 import { monthYear } from './dates';
-import { DEFAULT_ABOUT, DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
+import { DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
 import type {
-  AvailabilityMonth,
-  CareerEntry,
   Community,
   HomePage,
   LabelledText,
   Metric,
   Profile,
   SanityImage,
-  ServiceOffer,
   SiteSettings,
 } from './types';
 
@@ -204,26 +201,6 @@ export function getProfile(): Promise<Profile> {
   });
 }
 
-// ─── Availability ──────────────────────────────────────────────────────────
-
-export const availabilityQuery = groq`*[_type == "availability"] | order(_updatedAt desc)[0] { "months": coalesce(months[]{ month, status, note }, []), leadTime }`;
-
-/** The next 12 months starting this month; months without an entry are open. */
-export function getAvailability(now = new Date()): Promise<{ months: AvailabilityMonth[]; leadTime?: string; fromCms: boolean }> {
-  return memo('site:availability', async () => {
-    const a = await load<{ months: { month?: string; status?: AvailabilityStatus; note?: string }[]; leadTime?: string } | null>(availabilityQuery, null);
-    const byMonth = new Map((a?.months ?? []).filter((m) => m.month).map((m) => [m.month!.slice(0, 7), m]));
-    const months: AvailabilityMonth[] = [];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i, 1));
-      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-      const entry = byMonth.get(key);
-      months.push({ month: key, status: entry?.status ?? 'open', note: entry?.note });
-    }
-    return { months, leadTime: a?.leadTime, fromCms: byMonth.size > 0 };
-  });
-}
-
 // ─── Metrics ───────────────────────────────────────────────────────────────
 
 const METRIC_FIELDS = `_id, value, label, qualifier, asOf, period, definition, context, domain, sourceUrl, order`;
@@ -291,7 +268,13 @@ export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(fo
   "pillars": coalesce(pillars[]{ kicker, title, body, link }, []),
   "metrics": coalesce(metrics[]->{ ${METRIC_FIELDS}, status }, []),
   "recognition": coalesce(recognition[confirmed == true]{ title, issuer, year, url }, []),
-  "aftermovie": aftermovie{ title, caption, url, "published": published == true && defined(url), credit, "poster": poster${IMAGE} },
+  "aftermovie": aftermovie{
+    title, caption, credit,
+    "fileUrl": video.asset->url, "mimeType": video.asset->mimeType, "captionsUrl": captions.asset->url,
+    "url": coalesce(url, video.asset->url),
+    "published": published == true && (defined(url) || defined(video.asset)),
+    "poster": poster${IMAGE}
+  },
   "photos": coalesce(photos[]${IMAGE}, []),
   "platformProject": platformProject->{ title, "slug": slug.current }
 }`;
@@ -314,79 +297,3 @@ export async function getPrimaryCommunity(id?: string): Promise<Community | unde
   return list.find((c) => c._id === id) ?? list[0];
 }
 
-// ─── Services, career, About ───────────────────────────────────────────────
-
-export const servicesQuery = groq`*[_type == "serviceOffer" && defined(slug.current)] | order(coalesce(order, 999) asc) {
-  _id, title, "slug": slug.current, serviceType, shortDescription, audience, reachOutIf, youGet, primaryCta, secondaryCta,
-  bestFor, "outcomes": coalesce(outcomes, []), engagementFormat, showPricing, priceFrom, priceCurrency, priceUnit,
-  bookingUrl, bookingLabel, featured, order
-}`;
-
-export function getServiceOffers(): Promise<ServiceOffer[]> {
-  return memo('site:services', async () => {
-    const list = await load<(Omit<ServiceOffer, 'serviceType'> & { serviceType?: string })[]>(servicesQuery, []);
-    return list.map((o) => ({ ...o, serviceType: (o.serviceType === 'consulting' ? 'advisory' : o.serviceType ?? 'advisory') as ServiceType }));
-  });
-}
-
-export const careerQuery = groq`*[_type == "company" && isPublic != false] | order(coalesce(order, 999) asc, startDate desc) {
-  _id, name, role, periodLabel, period, description, highlight, url, order
-}`;
-
-export function getCareer(): Promise<CareerEntry[]> {
-  return memo('site:career', () => load<CareerEntry[]>(careerQuery, []));
-}
-
-export const aboutPageQuery = groq`*[_type == "page" && identifier == "about"] | order(_updatedAt desc)[0] {
-  kicker, title, subtitle, content, "heroImage": heroImage${IMAGE}, "inShort": coalesce(inShort[]{ label, body }, []),
-  "legacyBio": aboutHero.bio, seo
-}`;
-
-export interface AboutPage {
-  kicker: string;
-  title: string;
-  intro: string;
-  content: unknown[];
-  heroImage?: SanityImage;
-  inShort: LabelledText[];
-  seo?: { metaTitle?: string; metaDescription?: string };
-}
-
-export function getAboutPage(): Promise<AboutPage> {
-  return memo('site:about', async () => {
-    const p = await load<(Partial<AboutPage> & { subtitle?: string; legacyBio?: string }) | null>(aboutPageQuery, null);
-    const d = DEFAULT_ABOUT;
-    return {
-      kicker: str(p?.kicker, d.kicker),
-      title: str(p?.title, d.title),
-      intro: str(p?.subtitle, d.intro),
-      content: p?.content ?? [],
-      heroImage: p?.heroImage,
-      inShort: nonEmpty(p?.inShort?.filter((i) => i.label && i.body), d.inShort),
-      seo: p?.seo,
-    };
-  });
-}
-
-// ─── Photos (media) ────────────────────────────────────────────────────────
-
-export const photosQuery = groq`*[_type == "media" && type == "photo" && defined(image.asset)] | order(date desc) {
-  _id, title, description, date, credit, featured,
-  "image": image${IMAGE},
-  "event": event->{ _id, title, "slug": slug.current, date }
-}`;
-
-export interface Photo {
-  _id: string;
-  title?: string;
-  description?: string;
-  date?: string;
-  credit?: string;
-  featured?: boolean;
-  image: SanityImage;
-  event?: { _id: string; title: string; slug: string; date?: string };
-}
-
-export function getPhotos(): Promise<Photo[]> {
-  return memo('site:photos', () => load<Photo[]>(photosQuery, []));
-}

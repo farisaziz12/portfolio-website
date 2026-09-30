@@ -24,7 +24,6 @@ export type AnalyticsEvent =
   | 'form_submit_failed'
   | 'scroll_depth'
   | 'outbound_link_click'
-  | 'terminal_command'
   | 'command_palette_opened'
   | 'command_palette_action';
 
