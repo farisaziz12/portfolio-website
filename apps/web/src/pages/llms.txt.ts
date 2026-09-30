@@ -18,7 +18,7 @@ export const GET: APIRoute = async () => {
 
   const summary = stats.fallback
     ? profile.bios.short
-    : `${profile.bios.short} ${stats.talksDelivered} talks delivered in ${stats.countries} countries (counted from session records, ${fullDate(stats.asOf)}).`;
+    : `${profile.bios.short} ${stats.talksDelivered} talks delivered in ${stats.countries} countries (as of ${fullDate(stats.asOf)}).`;
 
   const body = `# ${profile.name}
 

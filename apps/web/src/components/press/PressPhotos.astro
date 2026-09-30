@@ -4,7 +4,7 @@
  * 4:5 · 16:9). Sanity does every crop (hotspot focal point, lib/press.ts); the
  * page never repositions or re-crops an image. Switching a crop shows a
  * skeleton until Sanity's image has loaded, then swaps it in whole. Without
- * JS every card offers its original.
+ * JS every card offers its 1:1 crop.
  */
 import type { PressPhotoView } from '../../lib/press';
 
@@ -31,7 +31,9 @@ const { photos } = Astro.props;
   ) : (
     <ul class="photos__grid">
       {photos.map((p) => {
-        const o = p.variants[0];
+        // 1:1 is the default crop (fits programme grids and socials); Original is one click away.
+        const di = Math.max(0, p.variants.findIndex((v) => v.key === '1x1'));
+        const o = p.variants[di];
         return (
           <li class="photo" data-photo data-variants={JSON.stringify(p.variants.map((v) => ({ k: v.key, p: v.preview, pw: v.previewWidth, ph: v.previewHeight, d: v.download, f: v.filename, s: v.size })))}>
             <span class="photo__frame" data-photo-frame>
@@ -50,7 +52,7 @@ const { photos } = Astro.props;
             <span class="photo__label">{p.label}{p.credit && <span class="photo__credit"> · Photo: {p.credit}</span>}</span>
             <span class="photo__crops" role="group" aria-label={`Crop for ${p.label}`} data-photo-crops hidden>
               {p.variants.map((v, i) => (
-                <button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-crop={v.key}>{v.label}</button>
+                <button type="button" aria-pressed={i === di ? 'true' : 'false'} data-crop={v.key}>{v.label}</button>
               ))}
             </span>
             <a class="photo__dl" href={o.download} download={o.filename} data-photo-dl data-track="press_photo_download">

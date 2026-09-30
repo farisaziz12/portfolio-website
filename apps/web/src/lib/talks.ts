@@ -59,6 +59,17 @@ export function isRetired(t: TalkWithHistory, catalogue: TalkWithHistory[]): boo
   return !catalogue.some((c) => c._id === t._id);
 }
 
+/** current = listed and bookable · earlier = an older version of a talk that moved on · retired = no longer booked. */
+export function talkStatus(t: Pick<TalkWithHistory, 'isCurrent' | 'isBookable'>): 'current' | 'earlier' | 'retired' {
+  if (!t.isCurrent) return 'earlier';
+  return t.isBookable ? 'current' : 'retired';
+}
+
+/** The family's current version, when `t` is an earlier one. */
+export function currentVersionOf(t: TalkWithHistory, talks: TalkWithHistory[]): TalkWithHistory | undefined {
+  return t.isCurrent ? undefined : talks.find((c) => c.familyId === t.familyId && c.isCurrent);
+}
+
 /** Short quote for inline strips: pull quote, else the first sentence, else a trimmed quote. */
 export function firstSentence(p: Pick<Praise, 'quote' | 'pullQuote'>, max = 90): string {
   if (p.pullQuote) return p.pullQuote;

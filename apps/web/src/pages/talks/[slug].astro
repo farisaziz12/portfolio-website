@@ -9,9 +9,10 @@ import PraiseCard from '../../components/v3/PraiseCard.astro';
 import TalkHero from '../../components/talks/TalkHero.astro';
 import DeliveryList from '../../components/talks/DeliveryList.astro';
 import TalkAside from '../../components/talks/TalkAside.astro';
+import TalkVersions from '../../components/talks/TalkVersions.astro';
 import { getCatalogueTalks, getPraiseFor, getProfile, getTalks, getWriting, type TalkWithHistory } from '../../lib/sanity/v3';
 import { breadcrumbs, talkSchema } from '../../lib/seo';
-import { eventShortName, isRetired } from '../../lib/talks';
+import { currentVersionOf, eventShortName, talkStatus } from '../../lib/talks';
 
 export async function getStaticPaths() {
   const talks = await getTalks();
@@ -23,17 +24,18 @@ interface Props {
 }
 const { talk } = Astro.props;
 
-const [catalogue, praise, writing, profile] = await Promise.all([
+const [all, catalogue, praise, writing, profile] = await Promise.all([
+  getTalks(),
   getCatalogueTalks(),
   getPraiseFor({ talkId: talk._id }),
   getWriting(),
   getProfile(),
 ]);
 
-const retired = isRetired(talk, catalogue);
-// The bookable version of the same family, if this one is retired.
-const root = talk.parentId || talk._id;
-const current = retired ? catalogue.find((c) => (c.parentId || c._id) === root && c._id !== talk._id) : undefined;
+const status = talkStatus(talk);
+const retired = status !== 'current';
+// The version that replaced this one, if this is an earlier version.
+const current = currentVersionOf(talk, all);
 const podcasts = writing.filter((w) => w.format === 'podcast' && w.relatedTalk?._id === talk._id).slice(0, 2);
 const related = talk.relatedTalks
   .map((r) => catalogue.find((c) => c._id === r._id))
@@ -60,20 +62,28 @@ const description = (talk.seo?.metaDescription || talk.summary || `A talk by Far
   ]}
 >
   <div class="ds-wrap tpage">
-    <TalkHero talk={talk} retired={retired} />
+    <TalkHero talk={talk} retired={retired} retiredLabel={status === 'earlier' ? 'Earlier version' : 'Retired'} />
 
     <div class="tpage__grid">
       <div class="tpage__main">
-        {retired && (
+        {status === 'earlier' && (
           <div class="ds-stripe tpage__retired" role="note">
-            <p class="tpage__retired-title">This version is retired{talk.version ? ` (${talk.version})` : ''}.</p>
+            <p class="tpage__retired-title">An earlier version of this talk{talk.version ? ` (${talk.version})` : ''}.</p>
             <p class="tpage__retired-body">
-              {talk.versionNotes || 'It is kept here for the record and the recording; it is no longer booked.'}
-              {current ? (
-                <> The current version is <a href={`/talks/${current.slug}`} class="ds-textlink">{current.title}</a>.</>
+              {talk.versionNotes && <>{talk.versionNotes} </>}
+              {current?.isBookable ? (
+                <>The talk has moved on: book <a href={`/talks/${current.slug}`} class="ds-textlink">{current.title}</a>.</>
               ) : (
-                <> See the <a href="/talks" class="ds-textlink">current catalogue</a>.</>
+                <>See the <a href="/talks" class="ds-textlink">current talks</a>.</>
               )}
+            </p>
+          </div>
+        )}
+        {status === 'retired' && (
+          <div class="ds-stripe tpage__retired" role="note">
+            <p class="tpage__retired-title">I don't give this one any more.</p>
+            <p class="tpage__retired-body">
+              {talk.versionNotes || 'It stays here for the record and the recording.'} See the <a href="/talks" class="ds-textlink">current talks</a>.
             </p>
           </div>
         )}
@@ -103,6 +113,8 @@ const description = (talk.seo?.metaDescription || talk.summary || `A talk by Far
             )}
           </div>
         )}
+
+        <TalkVersions talk={talk} />
 
         <DeliveryList deliveries={talk.deliveries} retired={retired} />
 

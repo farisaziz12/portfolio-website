@@ -7,7 +7,7 @@ import groq from 'groq';
 import { TALK_DELIVERY_ROLES } from 'shared';
 import { getAllEvents } from './events';
 import { load, memo, IMAGE, TALK_REF, WORKSHOP_REF } from './fetch';
-import type { EventEdition, Talk, TalkDelivery, TalkWithHistory, Workshop, WorkshopWithHistory, AgendaItem } from './types';
+import type { EventEdition, Talk, TalkDelivery, TalkVersion, TalkWithHistory, Workshop, WorkshopWithHistory, AgendaItem } from './types';
 
 const SEO = `"seo": seo{ metaTitle, metaDescription, ogImage }`;
 
@@ -15,7 +15,7 @@ export const allTalksQuery = groq`*[_type == "talk" && defined(slug.current)] | 
   _id, title, shortTitle, "slug": slug.current, pillar, summary, abstract, audience,
   "takeaways": coalesce(takeaways, []), "tags": coalesce(topics, []),
   duration, "durationOptions": coalesce(durationOptions, []), level, setup,
-  "isBookable": isBookable != false, "isCurrent": isCurrentVersion != false, order, version, versionNotes,
+  "isBookable": isBookable != false, "currentFlag": isCurrentVersion, _createdAt, order, version, versionNotes,
   "parentId": parentTalk._ref,
   "thumbnail": coalesce(thumbnail, assets.thumbnailImage)${IMAGE},
   "repoUrl": assets.repoUrl, "fallbackVideoUrl": assets.videoUrl, "fallbackSlidesUrl": assets.slidesUrl,
@@ -37,7 +37,7 @@ export const allWorkshopsQuery = groq`*[_type == "workshop" && defined(slug.curr
   ${SEO}
 }`;
 
-type RawTalk = Talk & { isCurrent: boolean };
+type RawTalk = Talk & { currentFlag?: boolean | null; _createdAt?: string };
 type RawWorkshop = Omit<Workshop, 'formats'> & { formats: Workshop['formats']; legacyAgenda?: AgendaItem[] | null };
 
 function deliveriesFor(events: EventEdition[], match: (s: EventEdition['sessions'][number]) => boolean): TalkDelivery[] {
@@ -55,8 +55,11 @@ function deliveriesFor(events: EventEdition[], match: (s: EventEdition['sessions
   return out;
 }
 
-function withHistory(talk: Talk, familyIds: Set<string>, events: EventEdition[]): TalkWithHistory {
-  const deliveries = deliveriesFor(events, (s) => Boolean(s.talk && familyIds.has(s.talk._id)));
+function withHistory(talk: Talk, familyIds: Set<string>, titles: Map<string, string>, events: EventEdition[]): Omit<TalkWithHistory, 'isCurrent' | 'familyId' | 'versions'> {
+  const deliveries = deliveriesFor(events, (s) => Boolean(s.talk && familyIds.has(s.talk._id))).map((d) => {
+    const given = d.session.talk ? titles.get(d.session.talk._id) : undefined;
+    return given && d.session.talk?._id !== talk._id && given !== talk.title ? { ...d, asTitle: given } : d;
+  });
   const delivered = deliveries.filter((d) => !d.event.isUpcoming);
   const talkDelivered = delivered.filter((d) => TALK_DELIVERY_ROLES.includes(d.session.role));
   const upcoming = deliveries.filter((d) => d.event.isUpcoming);
@@ -79,27 +82,75 @@ function withHistory(talk: Talk, familyIds: Set<string>, events: EventEdition[])
   };
 }
 
-/** Every talk (all versions) with its history. Catalogue filtering is the caller's job. */
+/** A version's own delivered sessions (not the family roll-up): years and count. */
+function versionOf(t: RawTalk, events: EventEdition[]): Omit<TalkVersion, 'isCurrent'> {
+  const own = deliveriesFor(events, (s) => s.talk?._id === t._id && TALK_DELIVERY_ROLES.includes(s.role)).filter((d) => !d.event.isUpcoming);
+  const years = own.map((d) => Number(d.event.date.slice(0, 4))).filter(Boolean);
+  const first = own.at(-1)?.event.date;
+  const lo = years.length ? Math.min(...years) : 0;
+  const hi = years.length ? Math.max(...years) : 0;
+  return {
+    _id: t._id,
+    slug: t.slug,
+    title: t.title,
+    version: t.version,
+    versionNotes: t.versionNotes,
+    isBookable: t.isBookable,
+    years: !lo ? '' : lo === hi ? String(lo) : `${lo}–${hi}`,
+    firstDelivered: first,
+    deliveredCount: own.length,
+  };
+}
+
+/** Sort key for "newest version": first delivery, else creation date, a new cut after its parent. */
+function newness(t: RawTalk, v: Omit<TalkVersion, 'isCurrent'>): string {
+  return `${v.firstDelivered ?? t._createdAt ?? ''}|${t.parentId ? 1 : 0}`;
+}
+
+/**
+ * Exactly one current version per family: the one flagged current (newest if
+ * several are), else the newest version that isn't explicitly flagged off.
+ */
+export function pickCurrent<T extends { _id: string; flag?: boolean | null; key: string }>(family: T[]): string | undefined {
+  const byNew = [...family].sort((a, b) => b.key.localeCompare(a.key));
+  return (byNew.find((t) => t.flag === true) ?? byNew.find((t) => t.flag !== false) ?? byNew[0])?._id;
+}
+
+/** Every talk (all versions) with its history and version family. */
 export function getTalks(): Promise<TalkWithHistory[]> {
   return memo('talks:all', async () => {
     const [raw, events] = await Promise.all([load<RawTalk[]>(allTalksQuery, []), getAllEvents()]);
-    // A version family = parent + children; sessions of any version roll up.
-    const family = new Map<string, Set<string>>();
+    // A version family = parent + its new cuts; sessions of any version roll up.
+    const families = new Map<string, RawTalk[]>();
     for (const t of raw) {
-      const root = t.parentId || t._id;
-      if (!family.has(root)) family.set(root, new Set());
-      family.get(root)!.add(t._id);
+      const root = t.parentId && raw.some((x) => x._id === t.parentId) ? t.parentId : t._id;
+      families.set(root, [...(families.get(root) ?? []), t]);
     }
-    return raw.map((t) => withHistory(t, family.get(t.parentId || t._id) ?? new Set([t._id]), events));
+    const titles = new Map(raw.map((t) => [t._id, t.title]));
+    const out: TalkWithHistory[] = [];
+    for (const [familyId, members] of families) {
+      const ids = new Set(members.map((m) => m._id));
+      const base = members.map((m) => ({ m, v: versionOf(m, events) }));
+      const current = pickCurrent(base.map(({ m, v }) => ({ _id: m._id, flag: m.currentFlag, key: newness(m, v) })));
+      const versions: TalkVersion[] = base
+        .map(({ m, v }) => ({ ...v, isCurrent: m._id === current, key: newness(m, v) }))
+        .sort((a, b) => a.key.localeCompare(b.key))
+        .map(({ key: _key, ...v }) => v);
+      for (const m of members) {
+        // The current version carries the whole family's history; an earlier one only its own sessions.
+        const scope = m._id === current ? ids : new Set([m._id]);
+        out.push({ ...withHistory(m, scope, titles, events), isCurrent: m._id === current, familyId, versions });
+      }
+    }
+    // Keep the catalogue order from the query.
+    const order = new Map(raw.map((t, i) => [t._id, i]));
+    return out.sort((a, b) => (order.get(a._id) ?? 0) - (order.get(b._id) ?? 0));
   });
 }
 
-/** Bookable, current-version talks: the public catalogue. */
+/** The public catalogue: one entry per family (its current version), bookable only. */
 export async function getCatalogueTalks(): Promise<TalkWithHistory[]> {
-  const talks = await getTalks();
-  const raw = await load<RawTalk[]>(allTalksQuery, []);
-  const current = new Set(raw.filter((t) => t.isCurrent).map((t) => t._id));
-  return talks.filter((t) => t.isBookable && current.has(t._id));
+  return (await getTalks()).filter((t) => t.isCurrent && t.isBookable);
 }
 
 export async function getTalkBySlug(slug: string): Promise<TalkWithHistory | undefined> {

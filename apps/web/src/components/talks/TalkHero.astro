@@ -12,8 +12,9 @@ import Icon from '../v3/Icon.astro';
 interface Props {
   talk: TalkWithHistory;
   retired?: boolean;
+  retiredLabel?: string;
 }
-const { talk: t, retired = false } = Astro.props;
+const { talk: t, retired = false, retiredLabel = 'Retired' } = Astro.props;
 const rec = t.recording;
 const recEvent = rec?.event;
 const watchLabel = recEvent ? `Watch · ${eventShortName(recEvent)}, ${monthYear(recEvent.date)}` : 'Watch the recording';
@@ -35,7 +36,7 @@ const hasPhoto = Boolean(t.thumbnail?.asset);
       <a href="/talks" class="thero__crumb">Talks</a>
       {t.pillar && <><span aria-hidden="true"> · </span>{pillarTitle(t.pillar)}</>}
       {t.duration && <><span aria-hidden="true"> · </span>{t.duration} min</>}
-      {retired && <><span aria-hidden="true"> · </span><span class="thero__retired">Retired</span></>}
+      {retired && <><span aria-hidden="true"> · </span><span class="thero__retired">{retiredLabel}</span></>}
     </p>
     <div class="thero__foot">
       <h1 class="thero__title">{t.title}</h1>

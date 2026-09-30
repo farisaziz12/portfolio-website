@@ -111,3 +111,29 @@ test('community: metric references resolve, approved only, dated', async () => {
   assert.equal(c?.recognition.length, 1);
   assert.equal(c?.aftermovie?.published, false);
 });
+
+test('talks: one current version per family; catalogue lists it once, bookable only', async () => {
+  const talks = await v3.getTalks();
+  const catalogue = await v3.getCatalogueTalks();
+  const caching = talks.find((t) => t._id === 'talk-caching')!;
+  const v1 = talks.find((t) => t._id === 'talk-caching-v1')!;
+  assert.equal(caching.isCurrent, true);
+  assert.equal(v1.isCurrent, false);
+  assert.deepEqual(caching.versions.map((v) => [v._id, v.years, v.isCurrent]), [
+    ['talk-caching-v1', '2024', false],
+    ['talk-caching', '2025', true],
+  ]);
+  assert.ok(catalogue.some((t) => t._id === 'talk-caching'));
+  assert.ok(!catalogue.some((t) => t._id === 'talk-caching-v1'), 'earlier version is not in the catalogue');
+  assert.ok(!catalogue.some((t) => t._id === 'talk-legacy-next'), 'isBookable false is not in the catalogue');
+  // The family's history rolls up, naming the title an older delivery was given under.
+  const berlin = caching.deliveries.find((d) => d.event.slug === 'react-day-berlin-2024');
+  assert.equal(berlin?.asTitle, 'Data Fetching at Scale: BFFs and Caching');
+});
+
+test('talks: pickCurrent prefers the explicit flag, else the newest not flagged off', () => {
+  assert.equal(v3.pickCurrent([{ _id: 'a', key: '2023' }, { _id: 'b', key: '2025' }]), 'b');
+  assert.equal(v3.pickCurrent([{ _id: 'a', key: '2023', flag: true }, { _id: 'b', key: '2025' }]), 'a');
+  assert.equal(v3.pickCurrent([{ _id: 'a', key: '2023' }, { _id: 'b', key: '2025', flag: false }]), 'a');
+  assert.equal(v3.pickCurrent([{ _id: 'a', key: '2023', flag: true }, { _id: 'b', key: '2025', flag: true }]), 'b');
+});

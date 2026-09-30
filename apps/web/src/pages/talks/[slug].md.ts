@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { fullDate, getCatalogueTalks, getProfile, getTalks, getWriting, type TalkWithHistory } from '../../lib/sanity/v3';
 import { mdResponse } from '../../lib/markdown';
 import { SITE } from '../../lib/seo';
-import { eventShortName, inviteHref, isRetired, lengthLabel, pillarTitle } from '../../lib/talks';
+import { eventShortName, inviteHref, talkStatus, lengthLabel, pillarTitle } from '../../lib/talks';
 
 export async function getStaticPaths() {
   const talks = await getTalks();
@@ -13,7 +13,9 @@ export const GET: APIRoute = async ({ props }) => {
   const talk = (props as { talk?: TalkWithHistory }).talk;
   if (!talk) return new Response('Not found', { status: 404 });
   const [catalogue, writing, profile] = await Promise.all([getCatalogueTalks(), getWriting(), getProfile()]);
-  const retired = isRetired(talk, catalogue);
+  const status = talkStatus(talk);
+  const retired = status !== 'current' || !catalogue.some((c) => c._id === talk._id);
+  const versions = [...talk.versions].reverse();
   const podcasts = writing.filter((w) => w.format === 'podcast' && w.relatedTalk?._id === talk._id);
 
   const deliveries = talk.deliveries.map((d) => {
@@ -24,7 +26,7 @@ export const GET: APIRoute = async ({ props }) => {
       s.recordingUrl ? `recording: ${s.recordingUrl}` : null,
       s.slidesUrl ? `slides: ${s.slidesUrl}` : null,
     ].filter(Boolean);
-    return `- ${fullDate(d.event.date)}: [${eventShortName(d.event)}](${SITE}/events/${d.event.slug}.md)${place ? `, ${place}` : ''}${extra.length ? ` (${extra.join('; ')})` : ''}`;
+    return `- ${fullDate(d.event.date)}: [${eventShortName(d.event)}](${SITE}/events/${d.event.slug}.md)${place ? `, ${place}` : ''}${d.asTitle ? `, as "${d.asTitle}"` : ''}${extra.length ? ` (${extra.join('; ')})` : ''}`;
   });
 
   const facts = [
@@ -32,7 +34,8 @@ export const GET: APIRoute = async ({ props }) => {
     lengthLabel(talk) ? `Length: ${lengthLabel(talk)}` : null,
     talk.level ? `Level: ${talk.level}` : null,
     `Delivered: ${talk.deliveredCount}×`,
-    retired ? 'Status: retired version, no longer booked' : null,
+    status === 'earlier' ? 'Status: earlier version, replaced by a newer one' : status === 'retired' ? 'Status: no longer booked' : null,
+    talk.versions.length > 1 ? `Versions: ${talk.versions.length}` : null,
   ].filter(Boolean);
 
   const body = [
@@ -52,7 +55,12 @@ export const GET: APIRoute = async ({ props }) => {
           .filter(Boolean)
           .join('\n')}\n`
       : '',
-    `## Where it's been delivered\n\n${deliveries.length ? deliveries.join('\n') : 'No sessions on record yet.'}\n\nEach entry is a session of this talk, counted from event records.\n`,
+    versions.length > 1
+      ? `## How this talk evolved\n\n${versions
+          .map((v) => `- ${v.years || v.version || 'Not given yet'}: [${v.title}](${SITE}/talks/${v.slug}.md)${v.isCurrent && v.isBookable ? ' (current)' : ''}${v.versionNotes ? `. ${v.versionNotes}` : ''}`)
+          .join('\n')}\n`
+      : '',
+    `## Where it's been delivered\n\n${deliveries.length ? deliveries.join('\n') : 'No sessions on record yet.'}\n`,
     podcasts.length ? `## Heard as a podcast\n\n${podcasts.map((p) => `- ${p.source}: [${p.title}](${p.href.startsWith('http') ? p.href : SITE + p.href}) (${fullDate(p.date)})`).join('\n')}\n` : '',
     talk.relatedTalks.length
       ? `## Pairs well with\n\n${talk.relatedTalks.map((r) => `- [${r.title}](${SITE}/talks/${r.slug}.md)`).join('\n')}\n`

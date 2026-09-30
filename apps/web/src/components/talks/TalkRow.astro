@@ -16,6 +16,9 @@ const { talk: t } = Astro.props;
 const href = `/talks/${t.slug}`;
 const yt = t.thumbnail?.asset ? undefined : youtubeThumb(t.recording?.url);
 const meta = talkMeta(t);
+// "Since 2024 · 2 versions": the talk has changed over the years.
+const firstYear = t.versions.map((v) => v.years.slice(0, 4)).filter(Boolean).sort()[0];
+const evolved = t.versions.length > 1 ? `${firstYear ? `Since ${firstYear} · ` : ''}${t.versions.length} versions` : '';
 // The row carries the audience's first sentence; the talk page has the rest.
 const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
 ---
@@ -39,6 +42,7 @@ const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
   <p class="trow__side">
     {audience && <span class="trow__aud">{audience}</span>}
     {meta && <span class="trow__meta">{meta}</span>}
+    {evolved && <span class="trow__meta">{evolved}</span>}
   </p>
   <a
     href={t.recording ? `${href}#recording` : href}

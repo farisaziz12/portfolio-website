@@ -58,7 +58,9 @@ talks = [
    "audience": "Frontend and full-stack engineers who own a data layer in production. Assumes you've shipped something that got slow.",
    "takeaways": ["A decision table for what to cache, where, and for how long", "Payload shaping patterns that cut bytes without a rewrite", "A BFF checklist you can argue for on Monday"],
    "duration": 30, "durationOptions": [20, 30, 45], "level": "Intermediate to senior", "topics": ["React", "Caching", "BFF"],
-   "thumbnail": P["speaking"], "alsoAsWorkshop": ref("workshop-react-arch"), "relatedTalks": [dict(ref("talk-resilient"), _key="r1")]},
+   "thumbnail": P["speaking"], "alsoAsWorkshop": ref("workshop-react-arch"),
+   "parentTalk": ref("talk-caching-v1"), "version": "2025", "isCurrentVersion": True,
+   "versionNotes": "New title, payload shaping and a real production example carried end to end.", "relatedTalks": [dict(ref("talk-resilient"), _key="r1")]},
   {"_id": "talk-payments", "title": "Orchestrating Millions Across the Globe: Reactive Payments at Scale", "shortTitle": "the payments talk",
    "slug": slug("reactive-payments-at-scale"), "pillar": "payments", "order": 2, "duration": 30,
    "summary": "“Just integrate Stripe” works, until it doesn’t. Multi-provider orchestration and its failure modes.",
@@ -71,6 +73,10 @@ talks = [
    "duration": 30, "summary": "Taking responsibility before you feel ready, and what that costs.", "audience": "Engineers two to six years in"},
   {"_id": "talk-community", "title": "Why It's Called ZurichJS: Building a Community from Zero", "slug": slug("building-a-community-from-zero"), "pillar": "community",
    "order": 5, "duration": 20, "summary": "Meetups to a conference in two years, and the systems that made it possible.", "audience": "Organisers and DevRel"},
+  # version family: the 2024 cut of the caching talk (retired; the current one links it as parentTalk)
+  {"_id": "talk-caching-v1", "title": "Data Fetching at Scale: BFFs and Caching", "slug": slug("data-fetching-at-scale"), "pillar": "engineering",
+   "duration": 25, "summary": "A BFF layer and a caching plan for a data-heavy React app.", "version": "2024", "isCurrentVersion": False,
+   "versionNotes": "The first cut: BFF and caching only, one example app."},
   # a V2-shaped talk (no pillar/summary, legacy assets) to exercise fallbacks
   {"_id": "talk-legacy-next", "title": "Next.js at the Edge (2023 cut)", "slug": slug("nextjs-at-the-edge"), "duration": 30, "topics": ["Next.js"],
    "isBookable": False, "assets": {"videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}},
@@ -132,6 +138,8 @@ ev("whatthestack-2025", "WhatTheStack", "2025-09-20", "Skopje", "North Macedonia
    [sess("a", "speaker", "talk-caching"), sess("b", "workshop", workshop="workshop-react-arch", detail="Full-day workshop")], tz="Europe/Skopje")
 ev("cityjs-singapore-2025", "CityJS Singapore", "2025-07-18", "Singapore", "Singapore", "cityjs", "conference", [sess("a", "speaker", "talk-payments")], tz="Asia/Singapore")
 ev("cityjs-athens-2025", "CityJS Athens", "2025-06-05", "Athens", "Greece", "cityjs", "conference", [sess("a", "speaker", "talk-caching")], tz="Europe/Athens")
+ev("react-day-berlin-2024", "React Day Berlin 2024", "2024-12-13", "Berlin", "Germany", None, "conference",
+   [sess("a", "speaker", "talk-caching-v1")], tz="Europe/Berlin")
 ev("jsnation-2025", "JSNation", "2025-06-12", "Amsterdam", "Netherlands", "jsnation", "conference", [sess("a", "attendee", detail="OSS Awards")], tz="Europe/Amsterdam")
 # legacy V2 events (no sessions[]; type + conference + talk + links)
 docs.append({"_id": "event-cityjs-london-2025", "_type": "event", "title": "CityJS London 2025", "slug": slug("cityjs-london-2025"), "type": "conference",

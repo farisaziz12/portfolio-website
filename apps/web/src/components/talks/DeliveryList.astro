@@ -24,6 +24,7 @@ const rows = deliveries.map((d) => {
     name: eventShortName(d.event),
     place: d.event.location.isOnline ? 'Online' : d.event.location.city,
     stage: s.stage,
+    asTitle: d.asTitle,
     href: `/events/${d.event.slug}`,
     label,
     strong: label === 'Recording',
@@ -47,6 +48,7 @@ const upcoming = deliveries.length - delivered;
               <span class="ds-row__title dl__name">
                 {r.name}{r.place && ` · ${r.place}`}
                 {r.stage && <span class="dl__stage"> · {r.stage}</span>}
+                {r.asTitle && <span class="dl__stage"> · as “{r.asTitle}”</span>}
               </span>
               {r.label && <span class:list={['dl__label', { 'dl__label--on': r.strong }]}>{r.label}</span>}
             </a>
@@ -56,14 +58,14 @@ const upcoming = deliveries.length - delivered;
           <li>
             <a href="/events" class="ds-row dl__row">
               <span class="dl__date">Earlier</span>
-              <span class="ds-row__title dl__name dl__name--muted">{more} more sessions <span class="dl__stage">· from delivery records</span></span>
+              <span class="ds-row__title dl__name dl__name--muted">{more} more</span>
               <span class="dl__label">Archive</span>
             </a>
           </li>
         )}
       </ol>
       <p class="ds-meta dl__note">
-        Counted from session records: {delivered} delivered{upcoming ? `, ${upcoming} upcoming` : ''}. Recordings and slides live on each event page.
+        {`${delivered} delivered${upcoming ? `, ${upcoming} coming up` : ''}.`}
       </p>
     </>
   ) : (

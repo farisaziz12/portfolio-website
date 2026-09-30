@@ -129,10 +129,33 @@ export interface Talk {
 /** A session of this talk (family), joined with its event. */
 export interface TalkDelivery {
   session: Session;
+  /** Title the talk was given under, when it differs from the version being viewed. */
+  asTitle?: string;
   event: Pick<EventEdition, '_id' | 'title' | 'slug' | 'date' | 'location' | 'isUpcoming' | 'seriesName'>;
 }
 
+/** One version of a talk family (a title or abstract that changed over the years). */
+export interface TalkVersion {
+  _id: string;
+  slug: string;
+  title: string;
+  version?: string;
+  versionNotes?: string;
+  /** The one version per family that is listed and booked. */
+  isCurrent: boolean;
+  isBookable: boolean;
+  /** Years this version's own sessions span ("2023", "2023–2025"); empty if never delivered. */
+  years: string;
+  firstDelivered?: string;
+  deliveredCount: number;
+}
+
 export interface TalkWithHistory extends Talk {
+  /** Resolved: exactly one current version per family (explicit flag, else the newest). */
+  isCurrent: boolean;
+  familyId: string;
+  /** Every version in the family, oldest first (a single entry when the talk never changed). */
+  versions: TalkVersion[];
   deliveries: TalkDelivery[];
   deliveredCount: number;
   nextDelivery?: TalkDelivery;

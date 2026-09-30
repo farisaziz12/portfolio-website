@@ -1,0 +1,59 @@
+---
+/**
+ * "How this talk evolved": every version in the family, newest first, with
+ * the title it went by, the years it was given and what changed. Only shown
+ * when the talk has more than one version.
+ */
+import type { TalkWithHistory } from '../../lib/sanity/v3';
+
+interface Props {
+  talk: TalkWithHistory;
+}
+const { talk } = Astro.props;
+const versions = [...talk.versions].reverse();
+---
+
+{versions.length > 1 && (
+  <section class="tver" aria-labelledby="tver-title">
+    <h2 id="tver-title" class="tver__h2">How this talk evolved</h2>
+    <ol class="tver__list" role="list">
+      {versions.map((v) => (
+        <li class:list={['tver__item', { 'is-here': v._id === talk._id }]}>
+          <span class="tver__when">{v.years || v.version || 'Not given yet'}</span>
+          <div class="tver__main">
+            <p class="tver__title">
+              {v._id === talk._id ? v.title : <a href={`/talks/${v.slug}`} class="ds-textlink">{v.title}</a>}
+              {v.isCurrent && v.isBookable && <span class="tver__tag">Current</span>}
+            </p>
+            {v.versionNotes && <p class="tver__notes">{v.versionNotes}</p>}
+            {v.deliveredCount > 0 && <p class="ds-meta">{`${v.deliveredCount} ${v.deliveredCount === 1 ? 'delivery' : 'deliveries'}${v.version && v.years && v.version !== v.years ? ` · ${v.version}` : ''}`}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+<style>
+  .tver { display: flex; flex-direction: column; gap: 14px; }
+  .tver__h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+  .tver__list { list-style: none; margin: 0; padding: 0; border-left: 2px solid rgb(var(--hairline-strong)); }
+  .tver__item { position: relative; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; padding: 12px 0 12px 20px; }
+  .tver__item::before {
+    content: ''; position: absolute; left: -7px; top: 18px; width: 12px; height: 12px; border-radius: 50%;
+    background: rgb(var(--ground)); box-shadow: inset 0 0 0 2px rgb(var(--hairline-strong));
+  }
+  .tver__item.is-here::before { background: rgb(var(--yellow)); box-shadow: none; }
+  .tver__when { font-size: 13px; color: rgb(var(--text-faint)); padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .tver__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .tver__main p { margin: 0; }
+  .tver__title { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.35; }
+  .tver__tag {
+    margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: rgb(var(--yellow)); color: rgb(var(--on-yellow));
+    font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: 2px;
+  }
+  .tver__notes { font-size: 14.5px; line-height: 1.55; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  @media (max-width: 520px) {
+    .tver__item { grid-template-columns: 1fr; gap: 2px; }
+  }
+</style>

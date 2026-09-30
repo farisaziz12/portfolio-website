@@ -37,7 +37,7 @@ export const GET: APIRoute = async () => {
     ``,
     `> Faris Aziz gives talks and workshops about scale, resilience, payments and the leadership calls behind real systems. React and Next.js are home base; the lessons aren't framework-specific. Every talk is adapted to its audience. Booking ${bookingYears()}. Invite: ${SITE}/invite`,
     ``,
-    `## Counts (derived from session records, as of ${stats.asOf})`,
+    `## Counts (as of ${stats.asOf}; talks only, hosting and attending not included)`,
     ``,
     `- Talks delivered: ${stats.talksDelivered} (speaker, keynote and lightning sessions; hosting and attending are not counted)`,
     `- Countries: ${stats.countries} (speaking and hosting), cities: ${stats.cities}`,

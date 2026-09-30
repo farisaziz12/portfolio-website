@@ -305,6 +305,13 @@
    "_type": "reference",
    "_ref": "workshop-react-arch"
   },
+  "parentTalk": {
+   "_type": "reference",
+   "_ref": "talk-caching-v1"
+  },
+  "version": "2025",
+  "isCurrentVersion": true,
+  "versionNotes": "New title, payload shaping and a real production example carried end to end.",
   "relatedTalks": [
    {
     "_type": "reference",
@@ -379,6 +386,21 @@
   "duration": 20,
   "summary": "Meetups to a conference in two years, and the systems that made it possible.",
   "audience": "Organisers and DevRel",
+  "_type": "talk"
+ },
+ {
+  "_id": "talk-caching-v1",
+  "title": "Data Fetching at Scale: BFFs and Caching",
+  "slug": {
+   "_type": "slug",
+   "current": "data-fetching-at-scale"
+  },
+  "pillar": "engineering",
+  "duration": 25,
+  "summary": "A BFF layer and a caching plan for a data-heavy React app.",
+  "version": "2024",
+  "isCurrentVersion": false,
+  "versionNotes": "The first cut: BFF and caching only, one example app.",
   "_type": "talk"
  },
  {
@@ -875,6 +897,33 @@
    "_type": "reference",
    "_ref": "series-cityjs"
   }
+ },
+ {
+  "_id": "event-react-day-berlin-2024",
+  "_type": "event",
+  "title": "React Day Berlin 2024",
+  "slug": {
+   "_type": "slug",
+   "current": "react-day-berlin-2024"
+  },
+  "date": "2024-12-13",
+  "timezone": "Europe/Berlin",
+  "kind": "conference",
+  "location": {
+   "city": "Berlin",
+   "country": "Germany"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-caching-v1"
+    }
+   }
+  ]
  },
  {
   "_id": "event-jsnation-2025",
