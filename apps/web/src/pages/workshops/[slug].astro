@@ -5,7 +5,7 @@ import WorkshopAside from '../../components/workshops/WorkshopAside.astro';
 import PraiseCard from '../../components/v3/PraiseCard.astro';
 import { getPraiseFor, getWorkshops, type WorkshopWithHistory } from '../../lib/sanity/v3';
 import { breadcrumbs } from '../../lib/seo';
-import { deliveryLine, pillarLabel } from '../../lib/workshops-view';
+import { deliveryLine, excerpt, pillarLabel } from '../../lib/workshops-view';
 
 export async function getStaticPaths() {
   const workshops = await getWorkshops();
@@ -15,6 +15,11 @@ export async function getStaticPaths() {
 const w = Astro.props.workshop as WorkshopWithHistory;
 const praise = await getPraiseFor({ workshopId: w._id });
 const intro = w.description || w.summary;
+// The hero carries a short lede; a long description gets its own readable section below.
+const lede = w.summary || excerpt(w.description, 200);
+// When the lede is the description's opening, the section picks up after it (no repeated sentence).
+const rest = !w.summary && lede && w.description?.trim().startsWith(lede) ? w.description.trim().slice(lede.length) : w.description ?? '';
+const body = rest.trim() && rest.trim() !== lede ? rest.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean) : [];
 // Upcoming editions first (soonest first), then delivered ones newest first.
 const upcoming = w.deliveries.filter((d) => d.event.isUpcoming).reverse();
 const delivered = w.deliveries.filter((d) => !d.event.isUpcoming);
@@ -50,8 +55,22 @@ const schema = [
       <header class="wsp__head">
         <p class="ds-kicker"><a href="/workshops" class="is-muted wsp__crumb">Workshops</a><span aria-hidden="true"> · </span>{pillarLabel(w)}</p>
         <h1 class="ds-h1 wsp__title">{w.title}</h1>
-        {intro && <p class="ds-lede wsp__intro">{intro}</p>}
+        {lede && <p class="ds-lede wsp__intro">{lede}</p>}
       </header>
+
+      {body.length > 0 && (
+        <section class="wsp__block" aria-labelledby="about-h">
+          <h2 id="about-h" class="ds-label">What we'll do</h2>
+          <div class="wsp__prose">{body.map((para) => <p>{para}</p>)}</div>
+        </section>
+      )}
+
+      {w.outcomes.length > 0 && (
+        <section class="wsp__block" aria-labelledby="out-h">
+          <h2 id="out-h" class="ds-label">You leave able to</h2>
+          <ul class="wsp__outcomes">{w.outcomes.map((o) => <li>{o}</li>)}</ul>
+        </section>
+      )}
 
       {w.formats.length > 0 ? (
         <AgendaSwitch formats={w.formats} />
@@ -102,7 +121,12 @@ const schema = [
   .wsp__crumb { text-decoration: none; }
   .wsp__crumb:hover { color: rgb(var(--text)); }
   .wsp__title { font-size: clamp(38px, 6vw, 52px); overflow-wrap: anywhere; }
-  .wsp__intro { font-size: clamp(16px, 1.7vw, 18px); line-height: 1.55; }
+  .wsp__intro { font-size: clamp(16px, 1.7vw, 18px); line-height: 1.55; max-width: 58ch; }
+  .wsp__prose { display: flex; flex-direction: column; gap: 12px; max-width: 66ch; }
+  .wsp__prose p { margin: 0; font-size: 15.5px; line-height: 1.7; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  .wsp__outcomes { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 28px; }
+  .wsp__outcomes li { position: relative; padding-left: 18px; font-size: 15px; line-height: 1.5; color: rgb(var(--text)); }
+  .wsp__outcomes li::before { content: ''; position: absolute; left: 0; top: 0.65em; width: 8px; height: 2px; background: rgb(var(--yellow)); }
   .wsp__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
   .wsp__block { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .wsp__block .ds-body { margin: 0; }
@@ -116,6 +140,6 @@ const schema = [
     .wsp { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 36px; }
   }
   @media (max-width: 720px) {
-    .wsp__pair { grid-template-columns: minmax(0, 1fr); }
+    .wsp__pair, .wsp__outcomes { grid-template-columns: minmax(0, 1fr); }
   }
 </style>

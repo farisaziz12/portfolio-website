@@ -55,7 +55,7 @@ export const GET: APIRoute = async ({ props }) => {
     ``,
     booking.join('\n'),
     ``,
-    `Attendees: use the resources link from your session. Access is per delivery; nobody is added to a mailing list by attending.`,
+    `Attendees: use the resources link from your session for the slides, the repo and the extras.`,
     w.relatedTalk ? `\nThe talk version: ${w.relatedTalk.title} · ${SITE}/talks/${w.relatedTalk.slug}` : '',
     praise.length ? `\n## What attendees said\n\n${praise.map((p) => `> ${p.quote}\n>\n> ${p.author.name}${p.author.headline ? `, ${p.author.headline}` : ''}${p.url ? ` (${p.url})` : ''}`).join('\n\n')}` : '',
     ``,

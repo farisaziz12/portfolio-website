@@ -548,7 +548,27 @@
    "current": "payments-ui-deep-dive"
   },
   "duration": "Full day",
-  "description": "Checkout flows that survive real traffic.",
+  "description": "Checkout flows that survive real traffic. We start from a working but naive checkout and harden it step by step: idempotent submissions, retries that don't double-charge, 3-D Secure challenges that don't lose the cart, local payment methods that redirect away and come back, and error states people can actually recover from. Along the way we look at how the big providers model payments, where their SDKs help and where they get in the way, and how to test all of it without a real card. The afternoon is a lab: you pick a provider, wire up two local methods and ship a checkout that passes a scripted chaos run. Bring questions from your own product; the last hour is open for them.",
+  "outcomes": [
+   "Design an idempotent checkout submission",
+   "Handle 3-D Secure without losing state",
+   "Add a redirect-based local payment method",
+   "Write recoverable error states",
+   "Test payments without real cards",
+   "Choose between provider SDKs and your own UI",
+   "Run a chaos test on your checkout"
+  ],
+  "prerequisites": [
+   "Comfortable with React and TypeScript",
+   "Own laptop with Node 20+",
+   "A free Stripe test account",
+   "A free Adyen test account (optional)",
+   "Basic HTTP and REST knowledge"
+  ],
+  "participants": {
+   "min": 10,
+   "max": 24
+  },
   "agenda": [
    {
     "_key": "x",

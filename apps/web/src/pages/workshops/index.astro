@@ -47,9 +47,6 @@ const schema = [
   <div class="ds-wrap ws-body">
     {workshops.length ? (
       <>
-        <div class="ws-head" aria-hidden="true">
-          <span>Workshop</span><span>You leave able to</span><span>Prerequisites</span><span>Editions · cap</span><span></span>
-        </div>
         <ul class="ws-list" role="list">
           {workshops.map((w) => <WorkshopRow workshop={w} />)}
         </ul>
@@ -78,10 +75,6 @@ const schema = [
   .ws-lede { font-size: 17px; max-width: 44ch; }
 
   .ws-body { display: flex; flex-direction: column; gap: 14px; padding-top: 48px; padding-bottom: 64px; }
-  .ws-head {
-    display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 110px; gap: 20px; padding: 0 25px 10px;
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--text-faint));
-  }
   .ws-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
   .ws-empty { margin: 0; color: rgb(var(--text-muted)); }
 
@@ -93,9 +86,6 @@ const schema = [
   .ws-cta__body { margin: 4px 0 0; font-size: 14px; }
   .ws-cta .ds-btn { flex: none; }
 
-  @media (max-width: 900px) {
-    .ws-head { display: none; }
-  }
   @media (max-width: 720px) {
     .ws-body { padding-top: 32px; }
     .ws-foot { grid-template-columns: minmax(0, 1fr); }

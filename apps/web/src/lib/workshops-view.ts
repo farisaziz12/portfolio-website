@@ -62,3 +62,21 @@ export function agendaNote(f: WorkshopFormat): string {
   const n = f.agenda.length;
   return [f.label, `${n} block${n === 1 ? '' : 's'}`, f.duration && f.duration !== f.label ? `totals ${f.duration}` : ''].filter(Boolean).join(' · ');
 }
+
+/**
+ * A listing-sized excerpt: whole sentences up to `max` characters, else the
+ * first sentence cut at a word. The full text stays on the workshop page.
+ */
+export function excerpt(text: string | undefined, max = 220): string {
+  const clean = (text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const sentences = clean.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [clean];
+  let out = '';
+  for (const s of sentences) {
+    if ((out + s).trim().length > max) break;
+    out += s;
+  }
+  if (out.trim()) return out.trim();
+  const cut = clean.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '')}…`;
+}
