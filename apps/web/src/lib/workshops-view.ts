@@ -15,6 +15,21 @@ export function editionShort(f: WorkshopFormat): string {
   return f.duration || f.label;
 }
 
+/**
+ * The span of editions across workshops, shortest first: "3 h to full day",
+ * "3 to 4 h", "3 h". Empty when no edition has a length.
+ */
+export function lengthRange(workshops: Workshop[]): string {
+  const eds = workshops.flatMap((w) => w.formats).map(editionShort);
+  const full = eds.includes('full day');
+  const hours = eds.map((e) => /^(\d+(?:\.\d+)?)\s*h/.exec(e)?.[1]).filter(Boolean).map(Number);
+  const min = hours.length ? Math.min(...hours) : undefined;
+  const max = hours.length ? Math.max(...hours) : undefined;
+  if (full) return min !== undefined ? `${min} h to full day` : 'full day';
+  if (min === undefined || max === undefined) return '';
+  return min === max ? `${min} h` : `${min} to ${max} h`;
+}
+
 /** "3 h · full day" */
 export function editionsLine(w: Workshop): string {
   const out = w.formats.map(editionShort);

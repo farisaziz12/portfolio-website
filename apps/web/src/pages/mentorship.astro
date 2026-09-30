@@ -25,7 +25,7 @@ const focus = mentorshipFocus(cfpMetric(communityMetrics));
 const programs = mentorshipPrograms(offers);
 const details = mentorshipDetails(programs);
 const quotes = praise.slice(0, 2);
-const fallbackHref = programs.find((o) => o.bookingUrl?.includes('mentorcruise'))?.bookingUrl ?? MENTORCRUISE_URL;
+const fallbackHref = programs.find((o) => o.bookingUrl?.includes('mentorcruise'))?.bookingUrl ?? profile.links.mentorcruise ?? MENTORCRUISE_URL;
 
 const schema = [
   {

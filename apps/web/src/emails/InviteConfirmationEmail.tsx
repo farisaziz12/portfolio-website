@@ -5,14 +5,16 @@ import { EmailFooter, EmailHeader, EmailSignature } from './parts'
 
 interface Props {
   name?: string
+  /** Speaker profile → Reply time ("two working days"). */
+  replyTime?: string
   event?: string
 }
 
-export function InviteConfirmationEmail({ name, event }: Props) {
+export function InviteConfirmationEmail({ name, event, replyTime = 'two working days' }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>Thanks · I'll reply within two days</Preview>
+      <Preview>{`Thanks · I'll reply within ${replyTime}`}</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
           <EmailHeader label="Invite received" />
@@ -24,7 +26,7 @@ export function InviteConfirmationEmail({ name, event }: Props) {
 
             <Text style={s.paragraph}>
               Your invitation{event ? ` for ${event}` : ''} just landed in my inbox.
-              I'll review the details and reply within <strong style={{ color: s.inkStrong }}>two business days</strong>, usually faster.
+              I'll review the details and reply within <strong style={{ color: s.inkStrong }}>{replyTime}</strong>, usually faster.
             </Text>
 
             <Text style={s.paragraph}>

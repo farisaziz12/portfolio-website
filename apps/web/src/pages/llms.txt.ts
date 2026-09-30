@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getCatalogueTalks, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
+import { getCatalogueTalks, getPrimaryCommunity, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
 
 // llms.txt per https://llmstxt.org: a markdown index for LLMs and agents.
 // Links point at the .md mirrors, which carry the same Sanity content as the
@@ -7,14 +7,16 @@ import { getCatalogueTalks, getProfile, getSiteSettings, getSpeakingStats, getUp
 const SITE = 'https://faziz-dev.com';
 
 export const GET: APIRoute = async () => {
-  const [talks, workshops, stats, profile, settings, upcoming] = await Promise.all([
+  const [talks, workshops, stats, profile, settings, upcoming, community] = await Promise.all([
     getCatalogueTalks(),
     getWorkshops(),
     getSpeakingStats(),
     getProfile(),
     getSiteSettings(),
     getUpcomingEvents(),
+    getPrimaryCommunity(),
   ]);
+  const communityLine = [community?.name ?? 'ZurichJS', community?.founded ? `co-founded in ${community.founded}` : null, 'with dated metrics'].filter(Boolean).join(', ');
 
   const summary = stats.fallback
     ? profile.bios.short
@@ -38,7 +40,7 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 ## Writing & community
 
 - [Writing & conversations](${SITE}/blog.md): posts, guest articles, podcasts and video in one timeline
-- [Community](${SITE}/community.md): ZurichJS, co-founded in 2024, with dated metrics
+- [Community](${SITE}/community.md): ${communityLine}
 
 ## About
 

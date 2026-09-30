@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro'
 import { InviteConfirmationEmail } from '../../emails/InviteConfirmationEmail'
 import { InviteAdminEmail } from '../../emails/InviteAdminEmail'
 import { env, getFrom, isEmailConfigured, sendOrLog } from '../../lib/email'
+import { getProfile } from '../../lib/sanity/v3'
 import { EMAIL_RE, LIMITS, clean, inquiryRef, json, tooLong } from '../../lib/inquiry'
 import { kindDef, toKind } from '../../lib/invite-kinds'
 
@@ -90,12 +91,13 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // 2) Confirmation to the submitter: best-effort, reported but never blocks success.
+  const { replyTime } = await getProfile()
   const confirm = await sendOrLog({
     context: 'invite:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks · I'll reply within two working days`,
-    react: InviteConfirmationEmail({ name: name.split(/\s+/)[0], event: what }),
+    subject: `Thanks · I'll reply within ${replyTime}`,
+    react: InviteConfirmationEmail({ name: name.split(/\s+/)[0], event: what, replyTime }),
   })
 
   return json({ ok: true, success: true, ref, confirmationSent: confirm.ok })

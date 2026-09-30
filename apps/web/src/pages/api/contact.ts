@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro'
 import { ContactConfirmationEmail } from '../../emails/ContactConfirmationEmail'
 import { ContactAdminEmail } from '../../emails/ContactAdminEmail'
 import { env, getFrom, isEmailConfigured, sendOrLog } from '../../lib/email'
+import { getProfile } from '../../lib/sanity/v3'
 import { EMAIL_RE, LIMITS, clean, inquiryRef, json, tooLong } from '../../lib/inquiry'
 
 // Where general contact messages (incl. full-time role inquiries) land.
@@ -86,12 +87,13 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // 2) Confirmation to the submitter: best-effort, reported but never blocks success.
+  const { replyTime } = await getProfile()
   const confirm = await sendOrLog({
     context: 'contact:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks · I'll reply within two working days`,
-    react: ContactConfirmationEmail({ name: name ? name.split(/\s+/)[0] : undefined }),
+    subject: `Thanks · I'll reply within ${replyTime}`,
+    react: ContactConfirmationEmail({ name: name ? name.split(/\s+/)[0] : undefined, replyTime }),
   })
 
   return json({ ok: true, success: true, ref, confirmationSent: confirm.ok })

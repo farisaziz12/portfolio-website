@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro'
 import { MentorshipConfirmationEmail } from '../../emails/MentorshipConfirmationEmail'
 import { MentorshipAdminEmail } from '../../emails/MentorshipAdminEmail'
 import { env, getFrom, isEmailConfigured, sendOrLog } from '../../lib/email'
+import { getProfile } from '../../lib/sanity/v3'
 import { EMAIL_RE, LIMITS, clean, inquiryRef, json, tooLong } from '../../lib/inquiry'
 
 // Where mentorship inquiries land. Defaults to faris@zurichjs.com; MENTORSHIP_INBOX
@@ -89,12 +90,13 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // 2) Confirmation to the submitter: best-effort, reported but never blocks success.
+  const { replyTime } = await getProfile()
   const confirm = await sendOrLog({
     context: 'mentorship:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks · I'll reply within two working days`,
-    react: MentorshipConfirmationEmail({ name: name.split(/\s+/)[0] }),
+    subject: `Thanks · I'll reply within ${replyTime}`,
+    react: MentorshipConfirmationEmail({ name: name.split(/\s+/)[0], replyTime }),
   })
 
   return json({ ok: true, success: true, ref, confirmationSent: confirm.ok })

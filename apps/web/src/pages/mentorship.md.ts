@@ -18,7 +18,7 @@ export const GET: APIRoute = async () => {
     ``,
     `> ${C.title} ${C.lede}`,
     ``,
-    `Apply for a seat (goal, budget, cadence): ${SITE}/mentorship#apply. Reply within ${profile.replyTime}. Also on MentorCruise: ${MENTORCRUISE_URL}`,
+    `Apply for a seat (goal, budget, cadence): ${SITE}/mentorship#apply. Reply within ${profile.replyTime}. Also on MentorCruise: ${profile.links.mentorcruise ?? MENTORCRUISE_URL}`,
     ``,
     `## Focus areas`,
     ``,

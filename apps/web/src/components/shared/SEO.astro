@@ -1,10 +1,11 @@
 ---
 interface SocialLinks {
-  twitter?: string;
   twitterUrl?: string;
   linkedin?: string;
+  bluesky?: string;
   github?: string;
   youtube?: string;
+  mentorcruise?: string;
 }
 
 interface Props {
@@ -24,7 +25,12 @@ interface Props {
   personName?: string;
   jobTitle?: string;
   personImage?: string;
+  /** "Geneva, Switzerland" (speaker profile → Based in). */
+  basedIn?: { city: string; country?: string };
+  /** Profile URLs for sameAs (speaker profile → Links). */
   socialLinks?: SocialLinks;
+  /** The community the person co-founded, for affiliation. */
+  community?: { name: string; url?: string };
   /** Optional extra schema.org nodes appended to the @graph (Event, Service, BreadcrumbList…). */
   extraSchema?: Record<string, unknown>[];
   /** Optional markdown mirror of this page, exposed for AI agents. */
@@ -51,7 +57,9 @@ const {
   personName = 'Faris Aziz',
   jobTitle = 'Staff Software Engineer',
   personImage,
-  socialLinks,
+  basedIn = { city: 'Geneva', country: 'Switzerland' },
+  socialLinks = {},
+  community = { name: 'ZurichJS', url: 'https://zurichjs.com' },
   extraSchema = [],
   markdownAlternate,
   personDescription,
@@ -72,14 +80,14 @@ const PERSON_ID = `${siteUrl}/#person`;
 const WEBSITE_ID = `${siteUrl}/#website`;
 
 const sameAs = [
-  'https://bsky.app/profile/farisaziz.com',
-  socialLinks?.linkedin || 'https://linkedin.com/in/farisaziz12',
-  socialLinks?.github || 'https://github.com/farisaziz12',
-  socialLinks?.twitterUrl || 'https://x.com/farisaziz12',
-  socialLinks?.youtube || 'https://www.youtube.com/@faziz-dev',
-  'https://mentorcruise.com/mentor/farisaziz/',
-  'https://zurichjs.com',
-].filter(Boolean);
+  socialLinks.bluesky,
+  socialLinks.linkedin,
+  socialLinks.github,
+  socialLinks.twitterUrl,
+  socialLinks.youtube,
+  socialLinks.mentorcruise,
+  community.url,
+].filter((u): u is string => Boolean(u));
 
 const person: Record<string, unknown> = {
   '@type': 'Person',
@@ -87,16 +95,16 @@ const person: Record<string, unknown> = {
   name: personName,
   url: siteUrl,
   jobTitle,
-  address: { '@type': 'PostalAddress', addressLocality: 'Geneva', addressCountry: 'CH' },
+  address: { '@type': 'PostalAddress', addressLocality: basedIn.city, ...(basedIn.country ? { addressCountry: basedIn.country } : {}) },
   description:
     personDescription ||
-    'Software engineer and conference speaker based in Geneva. Works on frontend and payment systems at scale, co-founded ZurichJS, and chairs ZurichJS Conf.',
+    `Software engineer and conference speaker based in ${basedIn.city}. Works on frontend and payment systems at scale, co-founded ${community.name}, and chairs ${community.name} Conf.`,
   ...(awards.length ? { award: awards.length === 1 ? awards[0] : awards } : {}),
   affiliation: {
     '@type': 'Organization',
-    name: 'ZurichJS',
-    url: 'https://zurichjs.com',
-    description: 'JavaScript community and conference in Zurich, co-founded by Faris Aziz.',
+    name: community.name,
+    ...(community.url ? { url: community.url } : {}),
+    description: `JavaScript community and conference, co-founded by ${personName}.`,
   },
   knowsAbout: [
     'React',

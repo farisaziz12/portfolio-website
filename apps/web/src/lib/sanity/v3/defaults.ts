@@ -84,6 +84,7 @@ export const DEFAULT_PROFILE: Profile = {
   name: 'Faris Aziz',
   pronunciation: 'FAH-riss ah-ZEEZ',
   tagline: DEFAULT_NOW_LINE,
+  jobTitle: 'Staff Software Engineer',
   travelBase: 'Geneva, Switzerland',
   replyTime: 'two working days',
   links: {
@@ -91,6 +92,8 @@ export const DEFAULT_PROFILE: Profile = {
     bluesky: 'https://bsky.app/profile/farisaziz.com',
     twitter: 'https://x.com/farisaziz12',
     github: 'https://github.com/farisaziz12',
+    youtube: 'https://www.youtube.com/@faziz-dev',
+    mentorcruise: 'https://mentorcruise.com/mentor/farisaziz/',
   },
   bios: {
     short:

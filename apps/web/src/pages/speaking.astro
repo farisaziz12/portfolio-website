@@ -23,6 +23,7 @@ import {
   getWorkshops,
 } from '../lib/sanity/v3';
 import { bookingYears } from '../lib/availability';
+import { lengthRange } from '../lib/workshops-view';
 import { breadcrumbs } from '../lib/seo';
 
 const [profile, stats, upcomingAll, talks, workshops, praise] = await Promise.all([
@@ -45,7 +46,7 @@ const reply = /\btwo\b/i.test(profile.replyTime) ? '2 days' : profile.replyTime;
 const stats4 = [
   { value: stats.talksDelivered, label: 'talks delivered', meta: `from session records, ${currentMonthYear()}` },
   { value: stats.countries, label: 'countries', meta: 'speaking and hosting' },
-  { value: bookableWorkshops.length || stats.catalogueWorkshops, label: 'workshops', meta: '3 h to full day' },
+  { value: bookableWorkshops.length || stats.catalogueWorkshops, label: 'workshops', meta: lengthRange(bookableWorkshops) || undefined },
   { value: reply, label: 'to reply to an invitation' },
 ];
 

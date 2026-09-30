@@ -129,8 +129,14 @@ export const plainHeadline = (headline: string) => headline.replace(/[[\]]/g, ''
 
 // ─── Profile ───────────────────────────────────────────────────────────────
 
+/** "Geneva, Switzerland" → { city: "Geneva", country: "Switzerland" }. */
+export function basedIn(travelBase: string): { city: string; country?: string } {
+  const [city, ...rest] = travelBase.split(',').map((s) => s.trim()).filter(Boolean);
+  return { city: city ?? travelBase, country: rest.length ? rest.join(', ') : undefined };
+}
+
 export const profileQuery = groq`*[_type == "speakerProfile"] | order(_updatedAt desc)[0] {
-  name, pronunciation, tagline, travelBase, replyTime, socialLinks,
+  name, pronunciation, tagline, jobTitle, travelBase, replyTime, socialLinks,
   bioShort, bioMedium, bioLong, bioFull, bioUpdatedAt,
   "photos": coalesce(headshots[downloadable != false]{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip }, []),
   "topicPillars": coalesce(topicClusters[]{ pillar, title, description, "talk": talk->${TALK_REF} }, []),
@@ -144,6 +150,7 @@ interface RawProfile {
   name?: string;
   pronunciation?: string;
   tagline?: string;
+  jobTitle?: string;
   travelBase?: string;
   replyTime?: string;
   socialLinks?: Profile['links'];
@@ -176,6 +183,7 @@ export function getProfile(): Promise<Profile> {
       name: str(p?.name, d.name),
       pronunciation: str(p?.pronunciation, d.pronunciation),
       tagline: str(p?.tagline, settings.nowLine || d.tagline),
+      jobTitle: str(p?.jobTitle, d.jobTitle),
       travelBase: str(p?.travelBase, d.travelBase),
       replyTime: str(p?.replyTime, d.replyTime),
       links: {
@@ -183,7 +191,8 @@ export function getProfile(): Promise<Profile> {
         bluesky: p?.socialLinks?.bluesky || d.links.bluesky,
         twitter: p?.socialLinks?.twitter || d.links.twitter,
         github: p?.socialLinks?.github || d.links.github,
-        youtube: p?.socialLinks?.youtube,
+        youtube: p?.socialLinks?.youtube || d.links.youtube,
+        mentorcruise: p?.socialLinks?.mentorcruise || d.links.mentorcruise,
       },
       bios: {
         short: str(p?.bioShort, d.bios.short),

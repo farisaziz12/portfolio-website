@@ -6,9 +6,10 @@
  */
 import ThemeToggle from '../islands/ThemeToggle';
 import { FOOTER_PRIMARY, FOOTER_SECONDARY } from '../../lib/nav';
-import { getSiteSettings } from '../../lib/sanity/v3';
+import { basedIn, getProfile, getSiteSettings } from '../../lib/sanity/v3';
 
-const settings = await getSiteSettings();
+const [settings, profile] = await Promise.all([getSiteSettings(), getProfile()]);
+const city = basedIn(profile.travelBase).city;
 const profiles = [
   { label: 'LinkedIn', href: settings.links.linkedin },
   { label: 'Bluesky', href: settings.links.bluesky },
@@ -38,7 +39,7 @@ const year = new Date().getFullYear();
         {FOOTER_SECONDARY.map((l) => <a href={l.href}>{l.label}</a>)}
       </nav>
       <div class="ftr__meta">
-        <span>&copy; {year} {settings.siteTitle} · Geneva</span>
+        <span>&copy; {year} {settings.siteTitle} · {city}</span>
         <ThemeToggle client:visible />
       </div>
     </div>

@@ -10,6 +10,7 @@ import StatRow from '../../components/v3/StatRow.astro';
 import InvitePanel from '../../components/v3/InvitePanel.astro';
 import LandingCards from '../../components/services/LandingCards.astro';
 import { getServiceLandingPages, getServiceLandingPage } from '../../lib/secondary-content';
+import { getProfile } from '../../lib/sanity/v3';
 import { urlFor } from '../../lib/sanity/client';
 import { breadcrumbs, SITE } from '../../lib/seo';
 
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params as { slug: string };
-const page = await getServiceLandingPage(slug);
+const [page, profile] = await Promise.all([getServiceLandingPage(slug), getProfile()]);
 if (!page) return Astro.redirect('/services');
 
 let ogImage = '/og/services.png';
@@ -150,7 +151,7 @@ const schema = [
       class="panel"
       kicker="Services"
       headline={page.ctaHeadline || 'Tell me what’s going on.'}
-      body={page.ctaSubheadline || 'A sentence is enough to start. I reply within two working days.'}
+      body={page.ctaSubheadline || `A sentence is enough to start. I reply within ${profile.replyTime}.`}
       primary={{ label: page.ctaButtonText || 'Get in touch', href: ctaHref }}
       secondary={{ label: 'All services', href: '/services' }}
       note={page.ctaSecondaryText}

@@ -13,6 +13,7 @@ import {
 } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { bookingYears } from '../lib/availability';
+import { lengthRange } from '../lib/workshops-view';
 import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
@@ -41,7 +42,7 @@ export const GET: APIRoute = async () => {
     ``,
     `- Talks delivered: ${stats.talksDelivered} (speaker, keynote and lightning sessions; hosting and attending are not counted)`,
     `- Countries: ${stats.countries} (speaking and hosting), cities: ${stats.cities}`,
-    `- Workshops in the catalogue: ${bookable.length} (3 h to full day); workshop sessions delivered: ${stats.workshopsDelivered}`,
+    `- Workshops in the catalogue: ${bookable.length}${lengthRange(bookable) ? ` (${lengthRange(bookable)})` : ''}; workshop sessions delivered: ${stats.workshopsDelivered}`,
     `- Talks in the catalogue: ${stats.catalogueTalks}`,
     `- Reply time to an invitation: ${profile.replyTime}`,
     ``,

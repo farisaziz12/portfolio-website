@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { TOPICS, titleFor } from 'shared';
 import { renderOgCard, OG_HEADERS, type OgCard } from '../../lib/og';
+import { lengthRange } from '../../lib/workshops-view';
 import {
   getAllEvents,
   getCatalogueTalks,
@@ -9,6 +10,8 @@ import {
   getSpeakingStats,
   getSiteSettings,
   getMetrics,
+  getProfile,
+  basedIn,
   eventPlace,
   fullDate,
   monthYear,
@@ -22,7 +25,7 @@ import {
  * `/og/<slug>.png` to BaseLayout.
  */
 export async function getStaticPaths() {
-  const [talks, events, writing, workshops, stats, settings, metrics] = await Promise.all([
+  const [talks, events, writing, workshops, stats, settings, metrics, profile] = await Promise.all([
     getCatalogueTalks(),
     getAllEvents(),
     getWriting(),
@@ -30,7 +33,10 @@ export async function getStaticPaths() {
     getSpeakingStats(),
     getSiteSettings(),
     getMetrics(),
+    getProfile(),
   ]);
+  // "3 h to full day" → "3 hours to a full day"
+  const range = lengthRange(workshops.filter((w) => w.isBookable)).replace(/ h\b/g, ' hours').replace('to full day', 'to a full day');
   const byline = settings.nowLine;
   const members = metrics.find((m) => m.domain === 'community');
 
@@ -51,8 +57,8 @@ export async function getStaticPaths() {
     },
     talks: { kicker: 'Speaking · Talk catalogue', title: `${stats.catalogueTalks} talks, ready to book.`, meta: 'Premise, audience, length and a recording where one exists.', mark: String(stats.catalogueTalks) },
     events: { kicker: 'Speaking · Schedule', title: "Where I'll be, and where I've been.", meta: `${stats.upcoming} upcoming · ${stats.countries} countries`, mark: String(stats.countries), markLabel: 'countries' },
-    workshops: { kicker: 'Speaking · Workshops', title: 'Hands-on, 3 hours to a full day.', meta: 'You keep the repo and the resources after.' },
-    invite: { kicker: 'Invite me', title: 'What did you have in mind?', meta: 'Conferences, meetups, podcasts, workshops, panels. I reply within two working days.' },
+    workshops: { kicker: 'Speaking · Workshops', title: range ? `Hands-on, ${range}.` : 'Hands-on, and you keep the repo.', meta: 'You keep the repo and the resources after.' },
+    invite: { kicker: 'Invite me', title: 'What did you have in mind?', meta: `Conferences, meetups, podcasts, workshops, panels. I reply within ${profile.replyTime}.` },
     'press-kit': { kicker: 'Speaking · Press kit', title: 'Everything an organiser needs, on one page.', meta: 'Bios, photos and the practical bits for your programme.' },
     community: {
       kicker: 'Community',
@@ -60,7 +66,7 @@ export async function getStaticPaths() {
       ...(members ? { mark: members.value, markLabel: members.label } : {}),
     },
     blog: { kicker: 'Writing & conversations', title: "What I've written, and what I've said out loud.", meta: 'Posts, guest articles, podcasts and video in one timeline.' },
-    about: { kicker: 'About · Geneva', title: 'A builder at heart. Products, payments and a JavaScript community.', meta: byline },
+    about: { kicker: `About · ${basedIn(profile.travelBase).city}`, title: 'A builder at heart. Products, payments and a JavaScript community.', meta: byline },
     impact: { kicker: 'Track record', title: 'The work, the stages, the community.', meta: 'Everything dated and defined.', mark: String(stats.countries), markLabel: 'countries spoken in' },
     appreciation: { kicker: 'What people say', title: 'What people have said about Faris.', meta: 'Every card links to the original post.' },
     services: { kicker: 'Services', title: 'How I can help.', meta: 'Events: speaking and workshops · Advisory · Mentorship. A sentence is enough to start.' },

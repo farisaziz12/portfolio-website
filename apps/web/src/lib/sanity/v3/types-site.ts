@@ -145,9 +145,11 @@ export interface Profile {
   name: string;
   pronunciation?: string;
   tagline: string;
+  /** schema.org job title. */
+  jobTitle: string;
   travelBase: string;
   replyTime: string;
-  links: { linkedin?: string; bluesky?: string; twitter?: string; github?: string; youtube?: string };
+  links: { linkedin?: string; bluesky?: string; twitter?: string; github?: string; youtube?: string; mentorcruise?: string };
   bios: { short?: string; medium?: string; long?: string; updatedAt?: string };
   photos: PressPhoto[];
   topicPillars: TopicPillar[];

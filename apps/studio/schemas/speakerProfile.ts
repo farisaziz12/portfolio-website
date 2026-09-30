@@ -39,7 +39,8 @@ export default defineType({
       group: 'identity',
       description: 'Public one-liner: "Software engineer · speaker · ZurichJS co-founder".',
     }),
-    defineField({ name: 'travelBase', title: 'Based in', type: 'string', group: 'identity', initialValue: 'Geneva, Switzerland' }),
+    defineField({ name: 'travelBase', title: 'Based in', type: 'string', group: 'identity', initialValue: 'Geneva, Switzerland', description: '"City, Country". The city shows in the footer and About kicker; both feed search results.' }),
+    defineField({ name: 'jobTitle', title: 'Job title', type: 'string', group: 'identity', initialValue: 'Staff Software Engineer', description: 'Shown to search engines as your job title (schema.org Person).' }),
     defineField({ name: 'replyTime', title: 'Reply time', type: 'string', group: 'identity', initialValue: 'two working days', description: 'Used in "I reply within …".' }),
     defineField({
       name: 'socialLinks',
@@ -53,6 +54,7 @@ export default defineType({
         defineField({ name: 'twitter', title: 'X', type: 'url' }),
         defineField({ name: 'github', title: 'GitHub', type: 'url' }),
         defineField({ name: 'youtube', title: 'YouTube', type: 'url' }),
+        defineField({ name: 'mentorcruise', title: 'MentorCruise', type: 'url' }),
         defineField({
           name: 'email',
           title: 'Email (legacy)',

@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer.astro';
 import SEO from '../components/shared/SEO.astro';
 import PostHog from '../components/posthog.astro';
 import { urlFor } from '../lib/sanity/client';
-import { getSiteSettings, getProfile, getCommunities } from '../lib/sanity/v3';
+import { basedIn, getSiteSettings, getProfile, getCommunities } from '../lib/sanity/v3';
 import '../styles/global.css';
 import '../styles/tokens.css';
 import '../styles/ds.css';
@@ -39,6 +39,8 @@ const [settings, profile, communities] = await Promise.all([getSiteSettings(), g
 
 const defaultImage = settings.ogImage?.asset ? urlFor(settings.ogImage).width(1200).height(630).url() : '/og/default.png';
 const personImage = profile.photos[0]?.asset ? urlFor(profile.photos[0]).width(800).height(800).fit('crop').url() : undefined;
+const place = basedIn(profile.travelBase);
+const primaryCommunity = communities.find((c) => /found/i.test(c.role ?? '')) ?? communities[0];
 const awards = communities.flatMap((c) => c.recognition.map((r) => [r.title, r.issuer, r.year].filter(Boolean).join(', ')));
 
 const {
@@ -89,7 +91,9 @@ const {
       siteUrl={settings.siteUrl}
       twitterHandle={settings.twitterHandle}
       personName={profile.name}
-      jobTitle={settings.nowLine}
+      jobTitle={profile.jobTitle}
+      basedIn={place}
+      community={primaryCommunity ? { name: primaryCommunity.name, url: primaryCommunity.url } : undefined}
       personImage={personImage}
       personDescription={profile.bios.short}
       awards={awards}
@@ -97,10 +101,12 @@ const {
       extraSchema={extraSchema}
       markdownAlternate={markdownAlternate}
       socialLinks={{
-        linkedin: settings.links.linkedin,
-        github: settings.links.github,
-        youtube: settings.links.youtube,
-        twitterUrl: settings.twitterHandle ? `https://x.com/${settings.twitterHandle}` : undefined,
+        linkedin: profile.links.linkedin || settings.links.linkedin,
+        bluesky: profile.links.bluesky || settings.links.bluesky,
+        github: profile.links.github || settings.links.github,
+        youtube: profile.links.youtube || settings.links.youtube,
+        mentorcruise: profile.links.mentorcruise,
+        twitterUrl: profile.links.twitter || (settings.twitterHandle ? `https://x.com/${settings.twitterHandle}` : undefined),
       }}
     />
 
@@ -132,11 +138,11 @@ const {
     </script>
 
     <!-- DevTools console banner — for the people who open the console (my kind of people) -->
-    <script is:inline>
+    <script is:inline define:vars={{ whoami: `${profile.name}: software engineer, speaker, ${primaryCommunity?.name ?? 'ZurichJS'} co-founder. ${place.city}.` }}>
       (function () {
         try {
           console.log(
-            '%c$ whoami%c\nFaris Aziz: software engineer, speaker, ZurichJS co-founder. Geneva.\n\n' +
+            '%c$ whoami%c\n' + whoami + '\n\n' +
               '%cYou opened the console. My kind of person.%c\n' +
               'Say hi:   https://faziz-dev.com/contact#message (short form, straight to my inbox)\n' +
               'Doors:    https://faziz-dev.com/contact\n' +

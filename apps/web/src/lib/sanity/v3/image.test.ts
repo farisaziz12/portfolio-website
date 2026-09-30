@@ -1,7 +1,8 @@
-/** hotspotFocus (crop-relative focus) and the home hero's press-photo fallback. */
+/** hotspotFocus (crop-relative focus), the home hero's press-photo fallback, basedIn. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { homeHeroPhotos, hotspotFocus } from './image';
+import { basedIn } from './site';
 import type { PressPhoto } from './types';
 
 const asset = (id: string) => ({ asset: { _ref: id } });
@@ -34,4 +35,9 @@ test('homeHeroPhotos: empty picks fall back to press photos, stage first, max th
 
 test('homeHeroPhotos: nothing anywhere → empty', () => {
   assert.deepEqual(homeHeroPhotos([], []), []);
+});
+
+test('basedIn: city and country from "City, Country"', () => {
+  assert.deepEqual(basedIn('Geneva, Switzerland'), { city: 'Geneva', country: 'Switzerland' });
+  assert.deepEqual(basedIn('Zurich'), { city: 'Zurich', country: undefined });
 });

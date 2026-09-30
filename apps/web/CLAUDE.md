@@ -82,11 +82,11 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 | File | Triggered from | Role |
 |---|---|---|
 | `InviteAdminEmail.tsx` | `/api/invite` | Notification to Faris with event details |
-| `InviteConfirmationEmail.tsx` | `/api/invite` | "Thanks, I'll reply in 2 days" to submitter |
+| `InviteConfirmationEmail.tsx` | `/api/invite` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `MentorshipAdminEmail.tsx` | `/api/mentorship` | Notification to Faris with inquiry details |
-| `MentorshipConfirmationEmail.tsx` | `/api/mentorship` | "Thanks, I'll reply in 2 days" to submitter |
+| `MentorshipConfirmationEmail.tsx` | `/api/mentorship` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `ContactAdminEmail.tsx` | `/api/contact` | Notification to Faris with topic/company/message (general contact + hiring) |
-| `ContactConfirmationEmail.tsx` | `/api/contact` | "Thanks, I'll reply in 2 days" to submitter |
+| `ContactConfirmationEmail.tsx` | `/api/contact` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `WorkshopWelcomeEmail.tsx` | `/api/workshop/subscribe` (workshop-attend) | "You're in — here are materials" |
 | `GeneralSubscribeConfirmEmail.tsx` | `/api/workshop/subscribe` (website) | "You're on the list" |
 | `WorkshopFollowUpEmail.tsx` | `/api/workshop/follow-up` | Post-workshop feedback request |

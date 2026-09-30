@@ -5,13 +5,15 @@ import { EmailFooter, EmailHeader, EmailSignature } from './parts'
 
 interface Props {
   name?: string
+  /** Speaker profile → Reply time ("two working days"). */
+  replyTime?: string
 }
 
-export function ContactConfirmationEmail({ name }: Props) {
+export function ContactConfirmationEmail({ name, replyTime = 'two working days' }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>Thanks · I'll reply within two days</Preview>
+      <Preview>{`Thanks · I'll reply within ${replyTime}`}</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
           <EmailHeader label="Message received" />
@@ -23,7 +25,7 @@ export function ContactConfirmationEmail({ name }: Props) {
 
             <Text style={s.paragraph}>
               Your message just landed in my inbox. I read everything myself and I'll reply within
-              <strong style={{ color: s.inkStrong }}> two business days</strong>.
+              <strong style={{ color: s.inkStrong }}> {replyTime}</strong>.
             </Text>
 
             <Text style={s.paragraph}>
