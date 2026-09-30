@@ -1,6 +1,6 @@
 ---
 /**
- * The opener ("web cut", 3.6s): an overlay above the fully rendered homepage.
+ * The opener ("web cut", 5s): an overlay above the fully rendered homepage.
  * Four cuts: white diagonal wipe + "F." mark → cropped "Faris" on yellow →
  * "Aziz" with yellow/blue colour offsets on white → speaker card; then the
  * overlay lifts (translateY(-3%) + fade, 0.6s).
@@ -108,20 +108,22 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   }
   .op__skip:hover { background: rgb(var(--c-yellow)); color: rgb(var(--c-ink)); }
 
-  /* Timeline (web cut): total 3.6s including the 0.6s lift. */
-  .op.is-play { animation: op-lift 0.6s cubic-bezier(0.7, 0, 0.3, 1) 3s both; }
-  .op.is-play .op__s1 { animation: op-scene 0.86s linear 0s both; }
-  .op.is-play .op__s1 :global(.op__photo) { animation: op-ken 0.9s linear both; }
-  .op.is-play .op__wipe { animation: op-wipe 0.41s cubic-bezier(0.8, 0, 0.2, 1) 0.11s both; }
-  .op.is-play .op__mark { animation: op-pop 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) 0.34s both; }
-  .op.is-play .op__s2 { animation: op-scene 0.79s linear 0.83s both; }
-  .op.is-play .op__crop { animation: op-slide 0.83s cubic-bezier(0.3, 0, 0.2, 1) 0.83s both; }
-  .op.is-play .op__s3 { animation: op-scene 0.86s linear 1.58s both; }
-  .op.is-play .op__stack { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 1.59s both; }
-  .op.is-play .op__off--y { animation: op-off-y 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 1.8s both; }
-  .op.is-play .op__off--b { animation: op-off-b 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 1.8s both; }
-  .op.is-play .op__s4 { animation: op-hold 1.2s linear 2.4s both; }
-  .op.is-play .op__card { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 2.42s both; }
+  /* Timeline (web cut): total 5.0s including the 0.6s lift. Scenes and
+     delays are the prototype's, stretched to 4.4s of cuts; pops and the wipe
+     keep their original speed so the transitions stay snappy. */
+  .op.is-play { animation: op-lift 0.6s cubic-bezier(0.7, 0, 0.3, 1) 4.4s both; }
+  .op.is-play .op__s1 { animation: op-scene 1.26s linear 0s both; }
+  .op.is-play .op__s1 :global(.op__photo) { animation: op-ken 1.32s linear both; }
+  .op.is-play .op__wipe { animation: op-wipe 0.41s cubic-bezier(0.8, 0, 0.2, 1) 0.16s both; }
+  .op.is-play .op__mark { animation: op-pop 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s both; }
+  .op.is-play .op__s2 { animation: op-scene 1.16s linear 1.22s both; }
+  .op.is-play .op__crop { animation: op-slide 1.22s cubic-bezier(0.3, 0, 0.2, 1) 1.22s both; }
+  .op.is-play .op__s3 { animation: op-scene 1.26s linear 2.32s both; }
+  .op.is-play .op__stack { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 2.33s both; }
+  .op.is-play .op__off--y { animation: op-off-y 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 2.64s both; }
+  .op.is-play .op__off--b { animation: op-off-b 0.53s cubic-bezier(0.2, 0.8, 0.2, 1) 2.64s both; }
+  .op.is-play .op__s4 { animation: op-hold 1.76s linear 3.52s both; }
+  .op.is-play .op__card { animation: op-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 3.55s both; }
 
   /* Reduced motion: the static title frame; JS fades it out over 400ms
      (Web Animations, so the global reduced-motion clamp doesn't zero it). */
@@ -186,7 +188,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') done(); };
     const onEnd = (e: AnimationEvent) => { if (!reduced && e.target === el) done(); };
     const onScroll = () => { if (window.scrollY > 40) done(); };
-    const timer = window.setTimeout(done, reduced ? 1900 : 3900); // safety net if animationend never fires
+    const timer = window.setTimeout(done, reduced ? 1900 : 5300); // safety net if animationend never fires
     document.addEventListener('keydown', onKey);
     el.addEventListener('animationend', onEnd);
     el.addEventListener('click', done); // Skip button, or a tap anywhere on the overlay

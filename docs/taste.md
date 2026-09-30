@@ -37,7 +37,7 @@ Score every finding **keep**, **translate**, or **reject** for this site — nev
 | Ask | Late, after proof | Invite / Work with me, early and often | **Keep** the forms; they can sit high *and* at the bottom |
 
 **V3 update (Panels & Bands).** The graphic language now matches Faris's slide decks and the ZurichJS Conf motion
-identity: Figtree, one yellow accent, skewed bands with a blue edge, numbered posters, a 3.6s conference-style opener.
+identity: Figtree, one yellow accent, skewed bands with a blue edge, numbered posters, a 5s conference-style opener.
 
 **Keep (Faris-only):** invite forms, the skewed band + stage photo, numbered posters for featured work, unedited
 quotes styled like their platform, derived role-specific counts, the deck-kit illustrations (used unmodified).
