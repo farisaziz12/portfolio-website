@@ -29,26 +29,18 @@ const COMMANDS: Cmd[] = [
   { group: 'Pages', label: 'Talks', icon: ICON.play, href: '/talks' },
   { group: 'Pages', label: 'Events', icon: ICON.cal, href: '/events' },
   { group: 'Pages', label: 'Workshops', icon: ICON.book, href: '/workshops' },
-  { group: 'Pages', label: 'Consulting', icon: ICON.chart, href: '/consulting' },
-  { group: 'Pages', label: 'Mentorship', icon: ICON.user, href: '/mentorship' },
-  { group: 'Pages', label: 'Impact', icon: ICON.chart, href: '/impact' },
-  { group: 'Pages', label: 'About', icon: ICON.user, href: '/about' },
-  { group: 'Pages', label: 'Blog', icon: ICON.pen, href: '/blog' },
-  { group: 'Pages', label: 'Projects', icon: ICON.book, href: '/projects' },
-  { group: 'Pages', label: 'Media & press kit', icon: ICON.img, href: '/media' },
-  { group: 'Pages', label: 'Photo gallery', icon: ICON.img, href: '/gallery' },
-  { group: 'Pages', label: 'Appreciation', icon: ICON.heart, href: '/appreciation' },
-  { group: 'Actions', label: 'Work with me', icon: ICON.mail, href: '/contact', keyHint: 'CTA' },
-  { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite' },
   { group: 'Pages', label: 'Press kit', icon: ICON.img, href: '/press-kit' },
-  {
-    group: 'Actions',
-    label: 'Copy short bio',
-    icon: ICON.pen,
-    action: 'copy',
-    text: 'Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva. He helps teams ship resilient frontend systems and payment integrations, speaks internationally on React, Next.js, and engineering leadership, and cofounded ZurichJS, winner of the JSNation Open Source Award.',
-    keyHint: 'for organizers',
-  },
+  { group: 'Pages', label: 'Writing', icon: ICON.pen, href: '/blog' },
+  { group: 'Pages', label: 'Community', icon: ICON.heart, href: '/community' },
+  { group: 'Pages', label: 'About', icon: ICON.user, href: '/about' },
+  { group: 'Pages', label: 'Track record', icon: ICON.chart, href: '/impact' },
+  { group: 'Pages', label: 'What people say', icon: ICON.heart, href: '/appreciation' },
+  { group: 'Pages', label: 'Services', icon: ICON.chart, href: '/services' },
+  { group: 'Pages', label: 'Mentorship', icon: ICON.user, href: '/mentorship' },
+  { group: 'Pages', label: 'Projects', icon: ICON.book, href: '/projects' },
+  { group: 'Pages', label: 'Photo gallery', icon: ICON.img, href: '/gallery' },
+  { group: 'Actions', label: 'Invite me to speak', icon: ICON.mic, href: '/invite', keyHint: 'CTA' },
+  { group: 'Actions', label: 'Get in touch', icon: ICON.mail, href: '/contact' },
   { group: 'Actions', label: 'Message me', icon: ICON.mail, href: '/contact#message' },
   { group: 'Actions', label: 'Toggle theme', icon: ICON.sun, action: 'toggle-theme' },
   { group: 'Elsewhere', label: 'GitHub', icon: ICON.gh, href: 'https://github.com/farisaziz12', external: true },
@@ -57,7 +49,12 @@ const COMMANDS: Cmd[] = [
 
 const RECENT_KEY = 'cmdk-recent';
 
-export default function CommandPalette() {
+interface Props {
+  /** The short bio from Sanity (speakerProfile.bios.short), for "Copy short bio". */
+  bio?: string;
+}
+
+export default function CommandPalette({ bio }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -71,20 +68,28 @@ export default function CommandPalette() {
     track('command_palette_opened', { path: window.location.pathname });
   }, [open]);
 
+  // "Copy short bio" copies the Sanity bio, so it never drifts from the press kit.
+  const commands = useMemo<Cmd[]>(() => {
+    if (!bio) return COMMANDS;
+    const copy: Cmd = { group: 'Actions', label: 'Copy short bio', icon: ICON.pen, action: 'copy', text: bio, keyHint: 'for organizers' };
+    const at = COMMANDS.findIndex((c) => c.label === 'Get in touch') + 1;
+    return [...COMMANDS.slice(0, at), copy, ...COMMANDS.slice(at)];
+  }, [bio]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
       // Pin the last-used command to the top so the palette learns one habit.
-      const recent = recentLabel ? COMMANDS.find((c) => c.label === recentLabel) : undefined;
+      const recent = recentLabel ? commands.find((c) => c.label === recentLabel) : undefined;
       if (recent) {
-        return [{ ...recent, group: 'Recent' }, ...COMMANDS.filter((c) => c.label !== recentLabel)];
+        return [{ ...recent, group: 'Recent' }, ...commands.filter((c) => c.label !== recentLabel)];
       }
-      return COMMANDS;
+      return commands;
     }
-    return COMMANDS.filter(
+    return commands.filter(
       (c) => c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
     );
-  }, [query, recentLabel]);
+  }, [query, recentLabel, commands]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ props }) => {
       : '',
     versions.length > 1
       ? `## How this talk evolved\n\n${versions
-          .map((v) => `- ${v.years || v.version || 'Not given yet'}: [${v.title}](${SITE}/talks/${v.slug}.md)${v.isCurrent && v.isBookable ? ' (current)' : ''}${v.versionNotes ? `. ${v.versionNotes}` : ''}`)
+          .map((v) => `- ${v.years || v.version || 'New'}: [${v.title}](${SITE}/talks/${v.slug}.md)${v.isCurrent && v.isBookable ? ' (current)' : ''}${v.versionNotes ? `. ${v.versionNotes}` : ''}`)
           .join('\n')}\n`
       : '',
     `## Where it's been delivered\n\n${deliveries.length ? deliveries.join('\n') : 'No sessions on record yet.'}\n`,

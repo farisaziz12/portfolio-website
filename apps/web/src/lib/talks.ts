@@ -52,10 +52,10 @@ export function isNewTalk(t: Pick<TalkWithHistory, 'deliveries'>): boolean {
   return !t.deliveries.some((d) => !d.event.isUpcoming);
 }
 
-/** "premiere: Game of Codes, 9 Oct 2026" · "new, not given yet". */
+/** "new · premiere: Game of Codes, 9 Oct 2026" · "new". */
 export function newTalkLine(t: TalkWithHistory): string {
   const n = t.nextDelivery;
-  return n ? `premiere: ${eventShortName(n.event)}, ${fullDate(n.event.date)}` : 'new, not given yet';
+  return n ? `new · premiere: ${eventShortName(n.event)}, ${fullDate(n.event.date)}` : 'new';
 }
 
 /** Catalogue row meta: "30 min · recording · delivered 6× incl. React Summit US 2025". */

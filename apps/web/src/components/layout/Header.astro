@@ -16,9 +16,11 @@ interface Props {
   band?: boolean;
   /** Offer "Replay intro" to returning visitors (the opener is enabled). */
   introEnabled?: boolean;
+  /** Short bio (Sanity) for the command palette's "Copy short bio". */
+  bio?: string;
 }
 
-const { band = true, introEnabled = false } = Astro.props;
+const { band = true, introEnabled = false, bio } = Astro.props;
 const pathname = Astro.url.pathname;
 const section = sectionFor(pathname);
 const activePill = activeChild(section, pathname);
@@ -86,7 +88,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
   </div>
 </dialog>
 
-<CommandPalette client:idle />
+<CommandPalette client:idle bio={bio} />
 
 <style>
   .hdr { position: relative; z-index: 20; background: rgb(var(--ground)); }

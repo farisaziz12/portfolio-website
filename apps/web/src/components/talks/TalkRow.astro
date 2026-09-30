@@ -18,7 +18,7 @@ const href = `/talks/${t.slug}`;
 const yt = t.thumbnail?.asset ? undefined : youtubeThumb(t.recording?.url);
 const meta = talkMeta(t);
 const fresh = isNewTalk(t);
-const premiere = t.nextDelivery ? `Premieres ${monthYear(t.nextDelivery.event.date)}` : 'Not given yet';
+const premiere = t.nextDelivery ? `Premieres ${monthYear(t.nextDelivery.event.date)}` : '';
 // "Since 2024 · 2 versions": the talk has changed over the years.
 const firstYear = t.versions.map((v) => v.years.slice(0, 4)).filter(Boolean).sort()[0];
 const evolved = t.versions.length > 1 ? `${firstYear ? `Since ${firstYear} · ` : ''}${t.versions.length} versions` : '';
@@ -35,7 +35,7 @@ const audience = t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '');
     ) : fresh ? (
       <span class="trow__new" aria-hidden="true">
         <span class="trow__new-word">New</span>
-        <span class="trow__new-line">{premiere}</span>
+        {premiere && <span class="trow__new-line">{premiere}</span>}
       </span>
     ) : (
       <span class="ds-img-ph trow__img" aria-hidden="true"></span>

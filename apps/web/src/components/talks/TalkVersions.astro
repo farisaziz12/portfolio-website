@@ -19,7 +19,7 @@ const versions = [...talk.versions].reverse();
     <ol class="tver__list" role="list">
       {versions.map((v) => (
         <li class:list={['tver__item', { 'is-here': v._id === talk._id }]}>
-          <span class="tver__when">{v.years || v.version || 'Not given yet'}</span>
+          <span class="tver__when">{v.years || v.version || 'New'}</span>
           <div class="tver__main">
             <p class="tver__title">
               {v._id === talk._id ? v.title : <a href={`/talks/${v.slug}`} class="ds-textlink">{v.title}</a>}
