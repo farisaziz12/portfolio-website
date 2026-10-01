@@ -93,8 +93,6 @@ export interface Community {
   founded?: number;
   city?: string;
   url?: string;
-  /** The community's logo (or its event series' logo). */
-  logo?: SanityImage;
   headline?: string;
   caseStudyHeadline?: string;
   summary?: string;

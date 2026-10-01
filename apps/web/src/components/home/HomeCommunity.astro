@@ -6,7 +6,6 @@
  */
 import SanityImg from '../v3/SanityImg.astro';
 import Icon from '../v3/Icon.astro';
-import zurichjsLogo from '../../assets/logos/zurichjs.svg';
 import type { Community, Metric } from '../../lib/sanity/v3';
 
 interface Props {
@@ -21,14 +20,12 @@ const filmLive = Boolean(film?.published && film.url);
 const tiles = metrics.slice(0, 4);
 const award = c.recognition[0];
 const photos = c.photos.filter((p) => p?.asset).slice(0, award ? 2 : 3);
+const hasRow = photos.length > 0 || Boolean(award);
+// The biggest piece of media sits beside the copy; the rest runs full width below it,
+// so neither column is left with an empty tail.
+const beside: 'film' | 'row' | 'tiles' | null = film ? 'film' : hasRow ? 'row' : tiles.length ? 'tiles' : null;
 const poster = film?.poster?.asset ? film.poster : c.photos[0];
-// The CMS logo wins; ZurichJS ships with its own so the section is never logo-less.
-const builtInLogo = /zurichjs/i.test(c.slug || c.name) ? zurichjsLogo : undefined;
-const hasLogo = Boolean(c.logo?.asset || builtInLogo);
 const kicker = ['Community', c.city, c.founded ? `since ${c.founded}` : null].filter(Boolean).join(' · ');
-const logoLink = c.url
-  ? { href: c.url, target: '_blank', rel: 'noopener noreferrer' }
-  : { href: '/community' };
 const FilmTag = filmLive ? 'a' : 'div';
 // An uploaded film plays inline on /community; an external one opens where it's hosted.
 const filmAttrs = !filmLive
@@ -41,24 +38,14 @@ const filmAttrs = !filmLive
 <section class="hc" aria-labelledby="home-community">
   <div class="ds-wrap hc__grid">
     <div class="hc__copy">
-      <div class="hc__brand">
-        {hasLogo && (
-        <a {...logoLink} class="hc__logo-link hc__logo-link--sm" data-track="home-community-logo">
-          {c.logo?.asset
-            ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" loading="lazy" class="hc__logo" />
-            : <img src={builtInLogo!.src} width="56" height="56" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
-        </a>
-        )}
-        <p class="ds-kicker">{kicker}</p>
-      </div>
+      <p class="ds-kicker">{kicker}</p>
       <h2 id="home-community" class="hc__h2">{c.headline || `I co-founded and lead ${c.name}.`}</h2>
       {c.summary && <p class="hc__summary">{c.summary}</p>}
       <a href="/community" class="ds-btn ds-btn--yellow hc__cta" data-track="home-community">The whole story</a>
     </div>
 
-    <div class="hc__media">
-      {film && (
-        <FilmTag class:list={['hc__film', { 'hc__film--live': filmLive }]} {...filmAttrs}>
+    {film && (
+        <FilmTag class:list={['hc__film', { 'hc__film--live': filmLive, 'hc__beside': beside === 'film' }]} {...filmAttrs}>
           {poster?.asset && <SanityImg image={poster} alt="" ratio={16 / 8.5} widths={[640, 960, 1200]} sizes="(max-width: 960px) 100vw, 60vw" class="hc__film-img" />}
           <span class="hc__film-inner">
             <span class="hc__film-top">
@@ -85,7 +72,7 @@ const filmAttrs = !filmLive
       )}
 
       {tiles.length > 0 && (
-        <dl class="hc__tiles">
+        <dl class:list={['hc__tiles', { 'hc__beside': beside === 'tiles' }]}>
           {tiles.map((m) => (
             <div class="hc__tile">
               <dt class="hc__num">{m.value}</dt>
@@ -95,10 +82,10 @@ const filmAttrs = !filmLive
         </dl>
       )}
 
-      {(photos.length > 0 || award || hasLogo) && (
-        <div class="hc__row">
+      {hasRow && (
+        <div class:list={['hc__row', { 'hc__beside': beside === 'row' }]}>
           {photos.map((p) => (
-            <div class="hc__photo-wrap"><SanityImg image={p} ratio={1} widths={[300, 500]} sizes="16vw" class="hc__photo" /></div>
+            <div class="hc__photo-wrap"><SanityImg image={p} ratio={1} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 30vw" class="hc__photo" /></div>
           ))}
           {award && (
             <div class="hc__award">
@@ -107,17 +94,8 @@ const filmAttrs = !filmLive
               <p class="ds-meta">{[award.issuer, award.year].filter(Boolean).join(' · ')}</p>
             </div>
           )}
-          {/* Desktop: the logo closes the row under the metrics, bottom right. Stacked layouts keep the small one by the kicker. */}
-          {hasLogo && (
-            <a {...logoLink} class="hc__logo-link hc__logo-link--lg" data-track="home-community-logo">
-              {c.logo?.asset
-                ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[160, 320]} sizes="160px" loading="lazy" class="hc__logo" />
-                : <img src={builtInLogo!.src} width="160" height="160" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
-            </a>
-          )}
         </div>
       )}
-    </div>
   </div>
 </section>
 
@@ -125,20 +103,19 @@ const filmAttrs = !filmLive
   .hc { position: relative; overflow: hidden; background: rgb(var(--surface)); border-block: 1px solid rgb(var(--hairline)); }
   .hc::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: rgb(var(--yellow)); }
   .hc::after { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 4px; background: rgb(var(--blue)); }
-  .hc__grid { position: relative; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 48px; padding-block: var(--section-y); padding-left: max(56px, var(--gutter)); }
-  .hc__copy { display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
-  .hc__brand { display: flex; align-items: center; gap: 14px; }
-  .hc__brand .ds-kicker { margin: 0; }
-  .hc__logo-link { display: block; flex: none; }
-  .hc__logo-link :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; border-radius: 6px; outline: 1px solid rgb(var(--hairline-strong)); outline-offset: -1px; }
-  .hc__logo-link--sm { display: none; }
-  .hc__logo-link--lg { flex: 1 1 0; min-width: 0; max-width: 160px; margin-left: auto; align-self: flex-end; }
-  .hc__logo-link--lg :global(.hc__logo) { width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; }
+  .hc__grid {
+    position: relative; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 28px 48px; align-items: start;
+    padding-block: var(--section-y); padding-left: max(56px, var(--gutter));
+  }
+  .hc__copy { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+  .hc__copy .ds-kicker { margin: 0; }
+  /* One block beside the copy, everything else full width underneath. */
+  .hc__grid > :not(.hc__copy) { grid-column: 1 / -1; min-width: 0; }
+  .hc__grid > .hc__beside { grid-column: 2; grid-row: 1; align-self: stretch; }
   .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
   .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
   .hc__cta { align-self: flex-start; }
 
-  .hc__media { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .hc__film {
     position: relative; display: block; aspect-ratio: 16 / 8.5; overflow: hidden; border-radius: var(--radius-card);
     background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); text-decoration: none; border: 1px solid rgb(var(--hairline));
@@ -170,7 +147,18 @@ const filmAttrs = !filmLive
   .hc__row { display: flex; gap: 10px; align-items: stretch; }
   .hc__photo-wrap { flex: 1 1 0; min-width: 0; }
   .hc__row .hc__award { flex: 1.4 1 0; min-width: 0; }
-  .hc__row :global(.hc__photo) { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-card); display: block; }
+  .hc__row :global(.hc__photo) { width: 100%; height: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); display: block; }
+  /* Beside the copy the photos fill the column's height instead of a fixed ratio. */
+  .hc__grid > .hc__row.hc__beside :global(.hc__photo) { aspect-ratio: auto; min-height: 280px; }
+  /* Beside the copy the film fills the column (its ratio would widen it past the column). */
+  .hc__grid > .hc__film.hc__beside { aspect-ratio: auto; min-height: 360px; }
+  /* Metrics alone beside the copy: a 2 × 2 block, centred on the copy. */
+  .hc__grid > .hc__tiles.hc__beside { align-self: center; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hc__tiles.hc__beside .hc__tile { padding: 22px 18px; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(2n) { border-right: 0; padding-right: 0; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(2n + 1) { padding-left: 0; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(n + 3) { border-top: 1px solid rgb(var(--hairline-strong)); }
+  .hc__tiles.hc__beside .hc__num { font-size: clamp(36px, 4.4vw, 60px); }
   .hc__award { background: rgb(var(--ground)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
   .hc__award p { margin: 0; }
   .hc__award-title { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
@@ -178,10 +166,10 @@ const filmAttrs = !filmLive
   .hc__award-title a:hover { color: rgb(var(--accent-text)); }
 
   @media (max-width: 960px) {
-    .hc__grid { grid-template-columns: 1fr; gap: 32px; }
+    .hc__grid { grid-template-columns: 1fr; gap: 24px; }
     .hc__copy { padding-right: 0; }
-    .hc__logo-link--sm { display: block; }
-    .hc__logo-link--lg { display: none; }
+    .hc__grid > .hc__beside { grid-column: 1; grid-row: auto; }
+    .hc__copy { margin-bottom: 8px; }
   }
   @media (max-width: 720px) {
     .hc__grid { padding-left: calc(var(--gutter) + 18px); padding-block: 30px; gap: 24px; }

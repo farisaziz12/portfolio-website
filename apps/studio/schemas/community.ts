@@ -21,7 +21,6 @@ export default defineType({
     defineField({ name: 'founded', title: 'Founded (year)', type: 'number', group: 'story' }),
     defineField({ name: 'city', title: 'City', type: 'string', group: 'story' }),
     defineField({ name: 'url', title: 'Website', type: 'url', group: 'story' }),
-    defineField({ name: 'logo', title: 'Logo', type: 'image', group: 'story', description: 'Shown next to the home headline (SVG or a transparent PNG that reads on dark). Empty: the event series logo is used.' }),
     defineField({ name: 'series', title: 'Event series', type: 'reference', to: [{ type: 'eventSeries' }], group: 'story', description: 'Links hosted editions for counts.' }),
     defineField({ name: 'headline', title: 'Home headline', type: 'string', group: 'story', description: '"I co-founded and lead ZurichJS."' }),
     defineField({ name: 'caseStudyHeadline', title: 'Case-study headline', type: 'string', group: 'story', description: '"Co-founded in 2024. A conference by 2026."' }),
