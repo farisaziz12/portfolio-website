@@ -60,14 +60,14 @@ const rest = stats.countryList.length - flags.length;
     </div>
     <div class="trk__col">
       {upcoming.length > 0 && (
-        <>
+        <div data-until-group>
           <div class="trk__head">
             <h3 class="ds-kicker">Next up</h3>
             <a href="/events" class="trk__all">Full schedule</a>
           </div>
           <ul class="trk__next">
             {upcoming.slice(0, 4).map((e) => (
-              <li>
+              <li data-until={e.endsAt}>
                 <a href={`/events/${e.slug}`} class="trk__nextcard">
                   <span class="trk__flag" aria-hidden="true">{e.location.isOnline ? '' : getCountryFlag(e.location.country)}</span>
                   <span>
@@ -78,7 +78,7 @@ const rest = stats.countryList.length - flags.length;
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
       {flags.length > 0 && (
         <>

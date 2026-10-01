@@ -160,3 +160,29 @@ the loader contract tests; `pnpm test:migrate` runs the migration tests.
 
 Merges touching `apps/studio/**` deploy the hosted Studio via `.github/workflows/deploy-studio.yml`
 (`SANITY_STUDIO_PROJECT_ID`, `SANITY_AUTH_TOKEN` secrets). PRs are validated by `.github/workflows/validate.yml`.
+
+## When the site updates
+
+Every page except the home page is static: built once, served from the CDN. The home page uses Vercel ISR and
+regenerates at most once an hour (`astro.config.mjs`). Three things keep content current without making pages dynamic:
+
+1. **Publishing in Sanity rebuilds the site.** A Sanity webhook calls the Vercel deploy hook on every publish or delete,
+   so an edit is live once that build finishes.
+2. **A scheduled rebuild every 6 hours** (`.github/workflows/scheduled-rebuild.yml`) moves events from upcoming to past and
+   rolls "Next up" and the availability calendar forward. Event status is computed in each event's own timezone.
+3. **The browser drops anything that ended between builds.** Upcoming items carry `data-until` (the end of the event's last
+   day, in its timezone); `lib/client/expire.ts` hides them once that has passed, and hides a "Next up" block with nothing
+   left. A stale build never shows a finished event as next.
+
+### One-time setup
+
+1. **Vercel deploy hook**: Vercel → the project → Settings → Git → Deploy Hooks → name it "Sanity + schedule", branch
+   `main` → copy the URL. Treat it like a password (anyone with it can trigger builds).
+2. **GitHub secret**: repo Settings → Secrets and variables → Actions → New secret `VERCEL_DEPLOY_HOOK_URL` = that URL.
+   Check it once: Actions → "Scheduled rebuild" → Run workflow.
+3. **Sanity webhook**: sanity.io/manage → the project → API → Webhooks → Create:
+   - URL: the deploy hook URL · Dataset: `production` · Trigger on: Create, Update, Delete
+   - Filter: `!(_id in path("drafts.**"))` (drafts don't rebuild; publishing does)
+   - HTTP method: POST · leave Projection empty · API version: latest
+
+Several publishes in a row queue several builds; the last one to finish has everything.

@@ -28,9 +28,9 @@ const rows = events.slice(0, limit).map((e) => {
 });
 ---
 
-<ol class:list={['ds-rows uplist', className]}>
+<ol class:list={['ds-rows uplist', className]} data-until-group>
   {rows.map((r) => (
-    <li>
+    <li data-until={r.e.endsAt}>
       <a href={`/events/${r.e.slug}`} class="ds-row uplist__row">
         <span class="uplist__date"><span class="uplist__day">{r.day}</span><span class="uplist__month">{r.month}</span></span>
         <span class="uplist__main">

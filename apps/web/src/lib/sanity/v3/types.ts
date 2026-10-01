@@ -91,6 +91,9 @@ export interface EventEdition {
   sessions: Session[];
   /** Computed in the event's own timezone. */
   isUpcoming: boolean;
+  /** ISO instant the event ends (midnight after its last day, in its timezone). Pages mark
+   *  upcoming items with it so the browser can drop ones that ended after the build. */
+  endsAt: string;
   /** Distinct role buckets across sessions, in display order. */
   buckets: RoleBucket[];
 }

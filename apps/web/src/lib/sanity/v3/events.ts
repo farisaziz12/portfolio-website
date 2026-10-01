@@ -13,7 +13,7 @@ import {
   type SessionRole,
   type SessionStatus,
 } from 'shared';
-import { isUpcoming } from './dates';
+import { endOfLocalDay, isUpcoming } from './dates';
 import { load, memo, IMAGE, TALK_REF, WORKSHOP_REF } from './fetch';
 import type { EventEdition, Session } from './types';
 
@@ -68,7 +68,7 @@ interface RawSession {
   workshop?: Session['workshop'] | null;
 }
 
-interface RawEvent extends Omit<EventEdition, 'sessions' | 'isUpcoming' | 'buckets' | 'timezone' | 'location'> {
+interface RawEvent extends Omit<EventEdition, 'sessions' | 'isUpcoming' | 'endsAt' | 'buckets' | 'timezone' | 'location'> {
   timezone?: string;
   type?: string;
   location?: EventEdition['location'] | null;
@@ -133,6 +133,7 @@ export function normalizeEvent(raw: RawEvent, now = Date.now()): EventEdition {
     coverImage: raw.coverImage,
     sessions,
     isUpcoming: upcoming,
+    endsAt: raw.date ? new Date(endOfLocalDay(raw.endDate || raw.date, timezone)).toISOString() : '',
     buckets,
   };
 }

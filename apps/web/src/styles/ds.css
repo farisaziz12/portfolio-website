@@ -237,3 +237,6 @@ a.ds-row:hover .ds-row__title { color: rgb(var(--accent-text)); }
 .theme-toggle:hover { color: rgb(var(--accent-text)); border-color: rgb(var(--yellow)); }
 .skip-link { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 14px; background: rgb(var(--yellow)); color: rgb(var(--on-yellow)); font-weight: 800; border-radius: var(--radius-btn); text-decoration: none; }
 .skip-link:focus { top: 12px; }
+
+/* Upcoming items that ended after the build (lib/client/expire.ts). */
+[data-until][hidden], [data-until-group][hidden], [data-until-sep][hidden] { display: none !important; }

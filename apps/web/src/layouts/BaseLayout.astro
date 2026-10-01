@@ -244,5 +244,9 @@ const {
     </main>
 
     <Footer />
+    <!-- Static pages: drop "upcoming" items that ended after the last build. -->
+    <script>
+      import '../lib/client/expire';
+    </script>
   </body>
 </html>

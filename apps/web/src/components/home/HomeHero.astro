@@ -35,15 +35,15 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
       <a href={home.secondaryCta.href} class="ds-link" data-track="home-hero-secondary">{home.secondaryCta.label}</a>
     </div>
     {next.length > 0 && (
-      <div slot="strip" class="hh__strip">
+      <div slot="strip" class="hh__strip" data-until-group>
         <span class="hh__strip-label">Next up</span>
         {next.map((e, i) => (
-          <>
-            {i > 0 && <span class="hh__sep" aria-hidden="true">|</span>}
+          <span class="hh__item" data-until={e.endsAt}>
+            {i > 0 && <span class="hh__sep" aria-hidden="true" data-until-sep>|</span>}
             <a href={`/events/${e.slug}`} class:list={['hh__next', { 'hh__next--more': i > 0 }]} data-track="home-next-up">
               <strong>{e.seriesName || e.title}</strong>{` · ${place(e)} · ${dayMonth(e.date)}`}
             </a>
-          </>
+          </span>
         ))}
       </div>
     )}
@@ -66,9 +66,9 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
       </div>
     </div>
     {next[0] && (
-      <div class="hh__strip hfb__strip">
+      <div class="hh__strip hfb__strip" data-until-group>
         <span class="hh__strip-label">Next up</span>
-        <a href={`/events/${next[0].slug}`} class="hh__next" data-track="home-next-up">
+        <a href={`/events/${next[0].slug}`} class="hh__next" data-track="home-next-up" data-until={next[0].endsAt}>
           <strong>{next[0].seriesName || next[0].title}</strong>{` · ${place(next[0])} · ${dayMonth(next[0].date)}`}
         </a>
       </div>
@@ -98,6 +98,8 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
   .hh__next strong { font-weight: 800; }
   .hh__next:hover { color: rgb(var(--accent-text)); }
   .hh__sep { color: rgb(var(--hairline-strong)); }
+  .hh__item { display: inline-flex; align-items: center; gap: 14px; }
+  .hh__item[hidden], .hh__sep[hidden] { display: none; }
 
   /* Full-bleed variant */
   .hfb { position: relative; overflow: hidden; min-height: 640px; display: flex; align-items: flex-start; color: rgb(var(--c-cream)); background: rgb(var(--c-ink)); }

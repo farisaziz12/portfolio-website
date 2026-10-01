@@ -56,11 +56,11 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'online' : e.location.
     ))}
   </ul>
   {booked.length > 0 && (
-    <div class="avail__booked">
+    <div class="avail__booked" data-until-group>
       <h3 class="avail__sub">Already booked</h3>
       <ul>
         {booked.map((e) => (
-          <li>
+          <li data-until={e.endsAt}>
             <a href={`/events/${e.slug}`} data-track="invite_booked_event">
               <span class="avail__ev">{e.title}{place(e) && !e.title.includes(place(e)!) ? `, ${place(e)}` : ''}</span>
               <span class="avail__date">{dayMonth(e.date)}</span>

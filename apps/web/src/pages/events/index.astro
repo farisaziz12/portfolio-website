@@ -64,8 +64,8 @@ const schema = [
     <section class="ev-up" aria-labelledby="ev-up-h">
       <h2 id="ev-up-h" class="ev-label">Upcoming · {upcoming.length} confirmed</h2>
       {upcoming.length ? (
-        <ul class="ds-grid-2 ev-up__grid" role="list">
-          {upcoming.map((e) => <li><UpcomingCard event={e} /></li>)}
+        <ul class="ds-grid-2 ev-up__grid" role="list" data-until-group>
+          {upcoming.map((e) => <li data-until={e.endsAt}><UpcomingCard event={e} /></li>)}
         </ul>
       ) : (
         <p class="ds-card ds-card--dashed ev-up__empty">
