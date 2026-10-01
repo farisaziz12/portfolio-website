@@ -101,7 +101,7 @@ export const DEFAULT_PROFILE: Profile = {
     medium:
       'Faris Aziz is a software engineer and conference speaker based in Geneva. He builds frontend and payment systems for millions of users and speaks about what production teaches you: caching under bad conditions, payments that must not fail, resilient React, and growing into leadership early. He co-founded ZurichJS in 2024 and chairs ZurichJS Conf, where he also built the platform behind tickets, the call for papers and sponsors.',
     long:
-      'Faris Aziz is a software engineer and conference speaker based in Geneva. He builds frontend and payment systems for millions of users and speaks about what production teaches you: caching under bad conditions, payments that must not fail, resilient React, and growing into leadership early. His talks and workshops have run at conferences across Europe, the US and Asia, including React Summit US, CityJS and WhatTheStack. In 2024 he co-founded ZurichJS, which he leads; the community now spans thousands of members and hosts a two-day conference, ZurichJS Conf, for which Faris built the ticketing, CFP and sponsor platform. He came into engineering by a non-traditional route and is a builder at heart.',
+      'Faris Aziz is a software engineer and conference speaker based in Geneva. He builds frontend and payment systems for millions of users and speaks about what production teaches you: caching under bad conditions, payments that must not fail, resilient React, and growing into leadership early. His talks and workshops have run at conferences across Europe, the US and Asia, including React Summit US, CityJS and WhatTheStack. In 2024 he co-founded ZurichJS, which he leads; the community now spans thousands of members and hosts its own conference, ZurichJS Conf, for which Faris built the ticketing, CFP and sponsor platform. He came into engineering by a non-traditional route and is a builder at heart.',
   },
   photos: [],
   topicPillars: DEFAULT_PILLARS,
@@ -142,7 +142,7 @@ export const DEFAULT_COMMUNITY: Community = {
   url: 'https://zurichjs.com',
   headline: 'I co-founded and lead ZurichJS.',
   summary:
-    'I co-founded ZurichJS in 2024 and still run it. It has grown to thousands of members and a two-day conference, ZurichJS Conf, which I chair. I also built the platform behind its tickets, call for papers and sponsors.',
+    'I co-founded ZurichJS in 2024 and still run it. It has grown to thousands of members and its own conference, ZurichJS Conf, which I chair. I also built the platform behind its tickets, call for papers and sponsors.',
   pillars: [],
   metrics: [],
   recognition: [],

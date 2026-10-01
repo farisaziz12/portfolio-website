@@ -221,14 +221,14 @@ m("pending", "3×", "unconfirmed number", "engineering", "2025-01-01", "Hidden u
 docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJS", "slug": slug("zurichjs"), "role": "Co-founder and chair", "founded": 2024,
   "city": "Zurich", "url": "https://zurichjs.com", "series": ref("series-zurichjs"), "headline": "I co-founded and lead ZurichJS.",
   "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
-  "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first two-day ZurichJS Conf happened.",
+  "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first ZurichJS Conf happened.",
   "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["members", "cfp", "speakers", "sponsors"]],
   "recognition": [{"_key": "g", "_type": "award", "title": "Open Source Award: Global Community with the Highest Impact", "issuer": "Open Source Awards", "year": 2026, "confirmed": True}],
   "pillars": [
     {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "I open most evenings, introduce the speakers and keep the Q&A moving."},
     {"_key": "t", "_type": "communityPillar", "kicker": "Teach", "title": "Workshops for the community, on the house", "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."},
     {"_key": "b", "_type": "communityPillar", "kicker": "Build", "title": "The conference platform", "body": "Tickets, CFP and sponsor onboarding for ZurichJS Conf."}],
-  "aftermovie": {"title": "ZurichJS Conf 2026", "caption": "Two days, one stage, 436 talk proposals to choose from.", "published": False},
+  "aftermovie": {"title": "ZurichJS Conf 2026", "caption": "436 talk proposals to choose from.", "published": False},
   "photos": [dict(P["community"], _key="c1"), dict(P["event"], _key="c2")]})
 
 docs.append({"_id": "homePage", "_type": "homePage", "heroVariant": "band", "heroPhotos": [dict(P["stage"], _key="h1"), dict(P["workshop"], _key="h2"), dict(P["portrait"], _key="h3")],
@@ -294,7 +294,7 @@ docs.append({"_id": "offer-mentor-monthly", "_type": "serviceOffer", "title": "M
 docs.append({"_id": "page-about", "_type": "page", "identifier": "about", "heroImage": P["stage"], "content": [
   block("Today I work as a software engineer on frontend and payment systems at scale: the checkout that has to work in every currency, the data layer that has to stay fast on a bad connection, the architecture decisions that only look obvious afterwards. Earlier I helped found and lead engineering at Navro, and before that I shipped at Fiit and FX Digital.", "a1"),
   block("Speaking started as a way to explain that work to other engineers. It's now a second job I don't want to give up: talks and workshops across Europe, the US and Asia on production engineering, payments, and getting into leadership earlier than you feel ready for.", "a2"),
-  block("In 2024 I co-founded ZurichJS because Zurich didn't have the JavaScript community I wanted. I lead it today. It grew faster than I expected and, in September 2026, ran its first two-day conference.", "a3")]})
+  block("In 2024 I co-founded ZurichJS because Zurich didn't have the JavaScript community I wanted. I lead it today. It grew faster than I expected and, in September 2026, ran its first conference.", "a3")]})
 docs.append({"_id": "media-1", "_type": "media", "type": "photo", "title": "React Summit US", "image": P["stage"], "event": ref("event-react-summit-us-2025"), "credit": "GitNation", "date": "2025-11-18"})
 docs.append({"_id": "media-2", "_type": "media", "type": "photo", "title": "ZurichJS evening", "image": P["community"], "credit": "ZurichJS", "date": "2025-11-05"})
 

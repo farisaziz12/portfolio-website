@@ -34,7 +34,14 @@ const filmAttrs = !filmLive
 <section class="hc" aria-labelledby="home-community">
   <div class="ds-wrap hc__grid">
     <div class="hc__copy">
-      <p class="ds-kicker">{kicker}</p>
+      <div class="hc__brand">
+        {c.logo?.asset && (
+          c.url
+            ? <a href={c.url} target="_blank" rel="noopener noreferrer" class="hc__logo-link" data-track="home-community-logo"><SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" class="hc__logo" /></a>
+            : <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" class="hc__logo" />
+        )}
+        <p class="ds-kicker">{kicker}</p>
+      </div>
       <h2 id="home-community" class="hc__h2">{c.headline || `I co-founded and lead ${c.name}.`}</h2>
       {c.summary && <p class="hc__summary">{c.summary}</p>}
       <a href="/community" class="ds-btn ds-btn--yellow hc__cta" data-track="home-community">The whole story</a>
@@ -103,6 +110,10 @@ const filmAttrs = !filmLive
   .hc::after { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 4px; background: rgb(var(--blue)); }
   .hc__grid { position: relative; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 48px; padding-block: var(--section-y); padding-left: max(56px, var(--gutter)); }
   .hc__copy { display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+  .hc__brand { display: flex; align-items: center; gap: 14px; }
+  .hc__brand .ds-kicker { margin: 0; }
+  .hc__logo-link { display: block; flex: none; }
+  .hc__brand :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; flex: none; }
   .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
   .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
   .hc__cta { align-self: flex-start; }

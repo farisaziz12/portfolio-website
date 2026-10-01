@@ -274,6 +274,7 @@ export async function getMetricsByDomain(domain: MetricDomain): Promise<Metric[]
 
 export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(founded, 9999) asc) {
   _id, name, "slug": slug.current, role, founded, city, url, headline, caseStudyHeadline, summary,
+  "logo": coalesce(logo, series->logo)${IMAGE},
   "pillars": coalesce(pillars[]{ kicker, title, body, link }, []),
   "metrics": coalesce(metrics[]->{ ${METRIC_FIELDS}, status }, []),
   "recognition": coalesce(recognition[confirmed == true]{ title, issuer, year, url }, []),
@@ -288,11 +289,17 @@ export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(fo
   "platformProject": platformProject->{ title, "slug": slug.current }
 }`;
 
+export const zurichjsLogoQuery = groq`*[_type == "eventSeries" && lower(name) == "zurichjs" && defined(logo.asset)][0].logo${IMAGE}`;
+
 export function getCommunities(): Promise<Community[]> {
   return memo('site:communities', async () => {
     const list = await load<Community[]>(communitiesQuery, []);
-    // No community document yet (not created by the migration): ZurichJS from the bios.
-    if (!list.length) return [DEFAULT_COMMUNITY];
+    // No community document yet (not created by the migration): ZurichJS from the bios,
+    // with the ZurichJS event series logo if one is uploaded.
+    if (!list.length) {
+      const logo = await load<SanityImage | null>(zurichjsLogoQuery, null);
+      return [logo?.asset ? { ...DEFAULT_COMMUNITY, logo } : DEFAULT_COMMUNITY];
+    }
     return list.map((c) => ({
       ...c,
       metrics: ((c.metrics ?? []) as (Omit<Metric, 'dateLabel'> & { status?: string })[])

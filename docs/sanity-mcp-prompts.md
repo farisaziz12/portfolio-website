@@ -328,7 +328,7 @@ Goal: one community document that feeds /community and the home feature.
 Create/complete community "ZurichJS" (slug zurichjs): role "Co-founder and chair", founded 2024, city
 Zurich, url, series → the ZurichJS eventSeries, headline "I co-founded and lead ZurichJS.",
 caseStudyHeadline "Co-founded in 2024. A conference by 2026.", summary (first person, 3–4 sentences:
-why it exists, what Faris does — chairs, hosts, built the platform — and the first two-day Conf).
+why it exists, what Faris does — chairs, hosts, built the platform — and the first Conf).
 pillars[3]: Host / Teach / Build, each {kicker, title, body (one or two sentences), link}.
 metrics: references to the four community metrics (prompt 5). recognition[]: {title, issuer, year,
 url, confirmed}. The confirmed award (Faris, Sep 2026): title "Open Source Award: Global Community
