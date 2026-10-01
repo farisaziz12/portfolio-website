@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { SPRITES } from '../lib/sprites';
 import { mdResponse } from '../lib/markdown';
 import { getProfile, monthYear } from '../lib/sanity/v3';
 import { BIO_TABS, pressPhotoView, wordCount, type PressPhotoView } from '../lib/press';
@@ -57,7 +58,7 @@ export const GET: APIRoute = async () => {
           )
           .join('\n')
       : `No downloadable photos are published yet. Ask for a set via ${SITE}/invite.`,
-    profile.avatarNote ? `## The cartoon version\n\n${profile.avatarNote}` : '',
+    `## Sprites\n\nThe cartoon me, for event graphics. Use them as they are: no flipping, recolouring or extra logos.\n\n${SPRITES.map((s) => `- ${s.label} (PNG, ${s.image.width}×${s.image.height}): ${SITE}${s.image.src}`).join('\n')}`,
   ].join('\n');
 
   return mdResponse(body);

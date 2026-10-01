@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Illustration from '../components/v3/Illustration.astro';
 import BioTabs from '../components/press/BioTabs.astro';
 import PressPhotos from '../components/press/PressPhotos.astro';
+import PressSprites from '../components/press/PressSprites.astro';
 import { getProfile } from '../lib/sanity/v3';
 import { breadcrumbs } from '../lib/seo';
 import { linkLabel, pressPhotoView, type PressPhotoView } from '../lib/press';
@@ -60,29 +60,26 @@ const links = [
             </dd>
           </dl>
         </section>
-
-        <section class="ds-card press__box" aria-labelledby="rider-h" id="rider">
-          <h2 id="rider-h" class="press__label">Rider</h2>
-          <dl class="ds-dl press__dl">
-            {profile.rider.map((r) => (
-              <>
-                <dt>{r.label}</dt>
-                <dd>{r.body}</dd>
-              </>
-            ))}
-          </dl>
-        </section>
       </div>
     </div>
 
     <PressPhotos photos={photos} />
 
-    {profile.avatarNote && (
-      <aside class="ds-panel press__avatar" aria-label="The cartoon version of me">
-        <Illustration name="faris-speaking" width={72} class="press__avatar-art" />
-        <p><strong>The cartoon version.</strong> {profile.avatarNote}</p>
-      </aside>
-    )}
+    <div class="press__bottom">
+      <section class="ds-card press__box" aria-labelledby="rider-h" id="rider">
+        <h2 id="rider-h" class="press__label">Rider</h2>
+        <dl class="ds-dl press__dl press__dl--rider">
+          {profile.rider.map((r) => (
+            <div class="press__ri">
+              <dt>{r.label}</dt>
+              <dd>{r.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <PressSprites />
+    </div>
   </div>
 </BaseLayout>
 
@@ -104,12 +101,16 @@ const links = [
   .press__link { color: inherit; text-decoration: none; }
   .press__link:hover { color: rgb(var(--accent-text)); text-decoration: underline; }
 
-  .press__avatar { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
-  .press__avatar p { margin: 0; font-size: 14px; line-height: 1.5; }
-  .press__avatar strong { color: rgb(var(--panel-text)); }
-  .press__avatar :global(.press__avatar-art) { width: 72px; height: auto; flex: none; }
+  /* Below the photos: rider and sprites side by side. */
+  .press__bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  .press__dl--rider { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px 20px; }
+  .press__ri { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .press__ri dt { font-size: 12.5px; color: rgb(var(--text-faint)); }
+  .press__ri dd { margin: 0; }
 
-  @media (max-width: 960px) { .press__top { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
+  @media (max-width: 960px) {
+    .press__top { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .press__bottom { grid-template-columns: minmax(0, 1fr); }
+  }
   @media (max-width: 720px) { .press { padding-top: 32px; padding-bottom: 48px; gap: 40px; } }
-  @media (max-width: 420px) { .press__avatar { flex-direction: column; align-items: flex-start; } }
 </style>

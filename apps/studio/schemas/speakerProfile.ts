@@ -178,6 +178,8 @@ export default defineType({
       type: 'text',
       rows: 2,
       group: 'practical',
+      hidden: hiddenWhenEmpty,
+      deprecated: { reason: 'Not shown any more: the press kit now offers the cartoon sprites for download (apps/web/src/lib/sprites.ts). Leave this empty.' },
     }),
   ],
   preview: { prepare: () => ({ title: 'Profile & press kit', subtitle: 'Singleton' }) },
