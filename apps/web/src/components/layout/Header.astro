@@ -106,6 +106,8 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
   .hdr__right { display: flex; align-items: center; gap: 14px; }
   .hdr__replay { font-size: 12.5px; font-weight: 600; color: rgb(var(--text-muted)); text-underline-offset: 0.25em; }
   .hdr__replay:hover { color: rgb(var(--text)); }
+  /* Keep its space while hidden so the nav doesn't jump when it appears. */
+  .hdr__replay[hidden] { display: inline; visibility: hidden; }
   .hdr__menu {
     display: none; min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: var(--radius-btn);
     border: 1px solid rgb(var(--hairline-strong)); background: transparent; color: rgb(var(--text));
@@ -178,7 +180,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
   .drawer__foot { padding: 16px var(--gutter) max(16px, env(safe-area-inset-bottom)); border-top: 1px solid rgb(var(--hairline)); }
 
   @media (max-width: 900px) {
-    .hdr__nav, .hdr__replay, .hdr__right :global(.theme-toggle) { display: none; }
+    .hdr__nav, .hdr__replay, .hdr__replay[hidden], .hdr__right :global(.theme-toggle) { display: none; }
     .hdr__menu { display: inline-flex; align-items: center; }
     .hdr__right { gap: 8px; }
   }

@@ -64,7 +64,9 @@
   --role-attended-ink: var(--c-muted);
 
   /* Type */
-  --font: 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* 'Figtree Fallback' (global.css) is Arial/Helvetica sized to Figtree's metrics,
+     so the webfont swap barely moves text (no layout shift on first visit). */
+  --font: 'Figtree Variable', 'Figtree', 'Figtree Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Space & shape */

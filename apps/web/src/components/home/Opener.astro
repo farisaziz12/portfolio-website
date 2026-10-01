@@ -18,7 +18,7 @@
  * paint (html[data-intro]): "play" shows the overlay at once as a short
  * pre-roll (ink frame, "F.", the band growing), and the cuts start once the
  * webfont is ready (at least 300ms, at most 700ms). "skip" (already seen this session) shows
- * the same frame for an instant, then it swoops up and the hero rises in.
+ * no overlay at all: the hero just rises in (a curtain over a fresh load read as a flash).
  * A reload, back/forward or #section link gets "none": the browser restores a
  * scroll position there, and a curtain over it would interrupt.
  * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
@@ -46,7 +46,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     try {
       const nav = performance.getEntriesByType('navigation')[0];
       const home = new URL((nav && nav.name) || location.href).pathname === '/';
-      // A ViewTransitions route change to / re-runs this: never play or swoop then.
+      // A ViewTransitions route change to / re-runs this: never play or animate then.
       if (window.__opBooted || !home) {
         d.removeAttribute('data-intro');
         return;
@@ -115,7 +115,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   }
   .op[hidden] { display: none !important; }
   /* Decided before paint: the overlay is up from the first frame. */
-  :global(html[data-intro='play']) .op[hidden], :global(html[data-intro='skip']) .op[hidden] { display: block !important; }
+  :global(html[data-intro='play']) .op[hidden] { display: block !important; }
 
   /* Pre-roll: the video's opening frame while the first photo loads. */
   .op__pre { position: absolute; inset: 0; background: rgb(var(--c-ink)); }
@@ -126,15 +126,9 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   .op__pre-yellow { flex: 1; background: rgb(var(--c-yellow)); }
   @keyframes op-pre-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-  /* Not playing: the curtain swoops up and away, the hero rises in. */
-  :global(html[data-intro='skip']) .op { animation: op-swoop 0.55s cubic-bezier(0.7, 0, 0.3, 1) 0.08s both; cursor: default; }
-  :global(html[data-intro='skip']) .op .op__skip { display: none; }
-  :global(html[data-intro='skip'] .hh) { animation: op-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both; }
-  @keyframes op-swoop {
-    from { transform: none; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-    to { transform: translateY(-4%); clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); visibility: hidden; }
-  }
-  @keyframes op-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  /* Not playing: no overlay, the hero rises in (transform + a light fade, so LCP isn't held back). */
+  :global(html[data-intro='skip'] .hh) { animation: op-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes op-rise { from { opacity: 0.35; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   .op__cut { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
 
   /* Cut 1: ink, white diagonal wipe, "F." */
@@ -300,15 +294,11 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     return Promise.all([wait(300), Promise.race([fonts, wait(700)])]).then(() => undefined);
   }
 
-  /** Not eligible: let the CSS swoop finish, then get out of the way. */
-  function swoop(el: HTMLElement) {
-    const done = () => {
-      el.hidden = true;
-      document.documentElement.removeAttribute('data-intro');
-      document.querySelectorAll<HTMLElement>('[data-replay-intro]').forEach((a) => (a.hidden = false));
-    };
-    el.addEventListener('animationend', (e) => { if (e.target === el) done(); }, { once: true });
-    window.setTimeout(done, 900); // safety net
+  /** Not eligible: the overlay never shows; clear the mode once the hero has risen in. */
+  function settle(el: HTMLElement) {
+    el.hidden = true;
+    document.querySelectorAll<HTMLElement>('[data-replay-intro]').forEach((a) => (a.hidden = false));
+    window.setTimeout(() => document.documentElement.removeAttribute('data-intro'), 700);
   }
 
   function init() {
@@ -326,7 +316,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     }
     // Only on a full load of `/` (the inline script already checked); never on a route change.
     if (!isFirst || !initialLoadWasHome()) return;
-    if (mode === 'skip') return swoop(el);
+    if (mode === 'skip') return settle(el);
     if (mode === 'play') void ready().then(() => play(el));
   }
 

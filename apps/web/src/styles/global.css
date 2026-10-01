@@ -1,3 +1,15 @@
+/* Fallback for Figtree while the webfont loads: a local Arial-class font with
+   Figtree's metrics (measured from the woff2: ascent 950, descent 250, no line
+   gap, average advance 0.522 em vs Arial's 0.520 at 400). */
+@font-face {
+  font-family: 'Figtree Fallback';
+  src: local('Arial'), local('ArialMT'), local('Helvetica Neue'), local('Helvetica'), local('Liberation Sans'), local('Roboto');
+  size-adjust: 100.4%;
+  ascent-override: 94.6%;
+  descent-override: 24.9%;
+  line-gap-override: 0%;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
