@@ -3,7 +3,7 @@
  * The opener ("web cut", 5s): an overlay above the fully rendered homepage.
  * Type and colour only, no photos. Four cuts: white diagonal wipe + "F."
  * mark → cropped "Faris" on yellow → "Aziz" with yellow/blue colour offsets
- * on white → name card ("F." on the tiles); then the overlay lifts
+ * on white → name card (the yellow/blue square); then the overlay lifts
  * (translateY(-3%) + fade, 0.6s). Phones get their own scale and a stacked
  * card (container queries on the overlay).
  *
@@ -85,7 +85,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
       <div class="op__avatar">
         <span class="op__tile op__tile--y"></span>
         <span class="op__tile op__tile--b"></span>
-        <span class="op__mono">{given.charAt(0)}<span>.</span></span>
+        <span class="op__sq"></span>
       </div>
       <div>
         <div class="op__name">{name}</div>
@@ -149,11 +149,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   .op__tile { position: absolute; inset: 0; }
   .op__tile--y { background: rgb(var(--c-yellow)); transform: rotate(-8deg); }
   .op__tile--b { background: rgb(var(--c-blue)); transform: rotate(6deg); }
-  .op__mono {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgb(var(--c-ink));
-    font-weight: 900; font-size: max(34px, 4.6cqw); letter-spacing: -0.06em; color: rgb(var(--c-cream));
-  }
-  .op__mono span { color: rgb(var(--c-yellow)); }
+  .op__sq { position: absolute; inset: 0; background: rgb(var(--c-ink)); box-shadow: inset 0 0 0 1px rgb(var(--c-cream) / 0.12); }
   .op__name { color: rgb(var(--c-yellow)); font-weight: 800; font-size: max(12px, 1.7cqw); }
   .op__role { font-weight: 800; font-size: max(20px, 3.4cqw); line-height: 1.02; letter-spacing: -0.04em; max-width: 18em; }
   /* First role on its own line, the rest after it (desktop). */
@@ -178,7 +174,6 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     .op__stack { font-size: min(40cqw, 26cqh); }
     .op__card { flex-direction: column; align-items: flex-start; gap: 20px; padding: 0 8cqw; }
     .op__avatar { width: min(26cqw, 120px); height: min(26cqw, 120px); }
-    .op__mono { font-size: min(13cqw, 60px); }
     .op__name { font-size: 15px; }
     .op__role { font-size: min(7.6cqw, 40px); line-height: 1.06; }
     .op__part { display: block; }
