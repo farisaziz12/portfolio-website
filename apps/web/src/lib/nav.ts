@@ -29,7 +29,7 @@ export const PRIMARY_NAV: NavSection[] = [
       { label: 'Invite me', href: '/invite' },
     ],
   },
-  { label: 'Writing', href: '/blog', match: ['/blog'] },
+  { label: 'Articles & podcasts', href: '/blog', match: ['/blog'] },
   { label: 'Community', href: '/community', match: ['/community'] },
   {
     label: 'About',
@@ -61,7 +61,7 @@ export const FOOTER_PRIMARY: NavLink[] = [
   { label: 'Schedule', href: '/events' },
   { label: 'Talks', href: '/talks' },
   { label: 'Workshops', href: '/workshops' },
-  { label: 'Writing', href: '/blog' },
+  { label: 'Articles & podcasts', href: '/blog' },
   { label: 'Community', href: '/community' },
   { label: 'About', href: '/about' },
   { label: 'Press kit', href: '/press-kit' },

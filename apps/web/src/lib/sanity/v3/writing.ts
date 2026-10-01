@@ -1,5 +1,5 @@
 /**
- * "Writing & conversations": one timeline for posts on this site and
+ * "Articles & podcasts": one list for posts on this site and
  * articles, podcasts and videos published elsewhere.
  */
 import groq from 'groq';

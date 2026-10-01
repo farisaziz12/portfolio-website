@@ -13,7 +13,7 @@ export const GET: APIRoute = async () => {
   const count = (f: PublicationFormat) => items.filter((i) => i.format === f).length;
 
   const lines = [
-    '# Writing & conversations: Faris Aziz',
+    '# Articles & podcasts: Faris Aziz',
     '',
     "> Articles, podcasts and the odd video. My blog posts, articles I've written for other sites, and podcasts I've been on, all in one place, newest first.",
     '',

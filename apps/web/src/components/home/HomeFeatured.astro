@@ -39,7 +39,7 @@ const posters = items.slice(0, 3).map((f, i) => {
     };
   }
   const w = f.item;
-  const label = w.kind === 'post' && w.format === 'article' ? 'Writing' : FORMAT_LABEL[w.format];
+  const label = w.kind === 'post' && w.format === 'article' ? 'Article' : FORMAT_LABEL[w.format];
   return {
     n: i + 1,
     tone: i === 0 ? ('lead' as const) : ('ink' as const),

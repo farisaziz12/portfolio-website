@@ -77,7 +77,7 @@ export const GET: APIRoute = async () => {
           ...featured.map((f) =>
             f.kind === 'talk'
               ? `- Talk: [${f.talk.title}](${SITE}/talks/${f.talk.slug})${f.talk.summary ? `: ${f.talk.summary}` : ''}${f.talk.recording ? ` Recording: ${f.talk.recording.url}` : ''}`
-              : `- ${f.item.format === 'podcast' ? 'Podcast' : f.item.format === 'video' ? 'Video' : 'Writing'}: [${f.item.title}](${abs(f.item.href)}) (${[f.item.isInternal ? null : f.item.source, monthYear(f.item.date)].filter(Boolean).join(', ')})`,
+              : `- ${f.item.format === 'podcast' ? 'Podcast' : f.item.format === 'video' ? 'Video' : 'Article'}: [${f.item.title}](${abs(f.item.href)}) (${[f.item.isInternal ? null : f.item.source, monthYear(f.item.date)].filter(Boolean).join(', ')})`,
           ),
           ``,
         ].join('\n')

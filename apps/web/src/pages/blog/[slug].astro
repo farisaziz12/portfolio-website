@@ -50,7 +50,7 @@ const description = (post.seoDescription || post.excerpt || `${post.title}, by F
   extraSchema={[
     breadcrumbs([
       { name: 'Home', path: '/' },
-      { name: 'Writing', path: '/blog' },
+      { name: 'Articles & podcasts', path: '/blog' },
       { name: post.title, path: `/blog/${slug}` },
     ]),
     {
@@ -75,7 +75,7 @@ const description = (post.seoDescription || post.excerpt || `${post.title}, by F
       <header class="art__head">
         <Kicker
           parts={[
-            'Writing',
+            'Article',
             post.topic ? TOPIC_SHORT[post.topic] : null,
             fullDate(post.publishedAt),
             minutes ? `${minutes} min read` : null,

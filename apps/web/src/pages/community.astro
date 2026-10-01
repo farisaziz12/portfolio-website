@@ -41,7 +41,7 @@ const sidePhotos = pool.filter((p) => heroPhoto && assetKey(p) !== assetKey(hero
 const poster = community?.aftermovie?.poster?.asset ? community.aftermovie.poster : sidePhotos[0] ?? heroPhoto;
 
 const storyPost = writing.find((w) => w.isInternal && (/why-its-called-/.test(w.href) || /why it.?s called/i.test(w.title)));
-const story = storyPost ? { label: storyPost.title, href: storyPost.href } : { label: 'Community writing', href: '/blog?topic=community' };
+const story = storyPost ? { label: storyPost.title, href: storyPost.href } : { label: 'Community articles & podcasts', href: '/blog?topic=community' };
 const buildHref = community?.platformProject?.slug ? `/projects/${community.platformProject.slug}` : undefined;
 const hostLine = stats.hosted > 0 ? `${stats.hosted} ${stats.hosted === 1 ? 'evening' : 'evenings'} hosted, as of ${currentMonthYear()}` : undefined;
 
@@ -96,7 +96,7 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
     </p>
     <div class="cm-links">
       <a href="/invite" class="ds-link" data-track="community-hero-invite">Bring me to your community</a>
-      <a href="/blog?topic=community" class="ds-link ds-link--muted" data-track="community-hero-writing">Community writing</a>
+      <a href="/blog?topic=community" class="ds-link ds-link--muted" data-track="community-hero-writing">Community articles &amp; podcasts</a>
     </div>
     {heroPhoto && <span slot="strip" class="cm-strip">{heroPhoto.caption || `${name} meetup`}</span>}
   </SkewHero>
@@ -113,7 +113,7 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
     </>
   ) : (
     <div class="ds-wrap cm-pillars">
-      <p class="ds-body">The community details are being updated. Meanwhile, the <a class="ds-textlink" href="/blog?topic=community">community writing</a> is all here.</p>
+      <p class="ds-body">The community details are being updated. Meanwhile, the <a class="ds-textlink" href="/blog?topic=community">community articles and podcasts</a> are all here.</p>
     </div>
   )}
 

@@ -59,13 +59,13 @@ export const GET: APIRoute = async () => {
         ]
       : []),
     ...(posts.length
-      ? ['## Community writing', '', ...posts.map((p) => `- [${p.title}](${abs(p.href)}) (${p.source}, ${fullDate(p.date)})`), '']
+      ? ['## Community articles & podcasts', '', ...posts.map((p) => `- [${p.title}](${abs(p.href)}) (${p.source}, ${fullDate(p.date)})`), '']
       : []),
     '## Links',
     '',
     `- Bring Faris to your community (meetups, community conferences): ${SITE}/invite`,
     `- Workshops: ${SITE}/workshops`,
-    `- All community writing: ${SITE}/blog?topic=community`,
+    `- All community articles and podcasts: ${SITE}/blog?topic=community`,
     '',
     `Canonical: ${SITE}/community`,
   ];

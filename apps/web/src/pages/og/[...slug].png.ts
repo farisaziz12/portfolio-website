@@ -65,7 +65,7 @@ export async function getStaticPaths() {
       title: 'I run meetups, teach at them, and write the code behind them.',
       ...(members ? { mark: members.value, markLabel: members.label } : {}),
     },
-    blog: { kicker: 'Writing & conversations', title: 'Articles, podcasts and the odd video.', meta: 'Blog posts, guest articles and podcasts, newest first.' },
+    blog: { kicker: 'Articles & podcasts', title: 'Articles, podcasts and the odd video.', meta: 'Blog posts, guest articles and podcasts, newest first.' },
     about: { kicker: `About · ${basedIn(profile.travelBase).city}`, title: 'A builder at heart. Products, payments and a JavaScript community.', meta: byline },
     impact: { kicker: 'Track record', title: 'The work, the stages, the community.', meta: 'Everything dated and defined.', mark: String(stats.countries), markLabel: 'countries spoken in' },
     appreciation: { kicker: 'What people say', title: 'What people have said about Faris.', meta: 'Every card links to the original post.' },
@@ -112,7 +112,7 @@ export async function getStaticPaths() {
       props: {
         card: {
           byline,
-          kicker: ['Writing', titleFor(TOPICS, w.topic) || null, w.minutes ? `${w.minutes} min read` : null].filter(Boolean).join(' · '),
+          kicker: ['Article', titleFor(TOPICS, w.topic) || null, w.minutes ? `${w.minutes} min read` : null].filter(Boolean).join(' · '),
           title: w.title,
           meta: fullDate(w.date),
           mark: 'Aa',

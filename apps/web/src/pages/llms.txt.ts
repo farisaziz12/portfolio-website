@@ -37,9 +37,9 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 - [Invite me](${SITE}/invite.md): what to send, good to know, availability by month
 - [Press kit](${SITE}/press-kit.md): bios in three lengths, pronunciation, photos with credits and crops, rider
 
-## Writing & community
+## Articles, podcasts & community
 
-- [Writing & conversations](${SITE}/blog.md): posts, guest articles, podcasts and video in one timeline
+- [Articles & podcasts](${SITE}/blog.md): posts, guest articles, podcasts and video
 - [Community](${SITE}/community.md): ${communityLine}
 
 ## About
