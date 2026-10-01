@@ -24,7 +24,11 @@ const photos = c.photos.filter((p) => p?.asset).slice(0, award ? 2 : 3);
 const poster = film?.poster?.asset ? film.poster : c.photos[0];
 // The CMS logo wins; ZurichJS ships with its own so the section is never logo-less.
 const builtInLogo = /zurichjs/i.test(c.slug || c.name) ? zurichjsLogo : undefined;
+const hasLogo = Boolean(c.logo?.asset || builtInLogo);
 const kicker = ['Community', c.city, c.founded ? `since ${c.founded}` : null].filter(Boolean).join(' · ');
+const logoLink = c.url
+  ? { href: c.url, target: '_blank', rel: 'noopener noreferrer' }
+  : { href: '/community' };
 const FilmTag = filmLive ? 'a' : 'div';
 // An uploaded film plays inline on /community; an external one opens where it's hosted.
 const filmAttrs = !filmLive
@@ -38,18 +42,26 @@ const filmAttrs = !filmLive
   <div class="ds-wrap hc__grid">
     <div class="hc__copy">
       <div class="hc__brand">
-        {(c.logo?.asset || builtInLogo) && (
-          <a href={c.url || '/community'} target={c.url ? '_blank' : undefined} rel={c.url ? 'noopener noreferrer' : undefined} class="hc__logo-link" data-track="home-community-logo">
-            {c.logo?.asset
-              ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" loading="lazy" class="hc__logo" />
-              : <img src={builtInLogo!.src} width="56" height="56" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
-          </a>
+        {hasLogo && (
+        <a {...logoLink} class="hc__logo-link hc__logo-link--sm" data-track="home-community-logo">
+          {c.logo?.asset
+            ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" loading="lazy" class="hc__logo" />
+            : <img src={builtInLogo!.src} width="56" height="56" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
+        </a>
         )}
         <p class="ds-kicker">{kicker}</p>
       </div>
       <h2 id="home-community" class="hc__h2">{c.headline || `I co-founded and lead ${c.name}.`}</h2>
       {c.summary && <p class="hc__summary">{c.summary}</p>}
       <a href="/community" class="ds-btn ds-btn--yellow hc__cta" data-track="home-community">The whole story</a>
+      {/* Desktop: the logo fills the empty corner under the copy. Stacked layouts keep the small one by the kicker. */}
+      {hasLogo && (
+        <a {...logoLink} class="hc__logo-link hc__logo-link--lg" data-track="home-community-logo">
+          {c.logo?.asset
+            ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[160, 320]} sizes="160px" loading="lazy" class="hc__logo" />
+            : <img src={builtInLogo!.src} width="160" height="160" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
+        </a>
+      )}
     </div>
 
     <div class="hc__media">
@@ -118,7 +130,10 @@ const filmAttrs = !filmLive
   .hc__brand { display: flex; align-items: center; gap: 14px; }
   .hc__brand .ds-kicker { margin: 0; }
   .hc__logo-link { display: block; flex: none; }
-  .hc__brand :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; flex: none; border-radius: 6px; outline: 1px solid rgb(var(--hairline-strong)); outline-offset: -1px; }
+  .hc__logo-link :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; border-radius: 6px; outline: 1px solid rgb(var(--hairline-strong)); outline-offset: -1px; }
+  .hc__logo-link--sm { display: none; }
+  .hc__logo-link--lg { margin-top: auto; align-self: flex-end; }
+  .hc__logo-link--lg :global(.hc__logo) { width: 160px; height: 160px; border-radius: 10px; }
   .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
   .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
   .hc__cta { align-self: flex-start; }
@@ -165,6 +180,8 @@ const filmAttrs = !filmLive
   @media (max-width: 960px) {
     .hc__grid { grid-template-columns: 1fr; gap: 32px; }
     .hc__copy { padding-right: 0; }
+    .hc__logo-link--sm { display: block; }
+    .hc__logo-link--lg { display: none; }
   }
   @media (max-width: 720px) {
     .hc__grid { padding-left: calc(var(--gutter) + 18px); padding-block: 30px; gap: 24px; }

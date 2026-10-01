@@ -70,7 +70,7 @@ export async function getStaticPaths() {
     impact: { kicker: 'Track record', title: 'The work, the stages, the community.', meta: 'Everything dated and defined.', mark: String(stats.countries), markLabel: 'countries spoken in' },
     appreciation: { kicker: 'What people say', title: 'What people have said about Faris.', meta: 'Every card links to the original post.' },
     services: { kicker: 'Services', title: 'How I can help.', meta: 'Events: speaking and workshops · Advisory · Mentorship. A sentence is enough to start.' },
-    mentorship: { kicker: 'Mentorship', title: "Getting to senior, lead, or the talk you haven't given yet.", meta: 'One-to-one, every two to four weeks.' },
+    mentorship: { kicker: 'Mentorship', title: 'Getting to senior, to lead, or onto a stage.', meta: 'One-to-one, every two to four weeks.' },
     contact: { kicker: 'Contact', title: "Hey, what's on your mind?", meta: 'Invite me to speak, or just drop me a message.' },
     projects: { kicker: 'About · Projects', title: 'Things I built.', meta: 'Open source and production systems.' },
     gallery: { kicker: 'About · Gallery', title: 'Stages, hallways, and the bits in between.', meta: 'Photos from events, credited.' },

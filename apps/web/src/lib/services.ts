@@ -91,8 +91,8 @@ export const MENTORCRUISE_URL = 'https://mentorcruise.com/mentor/farisaziz/';
 
 export const MENTORSHIP_COPY = {
   kicker: ['Mentorship', 'a few seats at a time'],
-  title: "Getting to senior, lead, or the talk you haven't given yet.",
-  lede: 'I coached before I wrote code, and I still like it. One-to-one, every two to four weeks, for engineers who want a plan rather than a pep talk: the promotion case, the first team, the first conference abstract.',
+  title: 'Getting to senior, to lead, or onto a stage.',
+  lede: "I was coaching people before I wrote any code, and I still enjoy it. We meet one-to-one every two to four weeks and work on one thing at a time, like your promotion case, your first team or your first conference abstract. You leave each call with next steps, not a pep talk.",
   apply: {
     kicker: 'Apply for a seat',
     title: 'Goal, budget, cadence.',
