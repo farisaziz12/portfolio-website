@@ -37,7 +37,7 @@ export default defineType({
     defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 3, group: 'hero' }),
     cta('primaryCta', 'Primary button', 'hero'),
     cta('secondaryCta', 'Secondary link', 'hero'),
-    defineField({ name: 'heroPhotos', title: 'Hero photos', type: 'array', group: 'hero', of: [photoMember()], validation: (Rule) => Rule.max(3), description: 'The hero shows the first photo. The third, if set, is the opener\'s speaker card (else the portrait press photo). Leave empty to use the press photos (stage shots first). Set the hotspot: the hero crops around it.' }),
+    defineField({ name: 'heroPhotos', title: 'Hero photos', type: 'array', group: 'hero', of: [photoMember()], validation: (Rule) => Rule.max(3), description: 'The hero shows the first photo. Leave empty to use the press photos (stage shots first). Set the hotspot: the hero crops around it.' }),
 
     defineField({
       name: 'featured',

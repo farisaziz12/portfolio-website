@@ -1,9 +1,11 @@
 ---
 /**
  * The opener ("web cut", 5s): an overlay above the fully rendered homepage.
- * Four cuts: white diagonal wipe + "F." mark → cropped "Faris" on yellow →
- * "Aziz" with yellow/blue colour offsets on white → speaker card; then the
- * overlay lifts (translateY(-3%) + fade, 0.6s).
+ * Type and colour only, no photos. Four cuts: white diagonal wipe + "F."
+ * mark → cropped "Faris" on yellow → "Aziz" with yellow/blue colour offsets
+ * on white → name card ("F." on the tiles); then the overlay lifts
+ * (translateY(-3%) + fade, 0.6s). Phones get their own scale and a stacked
+ * card (container queries on the overlay).
  *
  * Rules: plays once per session (sessionStorage.introSeen), only on a full
  * load of `/` (never on a ViewTransitions route change), replays on
@@ -13,28 +15,19 @@
  *
  * No flash: an inline script right before the overlay decides BEFORE first
  * paint (html[data-intro]): "play" shows the overlay at once as a short
- * pre-roll (ink frame, "F.", the band growing), and the cuts start when the
- * first photo is ready (max 700ms). "skip" (already seen this session) shows
+ * pre-roll (ink frame, "F.", the band growing), and the cuts start once the
+ * webfont is ready (at least 300ms, at most 700ms). "skip" (already seen this session) shows
  * the same frame for an instant, then it swoops up and the hero rises in.
  * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
  */
-import SanityImg from '../v3/SanityImg.astro';
-import type { SanityImage } from '../../lib/sanity/v3';
-
 interface Props {
-  /** Wide stage photo for the first cut. */
-  wide?: SanityImage;
-  /** Square-ish portrait for the speaker card. */
-  portrait?: SanityImage;
   name?: string;
   /** "Software engineer · speaker · ZurichJS co-founder" */
   line: string;
 }
 
-const { wide, portrait, name = 'Faris Aziz', line } = Astro.props;
+const { name = 'Faris Aziz', line } = Astro.props;
 const parts = line.split(/\s*·\s*/).filter(Boolean);
-const first = parts[0] ?? '';
-const rest = parts.slice(1).join(', ');
 const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 ---
 
@@ -74,7 +67,6 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     <div class="op__pre-band"><span class="op__pre-blue"></span><span class="op__pre-yellow"></span></div>
   </div>
   <div class="op__cut op__s1" aria-hidden="true">
-    {wide?.asset && <SanityImg image={wide} alt="" widths={[960, 1600]} sizes="100vw" loading="eager" class="op__photo" />}
     <div class="op__wipe"></div>
     <div class="op__mark">{given.charAt(0)}<span>.</span></div>
   </div>
@@ -93,21 +85,21 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
       <div class="op__avatar">
         <span class="op__tile op__tile--y"></span>
         <span class="op__tile op__tile--b"></span>
-        {portrait?.asset && <SanityImg image={portrait} alt="" ratio={1} widths={[200, 400]} sizes="120px" loading="eager" class="op__face" />}
+        <span class="op__mono">{given.charAt(0)}<span>.</span></span>
       </div>
       <div>
         <div class="op__name">{name}</div>
-        <div class="op__role">{first}{rest && <>,<br />{rest}</>}</div>
+        <div class="op__role">{parts.map((part, i) => <span class="op__part">{part}{i < parts.length - 1 ? ', ' : ''}</span>)}</div>
       </div>
     </div>
   </div>
-  <button type="button" class="op__skip" data-opener-skip>Skip intro · Esc</button>
+  <button type="button" class="op__skip" data-opener-skip>Skip intro<span class="op__esc"> · Esc</span></button>
 </div>
 
 <style>
   .op {
     position: fixed; left: 0; right: 0; bottom: 0; top: var(--op-top, var(--header-height)); z-index: 19;
-    overflow: hidden; background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); container-type: inline-size; cursor: pointer;
+    overflow: hidden; background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); container-type: size; cursor: pointer;
   }
   .op[hidden] { display: none !important; }
   /* Decided before paint: the overlay is up from the first frame. */
@@ -133,8 +125,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   @keyframes op-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   .op__cut { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
 
-  /* Cut 1: stage photo, white diagonal wipe, "F." */
-  .op__s1 :global(.op__photo) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Cut 1: ink, white diagonal wipe, "F." */
   .op__wipe { position: absolute; inset: 0; background: rgb(255 255 255); clip-path: polygon(0 0, 0 0, 0 0); }
   .op__mark { position: absolute; left: 5cqw; top: 5cqw; font-weight: 900; font-size: 14cqw; line-height: 0.8; letter-spacing: -0.06em; color: rgb(var(--c-ink)); opacity: 0; }
   .op__mark span { color: rgb(var(--c-blue)); }
@@ -158,23 +149,47 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   .op__tile { position: absolute; inset: 0; }
   .op__tile--y { background: rgb(var(--c-yellow)); transform: rotate(-8deg); }
   .op__tile--b { background: rgb(var(--c-blue)); transform: rotate(6deg); }
-  .op__avatar :global(.op__face) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .op__mono {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgb(var(--c-ink));
+    font-weight: 900; font-size: max(34px, 4.6cqw); letter-spacing: -0.06em; color: rgb(var(--c-cream));
+  }
+  .op__mono span { color: rgb(var(--c-yellow)); }
   .op__name { color: rgb(var(--c-yellow)); font-weight: 800; font-size: max(12px, 1.7cqw); }
-  .op__role { font-weight: 800; font-size: max(20px, 3.4cqw); line-height: 1.02; letter-spacing: -0.04em; }
+  .op__role { font-weight: 800; font-size: max(20px, 3.4cqw); line-height: 1.02; letter-spacing: -0.04em; max-width: 18em; }
+  /* First role on its own line, the rest after it (desktop). */
+  .op__part:first-child { display: block; }
+  .op__part { white-space: nowrap; }
 
   .op__skip {
     position: absolute; right: max(12px, 2cqw); top: max(12px, 2cqw); z-index: 5; min-height: 44px; padding: 0 16px;
     border: 0; border-radius: 999px; background: rgb(var(--c-ink) / 0.72); color: rgb(var(--c-cream));
+    box-shadow: inset 0 0 0 1px rgb(var(--c-cream) / 0.22);
     font: 700 13px var(--font); cursor: pointer; backdrop-filter: blur(6px);
   }
   .op__skip:hover { background: rgb(var(--c-yellow)); color: rgb(var(--c-ink)); }
+  /* Touch screens have no Esc key. */
+  @media (pointer: coarse) { .op__esc { display: none; } }
+
+  /* Phones and other tall, narrow screens: bigger type, set by height as
+     well as width so nothing sits in a corner of an empty frame. */
+  @container (max-aspect-ratio: 4 / 5) {
+    .op__pre-mark, .op__mark { left: 7cqw; top: 7cqw; font-size: min(36cqw, 22cqh); }
+    .op__crop { bottom: 24cqh; font-size: min(64cqw, 36cqh); }
+    .op__stack { font-size: min(40cqw, 26cqh); }
+    .op__card { flex-direction: column; align-items: flex-start; gap: 20px; padding: 0 8cqw; }
+    .op__avatar { width: min(26cqw, 120px); height: min(26cqw, 120px); }
+    .op__mono { font-size: min(13cqw, 60px); }
+    .op__name { font-size: 15px; }
+    .op__role { font-size: min(7.6cqw, 40px); line-height: 1.06; }
+    .op__part { display: block; }
+    .op__skip { top: auto; bottom: max(20px, env(safe-area-inset-bottom)); right: 50%; transform: translateX(50%); }
+  }
 
   /* Timeline (web cut): total 5.0s including the 0.6s lift. Scenes and
      delays are the prototype's, stretched to 4.4s of cuts; pops and the wipe
      keep their original speed so the transitions stay snappy. */
   .op.is-play { animation: op-lift 0.6s cubic-bezier(0.7, 0, 0.3, 1) 4.4s both; }
   .op.is-play .op__s1 { animation: op-scene 1.26s linear 0s both; }
-  .op.is-play .op__s1 :global(.op__photo) { animation: op-ken 1.32s linear both; }
   .op.is-play .op__wipe { animation: op-wipe 0.41s cubic-bezier(0.8, 0, 0.2, 1) 0.16s both; }
   .op.is-play .op__mark { animation: op-pop 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s both; }
   .op.is-play .op__s2 { animation: op-scene 1.16s linear 1.22s both; }
@@ -197,7 +212,6 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   @keyframes op-pop { from { opacity: 0; transform: translateY(12%) scale(0.96); } to { opacity: 1; transform: none; } }
   @keyframes op-off-y { from { transform: translate(0, 0); } to { transform: translate(-1.2cqw, 1.2cqw); } }
   @keyframes op-off-b { from { transform: translate(0, 0); } to { transform: translate(1.2cqw, -1cqw); } }
-  @keyframes op-ken { from { transform: scale(1.04); } to { transform: scale(1.12); } }
   @keyframes op-lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-3%); visibility: hidden; } }
 </style>
 
@@ -267,14 +281,15 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     };
   }
 
-  /** The first cut's photo, decoded (or 700ms, whichever is first): the pre-roll covers the wait. */
-  function ready(el: HTMLElement): Promise<void> {
-    const img = el.querySelector<HTMLImageElement>('.op__photo');
-    const decoded = img ? (img.complete ? Promise.resolve() : img.decode().catch(() => undefined)) : Promise.resolve();
-    const timeout = new Promise<void>((resolve) => {
-      window.setTimeout(resolve, 700);
+  const wait = (ms: number) =>
+    new Promise<void>((resolve) => {
+      window.setTimeout(resolve, ms);
     });
-    return Promise.race([decoded.then(() => undefined), timeout]);
+
+  /** The cuts are all type: start once Figtree is in (min 300ms of pre-roll, max 700ms). */
+  function ready(): Promise<void> {
+    const fonts = document.fonts?.ready.then(() => undefined) ?? Promise.resolve();
+    return Promise.all([wait(300), Promise.race([fonts, wait(700)])]).then(() => undefined);
   }
 
   /** Not eligible: let the CSS swoop finish, then get out of the way. */
@@ -304,7 +319,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     // Only on a full load of `/` (the inline script already checked); never on a route change.
     if (!isFirst || !initialLoadWasHome()) return;
     if (mode === 'skip') return swoop(el);
-    if (mode === 'play') void ready(el).then(() => play(el));
+    if (mode === 'play') void ready().then(() => play(el));
   }
 
   init();
