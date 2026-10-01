@@ -54,14 +54,6 @@ const filmAttrs = !filmLive
       <h2 id="home-community" class="hc__h2">{c.headline || `I co-founded and lead ${c.name}.`}</h2>
       {c.summary && <p class="hc__summary">{c.summary}</p>}
       <a href="/community" class="ds-btn ds-btn--yellow hc__cta" data-track="home-community">The whole story</a>
-      {/* Desktop: the logo fills the empty corner under the copy. Stacked layouts keep the small one by the kicker. */}
-      {hasLogo && (
-        <a {...logoLink} class="hc__logo-link hc__logo-link--lg" data-track="home-community-logo">
-          {c.logo?.asset
-            ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[160, 320]} sizes="160px" loading="lazy" class="hc__logo" />
-            : <img src={builtInLogo!.src} width="160" height="160" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
-        </a>
-      )}
     </div>
 
     <div class="hc__media">
@@ -103,8 +95,8 @@ const filmAttrs = !filmLive
         </dl>
       )}
 
-      {(photos.length > 0 || award) && (
-        <div class:list={['hc__row', { 'hc__row--award': award }]}>
+      {(photos.length > 0 || award || hasLogo) && (
+        <div class="hc__row">
           {photos.map((p) => (
             <div class="hc__photo-wrap"><SanityImg image={p} ratio={1} widths={[300, 500]} sizes="16vw" class="hc__photo" /></div>
           ))}
@@ -114,6 +106,14 @@ const filmAttrs = !filmLive
               <p class="hc__award-title">{award.url ? <a href={award.url} target="_blank" rel="noopener noreferrer">{award.title}</a> : award.title}</p>
               <p class="ds-meta">{[award.issuer, award.year].filter(Boolean).join(' · ')}</p>
             </div>
+          )}
+          {/* Desktop: the logo closes the row under the metrics, bottom right. Stacked layouts keep the small one by the kicker. */}
+          {hasLogo && (
+            <a {...logoLink} class="hc__logo-link hc__logo-link--lg" data-track="home-community-logo">
+              {c.logo?.asset
+                ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[160, 320]} sizes="160px" loading="lazy" class="hc__logo" />
+                : <img src={builtInLogo!.src} width="160" height="160" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
+            </a>
           )}
         </div>
       )}
@@ -132,8 +132,8 @@ const filmAttrs = !filmLive
   .hc__logo-link { display: block; flex: none; }
   .hc__logo-link :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; border-radius: 6px; outline: 1px solid rgb(var(--hairline-strong)); outline-offset: -1px; }
   .hc__logo-link--sm { display: none; }
-  .hc__logo-link--lg { margin-top: auto; align-self: flex-end; }
-  .hc__logo-link--lg :global(.hc__logo) { width: 160px; height: 160px; border-radius: 10px; }
+  .hc__logo-link--lg { flex: 1 1 0; min-width: 0; max-width: 160px; margin-left: auto; align-self: flex-end; }
+  .hc__logo-link--lg :global(.hc__logo) { width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; }
   .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
   .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
   .hc__cta { align-self: flex-start; }
@@ -167,9 +167,9 @@ const filmAttrs = !filmLive
   .hc__label { margin: 6px 0 0; font-size: 12.5px; line-height: 1.35; color: rgb(var(--text-muted)); }
   .hc__date { display: block; color: rgb(var(--text-faint)); }
 
-  .hc__row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
-  .hc__row--award { grid-template-columns: 1fr 1fr 1.4fr; }
-  .hc__photo-wrap { min-width: 0; }
+  .hc__row { display: flex; gap: 10px; align-items: stretch; }
+  .hc__photo-wrap { flex: 1 1 0; min-width: 0; }
+  .hc__row .hc__award { flex: 1.4 1 0; min-width: 0; }
   .hc__row :global(.hc__photo) { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-card); display: block; }
   .hc__award { background: rgb(var(--ground)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
   .hc__award p { margin: 0; }
@@ -196,6 +196,6 @@ const filmAttrs = !filmLive
     .hc__tile:nth-child(2n) { border-right: 0; padding-right: 0; }
     .hc__tile:nth-child(2n + 1) { padding-left: 0; }
     .hc__tile:nth-child(n + 3) { border-top: 1px solid rgb(var(--hairline-strong)); }
-    .hc__row, .hc__row--award { grid-template-columns: 1fr; }
+    .hc__row { flex-direction: column; }
   }
 </style>

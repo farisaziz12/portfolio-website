@@ -62,7 +62,7 @@ export async function getStaticPaths() {
     'press-kit': { kicker: 'Speaking · Press kit', title: 'Everything an organiser needs, on one page.', meta: 'Bios, photos and the practical bits for your programme.' },
     community: {
       kicker: 'Community',
-      title: 'I host meetups, teach at them, and build the systems behind them.',
+      title: 'I run meetups, teach at them, and write the code behind them.',
       ...(members ? { mark: members.value, markLabel: members.label } : {}),
     },
     blog: { kicker: 'Writing & conversations', title: 'Articles, podcasts and the odd video.', meta: 'Blog posts, guest articles and podcasts, newest first.' },

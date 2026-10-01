@@ -1811,8 +1811,8 @@
     "_key": "t",
     "_type": "communityPillar",
     "kicker": "Teach",
-    "title": "Workshops for the community, on the house",
-    "body": "React architecture in production, delivered at ZurichJS and WhatTheStack. Community meetups are usually free for me to speak at."
+    "title": "Workshops for the community",
+    "body": "React architecture in production, delivered at ZurichJS and WhatTheStack."
    },
    {
     "_key": "b",

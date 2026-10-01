@@ -36,7 +36,7 @@ export const DEFAULT_HOME: HomePage = {
   praiseIds: [],
   invitePanel: {
     headline: 'Invite me to your stage.',
-    body: 'Talks and workshops on production engineering, payments at scale, and growing into leadership. Every talk is adapted to its audience. I reply within two days; community meetups are usually on the house.',
+    body: 'Talks and workshops on production engineering, payments at scale, and growing into leadership. Every talk is adapted to its audience. I reply within two days.',
   },
 };
 

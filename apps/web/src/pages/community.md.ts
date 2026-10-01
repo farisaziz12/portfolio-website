@@ -19,7 +19,7 @@ export const GET: APIRoute = async () => {
   const lines = [
     '# Community: Faris Aziz',
     '',
-    `> I host meetups, teach at them, and build the systems behind them. ${name} is where most of that happens.`,
+    `> I run meetups, teach at them, and write the code behind them. Most of that happens at ${name}, where I host the meetups, run workshops and built the ticketing platform.`,
     '',
     ...(c
       ? [
@@ -63,7 +63,7 @@ export const GET: APIRoute = async () => {
       : []),
     '## Links',
     '',
-    `- Bring Faris to your community (meetups, community conferences; community events are usually on the house): ${SITE}/invite`,
+    `- Bring Faris to your community (meetups, community conferences): ${SITE}/invite`,
     `- Workshops: ${SITE}/workshops`,
     `- All community writing: ${SITE}/blog?topic=community`,
     '',

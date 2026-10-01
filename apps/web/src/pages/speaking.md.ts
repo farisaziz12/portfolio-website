@@ -68,7 +68,7 @@ export const GET: APIRoute = async () => {
       : '',
     `## How to book`,
     ``,
-    `Fill in the invite form: ${SITE}/invite (three required fields). I reply within ${profile.replyTime}. Community meetups are usually on the house; for conferences I'd expect travel and accommodation to be covered. Travelling from ${profile.travelBase}.`,
+    `Fill in the invite form: ${SITE}/invite (three required fields). I reply within ${profile.replyTime}. For conferences I'd expect travel and accommodation to be covered. Travelling from ${profile.travelBase}.`,
     ``,
     `## Technical rider`,
     ``,
