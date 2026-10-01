@@ -19,6 +19,8 @@
  * pre-roll (ink frame, "F.", the band growing), and the cuts start once the
  * webfont is ready (at least 300ms, at most 700ms). "skip" (already seen this session) shows
  * the same frame for an instant, then it swoops up and the hero rises in.
+ * A reload, back/forward or #section link gets "none": the browser restores a
+ * scroll position there, and a curtain over it would interrupt.
  * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
  */
 import SanityImg from '../v3/SanityImg.astro';
@@ -58,7 +60,10 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
         /* storage blocked: stay quiet */
       }
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const mode = replay || !seen ? 'play' : reduced ? 'none' : 'skip';
+      // Reload, back/forward or a #section link restores a scroll position:
+      // show the page as it is, no curtain over what the visitor was reading.
+      const resumed = (nav && (nav.type === 'reload' || nav.type === 'back_forward')) || Boolean(location.hash);
+      const mode = replay || (!seen && !location.hash) ? 'play' : reduced || resumed ? 'none' : 'skip';
       d.setAttribute('data-intro', mode);
       // If the opener script never runs, don't leave the curtain up.
       if (mode === 'play') setTimeout(() => { if (!window.__opPlaying) d.removeAttribute('data-intro'); }, 2500);
