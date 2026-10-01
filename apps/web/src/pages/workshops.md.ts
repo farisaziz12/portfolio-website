@@ -34,7 +34,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Workshops · Faris Aziz`,
     ``,
-    `> Hands-on, with a repo you keep. ${workshops.length} workshop${workshops.length === 1 ? '' : 's'}; each edition has its own agenda, so the advertised length and the schedule agree. Resources stay available to attendees afterwards. Book one: ${SITE}/invite?kind=workshop`,
+    `> Hands-on workshops. You keep the repo. ${workshops.length} workshop${workshops.length === 1 ? '' : 's'} to choose from. Each edition has its own agenda, so the length you see matches the schedule on the day. Attendees keep the material afterwards. Book one: ${SITE}/invite?kind=workshop`,
     ``,
     rows.length ? rows.join('\n\n') : '_No workshops listed right now._',
   ].join('\n');

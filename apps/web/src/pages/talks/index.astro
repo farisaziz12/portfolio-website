@@ -22,7 +22,7 @@ const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b === 'spoke' |
 const quotes = praise.filter((p) => p.topic === 'stage').slice(0, 2);
 const topics = TOPICS.filter((t) => talks.some((k) => k.pillar === t.value)).map((t) => ({ value: t.value, label: t.title }));
 
-const headline = n ? `${numberWord(n)} ${n === 1 ? 'talk' : 'talks'}, ready to book.` : 'Talks, ready to book.';
+const headline = n ? `${numberWord(n)} ${n === 1 ? 'talk' : 'talks'} you can book.` : 'Talks you can book.';
 const description = `${n} conference talks on production engineering, payments at scale, careers and community. Premise, audience, length and recordings.`;
 ---
 
@@ -45,7 +45,7 @@ const description = `${n} conference talks on production engineering, payments a
         <p class="ds-kicker"><a href="/speaking" class="is-muted thead__crumb">Speaking</a><span aria-hidden="true"> · </span>Talk catalogue</p>
         <h1 class="ds-h1 thead__h1">{headline}</h1>
         <p class="ds-lede thead__lede">
-          What each talk is about, who it's for and how long it runs, with a recording when there is one. I adapt every talk to your slot and your audience.
+          Each one has a short summary, who it's for and how long it runs, plus a recording if there is one. I tweak every talk to fit your slot and your audience.
         </p>
       </div>
       <p class="thead__meta" aria-live="polite">

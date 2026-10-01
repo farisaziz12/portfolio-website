@@ -29,7 +29,7 @@ export const GET: APIRoute = async () => {
   );
 
   const body = [
-    `# ${talks.length ? `${numberWord(talks.length)} talks, ready to book.` : 'Talk catalogue'}`,
+    `# ${talks.length ? `${numberWord(talks.length)} talks you can book.` : 'Talk catalogue'}`,
     ``,
     `> Conference talks by Faris Aziz: short premise, audience, length and a recording where one exists. Every talk adapts to your slot and audience. ${stats.talksDelivered} talks delivered in ${stats.countries} countries (${stats.cities} cities) as of ${stats.asOf}. Book: ${SITE}/invite`,
     ``,

@@ -33,7 +33,7 @@ export const GET: APIRoute = async () => {
   }).join('\n');
 
   const body = [
-    `# Schedule: where I'll be, and where I've been · Faris Aziz`,
+    `# Schedule: upcoming and past events · Faris Aziz`,
     ``,
     `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
     ``,

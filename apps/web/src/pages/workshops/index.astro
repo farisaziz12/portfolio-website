@@ -18,8 +18,8 @@ const heroAlt = hero?.alt || 'Faris running a workshop';
 const quote = praise.find((p) => !p.workshop) ?? praise[0];
 const count = workshops.length;
 const lede = count
-  ? `${numberWord(count)} workshop${count === 1 ? '' : 's'}, each edition with its own agenda, so the advertised length and the schedule always agree. Resources stay available to attendees afterwards.`
-  : 'Each edition has its own agenda, so the advertised length and the schedule always agree. Resources stay available to attendees afterwards.';
+  ? `${numberWord(count)} workshop${count === 1 ? '' : 's'} to choose from. Each edition has its own agenda, so the length you see matches the schedule on the day. Attendees keep the material afterwards.`
+  : 'Each edition has its own agenda, so the length you see matches the schedule on the day. Attendees keep the material afterwards.';
 
 const schema = [
   breadcrumbs([
@@ -31,7 +31,7 @@ const schema = [
 ---
 
 <BaseLayout
-  title="Workshops: hands-on, with a repo you keep | Faris Aziz"
+  title="Hands-on workshops | Faris Aziz"
   description="Hands-on workshops by Faris Aziz, compared side by side: what you leave able to do, prerequisites, editions and group size. Book one for your event or team."
   image="/og/workshops.png"
   markdownAlternate="/workshops.md"
@@ -40,7 +40,7 @@ const schema = [
 >
   <SkewHero image={hero} imageAlt={heroAlt} height={440}>
     <p class="ds-kicker"><a href="/speaking" class="is-muted ws-crumb">Speaking</a><span aria-hidden="true"> · </span>Workshops</p>
-    <h1 class="ds-h1 ws-h1">Hands-on, with a repo you keep.</h1>
+    <h1 class="ds-h1 ws-h1">Hands-on workshops. You keep the repo.</h1>
     <p class="ds-lede ws-lede">{lede}</p>
   </SkewHero>
 
