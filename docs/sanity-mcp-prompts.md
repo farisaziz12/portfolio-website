@@ -461,7 +461,8 @@ Where each photo appears and the shape the site crops it to:
   crop around the hotspot). Empty = the site
   uses speakerProfile.headshots (stage shots first). Want: a landscape stage or workshop shot, Faris
   clearly visible, at least 1920 px wide.
-- speakerProfile.headshots[]: press kit crops 1:1, 4:5 and 16:9 around the hotspot. Want: at least 2000 px on the short side, one photo per tag,
+- speakerProfile.headshots[]: press kit crops 1:1, 4:5 and 16:9 around the hotspot; the "portrait" tag
+  is the square photo in the home intro's name card. Want: at least 2000 px on the short side, one photo per tag,
   tag in portrait|stage|workshop|community|speaking|event.
 - talk.thumbnail: talk rows 16:10, talk page backdrop full width. Want: a stage photo of THAT talk,
   landscape, at least 1600 px wide. No slide screenshots, logos or text-heavy images.

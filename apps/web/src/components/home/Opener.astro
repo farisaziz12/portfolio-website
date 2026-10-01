@@ -1,9 +1,10 @@
 ---
 /**
  * The opener ("web cut", 5s): an overlay above the fully rendered homepage.
- * Type and colour only, no photos. Four cuts: white diagonal wipe + "F."
- * mark → cropped "Faris" on yellow → "Aziz" with yellow/blue colour offsets
- * on white → name card (the yellow/blue square); then the overlay lifts
+ * Type and colour, plus one photo: the portrait in the name card. Four cuts:
+ * white diagonal wipe + "F." mark → cropped "Faris" on yellow → "Aziz" with
+ * yellow/blue colour offsets on white → name card (portrait in the
+ * yellow/blue square); then the overlay lifts
  * (translateY(-3%) + fade, 0.6s). Phones get their own scale and a stacked
  * card (container queries on the overlay).
  *
@@ -20,13 +21,18 @@
  * the same frame for an instant, then it swoops up and the hero rises in.
  * Rendered `hidden`: without JS there is no overlay at all. DOM/CSS only.
  */
+import SanityImg from '../v3/SanityImg.astro';
+import type { SanityImage } from '../../lib/sanity/v3';
+
 interface Props {
+  /** Portrait for the name card's square (plain square without one). */
+  portrait?: SanityImage;
   name?: string;
   /** "Software engineer · speaker · ZurichJS co-founder" */
   line: string;
 }
 
-const { name = 'Faris Aziz', line } = Astro.props;
+const { portrait, name = 'Faris Aziz', line } = Astro.props;
 const parts = line.split(/\s*·\s*/).filter(Boolean);
 const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 ---
@@ -86,6 +92,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
         <span class="op__tile op__tile--y"></span>
         <span class="op__tile op__tile--b"></span>
         <span class="op__sq"></span>
+        {portrait?.asset && <SanityImg image={portrait} alt="" ratio={1} widths={[200, 400]} sizes="120px" loading="eager" class="op__face" />}
       </div>
       <div>
         <div class="op__name">{name}</div>
@@ -150,6 +157,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
   .op__tile--y { background: rgb(var(--c-yellow)); transform: rotate(-8deg); }
   .op__tile--b { background: rgb(var(--c-blue)); transform: rotate(6deg); }
   .op__sq { position: absolute; inset: 0; background: rgb(var(--c-ink)); box-shadow: inset 0 0 0 1px rgb(var(--c-cream) / 0.12); }
+  .op__avatar :global(.op__face) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .op__name { color: rgb(var(--c-yellow)); font-weight: 800; font-size: max(12px, 1.7cqw); }
   .op__role { font-weight: 800; font-size: max(20px, 3.4cqw); line-height: 1.02; letter-spacing: -0.04em; max-width: 18em; }
   /* First role on its own line, the rest after it (desktop). */

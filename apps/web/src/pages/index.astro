@@ -49,8 +49,10 @@ const onPosters = new Set(featured.filter((f): f is Extract<FeaturedItem, { kind
 const fresh = writing.filter((w) => !onPosters.has(w._id));
 const latest = [...fresh.filter((w) => w.format === 'article'), ...fresh.filter((w) => w.format !== 'article')].slice(0, 2);
 
-// Hero photos: the Home page picks, else the press photos.
+// Hero photos: the Home page picks, else the press photos. The opener's name
+// card uses the portrait press photo.
 const heroPhotos = homeHeroPhotos(home.heroPhotos, profile.photos);
+const portrait = profile.photos.find((p) => p.tag === 'portrait') ?? profile.photos[0];
 
 const next = upcoming.slice(0, 5);
 const extraSchema = next.length
@@ -67,7 +69,7 @@ const extraSchema = next.length
   band={false}
   extraSchema={extraSchema}
 >
-  {settings.introEnabled && <Opener name={profile.name} line={kicker} />}
+  {settings.introEnabled && <Opener portrait={portrait} name={profile.name} line={kicker} />}
 
   <HomeHero home={home} photos={heroPhotos} kicker={kicker} upcoming={upcoming} />
 
