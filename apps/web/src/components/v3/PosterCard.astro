@@ -26,7 +26,7 @@ const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 
 <a href={href} class:list={['poster', `poster--${tone}`, className]} data-track={track} {...ext}>
-  <span class="poster__num" aria-hidden="true">{num}</span>
+  <span class="poster__num" aria-hidden="true" data-num={num}></span>
   <span class="poster__top">
     {kicker && <span>{kicker}</span>}
     {kickerRight && <span class="poster__right">{kickerRight}</span>}
@@ -48,7 +48,10 @@ const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
   .poster--lead:hover { background: rgb(var(--c-cream)); }
   .poster--ink { background: rgb(var(--surface)); color: rgb(var(--text)); border: 1px solid rgb(var(--hairline)); padding: 22px; }
   .poster--ink:hover { border-color: rgb(var(--yellow)); }
+  /* Decorative watermark number: drawn from data-num via ::before, so it's
+     artwork rather than text (no contrast requirement, not read out). */
   .poster__num { position: absolute; font-weight: 900; line-height: 1; letter-spacing: -0.08em; pointer-events: none; }
+  .poster__num::before { content: attr(data-num); }
   .poster--lead .poster__num { right: -60px; top: -80px; font-size: 300px; color: rgb(var(--c-ink)); opacity: 0.07; }
   .poster--ink .poster__num { right: -30px; bottom: -90px; font-size: 240px; color: rgb(var(--text)); opacity: 0.04; }
   .poster__top { position: relative; display: flex; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
