@@ -6,7 +6,7 @@ import groq from 'groq';
 import type { AvailabilityStatus, ServiceType } from 'shared';
 import { yearOf } from './dates';
 import { DEFAULT_ABOUT } from './defaults';
-import { getUpcomingEvents } from './events';
+import { getAllEvents } from './events';
 import { load, memo, IMAGE } from './fetch';
 import type { AvailabilityMonth, CareerEntry, LabelledText, SanityImage, ServiceOffer } from './types';
 
@@ -24,19 +24,23 @@ export function statusFromBookings(count: number): AvailabilityStatus {
 
 /**
  * The next 12 months starting this month. Each month's status is DERIVED from
- * upcoming events (appearances you're confirmed for; attending doesn't count).
+ * the events still ahead (appearances you're confirmed for; attending doesn't
+ * count). "Ahead" is measured from `now`, not the clock, so the result
+ * depends only on the date passed in.
  * A month entry in the Availability document overrides it (holidays, a month
  * you're keeping free) and can add a note.
  */
 export function getAvailability(now = new Date()): Promise<{ months: AvailabilityMonth[]; leadTime?: string; fromCms: boolean }> {
   return memo(`site:availability:${now.toISOString().slice(0, 7)}`, async () => {
-    const [a, upcoming] = await Promise.all([
+    const [a, events] = await Promise.all([
       load<{ months: { month?: string; status?: AvailabilityStatus; note?: string }[]; leadTime?: string } | null>(availabilityQuery, null),
-      getUpcomingEvents(),
+      getAllEvents(),
     ]);
+    const from = now.toISOString().slice(0, 10);
     const overrides = new Map((a?.months ?? []).filter((m) => m.month).map((m) => [m.month!.slice(0, 7), m]));
     const bookings = new Map<string, number>();
-    for (const e of upcoming) {
+    for (const e of events) {
+      if (e.date < from) continue;
       if (!e.sessions.some((s) => s.bucket !== 'attended' && s.status !== 'cancelled')) continue;
       const key = e.date.slice(0, 7);
       bookings.set(key, (bookings.get(key) ?? 0) + 1);
