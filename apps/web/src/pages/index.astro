@@ -43,6 +43,9 @@ const kicker = home.kicker || settings.nowLine;
 
 // Community tiles: the community's own dated metrics, else the approved community-domain ones.
 const metrics = (community?.metrics.length ? community.metrics : communityMetrics).filter((m) => m.dateLabel);
+// No community photos yet: the press photos tagged community / hosting / event stand in.
+const communityPhotos = profile.photos.filter((p) => ['community', 'hosting', 'event'].includes(p.tag ?? ''));
+const communityShown = community && !community.photos.length ? { ...community, photos: communityPhotos } : community;
 
 // Recent writing: the two newest pieces not already on a poster (articles first, like the design).
 const onPosters = new Set(featured.filter((f): f is Extract<FeaturedItem, { kind: 'writing' }> => f.kind === 'writing').map((f) => f.item._id));
@@ -77,7 +80,7 @@ const extraSchema = next.length
 
   <HomePraise spotlight={praise.spotlight} cards={praise.cards} />
 
-  {community && <HomeCommunity community={community} metrics={metrics} />}
+  {communityShown && <HomeCommunity community={communityShown} metrics={metrics} />}
 
   <HomeWriting items={latest} invite={home.invitePanel} />
 </BaseLayout>

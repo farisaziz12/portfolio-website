@@ -3,7 +3,7 @@
  * always wins; these keep a fresh dataset (or a CMS outage) looking finished.
  * No numbers here: counts come from data (stats.ts) or dated metrics.
  */
-import type { LabelledText, Profile, SpeakingFormat, TopicPillar, HomePage, SiteSettings } from './types';
+import type { Community, LabelledText, Profile, SpeakingFormat, TopicPillar, HomePage, SiteSettings } from './types';
 
 export const DEFAULT_NOW_LINE = 'Software engineer · speaker · ZurichJS co-founder';
 
@@ -126,3 +126,25 @@ export const DEFAULT_ABOUT = {
 
 export const DEFAULT_SERVICES_INTRO =
   'I’m always up for figuring out how we could work together, even if it doesn’t fit neatly below. And if I’m not the right person for it, I’ll tell you. A sentence is enough to start.';
+
+/**
+ * ZurichJS until a `community` document exists in Sanity (the V3 migration
+ * doesn't create one). Facts only from the approved bios; no numbers, no
+ * awards, no aftermovie: those come from the CMS when recorded.
+ */
+export const DEFAULT_COMMUNITY: Community = {
+  _id: 'default-zurichjs',
+  name: 'ZurichJS',
+  slug: 'zurichjs',
+  role: 'Co-founder and lead',
+  founded: 2024,
+  city: 'Zurich',
+  url: 'https://zurichjs.com',
+  headline: 'I co-founded and lead ZurichJS.',
+  summary:
+    'I co-founded ZurichJS in 2024 and still run it. It has grown to thousands of members and a two-day conference, ZurichJS Conf, which I chair. I also built the platform behind its tickets, call for papers and sponsors.',
+  pillars: [],
+  metrics: [],
+  recognition: [],
+  photos: [],
+};

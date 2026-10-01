@@ -6,7 +6,7 @@
 import groq from 'groq';
 import { formatLegacyMetric, LEGACY_METRIC_AREA, type MetricDomain } from 'shared';
 import { monthYear } from './dates';
-import { DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
+import { DEFAULT_COMMUNITY, DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
 import type {
   Community,
@@ -291,6 +291,8 @@ export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(fo
 export function getCommunities(): Promise<Community[]> {
   return memo('site:communities', async () => {
     const list = await load<Community[]>(communitiesQuery, []);
+    // No community document yet (not created by the migration): ZurichJS from the bios.
+    if (!list.length) return [DEFAULT_COMMUNITY];
     return list.map((c) => ({
       ...c,
       metrics: ((c.metrics ?? []) as (Omit<Metric, 'dateLabel'> & { status?: string })[])
