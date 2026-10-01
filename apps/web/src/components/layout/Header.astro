@@ -14,7 +14,7 @@ import { PRIMARY_NAV, INVITE_CTA, sectionFor, activeChild } from '../../lib/nav'
 
 interface Props {
   band?: boolean;
-  /** Offer "Replay intro" to returning visitors (the opener is enabled). */
+  /** Offer "Replay intro" to returning visitors on the home page (the opener is enabled). */
   introEnabled?: boolean;
   /** Short bio (Sanity) for the command palette's "Copy short bio". */
   bio?: string;
@@ -25,6 +25,8 @@ const pathname = Astro.url.pathname;
 const section = sectionFor(pathname);
 const activePill = activeChild(section, pathname);
 const onInvite = pathname.replace(/\/$/, '') === '/invite';
+// The intro only plays on a full load of `/`, so the replay link lives there only.
+const onHome = pathname === '/';
 const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
 ---
 
@@ -39,7 +41,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
     </nav>
 
     <div class="hdr__right">
-      {introEnabled && (
+      {introEnabled && onHome && (
         <a href="/?intro=replay" class="hdr__replay" data-replay-intro hidden>Replay intro</a>
       )}
       <ThemeToggle client:idle />
@@ -236,16 +238,14 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
     // Leaving the mobile breakpoint with the drawer open would strand it.
     window.matchMedia('(min-width: 901px)').addEventListener('change', (m) => m.matches && close(true));
 
-    // "Replay intro" only for returning visitors (the intro already played).
+    // "Replay intro": home page only, for returning visitors (the intro already played).
     const replay = document.querySelector<HTMLAnchorElement>('[data-replay-intro]');
     let seen = false;
     try { seen = sessionStorage.getItem('introSeen') === '1'; } catch { /* storage blocked */ }
-    if (replay && seen) replay.hidden = false;
+    if (replay && seen && location.pathname === '/') replay.hidden = false;
     replay?.addEventListener('click', (e) => {
-      if (location.pathname === '/') {
-        e.preventDefault();
-        document.dispatchEvent(new CustomEvent('intro:replay'));
-      }
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent('intro:replay'));
     });
   }
   setupHeader();
