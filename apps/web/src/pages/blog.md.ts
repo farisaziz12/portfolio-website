@@ -15,7 +15,7 @@ export const GET: APIRoute = async () => {
   const lines = [
     '# Writing & conversations: Faris Aziz',
     '',
-    "> What I've written, and what I've said out loud. Posts on this site, pieces for other publications, podcast conversations and video, in one timeline.",
+    "> Articles, podcasts and the odd video. My blog posts, articles I've written for other sites, and podcasts I've been on, all in one place, newest first.",
     '',
     `${items.length} items: ${count('article')} written, ${count('podcast')} podcasts, ${count('video')} video. Topics: ${[...new Set(items.map((i) => i.topic).filter(Boolean))].map((t) => TOPIC_SHORT[t!]).join(', ')}.`,
     `Posts on this site have a markdown version at the same URL plus \`.md\`. RSS: ${SITE}/rss.xml`,
