@@ -6,6 +6,7 @@
  */
 import SanityImg from '../v3/SanityImg.astro';
 import Icon from '../v3/Icon.astro';
+import zurichjsLogo from '../../assets/logos/zurichjs.svg';
 import type { Community, Metric } from '../../lib/sanity/v3';
 
 interface Props {
@@ -21,6 +22,8 @@ const tiles = metrics.slice(0, 4);
 const award = c.recognition[0];
 const photos = c.photos.filter((p) => p?.asset).slice(0, award ? 2 : 3);
 const poster = film?.poster?.asset ? film.poster : c.photos[0];
+// The CMS logo wins; ZurichJS ships with its own so the section is never logo-less.
+const builtInLogo = /zurichjs/i.test(c.slug || c.name) ? zurichjsLogo : undefined;
 const kicker = ['Community', c.city, c.founded ? `since ${c.founded}` : null].filter(Boolean).join(' · ');
 const FilmTag = filmLive ? 'a' : 'div';
 // An uploaded film plays inline on /community; an external one opens where it's hosted.
@@ -35,10 +38,12 @@ const filmAttrs = !filmLive
   <div class="ds-wrap hc__grid">
     <div class="hc__copy">
       <div class="hc__brand">
-        {c.logo?.asset && (
-          c.url
-            ? <a href={c.url} target="_blank" rel="noopener noreferrer" class="hc__logo-link" data-track="home-community-logo"><SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" class="hc__logo" /></a>
-            : <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" class="hc__logo" />
+        {(c.logo?.asset || builtInLogo) && (
+          <a href={c.url || '/community'} target={c.url ? '_blank' : undefined} rel={c.url ? 'noopener noreferrer' : undefined} class="hc__logo-link" data-track="home-community-logo">
+            {c.logo?.asset
+              ? <SanityImg image={c.logo} alt={`${c.name} logo`} widths={[96, 192]} sizes="56px" loading="lazy" class="hc__logo" />
+              : <img src={builtInLogo!.src} width="56" height="56" alt={`${c.name} logo`} loading="lazy" decoding="async" class="hc__logo" />}
+          </a>
         )}
         <p class="ds-kicker">{kicker}</p>
       </div>
@@ -113,7 +118,7 @@ const filmAttrs = !filmLive
   .hc__brand { display: flex; align-items: center; gap: 14px; }
   .hc__brand .ds-kicker { margin: 0; }
   .hc__logo-link { display: block; flex: none; }
-  .hc__brand :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; flex: none; }
+  .hc__brand :global(.hc__logo) { display: block; width: 56px; height: 56px; object-fit: contain; flex: none; border-radius: 6px; outline: 1px solid rgb(var(--hairline-strong)); outline-offset: -1px; }
   .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
   .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
   .hc__cta { align-self: flex-start; }
