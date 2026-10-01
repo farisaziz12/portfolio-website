@@ -1,7 +1,7 @@
 ---
 /**
  * Workshop page right column: "Book this workshop" (length, group, room,
- * after + Request a date), the attendee-resources note, and the talk version.
+ * after + Request a date) and the talk version.
  */
 import type { WorkshopWithHistory } from '../../lib/sanity/v3';
 import { groupLine, lengthLine, workshopInviteHref } from '../../lib/workshops-view';
@@ -35,14 +35,6 @@ const talk = w.relatedTalk;
     <a href={workshopInviteHref(w)} class="ds-btn ds-btn--yellow ds-btn--block" data-track="workshop_request_date">Request a date</a>
   </div>
 
-  <div class="ds-card ds-card--dashed wsa__att">
-    <h2 class="wsa__kicker is-muted">Attendees</h2>
-    <p class="wsa__att-title">Resources for your edition</p>
-    <p class="wsa__att-body">
-      Use the link from your session: that's where the slides, the repo and the extras live.
-    </p>
-  </div>
-
   {talk && (
     <a href={`/talks/${talk.slug}`} class="ds-card wsa__talk" data-track="workshop_related_talk">
       <span class="wsa__kicker">{talk.duration ? `The ${talk.duration}-minute version` : 'The talk version'}</span>
@@ -55,11 +47,7 @@ const talk = w.relatedTalk;
   .wsa { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .wsa__box { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
   .wsa__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
-  .wsa__kicker.is-muted { color: rgb(var(--text-faint)); }
   .wsa__dl { font-size: 14px; line-height: 1.5; gap: 8px 14px; }
-  .wsa__att { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; background: rgb(var(--surface)); }
-  .wsa__att-title { margin: 0; font-weight: 700; font-size: 15px; }
-  .wsa__att-body { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
   .wsa__talk { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
   .wsa__talk-title { font-weight: 800; font-size: 16px; line-height: 1.25; }
 </style>
