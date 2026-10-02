@@ -1,10 +1,11 @@
 /**
- * Build-time Open Graph card renderer.
+ * Build-time Open Graph card renderer, DS v3 ("Panels & Bands").
  *
  * satori (HTML/CSS subset → SVG) + resvg (SVG → PNG), rendered statically via
- * the /og/[...slug].png endpoint — zero runtime cost, immutable URLs. Cards
- * follow the site's dark brand with an inner hairline border so they hold up
- * on both light and dark feed chrome (X, LinkedIn, Slack, Bluesky, iMessage).
+ * /og/[...slug].png — zero runtime cost, immutable URLs. The card is the site
+ * in miniature: ink ground, a skewed yellow band with the 8px blue edge, a
+ * cropped numeral or "F." on the band, Figtree 800 headline, the 8px band
+ * along the bottom. Readable as a 300px thumbnail in feeds.
  */
 import satori from 'satori';
 import { html } from 'satori-html';
@@ -14,69 +15,51 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-// Design tokens (hex literals — satori has no CSS-variable support).
-const BG = '#0A0C10';
-const SURFACE = '#0F131A';
-const INK = '#F3F5F8';
-const INK_MUTED = '#A9B4C2';
-const INK_FAINT = '#8B97A6';
-const ACCENT = '#3D7BFF';
-const ACCENT_BRIGHT = '#6AA1FF';
-const EDGE = '#232B36';
+// Tokens as hex (satori has no CSS-variable support). Keep in sync with tokens.css.
+const INK = '#0F0F10';
+const SURFACE = '#191A1D';
+const HAIRLINE = '#2A2A2E';
+const CREAM = '#F8F4EB';
+const MUTED = '#C8C1B5';
+const FAINT = '#8A8378';
+const YELLOW = '#F4C63A';
+const BLUE = '#2E88B8';
 
-let fontsPromise: Promise<{ name: string; data: Buffer; weight: 400 | 500 | 600 | 700; style: 'normal' }[]> | null = null;
+type Weight = 400 | 600 | 700 | 800 | 900;
+let fontsPromise: Promise<{ name: string; data: Buffer; weight: Weight; style: 'normal' }[]> | null = null;
 
 function loadFonts() {
   if (!fontsPromise) {
-    fontsPromise = Promise.all([
-      readFile(require.resolve('@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff')),
-      readFile(require.resolve('@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff')),
-      readFile(require.resolve('@fontsource/hanken-grotesk/files/hanken-grotesk-latin-400-normal.woff')),
-      readFile(require.resolve('@fontsource/hanken-grotesk/files/hanken-grotesk-latin-600-normal.woff')),
-    ]).then(([sg700, sg500, hg400, hg600]) => [
-      { name: 'Space Grotesk', data: sg700, weight: 700 as const, style: 'normal' as const },
-      { name: 'Space Grotesk', data: sg500, weight: 500 as const, style: 'normal' as const },
-      { name: 'Hanken Grotesk', data: hg400, weight: 400 as const, style: 'normal' as const },
-      { name: 'Hanken Grotesk', data: hg600, weight: 600 as const, style: 'normal' as const },
+    const file = (w: number) => readFile(require.resolve(`@fontsource/figtree/files/figtree-latin-${w}-normal.woff`));
+    fontsPromise = Promise.all([file(400), file(600), file(700), file(800), file(900)]).then(([f4, f6, f7, f8, f9]) => [
+      { name: 'Figtree', data: f4, weight: 400 as const, style: 'normal' as const },
+      { name: 'Figtree', data: f6, weight: 600 as const, style: 'normal' as const },
+      { name: 'Figtree', data: f7, weight: 700 as const, style: 'normal' as const },
+      { name: 'Figtree', data: f8, weight: 800 as const, style: 'normal' as const },
+      { name: 'Figtree', data: f9, weight: 900 as const, style: 'normal' as const },
     ]);
   }
   return fontsPromise;
 }
 
 export interface OgCard {
-  /** Small mono-style uppercase eyebrow, e.g. "CONFERENCE TALK · 45 MIN". */
+  /** Uppercase eyebrow, e.g. "TALK · ENGINEERING IN PRODUCTION · 30 MIN". */
   kicker?: string;
-  /** The big headline (clamped to ~3 lines). */
+  /** The headline (clamped to ~3 lines). */
   title: string;
   /** Secondary line under the title. */
   meta?: string;
-  /** Bottom-right context label, defaults to the site domain. */
+  /** Mark on the yellow band: a short numeral ("44", "22") or defaults to "F.". */
+  mark?: string;
+  /** Small label under the mark ("talks delivered"). */
+  markLabel?: string;
+  /** Bottom-left identity line, defaults to the "Now" line. */
+  byline?: string;
+  /** Bottom-right context, defaults to the domain. */
   footer?: string;
-  /** Square photo URL for the footer avatar; falls back to the "FA" monogram. */
-  avatarUrl?: string;
 }
 
-// satori can't fetch remote images itself, so pull the avatar down at build
-// time and inline it as a data URI. Cached per URL — many cards share one photo.
-const avatarCache = new Map<string, Promise<string | null>>();
-
-function loadAvatar(url: string): Promise<string | null> {
-  let cached = avatarCache.get(url);
-  if (!cached) {
-    cached = fetch(url)
-      .then(async (res) => {
-        if (!res.ok) return null;
-        const type = res.headers.get('content-type') || 'image/jpeg';
-        return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString('base64')}`;
-      })
-      .catch(() => null);
-    avatarCache.set(url, cached);
-  }
-  return cached;
-}
-
-// satori-html does not decode HTML entities in text nodes, so escaping would
-// render literally ("&amp;"). Strip markup-significant characters instead.
+// satori-html does not decode entities in text nodes; strip markup characters instead.
 function esc(s: string): string {
   return s.replace(/[<>]/g, '');
 }
@@ -87,56 +70,45 @@ function clamp(s: string, max: number): string {
 
 export async function renderOgCard(card: OgCard): Promise<Uint8Array<ArrayBuffer>> {
   const fonts = await loadFonts();
-  const title = clamp(card.title, 90);
-  // Scale the headline down as it gets longer so 3 lines always fit.
-  const titleSize = title.length > 60 ? 56 : title.length > 34 ? 64 : 76;
-  const avatar = card.avatarUrl ? await loadAvatar(card.avatarUrl) : null;
-  const avatarBox = avatar
-    ? `<img src="${avatar}" width="52" height="52" style="width:52px; height:52px; border-radius:12px; border:1px solid ${EDGE}; object-fit:cover;" />`
-    : `<div style="display:flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:12px; background:${ACCENT}; color:#FFFFFF; font-family:'Space Grotesk'; font-weight:700; font-size:24px;">FA</div>`;
+  const title = clamp(card.title, 96);
+  const titleSize = title.length > 70 ? 54 : title.length > 44 ? 62 : title.length > 26 ? 74 : 88;
+  const mark = clamp(card.mark || 'F.', 5);
+  const markSize = mark.length <= 2 ? 205 : mark.length <= 3 ? 160 : 125;
+  const byline = card.byline || 'Software engineer · speaker · ZurichJS co-founder';
 
   const markup = html(`
-    <div style="display:flex; width:1200px; height:630px; background:${BG}; padding:24px; font-family:'Hanken Grotesk';">
-      <div style="display:flex; flex-direction:column; flex:1; border:1px solid ${EDGE}; border-top:4px solid ${ACCENT}; border-radius:20px; background:${SURFACE}; padding:60px 72px 56px;">
+    <div style="display:flex; position:relative; width:1200px; height:630px; background:${INK}; font-family:'Figtree'; overflow:hidden;">
+      <div style="display:flex; position:absolute; right:-150px; top:-20px; width:520px; height:680px; background:${YELLOW}; transform:skewX(-14deg);"></div>
+      <div style="display:flex; position:absolute; right:362px; top:-20px; width:10px; height:680px; background:${BLUE}; transform:skewX(-14deg);"></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; position:absolute; right:56px; top:70px; width:300px;">
+        <div style="display:flex; color:${INK}; font-weight:900; font-size:${markSize}px; line-height:0.85; letter-spacing:-10px;">${esc(mark)}</div>
+        ${card.markLabel ? `<div style="display:flex; margin-top:16px; color:${INK}; font-weight:700; font-size:26px; text-align:right;">${esc(clamp(card.markLabel, 28))}</div>` : ''}
+      </div>
+      <div style="display:flex; flex-direction:column; position:absolute; left:64px; top:64px; width:${card.markLabel || card.mark ? 700 : 720}px; height:470px;">
         ${
           card.kicker
-            ? `<div style="display:flex; align-items:center; gap:14px; color:${INK_FAINT}; font-size:26px; font-weight:600; letter-spacing:3px; text-transform:uppercase;">
-                 <div style="display:flex; width:28px; height:2px; background:${ACCENT};"></div>
-                 ${esc(clamp(card.kicker, 60))}
-               </div>`
+            ? `<div style="display:flex; color:${YELLOW}; font-size:20px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;">${esc(clamp(card.kicker, 58))}</div>`
             : ''
         }
         <div style="display:flex; flex:1; align-items:center;">
-          <div style="display:flex; color:${INK}; font-family:'Space Grotesk'; font-weight:700; font-size:${titleSize}px; line-height:1.08; letter-spacing:-1.5px; max-width:1000px;">
-            ${esc(title)}
-          </div>
+          <div style="display:flex; color:${CREAM}; font-weight:800; font-size:${titleSize}px; line-height:0.98; letter-spacing:-2.5px;">${esc(title)}</div>
         </div>
-        ${
-          card.meta
-            ? `<div style="display:flex; color:${INK_MUTED}; font-size:30px; font-weight:400; margin-bottom:36px; max-width:980px;">${esc(clamp(card.meta, 110))}</div>`
-            : ''
-        }
-        <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid ${EDGE}; padding-top:32px;">
-          <div style="display:flex; align-items:center; gap:18px;">
-            ${avatarBox}
-            <div style="display:flex; flex-direction:column;">
-              <div style="display:flex; color:${INK}; font-family:'Space Grotesk'; font-weight:500; font-size:28px;">Faris Aziz</div>
-              <div style="display:flex; color:${INK_FAINT}; font-size:22px;">Staff Software Engineer · Conference Speaker</div>
-            </div>
-          </div>
-          <div style="display:flex; color:${ACCENT_BRIGHT}; font-size:26px; font-weight:600;">${esc(card.footer || 'faziz-dev.com')}</div>
-        </div>
+        ${card.meta ? `<div style="display:flex; color:${MUTED}; font-size:26px; line-height:1.35;">${esc(clamp(card.meta, 120))}</div>` : ''}
       </div>
+      <div style="display:flex; position:absolute; left:0; right:0; bottom:8px; height:62px; align-items:center; justify-content:space-between; padding:0 64px; background:${INK}; border-top:1px solid ${HAIRLINE};">
+        <div style="display:flex; align-items:center;">
+          <div style="display:flex; color:${CREAM}; font-weight:800; font-size:24px; letter-spacing:-0.5px;">Faris Aziz</div>
+          <div style="display:flex; margin-left:16px; color:${FAINT}; font-size:20px;">${esc(clamp(byline, 60))}</div>
+        </div>
+        <div style="display:flex; color:${YELLOW}; font-size:20px; font-weight:700;">${esc(card.footer || 'faziz-dev.com')}</div>
+      </div>
+      <div style="display:flex; position:absolute; left:0; bottom:0; width:144px; height:8px; background:${BLUE};"></div>
+      <div style="display:flex; position:absolute; left:144px; right:0; bottom:0; height:8px; background:${YELLOW};"></div>
+      <div style="display:flex; position:absolute; left:0; top:0; width:1px; height:1px; background:${SURFACE};"></div>
     </div>
   `);
 
-  const svg = await satori(markup as Parameters<typeof satori>[0], {
-    width: 1200,
-    height: 630,
-    fonts,
-  });
-
-  // Copy into a plain ArrayBuffer-backed Uint8Array so it satisfies BodyInit.
+  const svg = await satori(markup as Parameters<typeof satori>[0], { width: 1200, height: 630, fonts });
   return Uint8Array.from(new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng());
 }
 

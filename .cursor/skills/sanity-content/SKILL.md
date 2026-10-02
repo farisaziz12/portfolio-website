@@ -11,14 +11,15 @@ Guide: `docs/sanity-guide.md`. Use the Sanity MCP to inspect schema and try GROQ
 ## Schema change
 
 1. Edit `apps/studio` schema.
-2. Project the new fields in `apps/web/src/lib/sanity/queries.ts`.
-3. Update `apps/web/src/lib/sanity/types.ts` if the shared shape changed.
+2. Project the new fields in the matching loader in `apps/web/src/lib/sanity/v3/` (and normalise legacy shapes there, never in pages).
+3. Update `apps/web/src/lib/sanity/v3/types.ts` / `types-site.ts`; shared option lists go in `packages/shared/src/content-model.ts`.
+3b. Add fixture docs to `apps/web/fixtures/build-dataset.py` and a case to `src/lib/sanity/v3/v3.test.ts`.
 4. Site consumers must tolerate missing data (empty state or `lib/proof.ts`).
 5. `pnpm --filter studio build` validates schema (this is what CI runs).
 
 ## IA
 
-Talk ≠ event. Upcoming appearances are events with a future `date`. Versioned talks use `parentTalk` + `isCurrentVersion`.
+Talk ≠ event. Upcoming appearances are events with a future `date`; what Faris does there is a session with a role. Versioned talks use `parentTalk` + `isCurrentVersion`. Content cleanup via MCP: `docs/sanity-mcp-prompts.md`.
 
 ## Content vs code
 

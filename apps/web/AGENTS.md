@@ -34,12 +34,15 @@ Without Sanity network access the site still renders — that is resilience, not
 src/components/design/     DS primitives
 src/components/islands/    React (hydrate)
 src/emails/                React Email — see CLAUDE.md
-src/lib/sanity/            client, queries.ts (all GROQ), types
+src/lib/sanity/            client (fixture mode: SANITY_FIXTURES=1)
 src/lib/email.ts           Resend env() + sendOrLog — never new Resend() in a route
 src/lib/analytics.ts       typed track() — keep in sync with docs/measurement.md
 src/pages/*.md.ts          agent markdown mirrors
 src/pages/llms.txt.ts      llmstxt.org index
-src/styles/global.css      Design System v2 — token source of truth
+src/styles/tokens.css      Design System v3 tokens (the only hex)
+src/styles/ds.css          DS v3 primitives (ds-* classes)
+src/components/v3/         DS v3 components (SkewHero, PosterCard, PraiseCard, InvitePanel, FilterPills…)
+src/lib/sanity/v3/         content loaders (all GROQ) + normalisers + derived stats
 ```
 
 ## When you add a page

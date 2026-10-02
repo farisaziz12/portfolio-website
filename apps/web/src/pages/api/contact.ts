@@ -4,6 +4,8 @@ import type { APIRoute } from 'astro'
 import { ContactConfirmationEmail } from '../../emails/ContactConfirmationEmail'
 import { ContactAdminEmail } from '../../emails/ContactAdminEmail'
 import { env, getFrom, isEmailConfigured, sendOrLog } from '../../lib/email'
+import { getProfile } from '../../lib/sanity/v3'
+import { EMAIL_RE, LIMITS, clean, inquiryRef, json, tooLong } from '../../lib/inquiry'
 
 // Where general contact messages (incl. full-time role inquiries) land.
 // Defaults to faris@zurichjs.com; CONTACT_INBOX (or INVITE_INBOX) overrides.
@@ -13,54 +15,58 @@ const FROM = getFrom('Website Contact')
 const TOPICS: Record<string, string> = {
   role: 'Full-time role',
   speaking: 'Speaking',
+  press: 'Podcast or press',
   consulting: 'Consulting',
   mentorship: 'Mentorship',
   other: 'Something else',
 }
 
-interface ContactPayload {
-  name?: string
-  email?: string
-  topic?: string
-  company?: string
-  message?: string
-}
-
+/**
+ * Same response contract as /api/invite: 200 `{ ok, ref, confirmationSent }` only
+ * once Resend accepted the admin notification; 400 invalid; 503 not-configured;
+ * 502 delivery-failed. `name` is optional (the V3 form asks for email + message).
+ */
 export const POST: APIRoute = async ({ request }) => {
-  let payload: ContactPayload
+  let payload: Record<string, unknown>
   try {
-    payload = (await request.json()) as ContactPayload
+    payload = (await request.json()) as Record<string, unknown>
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 })
+    return json({ error: 'invalid', message: 'Invalid JSON' }, 400)
   }
 
-  const { name, email, topic, company, message } = payload
-  const topicLabel = TOPICS[topic || ''] || TOPICS.other
+  const name = clean(payload.name)
+  const email = clean(payload.email)
+  const company = clean(payload.company)
+  const message = clean(payload.message)
+  const topicLabel = TOPICS[clean(payload.topic)] || TOPICS.other
 
-  if (!name?.trim() || !email?.trim() || !message?.trim()) {
-    return new Response(
-      JSON.stringify({ error: 'Name, email, and a message are required.' }),
-      { status: 400 }
-    )
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    return new Response(JSON.stringify({ error: 'Email looks invalid.' }), { status: 400 })
+  const missing = [!EMAIL_RE.test(email) && 'email', !message && 'message'].filter(Boolean) as string[]
+  const long = tooLong({
+    name: [name, LIMITS.short],
+    email: [email, LIMITS.email],
+    company: [company, LIMITS.short],
+    message: [message, LIMITS.long],
+  })
+  if (missing.length || long.length) {
+    return json({ error: 'invalid', fields: [...missing, ...long] }, 400)
   }
 
   if (!isEmailConfigured() || !FROM) {
-    console.error('Contact endpoint not fully configured — missing one of: RESEND_API_KEY, RESEND_FROM_EMAIL')
-    return new Response(JSON.stringify({ success: true, warning: 'email-disabled' }), { status: 200 })
+    console.error('[contact] not configured: missing RESEND_API_KEY or RESEND_FROM_EMAIL; message NOT stored')
+    return json({ error: 'not-configured' }, 503)
   }
 
-  const subject = `Contact · ${topicLabel} · ${name}`
+  const ref = inquiryRef()
+  const who = name || email
+  const subject = `Contact · ${topicLabel} · ${who} · ${ref}`
   const text =
-    `New contact message\n\n` +
-    `From: ${name} <${email}>\n` +
+    `New contact message (${ref})\n\n` +
+    `From: ${name ? `${name} <${email}>` : email}\n` +
     `Topic: ${topicLabel}\n` +
     `Company: ${company || '–'}\n\n` +
     `Message:\n${message}\n`
 
-  // 1) Notification to Faris — primary critical path. Failure → 502.
+  // 1) Notification to Faris: the message only counts as stored once Resend accepts this.
   const adminRes = await sendOrLog({
     context: 'contact:admin',
     from: FROM,
@@ -69,26 +75,26 @@ export const POST: APIRoute = async ({ request }) => {
     subject,
     text,
     react: ContactAdminEmail({
-      name: name.trim(),
-      email: email.trim(),
+      name: who,
+      email,
       topic: topicLabel,
-      company: company?.trim() || undefined,
-      message: message.trim(),
+      company: company || undefined,
+      message: `${message}\n\nRef: ${ref}`,
     }),
   })
   if (!adminRes.ok) {
-    return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 502 })
+    return json({ error: 'delivery-failed' }, 502)
   }
 
-  // 2) Confirmation to the submitter — best-effort. Logged but never blocks success.
-  const firstName = name.trim().split(/\s+/)[0]
-  await sendOrLog({
+  // 2) Confirmation to the submitter: best-effort, reported but never blocks success.
+  const { replyTime } = await getProfile()
+  const confirm = await sendOrLog({
     context: 'contact:confirm',
     from: FROM,
     to: email,
-    subject: `Thanks · I'll reply within two days`,
-    react: ContactConfirmationEmail({ name: firstName }),
+    subject: `Thanks · I'll reply within ${replyTime}`,
+    react: ContactConfirmationEmail({ name: name ? name.split(/\s+/)[0] : undefined, replyTime }),
   })
 
-  return new Response(JSON.stringify({ success: true }), { status: 200 })
+  return json({ ok: true, success: true, ref, confirmationSent: confirm.ok })
 }

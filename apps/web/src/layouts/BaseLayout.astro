@@ -4,42 +4,20 @@ import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import SEO from '../components/shared/SEO.astro';
 import PostHog from '../components/posthog.astro';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { siteSettingsQuery } from '../lib/sanity/queries';
+import { urlFor } from '../lib/sanity/client';
+import { basedIn, getSiteSettings, getProfile, getCommunities } from '../lib/sanity/v3';
 import '../styles/global.css';
+import '../styles/tokens.css';
+import '../styles/ds.css';
 
-// Self-hosted fonts (was a render-blocking Google Fonts CSS request).
-// Astro bundles these with hashed URLs and far-future caching; woff2 subsets
-// load per-unicode-range with font-display: swap.
-import '@fontsource/space-grotesk/500.css';
-import '@fontsource/space-grotesk/600.css';
-import '@fontsource/space-grotesk/700.css';
-import '@fontsource/hanken-grotesk/400.css';
-import '@fontsource/hanken-grotesk/500.css';
-import '@fontsource/hanken-grotesk/600.css';
-import '@fontsource/hanken-grotesk/700.css';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
-import '@fontsource/ibm-plex-mono/600.css';
-
-interface SiteSettings {
-  siteTitle?: string;
-  tagline?: string;
-  siteUrl?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  defaultMetaDescription?: string;
-  keywords?: string[];
-  ogImage?: any;
-  twitterHandle?: string;
-  linkedinUrl?: string;
-  githubUrl?: string;
-  youtubeUrl?: string;
-}
+// Figtree, self-hosted (variable 300–900, woff2, font-display: swap).
+import '@fontsource-variable/figtree';
+import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
   description?: string;
+  /** OG card path (/og/talks.png) or absolute URL. Defaults to /og/default.png. */
   image?: string;
   imageAlt?: string;
   article?: boolean;
@@ -51,36 +29,35 @@ interface Props {
   extraSchema?: Record<string, unknown>[];
   /** Path to this page's markdown mirror (e.g. "/talks.md"). */
   markdownAlternate?: string;
+  /** 8px band under the header. Off for pages whose hero carries the skewed band. */
+  band?: boolean;
+  noindex?: boolean;
+  /** What this page is, for analytics (content_viewed): { type: 'talk', slug, title, … }. */
+  content?: Record<string, string | number | boolean | undefined>;
 }
 
-// Fetch global site settings from Sanity
-const siteSettings = await sanityFetch<SiteSettings | null>(siteSettingsQuery).catch(() => null);
+const [settings, profile, communities] = await Promise.all([getSiteSettings(), getProfile(), getCommunities()]);
 
-// Fallback defaults if Sanity settings aren't configured
-const defaultDescription = siteSettings?.metaDescription || siteSettings?.defaultMetaDescription || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Geneva.';
-const defaultImage = siteSettings?.ogImage
-  ? urlFor(siteSettings.ogImage).width(1200).height(630).url()
-  : '/og/default.png';
-const personImage = siteSettings?.ogImage
-  ? urlFor(siteSettings.ogImage).width(800).height(800).url()
-  : undefined;
-const siteName = siteSettings?.siteTitle || 'Faris Aziz';
-const siteUrl = siteSettings?.siteUrl?.trim() || 'https://faziz-dev.com';
-const twitterHandle = siteSettings?.twitterHandle || 'farisaziz12';
-const personName = siteSettings?.siteTitle || 'Faris Aziz';
-const jobTitle = siteSettings?.tagline || 'Staff Software Engineer';
+const defaultImage = settings.ogImage?.asset ? urlFor(settings.ogImage).width(1200).height(630).url() : '/og/default.png';
+const personImage = profile.photos[0]?.asset ? urlFor(profile.photos[0]).width(800).height(800).fit('crop').url() : undefined;
+const place = basedIn(profile.travelBase);
+const primaryCommunity = communities.find((c) => /found/i.test(c.role ?? '')) ?? communities[0];
+const awards = communities.flatMap((c) => c.recognition.map((r) => [r.title, r.issuer, r.year].filter(Boolean).join(', ')));
 
 const {
   title,
-  description = defaultDescription,
+  description = settings.metaDescription,
   image = defaultImage,
   imageAlt,
   article = false,
   profilePage = false,
-  pathname = '',
+  pathname = Astro.url.pathname,
   publishedTime,
   extraSchema = [],
   markdownAlternate,
+  band = true,
+  noindex = false,
+  content,
 } = Astro.props;
 ---
 
@@ -88,7 +65,13 @@ const {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    {content && <meta name="analytics:content" content={JSON.stringify(content)} />}
+    <meta name="theme-color" content="#0F0F10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F8F4EB" media="(prefers-color-scheme: light)" />
+    <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="alternate" type="application/rss+xml" title="Faris Aziz: writing" href="/rss.xml" />
+    <link rel="help" type="text/plain" href="/llms.txt" title="llms.txt" />
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -106,19 +89,26 @@ const {
       profilePage={profilePage}
       pathname={pathname}
       publishedTime={publishedTime}
-      siteName={siteName}
-      siteUrl={siteUrl}
-      twitterHandle={twitterHandle}
-      personName={personName}
-      jobTitle={jobTitle}
+      siteName={settings.siteTitle}
+      siteUrl={settings.siteUrl}
+      twitterHandle={settings.twitterHandle}
+      personName={profile.name}
+      jobTitle={profile.jobTitle}
+      basedIn={place}
+      community={primaryCommunity ? { name: primaryCommunity.name, url: primaryCommunity.url } : undefined}
       personImage={personImage}
+      personDescription={profile.bios.short}
+      awards={awards}
+      noindex={noindex}
       extraSchema={extraSchema}
       markdownAlternate={markdownAlternate}
       socialLinks={{
-        linkedin: siteSettings?.linkedinUrl,
-        github: siteSettings?.githubUrl,
-        youtube: siteSettings?.youtubeUrl,
-        twitterUrl: siteSettings?.twitterHandle ? `https://twitter.com/${siteSettings.twitterHandle}` : undefined,
+        linkedin: profile.links.linkedin || settings.links.linkedin,
+        bluesky: profile.links.bluesky || settings.links.bluesky,
+        github: profile.links.github || settings.links.github,
+        youtube: profile.links.youtube || settings.links.youtube,
+        mentorcruise: profile.links.mentorcruise,
+        twitterUrl: profile.links.twitter || (settings.twitterHandle ? `https://x.com/${settings.twitterHandle}` : undefined),
       }}
     />
 
@@ -150,20 +140,18 @@ const {
     </script>
 
     <!-- DevTools console banner — for the people who open the console (my kind of people) -->
-    <script is:inline>
+    <script is:inline define:vars={{ whoami: `${profile.name}: software engineer, speaker, ${primaryCommunity?.name ?? 'ZurichJS'} co-founder. ${place.city}.` }}>
       (function () {
         try {
           console.log(
-            '%c$ whoami%c\nFaris Aziz: Staff Software Engineer & Conference Speaker, Geneva.\n\n' +
+            '%c$ whoami%c\n' + whoami + '\n\n' +
               '%cYou opened the console. My kind of person.%c\n' +
-              'Open to: tech lead · staff/senior frontend · full-stack (frontend-leaning) · payments · product engineering · founding engineer.\n\n' +
               'Say hi:   https://faziz-dev.com/contact#message (short form, straight to my inbox)\n' +
               'Doors:    https://faziz-dev.com/contact\n' +
-              'Agents:   https://faziz-dev.com/llms.txt\n' +
-              "P.S. the terminal on the homepage actually works. Try 'hire'.",
-            'color:#1FCFA6;font-family:monospace;font-weight:bold;font-size:13px;',
+              'Agents:   https://faziz-dev.com/llms.txt',
+            'color:#F4C63A;font-family:monospace;font-weight:bold;font-size:13px;',
             'font-family:monospace;',
-            'color:#6AA1FF;font-weight:bold;',
+            'font-weight:bold;',
             ''
           );
         } catch (_) {}
@@ -246,17 +234,21 @@ const {
     <!-- Skip to content link -->
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent-deep focus:text-ink-on-accent focus:rounded-md focus:text-body-sm focus:font-medium"
+      class="skip-link"
     >
       Skip to content
     </a>
 
-    <Header />
+    <Header band={band} introEnabled={settings.introEnabled} bio={profile.bios.short} />
 
     <main id="main" class="flex-1">
       <slot />
     </main>
 
     <Footer />
+    <!-- Static pages: drop "upcoming" items that ended after the last build. -->
+    <script>
+      import '../lib/client/expire';
+    </script>
   </body>
 </html>

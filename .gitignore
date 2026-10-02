@@ -38,3 +38,6 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# V3 migration plans (scripts/migrate-v3/run.ts)
+migrate-v3.plan.json

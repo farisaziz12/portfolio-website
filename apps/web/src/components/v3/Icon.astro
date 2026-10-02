@@ -1,0 +1,31 @@
+---
+/**
+ * The handful of glyphs the design uses (play, listen, external, arrow),
+ * as inline SVG so they render identically everywhere and never as emoji.
+ */
+interface Props {
+  name: 'play' | 'listen' | 'external' | 'arrow' | 'written';
+  size?: number;
+  class?: string;
+  label?: string;
+}
+const { name, size = 12, class: className, label } = Astro.props;
+const a11y: astroHTML.JSX.SVGAttributes = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' };
+---
+
+<svg class:list={['icon', className]} width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...a11y}>
+  {name === 'play' && <path d="M6 4.5v15l13-7.5z" />}
+  {name === 'listen' && (
+    <>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4" />
+      <circle cx="12" cy="12" r="4.2" />
+    </>
+  )}
+  {name === 'external' && <path d="M8 5h11v11h-2.5V9.3L6.8 19 5 17.2 14.7 7.5H8z" />}
+  {name === 'arrow' && <path d="M4 10.75h12.2l-4.6-4.6L13.4 4.4 21 12l-7.6 7.6-1.8-1.75 4.6-4.6H4z" />}
+  {name === 'written' && <path d="M5 18 10 5h2l5 13h-2.3l-1.3-3.5H8.6L7.3 18zm4.3-5.4h3.4L11 8z" />}
+</svg>
+
+<style>
+  .icon { display: inline-block; flex: none; vertical-align: -0.1em; }
+</style>

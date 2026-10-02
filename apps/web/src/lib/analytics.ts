@@ -24,9 +24,13 @@ export type AnalyticsEvent =
   | 'form_submit_failed'
   | 'scroll_depth'
   | 'outbound_link_click'
-  | 'terminal_command'
   | 'command_palette_opened'
-  | 'command_palette_action';
+  | 'command_palette_action'
+  | 'content_viewed'
+  | 'filter_applied'
+  | 'video_played'
+  | 'video_opened'
+  | 'form_abandoned';
 
 type Props = Record<string, unknown>;
 

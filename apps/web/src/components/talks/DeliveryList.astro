@@ -1,0 +1,98 @@
+---
+/**
+ * "Where it's been delivered": one row per SESSION of this talk family
+ * (not per event), newest first, each linking to its event page with a
+ * Recording / Slides / Upcoming label taken from the session record.
+ */
+import { monthYear, type TalkDelivery } from '../../lib/sanity/v3';
+import { eventShortName } from '../../lib/talks';
+
+interface Props {
+  deliveries: TalkDelivery[];
+  retired?: boolean;
+  /** Rows shown before collapsing the rest into a "N more sessions" row. */
+  limit?: number;
+}
+const { deliveries, retired = false, limit = 8 } = Astro.props;
+
+const rows = deliveries.map((d) => {
+  const s = d.session;
+  const label = d.event.isUpcoming ? (s.status === 'tba' ? 'Upcoming · TBA' : 'Upcoming') : s.recordingUrl ? 'Recording' : s.slidesUrl ? 'Slides' : '';
+  return {
+    key: `${d.event._id}-${s.key}`,
+    date: monthYear(d.event.date),
+    name: eventShortName(d.event),
+    place: d.event.location.isOnline ? 'Online' : d.event.location.city,
+    stage: s.stage,
+    asTitle: d.asTitle,
+    href: `/events/${d.event.slug}`,
+    label,
+    strong: label === 'Recording',
+  };
+});
+const shown = rows.slice(0, limit);
+const more = rows.length - shown.length;
+const delivered = deliveries.filter((d) => !d.event.isUpcoming).length;
+const upcoming = deliveries.length - delivered;
+// Tense follows the rows: only upcoming dates → future; a mix → both.
+const heading = !delivered && upcoming ? "Where it's being given" : upcoming ? "Where it's been given, and where it's next" : "Where it's been delivered";
+---
+
+<section class="dl" aria-labelledby="dl-title">
+  <h2 id="dl-title" class="dl__h2">{heading}</h2>
+  {rows.length > 0 ? (
+    <>
+      <ol class="ds-rows dl__rows">
+        {shown.map((r) => (
+          <li>
+            <a href={r.href} class="ds-row dl__row">
+              <span class="dl__date">{r.date}</span>
+              <span class="ds-row__title dl__name">
+                {r.name}{r.place && ` · ${r.place}`}
+                {r.stage && <span class="dl__stage"> · {r.stage}</span>}
+                {r.asTitle && <span class="dl__stage"> · as “{r.asTitle}”</span>}
+              </span>
+              {r.label && <span class:list={['dl__label', { 'dl__label--on': r.strong }]}>{r.label}</span>}
+            </a>
+          </li>
+        ))}
+        {more > 0 && (
+          <li>
+            <a href="/events" class="ds-row dl__row">
+              <span class="dl__date">Earlier</span>
+              <span class="ds-row__title dl__name dl__name--muted">{more} more</span>
+              <span class="dl__label">Archive</span>
+            </a>
+          </li>
+        )}
+      </ol>
+      <p class="ds-meta dl__note">
+        {`${delivered} delivered${upcoming ? `, ${upcoming} coming up` : ''}.`}
+      </p>
+    </>
+  ) : (
+    <p class="dl__empty">
+      {retired
+        ? 'No sessions of this version are on record.'
+        : 'Not delivered on a stage yet: this one is new. Yours could be the first.'}
+    </p>
+  )}
+</section>
+
+<style>
+  .dl { display: flex; flex-direction: column; gap: 12px; }
+  .dl__h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+  .dl__row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 18px; align-items: center; min-height: 44px; padding: 12px 0; box-sizing: border-box; }
+  .dl__date { font-size: 13px; color: rgb(var(--text-muted)); }
+  .dl__name { font-weight: 700; transition: color 0.15s; }
+  .dl__name--muted { color: rgb(var(--text-muted)); }
+  .dl__stage { color: rgb(var(--text-faint)); font-weight: 400; }
+  .dl__label { font-size: 12px; color: rgb(var(--text-faint)); white-space: nowrap; }
+  .dl__label--on { font-weight: 700; color: rgb(var(--accent-text)); }
+  .dl__note { margin: 0; }
+  .dl__empty { margin: 0; padding: 16px 0; border-block: 1px solid rgb(var(--hairline)); color: rgb(var(--text-muted)); font-size: 15px; }
+  @media (max-width: 560px) {
+    .dl__row { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; }
+    .dl__date { grid-column: 1 / -1; font-size: 12.5px; }
+  }
+</style>

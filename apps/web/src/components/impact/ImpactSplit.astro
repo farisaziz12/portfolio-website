@@ -1,0 +1,35 @@
+---
+/**
+ * Track-record section: a 320px heading column (kicker, H2, lede or link in
+ * the `head` slot) beside the content. Stacks below 900px.
+ */
+interface Props {
+  kicker: string;
+  title: string;
+  id: string;
+  rule?: boolean;
+}
+const { kicker, title, id, rule = false } = Astro.props;
+---
+
+<section class:list={['isplit', { 'isplit--rule': rule }]} aria-labelledby={id}>
+  <div class="ds-wrap isplit__grid">
+    <div class="isplit__head">
+      <p class="ds-kicker">{kicker}</p>
+      <h2 id={id} class="ds-h2 ds-h2--sm isplit__title">{title}</h2>
+      <slot name="head" />
+    </div>
+    <div class="isplit__body"><slot /></div>
+  </div>
+</section>
+
+<style>
+  .isplit--rule { border-top: 1px solid rgb(var(--hairline)); }
+  .isplit__grid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 48px; padding-top: 56px; padding-bottom: 56px; }
+  .isplit__head { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .isplit__title { margin: 0; text-wrap: balance; }
+  .isplit__body { min-width: 0; }
+  @media (max-width: 900px) {
+    .isplit__grid { grid-template-columns: 1fr; gap: 28px; padding-top: 44px; padding-bottom: 44px; }
+  }
+</style>

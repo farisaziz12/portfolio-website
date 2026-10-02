@@ -1,3 +1,4 @@
+import { TOPICS } from 'shared';
 import { defineType, defineField, defineArrayMember } from 'sanity';
 
 export default defineType({
@@ -298,7 +299,7 @@ export default defineType({
     }),
     defineField({
       name: 'category',
-      title: 'Category',
+      title: 'Category (optional)',
       type: 'string',
       group: 'meta',
       options: {
@@ -312,6 +313,40 @@ export default defineType({
           { title: 'Deep Dive', value: 'deep-dive' },
         ],
       },
+    }),
+    defineField({
+      name: 'topic',
+      title: 'Topic',
+      type: 'string',
+      group: 'meta',
+      options: { list: TOPICS.map(({ value, title }) => ({ value, title })), layout: 'radio', direction: 'horizontal' },
+      description: 'Drives the Writing topic filter.',
+      validation: (Rule) => Rule.required().warning('Pick a topic'),
+    }),
+    defineField({
+      name: 'corrections',
+      title: 'Corrections',
+      type: 'array',
+      group: 'meta',
+      description: 'Shown inline under the title. Never silently edit a published number.',
+      of: [
+        {
+          type: 'object',
+          name: 'correction',
+          fields: [
+            { name: 'date', title: 'Date', type: 'date' },
+            { name: 'note', title: 'What changed', type: 'text', rows: 2 },
+          ],
+          preview: { select: { title: 'note', subtitle: 'date' } },
+        },
+      ],
+    }),
+    defineField({
+      name: 'relatedEvent',
+      title: 'Related event',
+      type: 'reference',
+      group: 'meta',
+      to: [{ type: 'event' }],
     }),
     defineField({
       name: 'relatedTalk',

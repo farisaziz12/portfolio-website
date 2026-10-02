@@ -8,7 +8,7 @@ This directory is the Cursor-specific layer. Portable instructions live in `/AGE
 |---|---|
 | `../AGENTS.md` | Always-on map: stack, commands, hard constraints, MCP list, PR visual-evidence policy |
 | `rules/*.mdc` | Short, scoped constraints. Always-on rules stay tiny; the rest attach by glob. |
-| `skills/*/SKILL.md` | Multi-step workflows loaded on demand |
+| `skills/*/SKILL.md` | Multi-step workflows loaded on demand. `../.claude/skills` is a symlink here, so Claude Code loads the same skills |
 | `mcp.json` | Project MCPs (Sanity, PostHog, Vercel, GitHub) — OAuth, no secrets |
 | `environment.json` | Cloud Agent install + `pnpm web` on :4321 |
 | `hooks.json` | Stop-hook nags once if a UI diff has no screenshot artifacts |

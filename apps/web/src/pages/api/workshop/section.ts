@@ -2,7 +2,7 @@ export const prerender = false
 
 import type { APIRoute } from 'astro'
 import { sanityFetch } from '../../../lib/sanity/client'
-import { workshopAttendSectionQuery } from '../../../lib/sanity/queries'
+import { workshopAttendSectionQuery } from '../../../lib/sanity/workshop-queries'
 
 /**
  * Lazy-load one workshop section body.

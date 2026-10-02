@@ -1,9 +1,7 @@
-import {
-  Body, Container, Head, Heading, Html, Link, Preview,
-  Section, Text, Hr,
-} from '@react-email/components'
+import { Body, Container, Head, Heading, Html, Link, Preview, Section, Text, Hr } from '@react-email/components'
 import * as React from 'react'
 import * as s from './styles'
+import { EmailHeader } from './parts'
 
 interface Props {
   name: string
@@ -27,11 +25,7 @@ export function InviteAdminEmail({
       <Preview>Speaking invite · {event}</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
-          <Section style={s.terminalHeader}>
-            <Text style={s.terminalDots}>● ● ●</Text>
-            <Text style={s.terminalText}>$ ack speaking-invite</Text>
-            <Text style={s.terminalOutput}>New invite from {name}.</Text>
-          </Section>
+          <EmailHeader label="New invite" />
 
           <Section style={s.content}>
             <Text style={s.kicker}>Speaking invite</Text>

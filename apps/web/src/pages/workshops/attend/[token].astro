@@ -3,7 +3,7 @@ export const prerender = false
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { sanityFetch } from '../../../lib/sanity/client';
-import { allWorkshopInstancesQuery, workshopAttendQuery } from '../../../lib/sanity/queries';
+import { allWorkshopInstancesQuery, workshopAttendQuery } from '../../../lib/sanity/workshop-queries';
 import {
   resolveWorkshopShortcut,
   type WorkshopShortcutInstance,
@@ -14,6 +14,7 @@ import {
   verifyWorkshopSessionCookie,
 } from '../../../lib/workshop-session';
 import WorkshopAttend from '../../../components/islands/WorkshopAttend';
+import '../../../components/islands/workshop/attend.css';
 
 interface SectionMeta {
   _key: string;
@@ -75,70 +76,31 @@ const formatDateLong = (dateStr: string) => {
   pathname={`/workshops/attend/${token}`}
 >
   {status === 'upcoming' && (
-    <section class="min-h-[80vh] flex items-center">
-      <div class="container py-20 md:py-32">
-        <div class="max-w-3xl mx-auto text-center">
-          <div class="ds-terminal max-w-lg mx-auto mb-8 animate-fade-in">
-            <div class="ds-terminal__bar">
-              <span class="ds-terminal__dots"><i></i><i></i><i></i></span>
-              <span class="ds-terminal__name">workshop.sh</span>
-            </div>
-            <div class="ds-terminal__body">
-              <span class="pr">$</span>
-              <span class="cmd"> npm run workshop --session="{instance.event}"</span>
-              <div class="out mt-2">Waiting for session to begin...</div>
-            </div>
-          </div>
-
-          <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-ink mb-6">
-            {instance.title}
-          </h1>
-
-          <p class="text-lg text-ink-muted mb-8">
-            This session opens on <span class="font-semibold text-ink">{formatDateLong(instance.workshopDate)}</span>. Check back then.
-          </p>
-        </div>
+    <section class="ds-wrap wsa-state">
+      <div class="wsa-state__inner">
+        <p class="ds-kicker">Workshop · {instance.event}</p>
+        <h1 class="ds-h1">{instance.title}</h1>
+        <p class="ds-lede">
+          The materials open on <strong>{formatDateLong(instance.workshopDate)}</strong>. See you there.
+        </p>
       </div>
     </section>
   )}
 
   {(status === 'closed' || status === 'force-closed') && (
-    <section class="min-h-[80vh] flex items-center">
-      <div class="container py-20 md:py-32">
-        <div class="max-w-3xl mx-auto text-center">
-          <h1 class="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-ink mb-6">
-            {instance.title}
-          </h1>
-
-          <p class="text-lg text-ink-muted mb-8">
-            This workshop session has ended. Materials are no longer available on this page.
-          </p>
-
-          <div class="flex flex-wrap items-center justify-center gap-3">
-            {instance.repoUrl && (
-              <a
-                href={instance.repoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="ds-btn ds-btn-primary"
-              >
-                Open GitHub repo
-              </a>
-            )}
-            {instance.overallFeedbackUrl && (
-              <a
-                href={instance.overallFeedbackUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="ds-btn ds-btn-secondary"
-              >
-                Share feedback
-              </a>
-            )}
-            <a href="/workshops" class="ds-btn ds-btn-secondary">
-              View workshops
-            </a>
-          </div>
+    <section class="ds-wrap wsa-state">
+      <div class="wsa-state__inner">
+        <p class="ds-kicker">Workshop · {instance.event}</p>
+        <h1 class="ds-h1">{instance.title}</h1>
+        <p class="ds-lede">This session has ended, so the materials are no longer on this page.</p>
+        <div class="wsa-actions">
+          {instance.repoUrl && (
+            <a href={instance.repoUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn--yellow" data-track="workshop_closed_repo">Open the repo</a>
+          )}
+          {instance.overallFeedbackUrl && (
+            <a href={instance.overallFeedbackUrl} target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn--outline" data-track="workshop_closed_feedback">Share feedback</a>
+          )}
+          <a href="/workshops" class="ds-btn ds-btn--outline" data-track="workshop_closed_all">All workshops</a>
         </div>
       </div>
     </section>

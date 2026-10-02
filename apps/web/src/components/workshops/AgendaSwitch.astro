@@ -1,0 +1,88 @@
+---
+/**
+ * Agenda with a segmented switch between editions (3-hour / full day).
+ * Progressive enhancement: without JS the first edition shows and the
+ * switch stays hidden; with JS the buttons (aria-pressed) toggle panels.
+ */
+import type { WorkshopFormat } from '../../lib/sanity/v3';
+import { agendaNote } from '../../lib/workshops-view';
+
+interface Props {
+  formats: WorkshopFormat[];
+  id?: string;
+}
+const { formats, id = 'agenda' } = Astro.props;
+---
+
+<section class="agsw" data-agenda aria-labelledby={`${id}-h`}>
+  <div class="agsw__head">
+    <h2 id={`${id}-h`} class="ds-label">Agenda</h2>
+    {formats.length > 1 && (
+      <div class="ds-seg agsw__seg" role="group" aria-label="Edition">
+        {formats.map((f, i) => (
+          <button type="button" data-agenda-tab={i} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls={`${id}-p${i}`}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {formats.map((f, i) => (
+    <div id={`${id}-p${i}`} class="agsw__panel" data-agenda-panel={i} hidden={i > 0}>
+      <h3 class="sr-only">{f.label}</h3>
+      <ol class="ds-rows agsw__rows">
+        {f.agenda.map((a) => (
+          <li class:list={['agsw__row', { 'is-break': a.isBreak }]}>
+            <span class="agsw__at">{a.at || a.duration}</span>
+            <span class="agsw__main">
+              <span class="agsw__title">{a.title}</span>
+              {a.summary && !a.isBreak && <span class="agsw__sum">{a.summary}</span>}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p class="agsw__note ds-meta">{agendaNote(f)}</p>
+    </div>
+  ))}
+</section>
+
+<script>
+  function initAgenda() {
+    document.querySelectorAll<HTMLElement>('[data-agenda]').forEach((root) => {
+      if (root.dataset.agendaReady) return;
+      root.dataset.agendaReady = '1';
+      const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-agenda-tab]')];
+      const panels = [...root.querySelectorAll<HTMLElement>('[data-agenda-panel]')];
+      tabs.forEach((tab) =>
+        tab.addEventListener('click', () => {
+          const i = tab.dataset.agendaTab;
+          tabs.forEach((t) => t.setAttribute('aria-pressed', String(t === tab)));
+          panels.forEach((p) => (p.hidden = p.dataset.agendaPanel !== i));
+        })
+      );
+    });
+  }
+  initAgenda();
+  document.addEventListener('astro:page-load', initAgenda);
+</script>
+
+<style>
+  .agsw { display: flex; flex-direction: column; gap: 14px; }
+  .agsw__head { display: flex; justify-content: space-between; align-items: center; gap: 12px 20px; flex-wrap: wrap; }
+  .agsw__seg { display: none; }
+  :global(.js) .agsw__seg { display: inline-flex; }
+  .agsw__seg button { min-height: 44px; }
+  .agsw__panel[hidden] { display: none; }
+  .agsw__row { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 20px; padding: 14px 0; }
+  .agsw__at { font-size: 13px; color: rgb(var(--text-faint)); padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .agsw__main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .agsw__title { font-weight: 700; font-size: 16px; }
+  .agsw__sum { font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .agsw__note { margin: 14px 0 0; }
+  @media (max-width: 480px) {
+    .agsw__row { grid-template-columns: 56px minmax(0, 1fr); gap: 14px; }
+    .agsw__seg { width: 100%; }
+    .agsw__seg button { flex: 1; }
+  }
+</style>

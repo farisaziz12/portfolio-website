@@ -1,208 +1,95 @@
 ---
+/** /projects: things I've built (V3). Cards link to /projects/[slug]. */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import { sanityFetch, urlFor } from '../../lib/sanity/client';
-import { allProjectsQuery } from '../../lib/sanity/queries';
+import Kicker from '../../components/v3/Kicker.astro';
+import SanityImg from '../../components/v3/SanityImg.astro';
+import InvitePanel from '../../components/v3/InvitePanel.astro';
+import { getProjects } from '../../lib/secondary-content';
+import { getProfile } from '../../lib/sanity/v3';
+import { breadcrumbs, itemList } from '../../lib/seo';
 
-interface Project {
-  _id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  category?: string;
-  technologies?: string[];
-  image?: any;
-  featured?: boolean;
-}
-
-const projects = await sanityFetch<Project[]>(allProjectsQuery).catch(() => []);
-
-const totalProjects = projects.length;
-const featuredCount = projects.filter((p) => p.featured).length;
-const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boolean))) as string[];
+const [projects, profile] = await Promise.all([getProjects(), getProfile()]);
+const github = profile.links.github ?? 'https://github.com/farisaziz12';
 ---
 
 <BaseLayout
   title="Projects | Faris Aziz"
-  description="Featured projects and case studies by Faris Aziz. Open source contributions, side projects, and professional work."
-  pathname="/projects"
+  description="Things Faris Aziz has built: the ZurichJS Conf platform, developer tools, open source and side projects, with the role and outcome of each."
   image="/og/projects.png"
+  markdownAlternate="/projects.md"
+  extraSchema={[
+    breadcrumbs([
+      { name: 'Home', path: '/' },
+      { name: 'About', path: '/about' },
+      { name: 'Projects', path: '/projects' },
+    ]),
+    ...(projects.length ? [itemList('Projects', projects.map((p) => `/projects/${p.slug}`))] : []),
+  ]}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>Projects · what I've shipped</Kicker>
-      <h1 class="page-hero__title">
-        Tools, libraries, and <span class="accent-word">real-world</span> shipped work.
-      </h1>
-      <p class="page-hero__lead">
-        Open-source contributions, side projects, and the production systems I've built. Each one taught me something I now talk about on stage.
+  <div class="ds-wrap">
+    <header class="head">
+      <Kicker parts={['About', 'Projects']} mutedFirst />
+      <h1 class="ds-h1">Things I’ve built.</h1>
+      <p class="ds-lede">
+        Products, platforms and tools, from the conference platform behind ZurichJS to small open-source helpers. Each one taught me something I now talk about on stage.
       </p>
+    </header>
 
-      <div class="page-hero__stats">
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{totalProjects}</div>
-          <div class="ds-stat__label">Projects</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{featuredCount}</div>
-          <div class="ds-stat__label">Featured</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{categories.length}</div>
-          <div class="ds-stat__label">Categories</div>
-        </div>
-      </div>
-
-      <div class="page-hero__actions">
-        <a href="https://github.com/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary ds-btn-lg">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:1.1em;height:1.1em;" aria-hidden="true">
-            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
-          </svg>
-          View GitHub
-        </a>
-        <a href="/contact" class="ds-btn ds-btn-secondary ds-btn-lg">Work with me</a>
-      </div>
-    </div>
-  </header>
-
-  <section class="page-section">
-    <div class="container wide">
-      <div class="page-section__head">
-        <div>
-          <Kicker>The catalogue</Kicker>
-          <h2 class="page-h2">All projects</h2>
-        </div>
-        {totalProjects > 0 && (
-          <span class="ds-pill ds-pill--signal">
-            <span class="ds-dot ds-dot--pulse"></span>
-            {totalProjects} total
-          </span>
-        )}
-      </div>
-
+    <section class="list" aria-label="All projects">
       {projects.length > 0 ? (
-        <div class="page-grid-3">
-          {projects.map((project) => (
-            <a href={`/projects/${project.slug}`} class="ds-card ds-card-interactive project-card ds-reveal">
-              {project.image && (
-                <div class="project-card__media">
-                  <img
-                    src={urlFor(project.image).width(600).height(340).quality(90).url()}
-                    alt={project.title}
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              <div class="project-card__body">
-                <div class="project-card__tags">
-                  {project.category && <span class="ds-tag">{project.category}</span>}
-                  {project.featured && <span class="ds-tag" style="border-color: rgb(var(--accent) / 0.4); color: rgb(var(--accent-bright));">Featured</span>}
-                </div>
-                <h3 class="project-card__title">{project.title}</h3>
-                {project.description && (
-                  <p class="project-card__desc">{project.description}</p>
-                )}
-                {project.technologies && project.technologies.length > 0 && (
-                  <div class="project-card__techs">
-                    {project.technologies.slice(0, 4).map((tech) => (
-                      <span>{tech}</span>
-                    ))}
-                    {project.technologies.length > 4 && (
-                      <span>+{project.technologies.length - 4}</span>
-                    )}
+        <>
+          <p class="ds-meta list__count">{projects.length} {projects.length === 1 ? 'project' : 'projects'}</p>
+          <ul class="ds-grid-3 grid" role="list">
+            {projects.map((p) => (
+              <li>
+                <a href={`/projects/${p.slug}`} class="ds-card ds-card--link card">
+                  <SanityImg image={p.image} alt="" ratio={16 / 9} widths={[480, 800]} sizes="(max-width: 720px) 100vw, 400px" class="card__img" />
+                  <div class="card__body">
+                    {(p.category || p.featured) && <Kicker parts={[p.category, p.featured && 'Featured']} />}
+                    <h2 class="card__title">{p.title}</h2>
+                    {p.description && <p class="card__desc">{p.description}</p>}
+                    {p.technologies.length > 0 && <p class="ds-meta card__tech">{p.technologies.slice(0, 5).join(' · ')}</p>}
                   </div>
-                )}
-              </div>
-            </a>
-          ))}
-        </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
-        <div class="page-empty">
-          <h3>Coming soon</h3>
-          <p>Projects will appear here once content is added to Sanity.</p>
-          <a href="https://github.com/farisaziz12" target="_blank" rel="noopener noreferrer" class="ds-btn ds-btn-primary" style="margin-top:1rem;">View my GitHub</a>
+        <div class="ds-card ds-card--dashed empty">
+          <h2 class="ds-h3">Nothing published here yet.</h2>
+          <p class="ds-body">Project write-ups are on their way. Until then, the code lives on GitHub.</p>
+          <a href={github} class="ds-link ds-link--sm" target="_blank" rel="noopener noreferrer" data-track="projects-github">GitHub</a>
         </div>
       )}
-    </div>
-  </section>
+    </section>
 
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status="Open for collaboration"
-          title="Let's build something together"
-          body="Always excited to collaborate on interesting projects: open source, consulting, or a new venture. Tell me what you're working on."
-          primaryHref="/invite"
-          primaryLabel="Get in touch"
-          secondaryHref="https://github.com/farisaziz12"
-          secondaryLabel="Follow on GitHub"
-        />
-      </div>
-    </div>
-  </section>
-
+    <InvitePanel
+      class="panel"
+      kicker="Work together"
+      headline="Building something similar?"
+      body="Advisory on frontend architecture, payments and team structure, or a talk about how these were built."
+      primary={{ label: 'See how I can help', href: '/services' }}
+      secondary={{ label: 'Code on GitHub', href: github }}
+      art="faris-thinking"
+      track="projects-panel"
+    />
+  </div>
 </BaseLayout>
 
 <style>
-  .project-card {
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    color: inherit;
-  }
-  .project-card__media {
-    aspect-ratio: 16 / 9;
-    background: rgb(var(--surface-3));
-    overflow: hidden;
-    border-bottom: 1px solid rgb(var(--edge));
-  }
-  .project-card__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  .project-card:hover .project-card__media img {
-    transform: scale(1.04);
-  }
-  .project-card__body {
-    padding: 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-  .project-card__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .project-card__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.15rem;
-    color: rgb(var(--ink));
-    margin-top: 0.3rem;
-  }
-  .project-card__desc {
-    font-size: 0.9rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .project-card__techs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-top: 0.4rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    color: rgb(var(--ink-faint));
-  }
+  .head { display: flex; flex-direction: column; gap: 14px; padding-block: clamp(32px, 5vw, 52px) 32px; max-width: 760px; }
+  .list { padding-bottom: clamp(40px, 5vw, 56px); }
+  .list__count { margin: 0 0 14px; }
+  .grid { margin: 0; padding: 0; list-style: none; }
+  .card { height: 100%; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .card :global(.card__img) { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-bottom: 1px solid rgb(var(--hairline)); }
+  .card__body { display: flex; flex-direction: column; gap: 10px; padding: 20px 22px 22px; flex: 1; }
+  .card__title { font-size: clamp(20px, 2vw, 22px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 800; }
+  .card:hover .card__title { color: rgb(var(--accent-text)); }
+  .card__desc { margin: 0; font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card__tech { margin: auto 0 0; padding-top: 6px; }
+  .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .empty .ds-body { margin: 0; }
+  .ds-wrap :global(.panel) { margin-bottom: clamp(40px, 5vw, 64px); }
 </style>

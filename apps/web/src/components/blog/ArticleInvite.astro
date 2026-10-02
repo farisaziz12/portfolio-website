@@ -1,0 +1,45 @@
+---
+/**
+ * The cream panel at the end of a post ("I talk about this on stage too"),
+ * with the curious duck as in the Article mock. InvitePanel only offers the
+ * Faris art, so this is a local variant on the same ds-panel.
+ */
+import Illustration from '../v3/Illustration.astro';
+import { bookingYears } from '../../lib/availability';
+import type { TalkRef } from '../../lib/sanity/v3';
+
+interface Props {
+  talk?: TalkRef;
+}
+
+const { talk } = Astro.props;
+---
+
+<aside class="ds-panel ainv" aria-labelledby="ainv-title">
+  <div class="ainv__copy">
+    <h2 class="ainv__title" id="ainv-title">I talk about this on stage too.</h2>
+    <p class="ainv__body">Community building, resilient frontends, payments at scale. Booking {bookingYears()} dates.</p>
+    <div class="ainv__actions">
+      <a href="/invite" class="ds-btn ds-btn--panel" data-track="article-invite">Invite me to speak</a>
+      {talk ? (
+        <a href={`/talks/${talk.slug}`} class="ds-link ds-link--sm" data-track="article-talk">See the talk: {talk.shortTitle || talk.title}</a>
+      ) : (
+        <a href="/talks" class="ds-link ds-link--sm" data-track="article-talks">See the talks</a>
+      )}
+    </div>
+  </div>
+  <Illustration name="duck-curious" width={110} class="ainv__art" />
+</aside>
+
+<style>
+  .ainv { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 20px; align-items: center; padding: 28px 30px; }
+  .ainv__copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .ainv__title { font-size: 22px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+  .ainv__body { margin: 0; font-size: 14px; line-height: 1.5; }
+  .ainv__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 4px; }
+  .ainv :global(.ainv__art) { width: 110px; height: auto; justify-self: end; }
+  @media (max-width: 480px) {
+    .ainv { grid-template-columns: minmax(0, 1fr); padding: 22px 20px; }
+    .ainv :global(.ainv__art) { width: 84px; grid-row: 1; justify-self: end; margin-bottom: -8px; }
+  }
+</style>

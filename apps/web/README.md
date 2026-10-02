@@ -33,9 +33,10 @@ npx astro check        # typecheck
   - Talk titles morph between list and detail via `viewTransitionName: talk-{slug}`.
 - **React islands** (`src/components/islands/`) hydrate with the lightest
   directive that works: `client:visible` for below-the-fold forms,
-  `client:idle` for the hero terminal, `client:load` only when needed
+  `client:idle` for header widgets, `client:load` only when needed
   immediately. Server-rendered React components without a directive (e.g.
-  `EventRow` on /speaking) ship zero JS.
+  the event rows) ship zero JS. Filters are server-rendered with a tiny
+  URL-synced script (`lib/client/filters.ts`).
 
 ## Sitewide behaviors (all in `src/layouts/BaseLayout.astro`)
 
@@ -60,8 +61,9 @@ These are global on purpose — pages must NOT reimplement them:
 ```
 src/
 ├── components/
-│   ├── design/       # DS primitives (Kicker, IconChip, ContactPanel, …)
-│   ├── events/       # EventRow — the one true event listing row
+│   ├── v3/           # DS v3 kit (SkewHero, PosterCard, PraiseCard, InvitePanel, FilterPills, …)
+│   ├── design/       # legacy primitives still used by /admin
+│   ├── <area>/       # page sections: home, speaking, talks, events, workshops, invite, press, writing, community, about, impact, services
 │   ├── islands/      # React (forms, filters, terminal, palette, toggle)
 │   ├── services/     # ServiceOfferCard
 │   ├── shared/       # SEO, utils
@@ -69,19 +71,19 @@ src/
 ├── emails/           # React Email templates (see CLAUDE.md)
 ├── layouts/          # BaseLayout (head, theme, global scripts)
 ├── lib/
-│   ├── sanity/       # client, queries.ts (all GROQ), types.ts (shared shapes)
+│   ├── sanity/       # client (fixture mode), v3/ loaders (all site GROQ), workshop-queries.ts
 │   ├── availability.ts  # date-driven "Available · Q3 2026" + quarterLoad urgency
 │   ├── email.ts      # Resend singleton, env(), sendOrLog()
 │   ├── flags.ts      # country name → flag emoji
 │   ├── markdown.ts   # helpers for the .md mirror endpoints
 │   ├── og.ts         # satori/resvg OG card renderer
-│   └── proof.ts      # hardcoded fallback stats (single source)
+│   └── proof.ts      # last-resort speaking counts (CMS outage only)
 ├── pages/
 │   ├── api/          # invite, mentorship, contact, workshop routes
 │   ├── og/           # build-time OG image endpoint
 │   ├── *.md.ts       # agent-facing markdown mirrors (+ llms.txt.ts)
 │   └── *.astro       # pages
-└── styles/global.css # Design System v2 tokens + ds-* classes
+└── styles/         # tokens.css (DS v3 tokens) · ds.css (primitives) · global.css (shared legacy layer)
 ```
 
 ## Conventions that CI enforces
@@ -102,7 +104,7 @@ Other rules that aren't automated but are load-bearing:
 - **Every Sanity fetch is failure-tolerant**: `sanityFetch(...).catch(() => [])`
   (or a fallback object). A CMS outage must never 500 a page.
 - **Numbers come from data, not copy.** Availability quarters, urgency pills,
-  and stats derive from `lib/availability.ts`, `lib/proof.ts`, and live
+  and stats derive from `lib/sanity/v3/stats.ts` (role-specific), dated metrics and live
   queries so they can't go stale.
 - **Agent surface stays in sync.** If you add/rename a page, update its `.md`
   mirror, `llms.txt.ts`, and the OG card map (`pages/og/[...slug].png.ts`).

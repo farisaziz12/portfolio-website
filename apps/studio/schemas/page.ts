@@ -1,4 +1,7 @@
 import { defineType, defineField } from 'sanity';
+import { hiddenWhenEmpty, legacyReason } from './_fields';
+
+/** Editorial long-form pages. Today: About (identifier = about). */
 
 export default defineType({
   name: 'page',
@@ -12,26 +15,31 @@ export default defineType({
       options: {
         list: [
           { title: 'About', value: 'about' },
-          { title: 'Invite / Speaker Kit', value: 'invite' },
-          { title: 'Speaking', value: 'speaking' },
-          { title: 'Home', value: 'home' },
         ],
       },
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'title',
-      title: 'Title',
+      name: 'kicker',
+      title: 'Kicker',
       type: 'string',
+      description: '"About · Geneva".',
+    }),
+    defineField({
+      name: 'title',
+      title: 'Headline',
+      type: 'string',
+      description: '"A builder at heart, who took the long way into tech."',
     }),
     defineField({
       name: 'subtitle',
-      title: 'Subtitle',
-      type: 'string',
+      title: 'Intro',
+      type: 'text',
+      rows: 3,
     }),
     defineField({
       name: 'content',
-      title: 'Content',
+      title: 'Story (first person)',
       type: 'array',
       of: [
         { type: 'block' },
@@ -47,16 +55,38 @@ export default defineType({
     }),
     defineField({
       name: 'heroImage',
-      title: 'Hero Image',
+      title: 'Hero photo',
       type: 'image',
       options: { hotspot: true },
+      fields: [
+        { name: 'alt', title: 'Alt text', type: 'string' },
+        { name: 'credit', title: 'Photo credit', type: 'string' },
+      ],
+    }),
+    defineField({
+      name: 'inShort',
+      title: 'In short',
+      type: 'array',
+      description: 'Side box: Work / Speak / Build.',
+      of: [
+        {
+          type: 'object',
+          name: 'inShortItem',
+          fields: [
+            { name: 'label', title: 'Label', type: 'string' },
+            { name: 'body', title: 'Text', type: 'string' },
+          ],
+          preview: { select: { title: 'label', subtitle: 'body' } },
+        },
+      ],
     }),
     // About Page - Hero Section
     defineField({
       name: 'aboutHero',
       title: 'About Hero',
       type: 'object',
-      hidden: ({ parent }) => parent?.identifier !== 'about',
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('The V3 About page uses Headline, Intro, Story and In short.'),
       fields: [
         { name: 'greeting', title: 'Greeting', type: 'string', description: 'e.g., "Hey, I\'m"' },
         { name: 'name', title: 'Name', type: 'string' },
@@ -96,7 +126,8 @@ export default defineType({
       name: 'aboutWhatIDo',
       title: 'What I Do Section',
       type: 'object',
-      hidden: ({ parent }) => parent?.identifier !== 'about',
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('The V3 About page uses Headline, Intro, Story and In short.'),
       fields: [
         { name: 'title', title: 'Section Title', type: 'string' },
         { name: 'subtitle', title: 'Section Subtitle', type: 'string' },
@@ -136,7 +167,8 @@ export default defineType({
       name: 'aboutJourney',
       title: 'My Journey Section',
       type: 'object',
-      hidden: ({ parent }) => parent?.identifier !== 'about',
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('The V3 About page uses Headline, Intro, Story and In short.'),
       fields: [
         { name: 'title', title: 'Section Title', type: 'string' },
         { name: 'subtitle', title: 'Section Subtitle', type: 'string' },
@@ -167,7 +199,8 @@ export default defineType({
       name: 'aboutSkills',
       title: 'Technical Skills Section',
       type: 'object',
-      hidden: ({ parent }) => parent?.identifier !== 'about',
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('The V3 About page uses Headline, Intro, Story and In short.'),
       fields: [
         { name: 'title', title: 'Section Title', type: 'string' },
         { name: 'subtitle', title: 'Section Subtitle', type: 'string' },
@@ -202,7 +235,8 @@ export default defineType({
       name: 'aboutCta',
       title: 'CTA Section',
       type: 'object',
-      hidden: ({ parent }) => parent?.identifier !== 'about',
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('The V3 About page uses Headline, Intro, Story and In short.'),
       fields: [
         { name: 'statusText', title: 'Status Text', type: 'string', description: 'e.g., "Open for opportunities"' },
         { name: 'title', title: 'Title', type: 'string' },

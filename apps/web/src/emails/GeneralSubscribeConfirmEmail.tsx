@@ -1,9 +1,7 @@
-import {
-  Body, Container, Head, Heading, Html, Link, Preview,
-  Section, Text, Button, Hr,
-} from '@react-email/components'
+import { Body, Container, Head, Heading, Html, Preview, Section, Text, Button } from '@react-email/components'
 import * as React from 'react'
 import * as s from './styles'
+import { EmailFooter, EmailHeader, EmailSignature } from './parts'
 
 interface Props {
   name?: string
@@ -16,11 +14,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
       <Preview>You're on the list</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
-          <Section style={s.terminalHeader}>
-            <Text style={s.terminalDots}>● ● ●</Text>
-            <Text style={s.terminalText}>$ echo "Welcome aboard"</Text>
-            <Text style={s.terminalOutput}>Subscription confirmed.</Text>
-          </Section>
+          <EmailHeader label={"You're on the list"} />
 
           <Section style={s.content}>
             <Heading style={s.heading}>You're on the list</Heading>
@@ -28,7 +22,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
             <Text style={s.paragraph}>
-              Thanks for subscribing! I'll reach out when I'm speaking at a conference near you.
+              Thanks for subscribing. I'll email you when I'm speaking at a conference near you.
             </Text>
 
             <Text style={s.paragraph}>
@@ -39,20 +33,13 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
             </Text>
 
             <Section style={s.buttonSection}>
-              <Button style={s.primaryButton} href="https://faziz-dev.com/workshops">Browse Workshops</Button>
+              <Button style={s.primaryButton} href="https://faziz-dev.com/workshops">Browse workshops</Button>
             </Section>
 
-            <Hr style={s.divider} />
-            <Text style={s.signature}>– Faris Aziz</Text>
-            <Text style={s.signatureLink}>
-              <Link href="https://faziz-dev.com" style={s.link}>faziz-dev.com</Link>
-            </Text>
+            <EmailSignature />
           </Section>
 
-          <Section style={s.footer}>
-            <Text style={s.footerText}>You received this because you subscribed at faziz-dev.com.</Text>
-            <Text style={s.footerText}><Link href="{{{unsubscribe_url}}}" style={s.link}>Unsubscribe</Link></Text>
-          </Section>
+          <EmailFooter reason={"You received this because you subscribed at faziz-dev.com."} unsubscribe />
         </Container>
       </Body>
     </Html>

@@ -1,351 +1,255 @@
 ---
+/**
+ * Site header: brand · five primary links · Invite me. Sections with
+ * children get a pill sub-nav, then the 8px band (skipped on pages whose
+ * hero carries the skewed band itself). Mobile: a native <dialog> drawer —
+ * focus is trapped, Esc and backdrop taps close it. Opening: a skewed yellow
+ * band sweeps across (the opener's wipe), the panel slides in and the links
+ * cascade; closing plays a quick reverse before the dialog closes. Only
+ * transform/opacity animate; reduced motion gets a plain fade.
+ */
 import ThemeToggle from '../islands/ThemeToggle';
 import CommandPalette from '../islands/CommandPalette';
-import { availabilityLabel, formatQuarter, bookingYears } from '../../lib/availability';
+import { PRIMARY_NAV, INVITE_CTA, sectionFor, activeChild } from '../../lib/nav';
 
+interface Props {
+  band?: boolean;
+  /** Offer "Replay intro" to returning visitors on the home page (the opener is enabled). */
+  introEnabled?: boolean;
+  /** Short bio (Sanity) for the command palette's "Copy short bio". */
+  bio?: string;
+}
+
+const { band = true, introEnabled = false, bio } = Astro.props;
 const pathname = Astro.url.pathname;
-const quarterLabel = formatQuarter();
-const availLabel = availabilityLabel('Available');
-const bookingYearsLabel = bookingYears();
-
-const isActive = (prefix: string) => {
-  if (prefix === '/') return pathname === '/';
-  return pathname === prefix || pathname.startsWith(prefix + '/');
-};
-
-// "Speaking" lights up for talks/events/workshops/invite too
-const speakingActive = ['/speaking', '/talks', '/events', '/workshops', '/invite'].some(isActive);
-const servicesActive = ['/consulting', '/mentorship', '/impact', '/contact'].some(isActive);
-
-// Context-aware CTA: on the speaking silo the primary action is the speaker
-// invite; everywhere else it routes to the /contact "work with me" hub so
-// consulting & mentorship prospects aren't funneled into the invite form.
-const ctaHref = speakingActive ? '/invite' : '/contact';
-const ctaLabel = speakingActive ? 'Invite me' : 'Work with me';
+const section = sectionFor(pathname);
+const activePill = activeChild(section, pathname);
+const onInvite = pathname.replace(/\/$/, '') === '/invite';
+// The intro only plays on a full load of `/`, so the replay link lives there only.
+const onHome = pathname === '/';
+const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
 ---
 
-<header class="site-nav" id="siteNav">
-  <div class="container site-nav__inner">
-    <a href="/" class="site-nav__brand" aria-label="Faris Aziz home">
-      <span>Faris Aziz</span>
-    </a>
+<header class="hdr">
+  <div class="ds-wrap hdr__row">
+    <a href="/" class="hdr__brand">Faris Aziz</a>
 
-    <div class="site-nav__links" id="siteNavLinks">
-      <a href="/" class:list={['site-nav__link', { 'is-active': isActive('/') }]} aria-current={isActive('/') ? 'page' : undefined}>Home</a>
+    <nav class="hdr__nav" aria-label="Primary">
+      {PRIMARY_NAV.map((s) => (
+        <a href={s.href} class="hdr__link" aria-current={section?.href === s.href ? 'page' : undefined}>{s.label}</a>
+      ))}
+    </nav>
 
-      <div class="site-nav__item nav-mega-item">
-        <a href="/speaking" class:list={['site-nav__link', { 'is-active': speakingActive }]} aria-current={speakingActive ? 'page' : undefined}>
-          Speaking
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <div class="megamenu" role="menu">
-          <a class="mm-row" href="/events" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
-            <span><b>Schedule</b><span>Where I'll be next, plus the archive</span></span>
-          </a>
-          <a class="mm-row" href="/talks" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4.5v15l13-7.5z" fill="currentColor" stroke="none"/></svg></span>
-            <span><b>Talk catalogue</b><span>Talks you can book, with recordings</span></span>
-          </a>
-          <a class="mm-row" href="/workshops" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg></span>
-            <span><b>Workshops</b><span>Hands-on, full-day training</span></span>
-          </a>
-          <a class="mm-row" href="/press-kit" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>
-            <span><b>Press kit</b><span>Bios, headshots &amp; practical details</span></span>
-          </a>
-          <div class="mm-foot">
-            <span class="small">Booking {bookingYearsLabel} dates</span>
-            <a class="ds-link" href="/invite" data-track="megamenu-invite">Invite me
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="site-nav__item nav-mega-item">
-        <a href="/contact" class:list={['site-nav__link', { 'is-active': servicesActive }]} aria-current={servicesActive ? 'page' : undefined}>
-          Services
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <div class="megamenu" role="menu">
-          <a class="mm-row" href="/consulting" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
-            <span><b>Consulting</b><span>Architecture, strategy &amp; hands-on help</span></span>
-          </a>
-          <a class="mm-row" href="/mentorship" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 7a3 3 0 0 1 0 6M18.5 19a5 5 0 0 0-3-4.6"/></svg></span>
-            <span><b>Mentorship</b><span>1:1 coaching for engineers</span></span>
-          </a>
-          <a class="mm-row" href="/impact" role="menuitem">
-            <span class="mm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg></span>
-            <span><b>Impact</b><span>The full track record &amp; metrics</span></span>
-          </a>
-          <div class="mm-foot">
-            <span class="small">Available {quarterLabel}</span>
-            <a class="ds-link" href="https://cal.com/farisaziz12/discovery-call" target="_blank" rel="noopener noreferrer" data-track="megamenu-discovery-call">Book a discovery call
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <a href="/blog" class:list={['site-nav__link', { 'is-active': isActive('/blog') }]} aria-current={isActive('/blog') ? 'page' : undefined}>Blog</a>
-      <a href="/about" class:list={['site-nav__link', { 'is-active': isActive('/about') }]} aria-current={isActive('/about') ? 'page' : undefined}>About</a>
-    </div>
-
-    <div class="site-nav__right">
-      <button type="button" class="site-nav__kbd" id="paletteBtn" aria-label="Open command palette" title="Search (⌘K)">
-        <span>Search</span>
-        <kbd>⌘K</kbd>
-      </button>
-
-      <ThemeToggle client:load />
-
-      <a href={ctaHref} class="ds-btn ds-btn-primary site-nav__cta" data-track="header-cta" data-track-label={ctaLabel}>{ctaLabel}</a>
-
-      <button type="button" class="site-nav__burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
-        </svg>
-      </button>
+    <div class="hdr__right">
+      {introEnabled && onHome && (
+        <a href="/?intro=replay" class="hdr__replay" data-replay-intro hidden>Replay intro</a>
+      )}
+      <ThemeToggle client:idle />
+      {onInvite ? (
+        <a href={cta.href} class="ds-link ds-link--sm hdr__cta-link" data-track="header-cta" data-track-label={cta.label}>{cta.label}</a>
+      ) : (
+        <a href={cta.href} class="ds-btn ds-btn--yellow ds-btn--sm hdr__cta" data-track="header-cta" data-track-label={cta.label}>{cta.label}</a>
+      )}
+      <button type="button" class="hdr__menu" data-drawer-open aria-haspopup="dialog" aria-controls="siteDrawer">Menu</button>
     </div>
   </div>
 
+  {section?.children && (
+    <div class="ds-wrap hdr__sub">
+      <span class="hdr__sub-label">{section.label}</span>
+      <nav class="hdr__pills" aria-label={`${section.label} pages`}>
+        {section.children.map((c) => (
+          <a href={c.href} class="hdr__pill" aria-current={activePill === c.href ? 'page' : undefined}>{c.label}</a>
+        ))}
+      </nav>
+    </div>
+  )}
+  {band && <span class="ds-band" aria-hidden="true"></span>}
 </header>
 
-<!-- Mobile drawer -->
-<div class="mobile-drawer" id="mobileDrawer">
-  <div class="mobile-drawer__head">
-    <span class="site-nav__brand">Faris Aziz</span>
-    <button type="button" class="ds-social" id="drawerClose" aria-label="Close menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
-      </svg>
-    </button>
+<dialog id="siteDrawer" class="drawer" aria-label="Site menu">
+  <span class="drawer__wipe" aria-hidden="true"></span>
+  <div class="drawer__head">
+    <a href="/" class="hdr__brand">Faris Aziz</a>
+    <button type="button" class="hdr__menu" data-drawer-close>Close</button>
   </div>
-  <div class="mobile-drawer__links">
-    <a class="mobile-drawer__link" href="/">Home</a>
-
-    <a class="mobile-drawer__link" href="/speaking">Speaking</a>
-    <div class="mobile-drawer__sublinks">
-      <a href="/events">Schedule</a>
-      <a href="/talks">Talk catalogue</a>
-      <a href="/workshops">Workshops</a>
-      <a href="/invite">Invite me</a>
-      <a href="/press-kit">Press kit</a>
-    </div>
-
-    <a class="mobile-drawer__link" href="/contact">Services</a>
-    <div class="mobile-drawer__sublinks">
-      <a href="/consulting">Consulting</a>
-      <a href="/mentorship">Mentorship</a>
-      <a href="/impact">Impact</a>
-    </div>
-
-    <a class="mobile-drawer__link" href="/blog">Blog</a>
-    <a class="mobile-drawer__link" href="/about">About</a>
+  <nav class="drawer__nav" aria-label="Site">
+    {PRIMARY_NAV.map((s) => (
+      <div class="drawer__group">
+        <a href={s.href} class="drawer__link" aria-current={section?.href === s.href ? 'page' : undefined}>{s.label}</a>
+        {s.children && (
+          <div class="drawer__children">
+            {s.children.filter((c) => c.href !== s.href).map((c) => <a href={c.href}>{c.label}</a>)}
+          </div>
+        )}
+      </div>
+    ))}
+  </nav>
+  <div class="drawer__foot">
+    <a href={INVITE_CTA.href} class="ds-btn ds-btn--yellow ds-btn--lg ds-btn--block" data-track="drawer-cta">{INVITE_CTA.label}</a>
   </div>
-  <div class="mobile-drawer__foot">
-    <span class="ds-pill ds-pill--signal" style="margin-bottom:1rem;display:inline-flex;">
-      <span class="ds-dot ds-dot--pulse"></span>{availLabel}
-    </span>
-    <a href={ctaHref} class="ds-btn ds-btn-primary ds-btn-lg" style="width:100%;">
-      {ctaLabel}
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </a>
-  </div>
-</div>
+</dialog>
 
-<CommandPalette client:idle />
+<CommandPalette client:idle bio={bio} />
 
 <style>
-  .site-nav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: color-mix(in srgb, rgb(var(--bg)) 82%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgb(var(--edge));
-    transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  .hdr { position: relative; z-index: 20; background: rgb(var(--ground)); }
+  .hdr__row { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: var(--header-height); }
+  .hdr__brand { font-weight: 800; font-size: 17px; letter-spacing: -0.03em; color: rgb(var(--text)); text-decoration: none; white-space: nowrap; }
+  .hdr__nav { display: flex; gap: 28px; font-size: 14px; font-weight: 600; }
+  .hdr__link {
+    color: rgb(var(--text-muted)); text-decoration: none; padding: 6px 0 2px;
+    border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
   }
-  .site-nav--scrolled { box-shadow: 0 8px 28px -10px rgba(0,0,0,.65); }
-  .site-nav--scrolled .site-nav__inner { height: 56px; }
+  .hdr__link:hover { color: rgb(var(--text)); border-bottom-color: rgb(var(--hairline-strong)); }
+  .hdr__link[aria-current='page'] { color: rgb(var(--text)); border-bottom-color: rgb(var(--yellow)); }
+  .hdr__right { display: flex; align-items: center; gap: 14px; }
+  .hdr__replay { font-size: 12.5px; font-weight: 600; color: rgb(var(--text-muted)); text-underline-offset: 0.25em; }
+  .hdr__replay:hover { color: rgb(var(--text)); }
+  /* Keep its space while hidden so the nav doesn't jump when it appears. */
+  .hdr__replay[hidden] { display: inline; visibility: hidden; }
+  .hdr__menu {
+    display: none; min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: var(--radius-btn);
+    border: 1px solid rgb(var(--hairline-strong)); background: transparent; color: rgb(var(--text));
+    font: 800 13px var(--font); cursor: pointer;
+  }
+  .hdr__menu:hover { border-color: rgb(var(--yellow)); }
 
-  .site-nav__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    gap: 1rem;
+  .hdr__sub { display: flex; align-items: center; gap: 18px; padding-bottom: 14px; overflow-x: auto; scrollbar-width: none; }
+  .hdr__sub::-webkit-scrollbar { display: none; }
+  .hdr__sub-label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--text-faint)); flex: none; }
+  .hdr__pills { display: flex; gap: 6px; flex: none; }
+  .hdr__pill {
+    display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 700; color: rgb(var(--text)); text-decoration: none; white-space: nowrap;
   }
+  .hdr__pill:hover { color: rgb(var(--accent-text)); }
+  .hdr__pill[aria-current='page'] { background: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
 
-  .site-nav__brand {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-    color: rgb(var(--ink));
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
+  .drawer {
+    width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; padding: 0; border: 0;
+    background: transparent; color: rgb(var(--text)); overscroll-behavior: contain; overflow: hidden;
   }
+  .drawer[open] { display: flex; flex-direction: column; }
+  /* The panel is the dialog's content; it slides while the dialog itself stays put. */
+  .drawer > :not(.drawer__wipe) { position: relative; z-index: 1; background: rgb(var(--ground)); }
+  .drawer__nav { background: rgb(var(--ground)); }
+  .drawer::backdrop { background: rgb(var(--c-ink) / 0); transition: background-color 0.3s ease; }
+  .drawer.is-open::backdrop { background: rgb(var(--c-ink) / 0.6); }
 
-  .site-nav__links {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-  }
-
-  .site-nav__link {
-    font-size: 0.92rem;
-    color: rgb(var(--ink-muted));
-    transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.4rem 0;
-  }
-  .site-nav__link:hover,
-  .site-nav__link.is-active {
-    color: rgb(var(--ink));
-  }
-  .site-nav__link.is-active::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -22px;
-    height: 2px;
-    background: rgb(var(--accent));
-  }
-  .site-nav__link .chev {
-    width: 13px;
-    height: 13px;
-    opacity: 0.55;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .site-nav__item { position: relative; display: flex; align-items: center; }
-  .site-nav__item:hover .chev,
-  .site-nav__item.open .chev { transform: rotate(180deg); }
-
-  .site-nav__right {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+  .drawer > :not(.drawer__wipe) { transform: translate3d(0, -14px, 0); opacity: 0; transition: transform 0.42s var(--ease-out-soft), opacity 0.3s ease; }
+  .drawer.is-open > :not(.drawer__wipe) { transform: none; opacity: 1; }
+  .drawer__group, .drawer__foot { transform: translate3d(0, 16px, 0); opacity: 0; transition: transform 0.45s var(--ease-out-soft), opacity 0.35s ease; }
+  .drawer.is-open .drawer__group, .drawer.is-open .drawer__foot { transform: none; opacity: 1; }
+  .drawer.is-open .drawer__group:nth-child(1) { transition-delay: 0.12s; }
+  .drawer.is-open .drawer__group:nth-child(2) { transition-delay: 0.16s; }
+  .drawer.is-open .drawer__group:nth-child(3) { transition-delay: 0.2s; }
+  .drawer.is-open .drawer__group:nth-child(4) { transition-delay: 0.24s; }
+  .drawer.is-open .drawer__group:nth-child(5) { transition-delay: 0.28s; }
+  .drawer.is-open .drawer__group:nth-child(n + 6) { transition-delay: 0.32s; }
+  .drawer.is-open .drawer__foot { transition-delay: 0.3s; }
+  /* Closing: everything leaves together, faster than it arrived. */
+  .drawer.is-closing > :not(.drawer__wipe), .drawer.is-closing .drawer__group, .drawer.is-closing .drawer__foot {
+    transition-duration: 0.22s; transition-delay: 0s; transition-timing-function: ease-in;
   }
 
-  .site-nav__kbd {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: 1px solid rgb(var(--edge));
-    border-radius: 6px;
-    padding: 0.4rem 0.55rem;
-    color: rgb(var(--ink-faint));
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    background: transparent;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+  /* Brand wipe: a skewed yellow band with the blue edge sweeps across once on open. */
+  .drawer__wipe {
+    position: fixed; inset: -10% auto -10% 0; z-index: 2; width: 70vw; pointer-events: none;
+    background: linear-gradient(90deg, rgb(var(--blue)) 0 10%, rgb(var(--yellow)) 10% 100%);
+    transform: translate3d(-140%, 0, 0) skewX(var(--skew)); visibility: hidden; will-change: transform;
   }
-  .site-nav__kbd:hover { border-color: rgb(var(--edge-strong)); color: rgb(var(--ink-muted)); }
-  .site-nav__kbd kbd {
-    font-family: inherit;
-    font-size: inherit;
+  .drawer.is-open .drawer__wipe { visibility: visible; animation: drawer-wipe 0.56s cubic-bezier(0.7, 0, 0.3, 1) both; }
+  @keyframes drawer-wipe {
+    from { transform: translate3d(-140%, 0, 0) skewX(var(--skew)); }
+    to { transform: translate3d(260%, 0, 0) skewX(var(--skew)); }
   }
 
-  .site-nav__avail {
-    font-family: var(--font-sans, 'Hanken Grotesk', system-ui, sans-serif);
+  @media (prefers-reduced-motion: reduce) {
+    .drawer__wipe { display: none; }
+    .drawer > :not(.drawer__wipe), .drawer__group, .drawer__foot { transform: none !important; transition: opacity 0.15s ease !important; transition-delay: 0s !important; }
   }
+  .drawer__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); min-height: var(--header-height); border-bottom: 8px solid transparent; border-image: var(--band) 1; }
+  .drawer__head .hdr__menu { display: inline-flex; align-items: center; }
+  .drawer__nav { flex: 1; overflow-y: auto; padding: 12px var(--gutter) 24px; }
+  .drawer__group { padding: 12px 0; border-bottom: 1px solid rgb(var(--hairline)); }
+  .drawer__link { display: flex; align-items: center; min-height: 44px; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: rgb(var(--text)); text-decoration: none; }
+  .drawer__link[aria-current='page'] { color: rgb(var(--accent-text)); }
+  .drawer__children { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .drawer__children a { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: rgb(var(--text-muted)); text-decoration: none; }
+  .drawer__foot { padding: 16px var(--gutter) max(16px, env(safe-area-inset-bottom)); border-top: 1px solid rgb(var(--hairline)); }
 
-  .site-nav__cta {
-    padding: 0.55rem 1rem !important;
-    font-size: 0.88rem !important;
-  }
-
-  .site-nav__burger {
-    display: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 6px;
-    align-items: center;
-    justify-content: center;
-    color: rgb(var(--ink));
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
-  .site-nav__burger svg { width: 24px; height: 24px; }
-
-  @media (max-width: 980px) {
-    #siteNavLinks, .site-nav__kbd, .site-nav__avail, .site-nav__cta { display: none; }
-    .site-nav__burger { display: inline-flex; }
+  @media (max-width: 900px) {
+    .hdr__nav, .hdr__replay, .hdr__replay[hidden], .hdr__right :global(.theme-toggle) { display: none; }
+    .hdr__menu { display: inline-flex; align-items: center; }
+    .hdr__right { gap: 8px; }
   }
 </style>
 
 <script>
-  function setupNav() {
-    const nav = document.getElementById('siteNav');
-    if (!nav) return;
+  function setupHeader() {
+    const drawer = document.getElementById('siteDrawer') as HTMLDialogElement | null;
+    if (!drawer || drawer.dataset.ready) return;
+    drawer.dataset.ready = '1';
+    const opener = document.querySelector<HTMLButtonElement>('[data-drawer-open]');
+    const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = 0;
 
-    function onScroll() {
-      nav!.classList.toggle('site-nav--scrolled', window.scrollY > 16);
-    }
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const open = () => {
+      if (drawer.open) return;
+      window.clearTimeout(closing);
+      drawer.classList.remove('is-open', 'is-closing');
+      drawer.showModal();
+      opener?.setAttribute('aria-expanded', 'true');
+      // Next frame, so the transition starts from the closed state.
+      requestAnimationFrame(() => requestAnimationFrame(() => drawer.classList.add('is-open')));
+    };
+    const close = (instant = false) => {
+      if (!drawer.open || drawer.classList.contains('is-closing')) return;
+      if (instant) {
+        drawer.classList.remove('is-open');
+        drawer.close();
+        return;
+      }
+      drawer.classList.add('is-closing');
+      drawer.classList.remove('is-open');
+      closing = window.setTimeout(() => {
+        drawer.classList.remove('is-closing');
+        drawer.close();
+      }, reduced() ? 150 : 230);
+    };
 
-    // Mega-menu: tap to open on coarse pointers (mobile-ish desktop)
-    document.querySelectorAll<HTMLElement>('.nav-mega-item').forEach((item) => {
-      const trigger = item.querySelector<HTMLAnchorElement>('.site-nav__link');
-      if (!trigger) return;
-      trigger.addEventListener('click', (e) => {
-        if (window.matchMedia('(hover: none)').matches) {
-          e.preventDefault();
-          item.classList.toggle('open');
-        }
-      });
+    opener?.addEventListener('click', open);
+    // Esc: play the same close instead of the dialog's instant one.
+    drawer.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      close();
     });
-    document.addEventListener('click', (e) => {
-      document.querySelectorAll('.nav-mega-item.open').forEach((i) => {
-        if (!i.contains(e.target as Node)) i.classList.remove('open');
-      });
+    drawer.addEventListener('close', () => {
+      drawer.classList.remove('is-open', 'is-closing');
+      opener?.setAttribute('aria-expanded', 'false');
+      opener?.focus({ preventScroll: true });
     });
-
-    // Command palette button → dispatches cmdk:open
-    const paletteBtn = document.getElementById('paletteBtn');
-    paletteBtn?.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('cmdk:open'));
+    drawer.querySelector('[data-drawer-close]')?.addEventListener('click', () => close());
+    // Tap on the backdrop (outside the content box) closes.
+    drawer.addEventListener('click', (e) => {
+      if (e.target === drawer) close();
     });
+    // Navigating: close at once so the next page isn't covered mid-animation.
+    drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => close(true)));
+    // Leaving the mobile breakpoint with the drawer open would strand it.
+    window.matchMedia('(min-width: 901px)').addEventListener('change', (m) => m.matches && close(true));
 
-    // Mobile drawer
-    const drawer = document.getElementById('mobileDrawer');
-    const burger = document.getElementById('burgerBtn');
-    const close = document.getElementById('drawerClose');
-
-    function setDrawer(open: boolean) {
-      drawer?.classList.toggle('open', open);
-      document.body.style.overflow = open ? 'hidden' : '';
-      burger?.setAttribute('aria-expanded', String(open));
-    }
-    burger?.addEventListener('click', () => setDrawer(true));
-    close?.addEventListener('click', () => setDrawer(false));
-    drawer?.querySelectorAll<HTMLAnchorElement>('.mobile-drawer__link, .mobile-drawer__sublinks a').forEach((a) => {
-      a.addEventListener('click', () => setDrawer(false));
+    // "Replay intro": home page only, for returning visitors (the intro already played).
+    const replay = document.querySelector<HTMLAnchorElement>('[data-replay-intro]');
+    let seen = false;
+    try { seen = sessionStorage.getItem('introSeen') === '1'; } catch { /* storage blocked */ }
+    if (replay && seen && location.pathname === '/') replay.hidden = false;
+    replay?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent('intro:replay'));
     });
   }
-
-  setupNav();
-  document.addEventListener('astro:after-swap', setupNav);
+  setupHeader();
+  document.addEventListener('astro:after-swap', setupHeader);
 </script>

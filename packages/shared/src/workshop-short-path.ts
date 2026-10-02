@@ -10,6 +10,7 @@ export const WORKSHOP_SHORT_PATH_RESERVED = [
   'api',
   'appreciation',
   'blog',
+  'community',
   'consulting',
   'contact',
   'events',
@@ -18,16 +19,20 @@ export const WORKSHOP_SHORT_PATH_RESERVED = [
   'impact',
   'invite',
   'llms.txt',
+  'llms-full.txt',
   'media',
   'mentorship',
   'og',
   'press-kit',
   'projects',
   'rss.xml',
+  'schedule',
   'services',
   'speaking',
   'talks',
+  'track-record',
   'workshops',
+  'writing',
 ] as const;
 
 const RESERVED = new Set<string>(WORKSHOP_SHORT_PATH_RESERVED);

@@ -1,124 +1,99 @@
 ---
+/**
+ * What people say: every praise item, styled like the network it was posted
+ * on and linked to the original. Topic + platform pills filter instantly and
+ * sync to the URL (?topic=mentoring&platform=linkedin); without JS, all show.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import AppreciationFilter from '../components/islands/AppreciationFilter';
-import BlueskyFeed from '../components/islands/BlueskyFeed';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { allSocialPostsQuery, allTestimonialsQuery } from '../lib/sanity/queries';
+import Kicker from '../components/v3/Kicker.astro';
+import PraiseCard from '../components/v3/PraiseCard.astro';
+import FilterPills from '../components/v3/FilterPills.astro';
+import { getAllPraise, currentMonthYear, PLATFORM_LABEL } from '../lib/sanity/v3';
+import { praiseFilters, joinList } from '../lib/appreciation';
+import { breadcrumbs } from '../lib/seo';
 
-const [socialPosts, testimonials] = await Promise.all([
-  sanityFetch<any[]>(allSocialPostsQuery).catch(() => []),
-  sanityFetch<any[]>(allTestimonialsQuery).catch(() => []),
-]);
+const praise = await getAllPraise();
+const { topics, platforms } = praiseFilters(praise);
 
-const platforms = [...new Set(socialPosts.map((p: any) => p.platform))];
-const stats = {
-  total: socialPosts.length + testimonials.length,
-  posts: socialPosts.length,
-  testimonials: testimonials.length,
-  platforms: platforms.length,
-};
-
-const socialPostImages: Record<string, string> = {};
-socialPosts.forEach((post: any) => {
-  if (post.authorImage) {
-    try { socialPostImages[post._id] = urlFor(post.authorImage).width(48).height(48).url(); } catch {}
-  }
-});
-const testimonialImages: Record<string, string> = {};
-testimonials.forEach((t: any) => {
-  if (t.image) {
-    try { testimonialImages[t._id] = urlFor(t.image).width(72).height(72).url(); } catch {}
-  }
-});
+const present = new Set(praise.map((p) => p.platform));
+const social = (['linkedin', 'x', 'bluesky'] as const).filter((p) => present.has(p)).map((p) => PLATFORM_LABEL[p]);
+const others = [present.has('mentorcruise') && 'MentorCruise reviews', present.has('direct') && 'notes sent directly'].filter(
+  (s): s is string => Boolean(s)
+);
+const allLinked = praise.length > 0 && praise.every((p) => p.url);
+const lede = `${social.length ? `Public posts from ${joinList(social)}` : 'Kind words'}${others.length ? `, plus ${joinList(others)}` : ''}, shown the way they were posted${allLinked ? ', each linked to the original' : ''}.`;
 ---
 
 <BaseLayout
-  title="Wall of appreciation | Faris Aziz"
-  description="Kind words, mentions, and testimonials from the community about my talks, work, and contributions."
-  pathname="/appreciation"
+  title="What people say | Faris Aziz"
+  description="What people have said about Faris Aziz's talks, workshops, mentoring and ZurichJS, shown as posted and linked to the original."
   image="/og/appreciation.png"
+  markdownAlternate="/appreciation.md"
+  extraSchema={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }, { name: 'What people say', path: '/appreciation' }])]}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>From the community</Kicker>
-      <h1 class="page-hero__title">
-        The wall of <span class="accent-word">kind words</span>.
-      </h1>
-      <p class="page-hero__lead">
-        Real posts from conferences, colleagues, and the community. Yes, I saved them all. No, I'm not even a little embarrassed.
-      </p>
+  <div class="ds-wrap praise" data-filter-root>
+    <header class="praise__head">
+      <div class="praise__intro">
+        <Kicker parts={['What people say']} />
+        <h1 class="ds-h1 praise__title">What people have said about Faris.</h1>
+        <p class="ds-lede">{lede}</p>
+      </div>
+      {praise.length > 0 && (
+        <p class="ds-meta praise__count" aria-live="polite">
+          <span data-filter-shown>{praise.length}</span> of {praise.length} shown · last checked {currentMonthYear()}
+        </p>
+      )}
+    </header>
 
-      <div class="page-hero__stats">
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.posts}</div>
-          <div class="ds-stat__label">Social posts</div>
+    {praise.length > 0 ? (
+      <>
+        <div class="praise__filters">
+          {topics.length > 1 && <FilterPills name="topic" label="Topic" options={topics} allCount={praise.length} />}
+          {platforms.length > 1 && <FilterPills name="platform" label="Platform" options={platforms} allLabel="All platforms" />}
         </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.testimonials}</div>
-          <div class="ds-stat__label">Testimonials</div>
+
+        <ul class="praise__grid" role="list">
+          {praise.map((p) => (
+            <li class="praise__item" data-filter-item data-topic={p.topic} data-platform={p.platform}>
+              <PraiseCard praise={p} variant="platform" />
+            </li>
+          ))}
+        </ul>
+
+        <div class="ds-card ds-card--dashed praise__empty" data-filter-empty hidden>
+          <p>Nothing matches both filters yet.</p>
+          <button type="button" class="ds-btn ds-btn--outline ds-btn--sm" data-filter-reset>Show everything</button>
         </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{stats.platforms}</div>
-          <div class="ds-stat__label">Platforms</div>
-        </div>
+      </>
+    ) : (
+      <div class="ds-card ds-card--dashed praise__empty">
+        <p>No quotes collected yet. When someone posts about a talk, a workshop or ZurichJS, it will show up here, linked to the original.</p>
       </div>
-
-      <div class="page-hero__actions">
-        <a href="#content" class="ds-btn ds-btn-primary ds-btn-lg">
-          Explore feedback
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <section id="content" class="page-section">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Community feedback</Kicker>
-        <h2 class="page-h2 ds-reveal">What people <span class="mark">say</span></h2>
-      </div>
-      <AppreciationFilter
-        client:load
-        socialPosts={socialPosts}
-        testimonials={testimonials}
-        socialPostImages={socialPostImages}
-        testimonialImages={testimonialImages}
-      />
-    </div>
-  </section>
-
-  <!-- LIVE FROM BLUESKY — ships hidden; the island reveals it once posts load -->
-  <section class="page-section page-section--alt" data-bsky-section hidden>
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Live from Bluesky</Kicker>
-        <h2 class="page-h2 ds-reveal">The feed, <span class="mark">unfiltered</span></h2>
-      </div>
-      <BlueskyFeed client:idle actor="farisaziz.com" />
-    </div>
-  </section>
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status="Loved my work? Share it"
-          title="Want to share your experience?"
-          body="If you've attended one of my talks or worked with me, tag me on Bluesky or LinkedIn. I read every mention."
-          primaryHref="https://bsky.app/profile/farisaziz.com"
-          primaryLabel="Tag me on Bluesky"
-          secondaryHref="https://linkedin.com/in/farisaziz12"
-          secondaryLabel="Connect on LinkedIn"
-        />
-      </div>
-    </div>
-  </section>
-
+    )}
+  </div>
 </BaseLayout>
+
+<style>
+  .praise { padding-top: 48px; padding-bottom: 64px; }
+  .praise__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 40px; flex-wrap: wrap; margin-bottom: 24px; }
+  .praise__intro { display: flex; flex-direction: column; gap: 14px; max-width: 680px; }
+  .praise__intro :global(.ds-kicker) { margin: 0; }
+  .praise__title { margin: 0; font-size: clamp(38px, 6vw, 52px); text-wrap: balance; }
+  .praise__count { margin: 0; text-align: right; font-size: 13px; }
+  .praise__filters { display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  .praise__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; }
+  .praise__item { min-width: 0; }
+  .praise__item > :global(*) { height: 100%; }
+  .praise__empty { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+  .praise__empty p { margin: 0; color: rgb(var(--text-muted)); max-width: 60ch; }
+  .praise__empty[hidden] { display: none; }
+
+  @media (max-width: 1000px) {
+    .praise__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 720px) {
+    .praise { padding-top: 32px; padding-bottom: 48px; }
+    .praise__grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+    .praise__count { text-align: left; }
+  }
+</style>

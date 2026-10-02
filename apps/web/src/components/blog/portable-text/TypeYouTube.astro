@@ -11,7 +11,6 @@ type Props = BaseProps<YouTubeBlock>;
 
 const { node } = Astro.props;
 
-// Extract video ID from various YouTube URL formats
 function extractVideoId(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/);
   return match?.[1] ?? null;
@@ -20,21 +19,18 @@ function extractVideoId(url: string): string | null {
 const videoId = node.url ? extractVideoId(node.url) : null;
 ---
 {videoId && (
-  <figure class="my-10">
-    <div class="relative aspect-video rounded-xl overflow-hidden shadow-lg">
+  <figure class="pt-figure">
+    <div class="pt-video">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}`}
-        title="YouTube video"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+        title={node.caption || 'YouTube video'}
+        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen
-        class="absolute inset-0 w-full h-full"
         loading="lazy"
       />
     </div>
-    {node.caption && (
-      <figcaption class="mt-3 text-center text-sm text-ink-faint">
-        {node.caption}
-      </figcaption>
-    )}
+    <figcaption class="pt-caption">
+      {node.caption && <>{node.caption} · </>}<a href={node.url} class="ds-textlink" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+    </figcaption>
   </figure>
 )}

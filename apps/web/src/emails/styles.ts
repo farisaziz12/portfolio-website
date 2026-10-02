@@ -1,35 +1,36 @@
-// Design System v2 palette — kept in sync with apps/web/src/styles/global.css.
-// Email clients don't support CSS variables, so values are inlined as hex literals.
+// Design System v3 ("Panels & Bands") for email, mirroring apps/web/src/styles/tokens.css.
+// Email clients don't support CSS variables or gradients reliably, so values are
+// inlined as hex and the brand band is two table cells (see parts.tsx).
 // When adding a new template, import from this file; do NOT hard-code colors.
 
-// Brand tokens (mirrors the dark theme — emails are dark-first like the site).
-const BG = '#0A0C10'         // --bg
-const SURFACE_1 = '#151A23'  // --surface-1
-const INK = '#F3F5F8'        // --ink
-const INK_MUTED = '#A9B4C2'  // --ink-muted
-const INK_FAINT = '#8B97A6'  // --ink-faint
-const EDGE = '#232B36'       // --edge
-const EDGE_STRONG = '#34404F'// --edge-strong
-const ACCENT = '#3D7BFF'     // --accent
-const ACCENT_BRIGHT = '#6AA1FF' // --accent-bright
+// Brand tokens (dark first, like the site).
+const INK = '#0F0F10'          // --c-ink: page ground
+const SURFACE = '#191A1D'      // --c-surface: cards
+const HAIRLINE = '#2A2A2E'     // --c-hairline
+const HAIRLINE_STRONG = '#44413C' // --c-hairline-strong
+const CREAM = '#F8F4EB'        // --c-cream: headings, strong text
+const MUTED = '#C8C1B5'        // --c-muted: body
+const FAINT = '#8A8378'        // --c-faint: labels, footer
+const YELLOW = '#F4C63A'       // --c-yellow: the one accent
+const BLUE = '#2E88B8'         // --c-blue: band edge only
 
-// Re-export so individual templates can use exact brand colors inline when needed
-// (e.g. <strong style={{ color: INK_STRONG }}>).
+const FONT = 'Figtree, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif'
+
 export const colors = {
-  bg: BG,
-  surface1: SURFACE_1,
   ink: INK,
-  inkMuted: INK_MUTED,
-  inkFaint: INK_FAINT,
-  edge: EDGE,
-  edgeStrong: EDGE_STRONG,
-  accent: ACCENT,
-  accentBright: ACCENT_BRIGHT,
+  surface: SURFACE,
+  hairline: HAIRLINE,
+  hairlineStrong: HAIRLINE_STRONG,
+  cream: CREAM,
+  muted: MUTED,
+  faint: FAINT,
+  yellow: YELLOW,
+  blue: BLUE,
 } as const
 
 export const body = {
-  backgroundColor: BG,
-  fontFamily: '"Hanken Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  backgroundColor: INK,
+  fontFamily: FONT,
   margin: '0',
   padding: '0',
 }
@@ -37,68 +38,63 @@ export const body = {
 export const container = {
   maxWidth: '600px',
   margin: '0 auto',
-  padding: '40px 20px',
+  padding: '32px 20px 40px',
 }
 
-export const terminalHeader = {
-  backgroundColor: SURFACE_1,
-  borderRadius: '12px',
-  padding: '20px 24px',
-  marginBottom: '32px',
-  border: `1px solid ${EDGE}`,
-}
+// ── Header: band + wordmark + label (parts.tsx <EmailHeader>) ──────────────────
+export const band = { width: '100%', borderCollapse: 'collapse' as const, margin: '0 0 28px 0' }
+export const bandBlue = { backgroundColor: BLUE, width: '12%', height: '8px', lineHeight: '8px', fontSize: '1px' }
+export const bandYellow = { backgroundColor: YELLOW, height: '8px', lineHeight: '8px', fontSize: '1px' }
 
-export const terminalDots = {
-  color: INK_FAINT,
-  fontSize: '10px',
-  margin: '0 0 12px 0',
-  letterSpacing: '4px',
-}
-
-export const terminalText = {
-  fontFamily: '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace',
-  color: ACCENT_BRIGHT,
-  fontSize: '14px',
+export const wordmark = {
+  color: CREAM,
+  fontSize: '17px',
+  fontWeight: '800' as const,
+  letterSpacing: '-0.03em',
   margin: '0 0 4px 0',
+  textDecoration: 'none',
 }
 
-export const terminalOutput = {
-  fontFamily: '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace',
-  color: INK_MUTED,
-  fontSize: '13px',
-  margin: '0',
+export const headerLabel = {
+  color: YELLOW,
+  fontSize: '11px',
+  fontWeight: '700' as const,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase' as const,
+  margin: '0 0 28px 0',
 }
 
 export const content = {
-  padding: '0 4px',
+  padding: '0',
 }
 
 export const heading = {
-  color: INK,
-  fontSize: '28px',
-  fontWeight: '700' as const,
-  margin: '0 0 24px 0',
-  fontFamily: '"Space Grotesk", "Hanken Grotesk", Inter, sans-serif',
-  letterSpacing: '-0.01em',
+  color: CREAM,
+  fontSize: '30px',
+  fontWeight: '800' as const,
+  lineHeight: '1.1',
+  margin: '0 0 20px 0',
+  fontFamily: FONT,
+  letterSpacing: '-0.035em',
 }
 
 export const paragraph = {
-  color: INK_MUTED,
+  color: MUTED,
   fontSize: '16px',
   lineHeight: '1.6',
   margin: '0 0 16px 0',
 }
 
 // Used for inline <strong> bumps inside paragraphs (template-level inline style).
-export const inkStrong = INK
+export const inkStrong = CREAM
 
-// Mono uppercase label/eyebrow — mirrors .ds-tag and the kicker pattern from the site.
+// Uppercase eyebrow, the site's .ds-kicker.
 export const kicker = {
-  fontFamily: '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace',
   fontSize: '11px',
-  letterSpacing: '0.16em',
+  fontWeight: '700' as const,
+  letterSpacing: '0.14em',
   textTransform: 'uppercase' as const,
-  color: INK_FAINT,
+  color: YELLOW,
   margin: '0 0 10px 0',
 }
 
@@ -107,78 +103,86 @@ export const detailTable = {
   width: '100%',
   fontSize: '14px',
   borderCollapse: 'collapse' as const,
-  margin: '0 0 8px 0',
+  margin: '0 0 20px 0',
+  borderTop: `1px solid ${HAIRLINE}`,
 }
 
 export const detailLabel = {
-  padding: '6px 0',
-  color: INK_FAINT,
+  padding: '10px 0',
+  color: FAINT,
   width: '140px',
   verticalAlign: 'top' as const,
+  borderBottom: `1px solid ${HAIRLINE}`,
 }
 
 export const detailValue = {
-  padding: '6px 0',
-  color: INK,
+  padding: '10px 0',
+  color: CREAM,
   verticalAlign: 'top' as const,
+  borderBottom: `1px solid ${HAIRLINE}`,
 }
 
-// Free-form text block (message/goals) — preserves line breaks.
+// Free-form text block (message/goals): a surface card that preserves line breaks.
 export const longText = {
-  color: INK,
+  color: CREAM,
   whiteSpace: 'pre-wrap' as const,
   lineHeight: '1.55',
   margin: '0',
   fontSize: '15px',
+  backgroundColor: SURFACE,
+  border: `1px solid ${HAIRLINE}`,
+  borderLeft: `4px solid ${YELLOW}`,
+  borderRadius: '6px',
+  padding: '16px 18px',
 }
 
 export const buttonSection = {
-  textAlign: 'center' as const,
   margin: '24px 0',
 }
 
+// Yellow button, ink text: the site's .ds-btn--yellow.
 export const primaryButton = {
-  backgroundColor: ACCENT,
-  color: '#ffffff',
-  padding: '14px 32px',
-  borderRadius: '14px',
-  fontSize: '16px',
-  fontWeight: '600' as const,
+  backgroundColor: YELLOW,
+  color: INK,
+  padding: '14px 24px',
+  borderRadius: '4px',
+  fontSize: '15px',
+  fontWeight: '800' as const,
   textDecoration: 'none',
   display: 'inline-block',
-  boxShadow: '0 14px 40px -14px rgba(61,123,255,0.45)',
 }
 
 export const secondaryButton = {
   backgroundColor: 'transparent',
-  color: INK_MUTED,
-  padding: '12px 28px',
-  borderRadius: '14px',
+  color: CREAM,
+  padding: '12px 22px',
+  borderRadius: '4px',
   fontSize: '14px',
-  fontWeight: '500' as const,
+  fontWeight: '700' as const,
   textDecoration: 'none',
   display: 'inline-block',
-  border: `1px solid ${EDGE_STRONG}`,
+  border: `2px solid ${CREAM}`,
 }
 
 export const divider = {
-  borderColor: EDGE,
-  margin: '32px 0',
+  borderColor: HAIRLINE,
+  margin: '32px 0 24px',
 }
 
 export const signature = {
-  color: INK,
+  color: CREAM,
   fontSize: '15px',
-  fontWeight: '500' as const,
+  fontWeight: '700' as const,
   margin: '0 0 4px 0',
 }
 
 export const signatureLink = {
   margin: '0',
+  fontSize: '14px',
 }
 
 export const link = {
-  color: ACCENT_BRIGHT,
+  color: YELLOW,
   textDecoration: 'underline',
 }
 
@@ -187,7 +191,7 @@ export const footer = {
 }
 
 export const footerText = {
-  color: INK_FAINT,
+  color: FAINT,
   fontSize: '12px',
   lineHeight: '1.5',
   margin: '0 0 8px 0',

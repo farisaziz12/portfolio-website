@@ -1,58 +1,38 @@
 ---
+/**
+ * "In this post": a quiet hairline list of the H2/H3s, shown only when a
+ * post is long enough to need one (3+ headings).
+ */
 import type { PortableTextBlock, ArbitraryTypedObject } from '@portabletext/types';
 import { extractHeadings } from '../../lib/portable-text-utils';
 
 interface Props {
   body: (PortableTextBlock | ArbitraryTypedObject)[];
+  min?: number;
 }
 
-const { body } = Astro.props;
-const headings = extractHeadings(body);
-const hasHeadings = headings.length > 0;
+const { body, min = 3 } = Astro.props;
+const headings = extractHeadings(body).filter((h) => h.level <= 3);
 ---
 
-{hasHeadings && (
-  <nav class="mb-12 p-6 bg-surface-raised rounded-xl border border-edge" aria-label="Table of contents">
-    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-edge">
-      <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-        <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      </div>
-      <h2 class="text-base font-semibold text-ink">In this article</h2>
-    </div>
-    <ul class="space-y-1">
-      {headings.map((heading, index) => {
-        const h2Index = headings.slice(0, index + 1).filter(h => h.level === 2).length;
-        return (
-          <li
-            class:list={[
-              'relative',
-              heading.level === 2 && 'mt-3 first:mt-0',
-              heading.level === 3 && 'ml-4 border-l-2 border-edge',
-              heading.level === 4 && 'ml-8 border-l-2 border-edge',
-            ]}
-          >
-            <a
-              href={`#${heading.id}`}
-              class:list={[
-                'block py-1.5 px-3 rounded-md hover:bg-accent/5 hover:text-accent transition-all cursor-pointer',
-                heading.level === 2 && 'text-ink font-medium',
-                heading.level === 3 && 'text-ink-muted text-sm',
-                heading.level === 4 && 'text-ink-faint text-sm',
-              ]}
-            >
-              {heading.level === 2 && (
-                <span class="inline-flex items-center justify-center w-5 h-5 mr-2 text-xs font-semibold bg-accent/10 text-accent rounded">
-                  {h2Index}
-                </span>
-              )}
-              {heading.text}
-            </a>
-          </li>
-        );
-      })}
-    </ul>
+{headings.length >= min && (
+  <nav class="toc" aria-labelledby="toc-title">
+    <p id="toc-title" class="toc__title">In this post</p>
+    <ol class="toc__list">
+      {headings.map((h) => (
+        <li class:list={['toc__item', { 'toc__item--sub': h.level === 3 }]}>
+          <a href={`#${h.id}`}>{h.text}</a>
+        </li>
+      ))}
+    </ol>
   </nav>
 )}
 
+<style>
+  .toc { border-block: 1px solid rgb(var(--hairline)); padding: 16px 0; }
+  .toc__title { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .toc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .toc__item a { display: inline-block; padding: 6px 0; min-height: 24px; font-size: 15px; font-weight: 600; color: rgb(var(--text-muted)); text-decoration: none; }
+  .toc__item a:hover { color: rgb(var(--accent-text)); }
+  .toc__item--sub a { padding-left: 16px; font-weight: 500; font-size: 14px; }
+</style>

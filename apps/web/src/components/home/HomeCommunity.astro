@@ -1,0 +1,189 @@
+---
+/**
+ * ZurichJS feature: headline, contribution, dated metric tiles, the
+ * aftermovie poster (unpublished state until the film is out), photos and
+ * the recognition card (only awards recorded in the CMS).
+ */
+import SanityImg from '../v3/SanityImg.astro';
+import Icon from '../v3/Icon.astro';
+import type { Community, Metric } from '../../lib/sanity/v3';
+
+interface Props {
+  community: Community;
+  /** Dated metrics to show (community.metrics or the community domain). */
+  metrics: Metric[];
+}
+
+const { community: c, metrics } = Astro.props;
+const film = c.aftermovie;
+const filmLive = Boolean(film?.published && film.url);
+const tiles = metrics.slice(0, 4);
+const award = c.recognition[0];
+const photos = c.photos.filter((p) => p?.asset).slice(0, award ? 2 : 3);
+const hasRow = photos.length > 0 || Boolean(award);
+// The biggest piece of media sits beside the copy; the rest runs full width below it,
+// so neither column is left with an empty tail.
+const beside: 'film' | 'row' | 'tiles' | null = film ? 'film' : hasRow ? 'row' : tiles.length ? 'tiles' : null;
+const poster = film?.poster?.asset ? film.poster : c.photos[0];
+const kicker = ['Community', c.city, c.founded ? `since ${c.founded}` : null].filter(Boolean).join(' · ');
+const FilmTag = filmLive ? 'a' : 'div';
+// An uploaded film plays inline on /community; an external one opens where it's hosted.
+const filmAttrs = !filmLive
+  ? {}
+  : film!.fileUrl
+    ? { href: '/community#aftermovie', 'data-track': 'home-aftermovie' }
+    : { href: film!.url, target: '_blank', rel: 'noopener noreferrer', 'data-track': 'home-aftermovie' };
+---
+
+<section class="hc" aria-labelledby="home-community">
+  <div class="ds-wrap hc__grid">
+    <div class="hc__copy">
+      <p class="ds-kicker">{kicker}</p>
+      <h2 id="home-community" class="hc__h2">{c.headline || `I co-founded and lead ${c.name}.`}</h2>
+      {c.summary && <p class="hc__summary">{c.summary}</p>}
+      <a href="/community" class="ds-btn ds-btn--yellow hc__cta" data-track="home-community">The whole story</a>
+    </div>
+
+    {film && (
+        <FilmTag class:list={['hc__film', { 'hc__film--live': filmLive, 'hc__beside': beside === 'film' }]} {...filmAttrs}>
+          {poster?.asset && <SanityImg image={poster} alt="" ratio={16 / 8.5} widths={[640, 960, 1200]} sizes="(max-width: 960px) 100vw, 60vw" class="hc__film-img" />}
+          <span class="hc__film-inner">
+            <span class="hc__film-top">
+              <span class="hc__film-kicker">Aftermovie</span>
+              <span>{filmLive ? 'Watch the film' : 'Not yet published'}</span>
+            </span>
+            <span class="hc__film-bottom">
+              <span>
+                <span class="hc__film-title">{film.title || `${c.name} aftermovie`}</span>
+                <span class="hc__film-cap">
+                  {film.caption}
+                  {!filmLive && ' The film plays here with captions when it’s released; the link goes live when the film does.'}
+                  {film.credit && ` ${film.credit}`}
+                </span>
+              </span>
+              {filmLive ? (
+                <span class="hc__play" aria-hidden="true"><Icon name="play" size={20} /></span>
+              ) : (
+                <button type="button" class="hc__play" disabled aria-label="Play aftermovie (not yet published)"><Icon name="play" size={20} /></button>
+              )}
+            </span>
+          </span>
+        </FilmTag>
+      )}
+
+      {tiles.length > 0 && (
+        <dl class:list={['hc__tiles', { 'hc__beside': beside === 'tiles' }]}>
+          {tiles.map((m) => (
+            <div class="hc__tile">
+              <dt class="hc__num">{m.value}</dt>
+              <dd class="hc__label">{m.label}{m.dateLabel && <span class="hc__date">{m.dateLabel}</span>}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {hasRow && (
+        <div class:list={['hc__row', { 'hc__beside': beside === 'row' }]}>
+          {photos.map((p) => (
+            <div class="hc__photo-wrap"><SanityImg image={p} ratio={1} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 30vw" class="hc__photo" /></div>
+          ))}
+          {award && (
+            <div class="hc__award">
+              <p class="hc__film-kicker">Recognition</p>
+              <p class="hc__award-title">{award.url ? <a href={award.url} target="_blank" rel="noopener noreferrer">{award.title}</a> : award.title}</p>
+              <p class="ds-meta">{[award.issuer, award.year].filter(Boolean).join(' · ')}</p>
+            </div>
+          )}
+        </div>
+      )}
+  </div>
+</section>
+
+<style>
+  .hc { position: relative; overflow: hidden; background: rgb(var(--surface)); border-block: 1px solid rgb(var(--hairline)); }
+  .hc::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: rgb(var(--yellow)); }
+  .hc::after { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 4px; background: rgb(var(--blue)); }
+  .hc__grid {
+    position: relative; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 28px 48px; align-items: start;
+    padding-block: var(--section-y); padding-left: max(56px, var(--gutter));
+  }
+  .hc__copy { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+  .hc__copy .ds-kicker { margin: 0; }
+  /* One block beside the copy, everything else full width underneath. */
+  .hc__grid > :not(.hc__copy) { grid-column: 1 / -1; min-width: 0; }
+  .hc__grid > .hc__beside { grid-column: 2; grid-row: 1; align-self: stretch; }
+  .hc__h2 { margin: 0; font-size: clamp(30px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; text-wrap: balance; }
+  .hc__summary { margin: 0; font-size: 16px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .hc__cta { align-self: flex-start; }
+
+  .hc__film {
+    position: relative; display: block; aspect-ratio: 16 / 8.5; overflow: hidden; border-radius: var(--radius-card);
+    background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); text-decoration: none; border: 1px solid rgb(var(--hairline));
+  }
+  .hc__film--live:hover { border-color: rgb(var(--yellow)); }
+  .hc__film :global(.hc__film-img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; filter: grayscale(0.4); }
+  .hc__film-inner { position: absolute; inset: 0; padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+  .hc__film-top { display: flex; justify-content: space-between; gap: 12px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--c-muted)); }
+  .hc__film-kicker { margin: 0; color: rgb(var(--accent-text)); font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .hc__film .hc__film-kicker { color: rgb(var(--c-yellow)); }
+  .hc__film-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .hc__film-title { display: block; font-size: clamp(24px, 2.8vw, 34px); font-weight: 800; letter-spacing: -0.045em; line-height: 0.95; }
+  .hc__film-cap { display: block; margin-top: 8px; font-size: 13px; line-height: 1.45; color: rgb(var(--c-muted)); max-width: 46ch; }
+  .hc__play {
+    flex: none; width: 60px; height: 60px; border-radius: 50%; border: 0; display: grid; place-items: center; padding: 0 0 0 3px;
+    background: rgb(var(--c-cream)); color: rgb(var(--c-ink));
+  }
+  .hc__play:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hc__film--live:hover .hc__play { background: rgb(var(--yellow)); }
+
+  .hc__tiles { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid rgb(var(--hairline-strong)); }
+  .hc__tile { padding: 16px 14px; border-right: 1px solid rgb(var(--hairline-strong)); min-width: 0; }
+  .hc__tile:first-child { padding-left: 0; }
+  .hc__tile:last-child { border-right: 0; padding-right: 0; }
+  .hc__num { font-size: clamp(30px, 3.4vw, 44px); font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hc__label { margin: 6px 0 0; font-size: 12.5px; line-height: 1.35; color: rgb(var(--text-muted)); }
+  .hc__date { display: block; color: rgb(var(--text-faint)); }
+
+  .hc__row { display: flex; gap: 10px; align-items: stretch; }
+  .hc__photo-wrap { flex: 1 1 0; min-width: 0; }
+  .hc__row .hc__award { flex: 1.4 1 0; min-width: 0; }
+  .hc__row :global(.hc__photo) { width: 100%; height: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); display: block; }
+  /* Beside the copy the photos fill the column's height instead of a fixed ratio. */
+  .hc__grid > .hc__row.hc__beside :global(.hc__photo) { aspect-ratio: auto; min-height: 280px; }
+  /* Beside the copy the film fills the column (its ratio would widen it past the column). */
+  .hc__grid > .hc__film.hc__beside { aspect-ratio: auto; min-height: 360px; }
+  /* Metrics alone beside the copy: a 2 × 2 block, centred on the copy. */
+  .hc__grid > .hc__tiles.hc__beside { align-self: center; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hc__tiles.hc__beside .hc__tile { padding: 22px 18px; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(2n) { border-right: 0; padding-right: 0; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(2n + 1) { padding-left: 0; }
+  .hc__tiles.hc__beside .hc__tile:nth-child(n + 3) { border-top: 1px solid rgb(var(--hairline-strong)); }
+  .hc__tiles.hc__beside .hc__num { font-size: clamp(36px, 4.4vw, 60px); }
+  .hc__award { background: rgb(var(--ground)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+  .hc__award p { margin: 0; }
+  .hc__award-title { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  .hc__award-title a { color: inherit; text-decoration: none; }
+  .hc__award-title a:hover { color: rgb(var(--accent-text)); }
+
+  @media (max-width: 960px) {
+    .hc__grid { grid-template-columns: 1fr; gap: 24px; }
+    .hc__copy { padding-right: 0; }
+    .hc__grid > .hc__beside { grid-column: 1; grid-row: auto; }
+    .hc__copy { margin-bottom: 8px; }
+  }
+  @media (max-width: 720px) {
+    .hc__grid { padding-left: calc(var(--gutter) + 18px); padding-block: 30px; gap: 24px; }
+    .hc__copy { gap: 12px; }
+    .hc__summary { font-size: 14.5px; }
+    /* Compact on phone: an unpublished film and the photo row step aside. */
+    .hc__film:not(.hc__film--live), .hc__photo-wrap { display: none; }
+    .hc__film { aspect-ratio: auto; min-height: 220px; }
+    .hc__film-inner { position: relative; inset: auto; min-height: 220px; box-sizing: border-box; padding: 16px; }
+    .hc__play { width: 48px; height: 48px; }
+    .hc__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hc__tile:nth-child(2n) { border-right: 0; padding-right: 0; }
+    .hc__tile:nth-child(2n + 1) { padding-left: 0; }
+    .hc__tile:nth-child(n + 3) { border-top: 1px solid rgb(var(--hairline-strong)); }
+    .hc__row { flex-direction: column; }
+  }
+</style>

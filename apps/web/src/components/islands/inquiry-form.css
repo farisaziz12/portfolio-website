@@ -1,0 +1,70 @@
+/* Shared styles for the inquiry islands (InviteForm, ContactForm). Tokens only. */
+
+.inq { display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
+.inq-form { display: flex; flex-direction: column; gap: 18px; }
+.inq-form fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.inq-fields { display: flex; flex-direction: column; gap: 18px; }
+.inq-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 560px) { .inq-row { grid-template-columns: 1fr; } }
+
+.inq-form .ds-field { gap: 6px; }
+.inq-form .ds-field__label { font-size: 13px; }
+.inq-form .ds-field__label.inq-optional { color: rgb(var(--text-muted)); }
+.inq-form .ds-input, .inq-form .ds-textarea { font-size: 15px; padding: 12px 14px; }
+.inq-form .ds-field__error { font-size: 12.5px; font-weight: 600; }
+
+/* "What's it for?" — native radios styled as pills */
+.inq-kinds legend { margin-bottom: 8px; padding: 0; }
+.inq-pill { position: relative; color: rgb(var(--text-muted)); }
+.inq-pill.is-active { color: rgb(var(--on-yellow)); }
+.inq-pill input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.inq-pill:has(input:focus-visible) { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+@media (pointer: coarse) { .inq-pill { min-height: 44px; } }
+
+.inq-submit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+
+.inq-form[aria-busy='true'] .ds-input, .inq-form[aria-busy='true'] .ds-textarea { opacity: 0.7; }
+
+/* Failed: surface card with a yellow edge, form stays below with the text in it */
+.inq-failed {
+  display: flex; flex-direction: column; gap: 10px; padding: 26px 28px; border-radius: var(--radius-card);
+  background: rgb(var(--surface)); border: 1px solid rgb(var(--yellow));
+}
+.inq-failed:focus { outline: none; }
+.inq-failed:focus-visible { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+.inq-failed__title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-wrap: balance; }
+.inq-failed__body { margin: 0; font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); }
+
+/* Accepted: the cream panel + celebrating duck */
+.inq-accepted { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 20px; align-items: center; max-width: 640px; }
+.inq-accepted:focus { outline: none; }
+.inq-accepted:focus-visible { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+.inq-accepted__text { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.inq-accepted__title { margin: 0; font-size: clamp(22px, 2.4vw, 26px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; text-wrap: balance; overflow-wrap: anywhere; }
+.inq-accepted .inq-accepted__body { margin: 0; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.inq-accepted__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.inq-accepted__art { width: 120px; height: auto; justify-self: end; }
+@media (max-width: 480px) {
+  .inq-accepted { grid-template-columns: 1fr; }
+  .inq-accepted__art { grid-row: 1; justify-self: start; width: 88px; }
+}
+
+.inq-textbtn {
+  min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer;
+  font: 600 14px/1.2 var(--font); color: rgb(var(--panel-muted));
+}
+.inq-textbtn:hover { color: rgb(var(--panel-text)); text-decoration: underline; }
+
+/* Contact "Everything else" card: inputs sit on the ground colour inside a surface card */
+.contact-form { gap: 12px; }
+.contact-form__fields { gap: 10px; }
+.contact-form .ds-input, .contact-form .ds-textarea { background: rgb(var(--ground)); font-size: 14.5px; }
+.contact-form .ds-textarea { min-height: 96px; }
+.contact-form .inq-submit .ds-btn { min-width: 88px; }
+.contact-failed { padding: 18px 20px; }
+.contact-failed .inq-failed__title { font-size: 18px; }
+.contact-sent { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding-top: 4px; }
+.contact-sent:focus { outline: none; }
+.contact-sent:focus-visible { outline: 3px solid rgb(var(--yellow)); outline-offset: 4px; }
+.contact-sent__title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.contact-sent__again { background: none; border-top: 0; border-left: 0; border-right: 0; padding: 0 0 1px; cursor: pointer; font-family: var(--font); }

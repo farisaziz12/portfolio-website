@@ -1,578 +1,86 @@
 ---
-// Home page is server-rendered + ISR-cached at the edge so the "Next up" event band
+// Home page is server-rendered + ISR-cached at the edge so the "Next up" strip
 // stays fresh without a redeploy. Revalidates every hour (configured in astro.config.mjs).
 export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import HomeTerminal from '../components/home/HomeTerminal.astro';
-import AudienceRouter from '../components/home/AudienceRouter.astro';
-import FeaturedTalk from '../components/home/FeaturedTalk.astro';
-import QuarterWrapped from '../components/home/QuarterWrapped.astro';
-import ReachMap from '../components/home/ReachMap.astro';
-import SocialWallIsland from '../components/islands/SocialWallIsland';
-import { currentQuarterRange } from '../lib/availability';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import type { SocialPost, QuarterActivity } from '../lib/sanity/types';
+import HomeHero from '../components/home/HomeHero.astro';
+import HomeFeatured from '../components/home/HomeFeatured.astro';
+import HomePraise from '../components/home/HomePraise.astro';
+import HomeCommunity from '../components/home/HomeCommunity.astro';
+import HomeWriting from '../components/home/HomeWriting.astro';
+import Opener from '../components/home/Opener.astro';
+import { eventSchema, itemList } from '../lib/seo';
 import {
-  upcomingEventsQuery,
-  speakingStatsQuery,
-  featuredMediaQuery,
-  featuredTestimonialsQuery,
-  featuredSocialPostsQuery,
-  featuredTalkQuery,
-  reachMapDataQuery,
-  quarterActivityQuery,
-} from '../lib/sanity/queries';
+  getHomePage,
+  getHomeFeatured,
+  getHomePraise,
+  getPrimaryCommunity,
+  getMetricsByDomain,
+  getUpcomingEvents,
+  getSpeakingStats,
+  getWriting,
+  getSiteSettings,
+  getProfile,
+  homeHeroPhotos,
+  type FeaturedItem,
+} from '../lib/sanity/v3';
 
-interface UpcomingEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  type: string;
-  conference: string;
-  date: string;
-  location?: { city?: string; country?: string };
-}
-interface SpeakingStats {
-  totalEvents: number;
-  upcomingEvents: number;
-  countries: number;
-  cities: number;
-  talks: number;
-  workshops: number;
-}
-interface Media { _id: string; image?: any; description?: string }
-interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string; image?: any }
-interface FeaturedTalkData {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  duration?: number;
-  viewCount?: number;
-  assets?: { videoUrl?: string; thumbnailImage?: any };
-  latestEvent?: { conference?: string; city?: string };
-}
-const quarter = currentQuarterRange();
-
-const [upcomingEvents, stats, media, testimonials, socialPosts, featured, reachCities, quarterActivity] = await Promise.all([
-  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
-  sanityFetch<Media[]>(featuredMediaQuery).catch(() => []),
-  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
-  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
-  sanityFetch<FeaturedTalkData | null>(featuredTalkQuery).catch(() => null),
-  sanityFetch<string[]>(reachMapDataQuery).catch(() => []),
-  sanityFetch<QuarterActivity>(quarterActivityQuery, { qStart: quarter.startISO, qEnd: quarter.endISO }).catch(() => null),
+const home = await getHomePage();
+const [settings, profile, featured, praise, community, communityMetrics, upcoming, stats, writing] = await Promise.all([
+  getSiteSettings(),
+  getProfile(),
+  getHomeFeatured(),
+  getHomePraise(),
+  getPrimaryCommunity(home.communityId),
+  getMetricsByDomain('community'),
+  getUpcomingEvents(),
+  getSpeakingStats(),
+  getWriting(),
 ]);
 
-// Pre-process image URLs for the social wall React island (urlFor can't run client-side).
-const socialPostImages: Record<string, string> = {};
-for (const p of socialPosts) {
-  if (p.authorImage) {
-    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
-  }
-}
-const testimonialImages: Record<string, string> = {};
-for (const t of testimonials) {
-  if (t.image) {
-    try { testimonialImages[t._id] = urlFor(t.image).width(48).height(48).url(); } catch {}
-  }
-}
+const kicker = home.kicker || settings.nowLine;
 
-const normalizedSocialPosts = socialPosts.map((p) => ({
-  _id: p._id,
-  platform: p.platform,
-  author: p.author,
-  authorRole: p.authorRole,
-  authorHandle: p.authorHandle,
-  content: p.content,
-  url: p.url,
-  postDate: p.postDate,
-}));
-const normalizedTestimonials = testimonials.map((t) => ({
-  _id: t._id,
-  quote: t.quote,
-  author: t.author,
-  role: t.role,
-  company: t.company,
-}));
-const hasSocialContent = normalizedSocialPosts.length > 0 || normalizedTestimonials.length > 0;
+// Community tiles: the community's own dated metrics, else the approved community-domain ones.
+const metrics = (community?.metrics.length ? community.metrics : communityMetrics).filter((m) => m.dateLabel);
+// No community photos yet: the press photos tagged community / hosting / event stand in.
+const communityPhotos = profile.photos.filter((p) => ['community', 'hosting', 'event'].includes(p.tag ?? ''));
+const communityShown = community && !community.photos.length ? { ...community, photos: communityPhotos } : community;
 
-const nextEvent = upcomingEvents[0] || null;
+// Recent writing: the two newest pieces not already on a poster (articles first, like the design).
+const onPosters = new Set(featured.filter((f): f is Extract<FeaturedItem, { kind: 'writing' }> => f.kind === 'writing').map((f) => f.item._id));
+const fresh = writing.filter((w) => !onPosters.has(w._id));
+const latest = [...fresh.filter((w) => w.format === 'article'), ...fresh.filter((w) => w.format !== 'article')].slice(0, 2);
 
-const socials = [
-  { name: 'GitHub', href: 'https://github.com/farisaziz12', path: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z' },
-  { name: 'LinkedIn', href: 'https://linkedin.com/in/farisaziz12', path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z' },
-  { name: 'X', href: 'https://twitter.com/FarisAziz12', path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z' },
-  { name: 'YouTube', href: 'https://www.youtube.com/@faziz-dev', path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' },
-  { name: 'Bluesky', href: 'https://bsky.app/profile/farisaziz.com', path: 'M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026' },
-];
+// Hero photos: the Home page picks, else the press photos. The opener's name
+// card uses the portrait press photo.
+const heroPhotos = homeHeroPhotos(home.heroPhotos, profile.photos);
+const portrait = profile.photos.find((p) => p.tag === 'portrait') ?? profile.photos[0];
 
-const formatEventDate = (dateStr: string) => {
-  const d = new Date(dateStr);
-  return { day: d.getDate().toString(), month: d.toLocaleString('en-US', { month: 'short' }) };
-};
+const next = upcoming.slice(0, 5);
+const extraSchema = next.length
+  ? [itemList('Upcoming appearances', next.map((e) => `/events/${e.slug}`)), ...next.map((e) => eventSchema(e))]
+  : [];
 ---
 
 <BaseLayout
-  title="Faris Aziz | Staff Engineer & Conference Speaker"
-  description={`Staff Software Engineer and Conference Speaker. ${stats.totalEvents} talks across ${stats.countries} countries. Based in Geneva.`}
+  title="Faris Aziz · software engineer, speaker, ZurichJS co-founder"
+  description={settings.metaDescription}
   pathname=""
   image="/og/home.png"
   markdownAlternate="/home.md"
+  band={false}
+  extraSchema={extraSchema}
 >
-  <Fragment slot="head">
-    {/* Person + WebSite live in the global entity graph (SEO.astro, @id …/#person)
-        — only page-specific structured data belongs here. */}
-    <script type="application/ld+json" set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://faziz-dev.com' },
-        { '@type': 'ListItem', position: 2, name: 'Speaking', item: 'https://faziz-dev.com/speaking' },
-        { '@type': 'ListItem', position: 3, name: 'Work with me', item: 'https://faziz-dev.com/contact' },
-      ],
-    })} />
-  </Fragment>
+  {settings.introEnabled && <Opener portrait={portrait} name={profile.name} line={kicker} />}
 
-  <!-- HERO — split with full-width mosaic that takes the right column (lg+) and stacks full-width on mobile/tablet -->
-  <header class="hero-split-mosaic relative home-hero-v2">
-    <div class="hero-split-mosaic__content">
-      <div class="home-hero__content-inner">
-        <div class="home-hero__terminal">
-          <HomeTerminal />
-        </div>
+  <HomeHero home={home} photos={heroPhotos} kicker={kicker} upcoming={upcoming} />
 
-        <h1 class="home-hero__title heading-sentence">
-          I'm Faris Aziz,
-        </h1>
+  <HomeFeatured items={featured} quote={praise.underPosters} podcasts={stats.podcasts} />
 
-        <p class="home-hero__lead">
-          and I ship resilient frontend and payment systems, then I go talk about how on stage. I also build ZurichJS.
-        </p>
+  <HomePraise spotlight={praise.spotlight} cards={praise.cards} />
 
-        <p class="ds-proof">
-          <b>{stats.totalEvents}</b> events across <b>{stats.countries}</b> countries
-          and <b>{stats.cities}</b> cities, from a home base in Geneva.
-        </p>
+  {communityShown && <HomeCommunity community={communityShown} metrics={metrics} />}
 
-        <div class="home-hero__socials">
-          {socials.map((s) => (
-            <a href={s.href} class="ds-social" target="_blank" rel="noopener noreferrer" aria-label={s.name}>
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.path} /></svg>
-            </a>
-          ))}
-          <span class="home-hero__socials-label">Come say hi</span>
-        </div>
-
-        <div class="home-hero__actions">
-          <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
-            Invite me to speak
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-          <a href="/speaking" class="ds-btn ds-btn-secondary ds-btn-lg">View upcoming events</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="hero-split-mosaic__images">
-      <div class="hero-mosaic-grid">
-        {media.length > 0 ? (
-          <>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large">
-              {media[0]?.image && (
-                <img
-                  src={urlFor(media[0].image).width(1200).height(1200).quality(90).url()}
-                  alt={media[0].description || 'Speaking at conference'}
-                  loading="eager"
-                  fetchpriority="high"
-                  width="1200"
-                  height="1200"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[1]?.image && (
-                <img
-                  src={urlFor(media[1].image).width(600).height(600).quality(90).url()}
-                  alt={media[1].description || 'Conference moment'}
-                  loading="eager"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[2]?.image && (
-                <img
-                  src={urlFor(media[2].image).width(600).height(600).quality(90).url()}
-                  alt={media[2].description || 'Workshop'}
-                  loading="eager"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[3]?.image && (
-                <img
-                  src={urlFor(media[3].image).width(600).height(600).quality(90).url()}
-                  alt={media[3].description || 'Tech talk'}
-                  loading="eager"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[4]?.image && (
-                <img
-                  src={urlFor(media[4].image).width(600).height(600).quality(90).url()}
-                  alt={media[4].description || 'Speaking'}
-                  loading="lazy"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide">
-              {media[5]?.image && (
-                <img
-                  src={urlFor(media[5].image).width(1200).height(600).quality(90).url()}
-                  alt={media[5].description || 'Conference'}
-                  loading="lazy"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[6]?.image && (
-                <img
-                  src={urlFor(media[6].image).width(600).height(600).quality(90).url()}
-                  alt={media[6].description || 'Event'}
-                  loading="lazy"
-                />
-              )}
-            </div>
-            <div class="hero-mosaic-grid__item">
-              {media[7]?.image && (
-                <img
-                  src={urlFor(media[7].image).width(600).height(600).quality(90).url()}
-                  alt={media[7].description || 'Presentation'}
-                  loading="lazy"
-                />
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--large"></div>
-            <div class="hero-mosaic-grid__item"></div>
-            <div class="hero-mosaic-grid__item"></div>
-            <div class="hero-mosaic-grid__item"></div>
-            <div class="hero-mosaic-grid__item"></div>
-            <div class="hero-mosaic-grid__item hero-mosaic-grid__item--wide"></div>
-            <div class="hero-mosaic-grid__item"></div>
-            <div class="hero-mosaic-grid__item"></div>
-          </>
-        )}
-      </div>
-    </div>
-  </header>
-
-  {nextEvent && (
-    <section class="eventband">
-      <div class="container">
-        <div class="wide eventband__row">
-          <Kicker plain variant="signal">
-            <span class="ds-dot ds-dot--pulse"></span>Next up
-          </Kicker>
-          <div class="eventband__event">
-            <div class="eventband__date">
-              <b>{formatEventDate(nextEvent.date).day}</b>
-              <span>{formatEventDate(nextEvent.date).month}</span>
-            </div>
-            <div>
-              <div class="eventband__title">{nextEvent.title}</div>
-              <div class="eventband__meta">
-                {nextEvent.location?.city && `${nextEvent.location.city}${nextEvent.location.country ? ', ' + nextEvent.location.country : ''} · `}
-                {nextEvent.conference}
-              </div>
-            </div>
-          </div>
-          <a href="/speaking" class="ds-link">
-            All upcoming events
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- AUDIENCE ROUTER -->
-  <section class="home-section home-section--router">
-    <div class="container">
-      <AudienceRouter />
-    </div>
-  </section>
-
-  <!-- FEATURED TALK -->
-  {featured && <FeaturedTalk talk={featured} />}
-
-  <!-- THIS QUARTER, WRAPPED -->
-  <QuarterWrapped label={quarter.label} activity={quarterActivity} />
-
-  <!-- GLOBAL REACH MAP -->
-  {reachCities.length > 0 && (
-    <section class="home-section">
-      <div class="container">
-        <div class="home-section__heading">
-          <h2 class="home-h2 ds-reveal">I've spoken from San Francisco to Singapore.</h2>
-          <p class="home-lead ds-reveal">All routed from a home base in Geneva.</p>
-        </div>
-        <ReachMap cities={reachCities} />
-      </div>
-    </section>
-  )}
-
-  <!-- SOCIAL VALIDATION — tweets, Bluesky, LinkedIn posts + testimonials interleaved -->
-  {hasSocialContent && (
-    <section class="home-section">
-      <div class="container">
-        <div class="home-section__heading">
-          <h2 class="home-h2 ds-reveal">Here's what people say.</h2>
-          <p class="home-lead ds-reveal">Real reactions from conferences, meetups, and colleagues, pulled straight from the social feeds.</p>
-        </div>
-        <SocialWallIsland
-          client:load
-          posts={normalizedSocialPosts}
-          testimonials={normalizedTestimonials}
-          socialPostImages={socialPostImages}
-          testimonialImages={testimonialImages}
-        />
-        <div style="text-align:center;margin-top:2rem;">
-          <a href="/appreciation" class="ds-link">
-            View all mentions
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- CONTACT PANEL -->
-  <section class="home-section home-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel />
-      </div>
-    </div>
-  </section>
-
-  <!-- Newsletter signup lives in the global footer (GeneralSubscribe) — a second copy here was redundant. -->
-
+  <HomeWriting items={latest} invite={home.invitePanel} />
 </BaseLayout>
-
-<style>
-  /* Hero v2 uses the existing .hero-split-mosaic layout
-     (stacked + full-width mosaic on mobile/tablet, 38/62 split on lg+). */
-  .home-hero-v2 { overflow: hidden; }
-  .home-hero__content-inner { max-width: 36rem; }
-  /* Wrapper around the <Terminal> island. The spacing + width live here (not as a
-     class on <Terminal>) because Astro scoped styles don't pierce component
-     boundaries — a class passed to the component would never match this rule. */
-  .home-hero__terminal {
-    /* Room to actually type: full width on phones, generous but capped on desktop
-       (the content column is 36rem, so 27rem keeps clear air around it). */
-    max-width: min(100%, 27rem);
-    /* Smaller gap on phones so the terminal and title aren't crammed yet still
-       breathe; grows to fill the tall two-column hero on lg+ screens. */
-    margin-bottom: clamp(2.25rem, 8vw, 7rem);
-  }
-  .home-hero__title {
-    margin: 0;
-  }
-  .home-hero__lead {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 62ch;
-    margin-top: 1.1rem;
-  }
-  .home-hero__socials {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.8rem;
-  }
-  .home-hero__socials-label {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-    margin-left: 0.3rem;
-  }
-  .home-hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-
-  /* EVENT BAND */
-  .eventband {
-    border-top: 1px solid rgb(var(--edge));
-    border-bottom: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-  }
-  .eventband__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding-block: 1.2rem;
-  }
-  .eventband__event {
-    display: flex;
-    gap: 1.4rem;
-    align-items: center;
-    flex: 1;
-    min-width: 260px;
-  }
-  .eventband__date {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    text-align: center;
-    flex-shrink: 0;
-    width: 54px;
-  }
-  .eventband__date b {
-    display: block;
-    font-size: 1.6rem;
-    color: rgb(var(--ink));
-    line-height: 1;
-    font-weight: 600;
-  }
-  .eventband__date span {
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .eventband__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .eventband__meta {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-  }
-
-  /* Section primitives */
-  .home-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
-  .home-section-sm { padding-block: clamp(2.25rem, 5vw, 3.5rem); }
-  .home-section--router {
-    padding-top: clamp(2.25rem, 5vw, 3.5rem);
-  }
-  .home-section__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 1.4rem;
-  }
-  .home-section__title-sm {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.15rem;
-    color: rgb(var(--ink));
-  }
-  .home-section__hint {
-    font-size: 0.85rem;
-    color: rgb(var(--ink-faint));
-    white-space: nowrap;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-  }
-  .home-section__heading {
-    text-align: center;
-    margin-bottom: 2.6rem;
-  }
-  .home-section__heading .kicker {
-    justify-content: center;
-  }
-  .home-h2 {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.5rem, 2.4vw, 2rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-    text-wrap: balance;
-  }
-  .home-lead {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-    margin: 0.85rem auto 0;
-    text-wrap: pretty;
-  }
-
-  /* Testimonials */
-  .home-quotes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-  }
-  @media (max-width: 900px) {
-    .home-quotes { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 600px) {
-    .home-quotes { grid-template-columns: 1fr; }
-  }
-  .home-quote {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .home-quote p {
-    font-size: 0.95rem;
-    color: rgb(var(--ink));
-    line-height: 1.6;
-  }
-  .home-quote__who {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    margin-top: auto;
-    padding-top: 1.2rem;
-  }
-  .home-quote__who b {
-    font-size: 0.85rem;
-    color: rgb(var(--ink));
-  }
-  .home-quote__who span {
-    font-size: 0.78rem;
-    color: rgb(var(--ink-faint));
-  }
-  .home-quote__avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    background: rgb(var(--surface-3));
-    border: 1px solid rgb(var(--edge));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.8rem;
-    color: rgb(var(--ink-muted));
-    flex-shrink: 0;
-  }
-
-  /* Contact panel */
-  .home-section--contact { padding-top: 0; }
-</style>

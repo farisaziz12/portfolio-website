@@ -1,118 +1,180 @@
 ---
+/**
+ * Talk catalogue (V3 `Talks.dc.html`): bookable, current talk versions with
+ * a track-record panel and topic filter pills (?topic=payments). Counts are
+ * derived from session records; the list works without JS.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import TalksFilter from '../../components/islands/TalksFilter';
-import { sanityFetch } from '../../lib/sanity/client';
-import { allTalksQuery } from '../../lib/sanity/queries';
-import { availabilityLabel } from '../../lib/availability';
+import FilterPills from '../../components/v3/FilterPills.astro';
+import TrackRecord from '../../components/talks/TrackRecord.astro';
+import TalkRow from '../../components/talks/TalkRow.astro';
+import { TALK_SORTS, byPopularity, talkSortKeys } from '../../lib/talks';
+import { TOPICS } from 'shared';
+import { getAllPraise, getCatalogueTalks, getProfile, getSpeakingStats, getUpcomingEvents, numberWord } from '../../lib/sanity/v3';
+import { breadcrumbs, itemList } from '../../lib/seo';
 
-interface Talk {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  topics?: string[];
-  duration?: number;
-  eventCount: number;
-  latestEvent?: { date: string; conference: string; location: string };
-}
+const [catalogue, stats, upcomingAll, praise, profile] = await Promise.all([getCatalogueTalks(), getSpeakingStats(), getUpcomingEvents(), getAllPraise(), getProfile()]);
+// Default order: most popular. The sort control re-orders client-side (?sort=recent|newest).
+const talks = [...catalogue].sort(byPopularity);
 
-const talks = await sanityFetch<Talk[]>(allTalksQuery).catch(() => []);
+const n = talks.length;
+const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b === 'spoke' || b === 'workshop' || b === 'hosted'));
+const quotes = praise.filter((p) => p.topic === 'stage').slice(0, 2);
+const topics = TOPICS.filter((t) => talks.some((k) => k.pillar === t.value)).map((t) => ({ value: t.value, label: t.title }));
 
-const totalTalks = talks.length;
-const totalDeliveries = talks.reduce((sum, t) => sum + (t.eventCount || 0), 0);
-const uniqueTopics = new Set(talks.flatMap((t) => t.topics || [])).size;
+const headline = n ? `${numberWord(n)} ${n === 1 ? 'talk' : 'talks'} you can book.` : 'Talks you can book.';
+const description = `${n} conference talks on production engineering, payments at scale, careers and community. Premise, audience, length and recordings.`;
 ---
 
 <BaseLayout
-  title="Talks | Faris Aziz"
-  description="Browse all talks by Faris Aziz on React, Next.js, payments, and developer experience. Available for conferences and meetups."
-  pathname="/talks"
+  title="Talks"
+  description={description}
   image="/og/talks.png"
   markdownAlternate="/talks.md"
+  extraSchema={[
+    breadcrumbs([
+      { name: 'Speaking', path: '/speaking' },
+      { name: 'Talks', path: '/talks' },
+    ]),
+    itemList('Talk catalogue', talks.map((t) => `/talks/${t.slug}`)),
+  ]}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>Talk catalogue · ready to book</Kicker>
-      <h1 class="page-hero__title">
-        Conference talks, <span class="accent-word">tailored</span> for your room.
-      </h1>
-      <p class="page-hero__lead">
-        Production stories on React, Next.js, payments, and developer experience, each adaptable to your audience's depth and time slot.
+  <div data-filter-root>
+    <header class="ds-wrap thead">
+      <div class="thead__main">
+        <p class="ds-kicker"><a href="/speaking" class="is-muted thead__crumb">Speaking</a><span aria-hidden="true"> · </span>Talk catalogue</p>
+        <h1 class="ds-h1 thead__h1">{headline}</h1>
+        <p class="ds-lede thead__lede">
+          Each one has a short summary, who it's for and how long it runs, plus a recording if there is one. I tweak every talk to fit your slot and your audience.
+        </p>
+      </div>
+      <p class="thead__meta" aria-live="polite">
+        <span data-filter-shown>{n}</span> of {n} shown · {stats.talksDelivered} deliveries · {stats.countries} countries
       </p>
+    </header>
 
-      <div class="page-hero__stats">
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{totalTalks}</div>
-          <div class="ds-stat__label">Talks</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{totalDeliveries}</div>
-          <div class="ds-stat__label">Deliveries</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{uniqueTopics}</div>
-          <div class="ds-stat__label">Topics</div>
-        </div>
-      </div>
+    <div class="ds-wrap tbody">
+      <TrackRecord stats={stats} talks={talks} upcoming={upcoming} quotes={quotes} />
 
-      <div class="page-hero__actions">
-        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
-          Book a talk
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/workshops" class="ds-btn ds-btn-secondary ds-btn-lg">View workshops</a>
-      </div>
-    </div>
-  </header>
-
-  <section class="page-section">
-    <div class="container wide">
-      <div class="page-section__head">
-        <div>
-          <Kicker>The catalogue</Kicker>
-          <h2 class="page-h2">Available talks</h2>
-        </div>
-        {totalTalks > 0 && (
-          <span class="ds-pill ds-pill--signal">
-            <span class="ds-dot ds-dot--pulse"></span>
-            {totalTalks} ready to book
-          </span>
+      <div class="tcontrols">
+        {topics.length > 1 && <FilterPills name="topic" options={topics} class="tpills" />}
+        {n > 1 && (
+          <div class="tsort" role="group" aria-label="Sort talks" data-talk-sort hidden>
+            <span class="tsort__label">Sort</span>
+            <div class="ds-seg">
+              {TALK_SORTS.map((o, i) => (
+                <button type="button" data-sort={o.value} aria-pressed={i === 0 ? 'true' : 'false'}>{o.label}</button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
-      {talks.length > 0 ? (
-        <TalksFilter client:load talks={talks} />
+      {n > 0 ? (
+        <ul class="tlist" data-talk-list>
+          {talks.map((t, i) => {
+            const k = talkSortKeys(t);
+            return (
+            <li data-filter-item data-topic={t.pillar ?? ''} data-i={i} data-popular={k.popular} data-recent={k.recent} data-newest={k.newest}>
+              <TalkRow talk={t} />
+            </li>
+            );
+          })}
+        </ul>
       ) : (
-        <div class="page-empty">
-          <h3>Coming soon</h3>
-          <p>Talks will appear here once content is added to Sanity.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Contact me about speaking</a>
-        </div>
+        <p class="tempty">The catalogue is being updated. <a href="/invite" class="ds-textlink">Tell me about your event</a> and I'll suggest a talk.</p>
       )}
-    </div>
-  </section>
+      <p class="tempty" data-filter-empty hidden>
+        No talks in this topic yet. <button type="button" class="ds-link ds-link--sm tempty__reset" data-filter-reset>Show everything</button>
+      </p>
 
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={availabilityLabel('Custom talks available')}
-          title="Need something tailored?"
-          body="If none of these fit your audience, I can build a new talk around your theme. Tell me what you're hoping to land. I reply within two days."
-          primaryHref="/invite"
-          primaryLabel="Get in touch"
-          secondaryHref="/workshops"
-          secondaryLabel="View workshops"
-        />
-      </div>
+      <aside class="ds-card tcustom" aria-labelledby="tcustom-title">
+        <div>
+          <h2 id="tcustom-title" class="tcustom__title">Need something built for your theme?</h2>
+          <p class="tcustom__body">Tell me what you'd like your audience to leave with. I'll propose a talk within {profile.replyTime}.</p>
+        </div>
+        <a href="/invite" class="ds-btn ds-btn--yellow" data-track="talks-custom">Get in touch</a>
+      </aside>
     </div>
-  </section>
-
+  </div>
 </BaseLayout>
 
+<script>
+  // Re-order the catalogue by the chosen sort; ?sort= keeps it shareable. The
+  // server order is "popular", so without JS the list is already sensible.
+  function initSort() {
+    const box = document.querySelector<HTMLElement>('[data-talk-sort]');
+    const list = document.querySelector<HTMLElement>('[data-talk-list]');
+    if (!box || !list || box.dataset.ready) return;
+    box.dataset.ready = '1';
+    box.hidden = false;
+    const items = [...list.children] as HTMLElement[];
+    const idx = (el: HTMLElement) => Number(el.dataset.i ?? 0);
+    const sorters: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+      popular: (a, b) => idx(a) - idx(b),
+      recent: (a, b) => (b.dataset.recent ?? '').localeCompare(a.dataset.recent ?? '') || idx(a) - idx(b),
+      newest: (a, b) => (b.dataset.newest ?? '').localeCompare(a.dataset.newest ?? '') || idx(a) - idx(b),
+    };
+    const apply = (key: string, push: boolean) => {
+      const sort = sorters[key] ? key : 'popular';
+      [...items].sort(sorters[sort]).forEach((el) => list.appendChild(el));
+      box.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === sort)));
+      if (push) {
+        const url = new URL(location.href);
+        if (sort === 'popular') url.searchParams.delete('sort');
+        else url.searchParams.set('sort', sort);
+        history.replaceState(history.state, '', url);
+        document.dispatchEvent(new CustomEvent('filters:change', { detail: { key: 'sort', value: sort, shown: items.filter((el) => !el.hidden).length } }));
+      }
+    };
+    box.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-sort]');
+      if (btn) apply(btn.dataset.sort!, true);
+    });
+    apply(new URL(location.href).searchParams.get('sort') ?? 'popular', false);
+  }
+  initSort();
+  document.addEventListener('astro:page-load', initSort);
+</script>
+
+<style>
+  .thead { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px 40px; padding-top: 48px; padding-bottom: 28px; }
+  .thead__main { display: flex; flex-direction: column; gap: 14px; max-width: 640px; min-width: 0; }
+  .thead__crumb { color: rgb(var(--text-muted)); text-decoration: none; }
+  .thead__crumb:hover { color: rgb(var(--text)); }
+  .thead__h1 { font-size: clamp(38px, 5.8vw, 52px); }
+  .thead__lede { font-size: 17px; }
+  .thead__meta { margin: 0; font-size: 13px; line-height: 1.5; color: rgb(var(--text-faint)); text-align: right; flex: none; }
+
+  .tbody { padding-top: 8px; padding-bottom: 64px; }
+  .tbody :global(.trk) { margin-bottom: 36px; }
+  .tcontrols { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 24px; margin-bottom: 24px; }
+  .tsort { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .tsort[hidden] { display: none; }
+  .tsort__label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .tsort .ds-seg > button { min-height: 36px; }
+  @media (max-width: 480px) {
+    .tsort { width: 100%; margin-left: 0; }
+    .tsort__label { display: none; }
+    .tsort .ds-seg { width: 100%; }
+    .tsort .ds-seg > button { flex: 1; min-height: 44px; padding: 8px 6px; }
+  }
+  .tlist { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid rgb(var(--hairline)); }
+  .tlist > li { border-top: 1px solid rgb(var(--hairline)); }
+  .tempty { margin: 0; padding: 28px 0; color: rgb(var(--text-muted)); border-bottom: 1px solid rgb(var(--hairline)); }
+  .tempty__reset { background: none; border-top: 0; border-left: 0; border-right: 0; cursor: pointer; font-family: inherit; margin-left: 6px; }
+
+  .tcustom { margin-top: 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px 24px; padding: 22px 24px; }
+  .tcustom__title { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+  .tcustom__body { margin: 4px 0 0; font-size: 14px; color: rgb(var(--text-muted)); }
+  .tcustom .ds-btn { flex: none; }
+
+  @media (max-width: 860px) {
+    .thead { flex-direction: column; align-items: flex-start; }
+    .thead__meta { text-align: left; }
+  }
+  @media (max-width: 720px) {
+    .thead { padding-top: 32px; }
+    .tcustom { flex-direction: column; align-items: flex-start; }
+  }
+</style>

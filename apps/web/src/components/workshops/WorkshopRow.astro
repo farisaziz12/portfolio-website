@@ -1,0 +1,106 @@
+---
+/**
+ * One workshop in the listing, built to cope with long CMS copy: title, a
+ * sentence-aware excerpt (full text lives on the workshop page) and a facts
+ * line on the left; outcomes as a capped list and prerequisites as one line
+ * on the right, with "+N more" pointing at the agenda. The title link
+ * stretches over the card.
+ */
+import type { WorkshopWithHistory } from '../../lib/sanity/v3';
+import { deliveredAtSentence, editionsLine, excerpt, groupLine, pastDeliveries, pillarLabel } from '../../lib/workshops-view';
+
+interface Props {
+  workshop: WorkshopWithHistory;
+}
+const { workshop: w } = Astro.props;
+const MAX_OUTCOMES = 4;
+const MAX_PREREQS = 3;
+
+const blurb = excerpt(w.summary || w.description);
+const delivered = pastDeliveries(w).length;
+const facts = [editionsLine(w), groupLine(w, 'people'), delivered > 0 ? `Run ${delivered}×` : ''].filter(Boolean);
+const where = deliveredAtSentence(w);
+const outcomes = w.outcomes.slice(0, MAX_OUTCOMES);
+const moreOutcomes = w.outcomes.length - outcomes.length;
+const prereqs = w.prerequisites.map((p) => p.replace(/\.$/, ''));
+const bring = prereqs.slice(0, MAX_PREREQS);
+const moreBring = prereqs.length - bring.length;
+---
+
+<li class="ds-card wsx">
+  <div class="wsx__main">
+    <p class="wsx__kicker">{pillarLabel(w)}</p>
+    <h2 class="wsx__title"><a href={`/workshops/${w.slug}`} class="wsx__link" data-track="workshops_row">{w.title}</a></h2>
+    {blurb && <p class="wsx__summary">{blurb}</p>}
+    {facts.length > 0 && (
+      <ul class="wsx__facts" role="list" aria-label="Format">
+        {facts.map((f) => <li>{f}</li>)}
+      </ul>
+    )}
+    {where && <p class="wsx__where">{where}</p>}
+    <span class="wsx__cta" aria-hidden="true">See the agenda</span>
+  </div>
+
+  <div class="wsx__side">
+    {outcomes.length > 0 && (
+      <section class="wsx__block" aria-label="You leave able to">
+        <h3 class="wsx__lbl">You leave able to</h3>
+        <ul class="wsx__outcomes">
+          {outcomes.map((o) => <li>{o}</li>)}
+        </ul>
+        {moreOutcomes > 0 && <p class="wsx__more">+{moreOutcomes} more on the agenda</p>}
+      </section>
+    )}
+    {bring.length > 0 && (
+      <section class="wsx__block" aria-label="Bring">
+        <h3 class="wsx__lbl">Bring</h3>
+        <p class="wsx__text">{bring.join(' · ')}{moreBring > 0 && <span class="wsx__faint"> · +{moreBring} more</span>}</p>
+      </section>
+    )}
+  </div>
+</li>
+
+<style>
+  .wsx {
+    position: relative; list-style: none; padding: 28px; transition: border-color 0.15s;
+    display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px 48px; align-items: start;
+  }
+  .wsx:hover { border-color: rgb(var(--yellow)); }
+  .wsx__main { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+  .wsx__main > * { margin: 0; }
+  .wsx__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .wsx__title { font-size: 28px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; text-wrap: balance; }
+  .wsx__link { color: rgb(var(--text)); text-decoration: none; }
+  .wsx__link::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+  .wsx__link:focus-visible { outline: none; }
+  .wsx__link:focus-visible::after { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; }
+  .wsx__summary { font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); max-width: 60ch; text-wrap: pretty; }
+  .wsx__facts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+  .wsx__facts li {
+    padding: 4px 10px; border: 1px solid rgb(var(--hairline-strong)); border-radius: 999px;
+    font-size: 12.5px; font-weight: 700; color: rgb(var(--text)); white-space: nowrap;
+  }
+  .wsx__where { font-size: 13px; color: rgb(var(--text-faint)); }
+  .wsx__cta {
+    margin-top: 6px; font-size: 13px; font-weight: 800; border: 2px solid rgb(var(--text)); border-radius: var(--radius-btn);
+    padding: 8px 12px; color: rgb(var(--text)); transition: border-color 0.15s, color 0.15s;
+  }
+  .wsx:hover .wsx__cta { border-color: rgb(var(--yellow)); color: rgb(var(--accent-text)); }
+
+  .wsx__side { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding-top: 4px; }
+  .wsx__block { display: flex; flex-direction: column; gap: 8px; }
+  .wsx__lbl { margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .wsx__outcomes { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .wsx__outcomes li { position: relative; padding-left: 18px; font-size: 14.5px; line-height: 1.45; color: rgb(var(--text)); }
+  .wsx__outcomes li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 8px; height: 2px; background: rgb(var(--yellow)); }
+  .wsx__more { margin: 0; font-size: 13px; font-weight: 600; color: rgb(var(--text-faint)); }
+  .wsx__text { margin: 0; font-size: 14px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .wsx__faint { color: rgb(var(--text-faint)); }
+
+  @media (max-width: 900px) {
+    .wsx { grid-template-columns: minmax(0, 1fr); padding: 22px 20px; gap: 20px; }
+    .wsx__title { font-size: 24px; }
+    .wsx__cta { order: 10; }
+    .wsx__side { padding-top: 0; }
+  }
+</style>

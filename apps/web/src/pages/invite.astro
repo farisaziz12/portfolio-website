@@ -1,880 +1,100 @@
 ---
+import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
 import InviteForm from '../components/islands/InviteForm';
-import { sanityFetch } from '../lib/sanity/client';
-import {
-  pastEventsQuery,
-  featuredTestimonialsQuery,
-  upcomingEventsQuery,
-} from '../lib/sanity/queries';
-import { topConferences } from '../lib/conferences';
-import { bookingYears, quarterLoad } from '../lib/availability';
+import AvailabilityCard from '../components/invite/AvailabilityCard.astro';
+import duckCelebrating from '../assets/illustrations/duck-celebrating.png';
+import { getAvailability, getProfile, getUpcomingEvents } from '../lib/sanity/v3';
+import { breadcrumbs } from '../lib/seo';
 
-interface PastEvent { _id: string; conference?: string }
-interface Testimonial { _id: string; quote: string; author: string; role?: string; company?: string }
+const [profile, availability, upcoming] = await Promise.all([getProfile(), getAvailability(), getUpcomingEvents()]);
 
-interface UpcomingEvent {
-  _id: string;
-  date: string;
-  title?: string;
-  slug?: string;
-  conference?: string;
-  location?: { city?: string; country?: string; isOnline?: boolean };
-}
+// The island can't use <Illustration>, so hand it the optimised asset.
+const duck1x = await getImage({ src: duckCelebrating, width: 120, format: 'webp', quality: 82 });
+const duck2x = await getImage({ src: duckCelebrating, width: 240, format: 'webp', quality: 82 });
+const art = {
+  src: duck1x.src,
+  srcset: `${duck1x.src} 120w, ${duck2x.src} 240w`,
+  width: 120,
+  height: Math.round((120 * duckCelebrating.height) / duckCelebrating.width),
+};
 
-const [pastEvents, testimonials, upcomingEvents] = await Promise.all([
-  sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
-  sanityFetch<Testimonial[]>(featuredTestimonialsQuery).catch(() => []),
-  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
-]);
-
-// Honest urgency for the hero — how full the next bookable quarter really is.
-const load = quarterLoad(upcomingEvents.map((e) => e.date));
-
-// ── Availability — 12-month list from upcoming events ────────────────────────
-const now = new Date();
-const months = Array.from({ length: 12 }, (_, i) => {
-  const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-  const events = upcomingEvents.filter((e) => {
-    const d = new Date(e.date);
-    return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
-  });
-  return {
-    name: date.toLocaleString('en-US', { month: 'short' }),
-    year: date.getFullYear(),
-    events,
-    count: events.length,
-  };
-});
-
-// Open months render without a badge — only scarcity states get a label,
-// so the calendar isn't a wall of green.
-type AvailabilityTone = 'open' | 'limited' | 'booked';
-function getAvailabilityTone(count: number): { tone: AvailabilityTone; label: string } {
-  if (count <= 1) return { tone: 'open', label: 'Open' };
-  if (count <= 4) return { tone: 'limited', label: 'Limited' };
-  return { tone: 'booked', label: 'Booked' };
-}
-
-const eventDay = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-// Top 6 conferences for the proof logo wall — shared aggregation (lib/conferences.ts).
-const conferenceWall = topConferences(pastEvents);
-
-// Pick up to 3 testimonials for the proof block (no hardcoded fallback — section
-// only renders when Sanity actually returns content).
-const proofQuotes = testimonials.slice(0, 3);
+const booked = upcoming.slice(0, 6);
+// CMS lead time (availability doc) wins over the profile's "Lead time" row.
+const lead = availability.leadTime;
+const goodToKnow = profile.goodToKnow.some((r) => /lead time/i.test(r.label))
+  ? profile.goodToKnow.map((r) => (lead && /lead time/i.test(r.label) ? { ...r, body: lead } : r))
+  : [...profile.goodToKnow, ...(lead ? [{ label: 'Lead time', body: lead }] : [])];
+const description = `Invite Faris Aziz to a conference, meetup, podcast, workshop, panel or interview. Tell him a bit about it; he replies within ${profile.replyTime}.`;
 ---
 
 <BaseLayout
-  title="Invite me to speak | Faris Aziz"
-  description="Book Faris Aziz for your conference, meetup, or internal tech talk. Talks and workshops on production, scale, web performance, and engineering leadership."
-  pathname="/invite"
+  title="Invite me · Faris Aziz"
+  description={description.length > 160 ? description.slice(0, 157) + '…' : description}
   image="/og/invite.png"
   markdownAlternate="/invite.md"
+  extraSchema={[breadcrumbs([{ name: 'Speaking', path: '/speaking' }, { name: 'Invite me', path: '/invite' }])]}
 >
-  <!-- HERO -->
-  <header class="invite-hero">
-    <GridTexture />
-    <div class="container invite-hero__inner">
-      <nav class="invite-crumbs" aria-label="Breadcrumb">
-        <a href="/speaking">Speaking</a>
-        <span class="invite-crumbs__sep">/</span>
-        <span class="invite-crumbs__cur">Invite me</span>
-      </nav>
-      <div class="invite-hero__pills">
-        <span class="ds-pill ds-pill--signal">
-          <span class="ds-dot ds-dot--pulse"></span>
-          Booking {bookingYears()} dates
-        </span>
-        {load.confirmed > 0 && (
-          <span class:list={['ds-pill', 'invite-load', `invite-load--${load.tone}`]}>
-            {load.label}: {load.confirmed} date{load.confirmed === 1 ? '' : 's'} confirmed
-            {load.tone === 'limited' && ' · filling up'}
-            {load.tone === 'booked' && ' · fully booked'}
-          </span>
-        )}
-      </div>
-      <h1 class="invite-hero__title">
-        Invite me to <span class="accent-word">your event</span>.
-      </h1>
-      <p class="invite-hero__lead">
-        Conferences, meetups, internal tech talks, workshops: tell me about your audience and I'll tailor something to fit. I reply within two days.
-      </p>
-    </div>
-  </header>
-
-  <!-- FORM + WHAT YOU GET -->
-  <section class="invite-main">
-    <div class="container invite-grid wide">
-      <!-- LEFT: what organizers get -->
-      <aside class="invite-aside">
-        <Kicker>What organizers get</Kicker>
-        <h2 class="invite-h2">More than a talk</h2>
-        <ul class="invite-offers">
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <div>
-              <b>A talk tailored to your audience</b>
-              <span>Not a canned deck: I adapt the case studies and depth to your crowd.</span>
-            </div>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <div>
-              <b>Workshop option</b>
-              <span>Most talks come with a hands-on, full-day workshop version.</span>
-            </div>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <div>
-              <b>Promotion to my audience</b>
-              <span>I'll share your event with engineers across my channels.</span>
-            </div>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <div>
-              <b>An organizer on your side of the table</b>
-              <span>I cofounded ZurichJS and grew it into an award-winning community, so I know what you're juggling.</span>
-            </div>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <div>
-              <b>An easy person to work with</b>
-              <span>Clear comms, on time, and genuinely invested in making your event great.</span>
-            </div>
-          </li>
-        </ul>
-
-        <div class="invite-divider"></div>
-
-        <dl class="invite-meta">
-          <div>
-            <dt>Formats</dt>
-            <dd>Keynote · Talk · Workshop · Panel</dd>
-          </div>
-          <div>
-            <dt>Travel from</dt>
-            <dd>Geneva</dd>
-          </div>
-          <div>
-            <dt>Topics</dt>
-            <dd>Performance, payments, leadership, DX</dd>
-          </div>
-          <div>
-            <dt>Notice</dt>
-            <dd>4–6 weeks ideal</dd>
-          </div>
-        </dl>
-
-        <p class="invite-crosslink">
-          Not booking an event? I also do
-          <a href="/consulting" class="ds-link">consulting</a> and
-          <a href="/mentorship" class="ds-link">mentorship</a>.
+  <div class="ds-wrap invite">
+    <div class="invite__main">
+      <header class="invite__intro">
+        <p class="ds-kicker"><a class="invite__crumb" href="/speaking">Speaking</a> <span aria-hidden="true">·</span> Invite me <span aria-hidden="true">·</span> talks, podcasts, panels and more</p>
+        <h1 class="ds-h1 invite__h1">What did you have in mind?</h1>
+        <p class="ds-lede invite__lede">
+          A conference or a meetup, a podcast or livestream, a workshop for your team, a panel, a guest piece, or something
+          that doesn’t fit a box. Tell me a bit about it and I’ll reply within {profile.replyTime}.
         </p>
-      </aside>
-
-      <!-- RIGHT: form card -->
-      <div class="invite-card">
-        <InviteForm client:load />
-      </div>
-    </div>
-  </section>
-
-  <!-- AVAILABILITY -->
-  <section class="invite-availability" id="availability">
-    <div class="container">
-      <header class="invite-section-head">
-        <Kicker variant="signal">Booking calendar</Kicker>
-        <h2 class="invite-h2">When I'm available</h2>
-        <p class="invite-section-lead">Twelve months ahead. Tighter dates may still work, just ask.</p>
       </header>
 
-      <div class="cal-list">
-        {months.map((m) => {
-          const { tone, label } = getAvailabilityTone(m.count);
-          return m.count > 0 ? (
-            <details class="cal-row">
-              <summary class="cal-row__head">
-                <span class="cal-row__month">
-                  {m.name} <span class="cal-row__year">{m.year}</span>
-                </span>
-                <span class="cal-row__meta">
-                  {tone !== 'open' && (
-                    <span class={`cal-row__badge cal-row__badge--${tone}`}>
-                      <span class="cal-row__dot"></span>
-                      {label}
-                    </span>
-                  )}
-                  <span class="cal-row__count">{m.count} event{m.count > 1 ? 's' : ''}</span>
-                  <svg class="cal-row__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              </summary>
-              <ul class="cal-row__events">
-                {m.events.map((e) => {
-                  const name = e.title || e.conference || 'Confirmed event';
-                  const loc = e.location?.isOnline
-                    ? 'Online'
-                    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
-                  return (
-                    <li>
-                      <span class="cal-row__edate">{eventDay(e.date)}</span>
-                      {e.slug ? (
-                        <a href={`/events/${e.slug}`} class="cal-row__ename">{name}</a>
-                      ) : (
-                        <span class="cal-row__ename">{name}</span>
-                      )}
-                      {loc && <span class="cal-row__eloc">{loc}</span>}
-                    </li>
-                  );
-                })}
-              </ul>
-            </details>
-          ) : (
-            <div class="cal-row cal-row--free">
-              <span class="cal-row__month">
-                {m.name} <span class="cal-row__year">{m.year}</span>
-              </span>
-              <span class="cal-row__meta">
-                <span class="cal-row__free-mark" aria-hidden="true"></span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
+      <InviteForm client:idle replyTime={profile.replyTime} art={art} pressKitHref="/press-kit" linkedin={profile.links.linkedin} />
     </div>
-  </section>
 
-  <!-- PRESS KIT CROSS-LINK — bios, headshots & practical details live on /press-kit -->
-  <section class="invite-presskit">
-    <div class="container">
-      <a href="/press-kit" class="ds-card ds-card-interactive pk-banner ds-reveal">
-        <div class="pk-banner__text">
-          <span class="pk-banner__kicker">Press kit</span>
-          <h2 class="pk-banner__title">Bios, headshots &amp; practical details</h2>
-          <p class="pk-banner__desc">Copy-paste bios in three lengths, high-res headshots in four crops, and everything worth knowing before the event, on one page.</p>
-        </div>
-        <span class="pk-banner__go">
-          Open the press kit
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </span>
+    <aside class="invite__aside" aria-label="Before you send">
+      <section class="ds-card invite__know" aria-labelledby="know-h">
+        <h2 id="know-h" class="invite__label">Good to know</h2>
+        <dl class="ds-dl invite__dl">
+          {goodToKnow.map((row) => (
+            <>
+              <dt>{row.label}</dt>
+              <dd>{row.body}</dd>
+            </>
+          ))}
+        </dl>
+      </section>
+
+      <AvailabilityCard months={availability.months} booked={booked} />
+
+      <a class="ds-card invite__press" href="/press-kit" data-track="invite_press_kit">
+        <span class="invite__label">Press kit</span>
+        <span class="invite__press-title">Bios, headshots, stage photos, rider</span>
       </a>
-    </div>
-  </section>
-
-  <!-- PROOF -->
-  {(conferenceWall.length > 0 || proofQuotes.length > 0) && (
-    <section class="invite-proof">
-      <div class="container">
-        {conferenceWall.length > 0 && (
-          <>
-            <p class="invite-proof__label">Recently on stage at</p>
-            <div class="invite-proof__logos">
-              {conferenceWall.map((c) => <span>{c}</span>)}
-            </div>
-          </>
-        )}
-        {proofQuotes.length > 0 && (
-          <div class="invite-proof__quotes">
-            {proofQuotes.map((q) => (
-              <div class="ds-card invite-proof__quote ds-reveal">
-                <p>"{q.quote}"</p>
-                <p class="invite-proof__quote-who">
-                  {q.author}{(q.role || q.company) && ` · ${[q.role, q.company].filter(Boolean).join(' · ')}`}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  )}
-
-  <script>
-    // Legacy deep links: the press kit (bios / rider / headshots) moved to
-    // /press-kit — forward old shared links, preserving query + hash.
-    function forwardLegacyPressKitLinks() {
-      const hash = window.location.hash.slice(1);
-      const params = new URLSearchParams(window.location.search);
-      const legacyHash = ['bios', 'rider', 'headshots'].includes(hash);
-      const legacyParam = params.has('bio') || params.has('crop');
-      if (legacyHash || legacyParam) {
-        window.location.replace(`/press-kit${window.location.search}${window.location.hash}`);
-      }
-    }
-    forwardLegacyPressKitLinks();
-    document.addEventListener('astro:after-swap', forwardLegacyPressKitLinks);
-  </script>
+    </aside>
+  </div>
 </BaseLayout>
 
-<style is:global>
-  /* Form styles are also declared in global.css so the MentorshipInquiryForm on
-     /mentorship picks them up. Kept here too as a safety net during the migration. */
-  .invite-form { display: block; }
-  .invite-form__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-    margin-bottom: 1.4rem;
-  }
-  .invite-form__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.1rem;
-  }
-  @media (max-width: 540px) {
-    .invite-form__grid { grid-template-columns: 1fr; }
-  }
-  .invite-form__field { display: flex; flex-direction: column; gap: 0.45rem; }
-  .invite-form__field--full { grid-column: 1 / -1; }
-  .invite-form__field label,
-  .invite-form__label {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .invite-form__input {
-    width: 100%;
-    background: rgb(var(--surface-1));
-    border: 1px solid rgb(var(--edge-strong));
-    border-radius: 10px;
-    padding: 0.8rem 1rem;
-    color: rgb(var(--ink));
-    font-family: inherit;
-    font-size: 0.98rem;
-    transition: border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .invite-form__input:focus { outline: none; border-color: rgb(var(--accent)); }
-  .invite-form__input::placeholder { color: rgb(var(--ink-faint)); }
-  .invite-form__textarea { resize: vertical; min-height: 120px; }
-  select.invite-form__input {
-    appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B97A6' stroke-width='2'><path d='M6 9l6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.4rem;
-    cursor: pointer;
-  }
-  select.invite-form__input--empty { color: rgb(var(--ink-faint)); }
-  select.invite-form__input option { color: rgb(var(--ink)); }
-  .invite-form__field--error .invite-form__input {
-    border-color: rgb(var(--danger));
-  }
-  .invite-form__seg {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .invite-form__seg label { cursor: pointer; position: relative; }
-  .invite-form__seg input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .invite-form__seg span {
-    display: inline-flex;
-    padding: 0.55rem 0.9rem;
-    border: 1px solid rgb(var(--edge-strong));
-    border-radius: 999px;
-    font-size: 0.88rem;
-    color: rgb(var(--ink-muted));
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
-  }
-  .invite-form__seg input:checked + span {
-    border-color: rgb(var(--accent));
-    color: rgb(var(--accent-bright));
-    background: rgb(var(--accent) / 0.1);
-  }
-  .invite-form__seg input:focus-visible + span {
-    outline: 2px solid rgb(var(--accent));
-    outline-offset: 2px;
-  }
-
-  .invite-form__server-error {
-    margin-top: 1rem;
-    padding: 0.7rem 0.9rem;
-    background: rgb(var(--danger) / 0.1);
-    border: 1px solid rgb(var(--danger) / 0.35);
-    color: rgb(var(--danger));
-    border-radius: 10px;
-    font-size: 0.88rem;
-  }
-  .invite-form__submit {
-    width: 100%;
-    margin-top: 1.4rem;
-  }
-  .invite-form__alt {
-    text-align: center;
-    margin-top: 0.9rem;
-    font-size: 0.88rem;
-    color: rgb(var(--ink-faint));
-  }
-  .invite-form__alt-link { display: inline-flex; vertical-align: baseline; }
-
-  .invite-form__success {
-    text-align: center;
-    padding: 2.2rem 1rem;
-  }
-  .invite-form__success-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 999px;
-    background: rgb(var(--signal) / 0.1);
-    border: 1px solid rgb(var(--signal) / 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.2rem;
-  }
-  .invite-form__success-icon svg { width: 30px; height: 30px; color: rgb(var(--signal)); }
-  .invite-form__success-title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: rgb(var(--ink));
-  }
-  .invite-form__success-body {
-    color: rgb(var(--ink-muted));
-    margin-top: 0.5rem;
-  }
-
-</style>
-
 <style>
-  .invite-hero {
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid rgb(var(--edge));
-    padding-block: clamp(2.5rem, 5vw, 4rem);
+  .invite {
+    display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 56px;
+    padding-top: 48px; padding-bottom: 64px; align-items: start;
   }
-  .invite-hero__inner { position: relative; }
-  .invite-crumbs {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.74rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
-    margin-bottom: 1.6rem;
-  }
-  .invite-crumbs a { color: rgb(var(--ink-faint)); transition: color 0.15s; }
-  .invite-crumbs a:hover { color: rgb(var(--accent-bright)); }
-  .invite-crumbs__sep { opacity: 0.45; }
-  .invite-crumbs__cur { color: rgb(var(--ink-muted)); }
+  .invite__main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+  .invite__intro { display: flex; flex-direction: column; gap: 14px; }
+  .invite__crumb { color: rgb(var(--text-muted)); text-decoration: none; }
+  .invite__crumb:hover { color: rgb(var(--text)); }
+  .invite__h1 { margin: 0; font-size: clamp(38px, 5.4vw, 52px); text-wrap: balance; }
+  .invite__lede { font-size: 17px; max-width: 56ch; }
 
-  .invite-hero__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    line-height: 0.98;
-    letter-spacing: -0.025em;
-    font-size: clamp(2.8rem, 7vw, 5rem);
-    color: rgb(var(--ink));
-    max-width: 15ch;
-    margin-top: 1.2rem;
-    text-wrap: balance;
-  }
-  .invite-hero__lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
-    color: rgb(var(--ink-muted));
-    max-width: 58ch;
-    margin-top: 1.4rem;
-  }
+  .invite__aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .invite__label { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .invite__know { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .invite__dl { grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; line-height: 1.5; }
+  .invite__press { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .invite__press-title { font-weight: 800; font-size: 16px; }
 
-  .invite-main { padding-block: clamp(4rem, 9vw, 7.5rem); }
-  .invite-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: start;
-    max-width: 1040px;
+  @media (max-width: 960px) {
+    .invite { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   }
-  @media (max-width: 920px) {
-    .invite-grid { grid-template-columns: 1fr; }
+  @media (max-width: 720px) {
+    .invite { padding-top: 32px; padding-bottom: 48px; }
   }
-
-  .invite-h2 {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-    margin: 1rem 0 0;
-  }
-
-  .invite-offers {
-    list-style: none;
-    padding: 0;
-    margin: 1.6rem 0 0;
-    display: grid;
-    gap: 1.1rem;
-  }
-  .invite-offers li {
-    display: flex;
-    gap: 0.9rem;
-    align-items: flex-start;
-  }
-  .invite-offers li svg {
-    width: 22px;
-    height: 22px;
-    color: rgb(var(--signal));
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
-  .invite-offers b {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 1rem;
-    color: rgb(var(--ink));
-    display: block;
-    margin-bottom: 0.2rem;
-  }
-  .invite-offers span {
-    font-size: 0.92rem;
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
-
-  .invite-divider {
-    height: 1px;
-    background: rgb(var(--edge));
-    margin: 2rem 0;
-  }
-  .invite-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-  }
-  .invite-meta dt {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .invite-meta dd {
-    margin: 0.3rem 0 0;
-    color: rgb(var(--ink));
-    font-size: 0.92rem;
-  }
-
-  .invite-hero__pills {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .invite-load { color: rgb(var(--ink-muted)); }
-  .invite-load--limited {
-    color: rgb(var(--warn));
-    border-color: rgb(var(--warn) / 0.4);
-    background: rgb(var(--warn) / 0.08);
-  }
-  .invite-load--booked {
-    color: rgb(var(--danger));
-    border-color: rgb(var(--danger) / 0.4);
-    background: rgb(var(--danger) / 0.08);
-  }
-  /* On narrow phones the load pill's copy is too long to sit on one line;
-     let it wrap inside the pill instead of forcing horizontal overflow. */
-  @media (max-width: 460px) {
-    .invite-hero__pills { align-items: flex-start; }
-    .invite-load {
-      white-space: normal;
-      border-radius: 14px;
-      line-height: 1.4;
-    }
-  }
-
-  .invite-crosslink {
-    margin-top: 1.6rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid rgb(var(--edge));
-    font-size: 0.9rem;
-    color: rgb(var(--ink-muted));
-  }
-
-  .invite-card {
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    padding: clamp(1.5rem, 3vw, 2.2rem);
-  }
-
-  /* Proof */
-  .invite-proof {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-    padding-block: clamp(2.5rem, 5vw, 4rem);
-  }
-  .invite-proof__label {
-    text-align: center;
-    margin-bottom: 1.6rem;
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .invite-proof__logos {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: clamp(1.5rem, 4vw, 3rem);
-    opacity: 0.7;
-  }
-  .invite-proof__logos span {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: rgb(var(--ink-muted));
-  }
-  .invite-proof__quotes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-    margin-top: 2.5rem;
-    max-width: 1040px;
-    margin-inline: auto;
-  }
-  @media (max-width: 900px) {
-    .invite-proof__quotes { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 600px) {
-    .invite-proof__quotes { grid-template-columns: 1fr; }
-  }
-  .invite-proof__quote {
-    padding: 1.6rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .invite-proof__quote p {
-    font-size: 1rem;
-    color: rgb(var(--ink));
-    line-height: 1.55;
-    flex: 1;
-  }
-  .invite-proof__quote-who {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.74rem;
-    color: rgb(var(--ink-faint));
-    margin-top: 1.2rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgb(var(--edge));
-  }
-
-  /* ── Shared section heading ─────────────────────────────────────────────── */
-  .invite-section-head {
-    max-width: 56ch;
-    margin: 0 auto 2.5rem;
-    text-align: center;
-  }
-  .invite-section-head .invite-h2 { margin-top: 0.6rem; }
-  .invite-section-lead {
-    color: rgb(var(--ink-muted));
-    margin-top: 0.8rem;
-    line-height: 1.55;
-  }
-
-  /* ── Availability calendar ─────────────────────────────────────────────── */
-  .invite-availability {
-    border-top: 1px solid rgb(var(--edge));
-    background: rgb(var(--surface-1));
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-  }
-  .cal-list {
-    max-width: 40rem;
-    margin: 0 auto;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .cal-row { border-bottom: 1px solid rgb(var(--edge)); }
-  .cal-row:last-child { border-bottom: none; }
-
-  /* Every month is the same slim row; only the right-side indicator changes. */
-  .cal-row--free,
-  .cal-row__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    min-height: 2.9rem;
-    padding: 0.55rem 1.1rem;
-  }
-  .cal-row__head {
-    cursor: pointer;
-    list-style: none;
-    transition: background 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .cal-row__head::-webkit-details-marker { display: none; }
-  .cal-row__head:hover { background: rgb(var(--surface-3)); }
-  .cal-row__head:focus-visible {
-    outline: 2px solid rgb(var(--accent));
-    outline-offset: -2px;
-  }
-
-  .cal-row__month {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: rgb(var(--ink));
-  }
-  .cal-row--free .cal-row__month { color: rgb(var(--ink-muted)); font-weight: 500; }
-  .cal-row__year {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.68rem;
-    font-weight: 400;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.04em;
-    margin-left: 0.25rem;
-  }
-
-  .cal-row__meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-  }
-  .cal-row__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.74rem;
-    font-weight: 600;
-  }
-  .cal-row__badge--limited { color: rgb(var(--warn)); }
-  .cal-row__badge--booked { color: rgb(var(--danger)); }
-  .cal-row__dot {
-    width: 0.45rem;
-    height: 0.45rem;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .cal-row__count {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    letter-spacing: 0.02em;
-  }
-  .cal-row__free-mark {
-    display: block;
-    width: 0.9rem;
-    height: 1px;
-    background: rgb(var(--edge-strong));
-  }
-  .cal-row__chev {
-    width: 14px;
-    height: 14px;
-    color: rgb(var(--ink-faint));
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .cal-row[open] .cal-row__chev { transform: rotate(180deg); }
-  .cal-row[open] .cal-row__head { background: rgb(var(--surface-3)); }
-
-  .cal-row__events {
-    list-style: none;
-    margin: 0;
-    padding: 0.3rem 1.1rem 0.9rem;
-    display: grid;
-    gap: 0.45rem;
-  }
-  .cal-row__events li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-    font-size: 0.88rem;
-    min-width: 0;
-  }
-  .cal-row__edate {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    color: rgb(var(--ink-faint));
-    flex-shrink: 0;
-    min-width: 3.2rem;
-  }
-  .cal-row__ename { color: rgb(var(--ink)); min-width: 0; }
-  a.cal-row__ename:hover { color: rgb(var(--accent-bright)); }
-  .cal-row__eloc {
-    color: rgb(var(--ink-faint));
-    font-size: 0.78rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* ── Press kit cross-link banner ────────────────────────────────────────── */
-  .invite-presskit {
-    padding-block: clamp(3.5rem, 7vw, 6rem);
-    border-top: 1px solid rgb(var(--edge));
-  }
-  .pk-banner {
-    max-width: 52rem;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: clamp(1.5rem, 3vw, 2.2rem);
-    color: inherit;
-  }
-  @media (max-width: 700px) {
-    .pk-banner { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-  }
-  .pk-banner__kicker {
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: rgb(var(--ink-faint));
-  }
-  .pk-banner__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: rgb(var(--ink));
-    margin-top: 0.35rem;
-  }
-  .pk-banner__desc {
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: rgb(var(--ink-muted));
-    margin-top: 0.4rem;
-    max-width: 48ch;
-  }
-  .pk-banner__go {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: rgb(var(--accent-bright));
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .pk-banner__go svg {
-    width: 14px;
-    height: 14px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .pk-banner:hover .pk-banner__go svg { transform: translateX(3px); }
-
 </style>
