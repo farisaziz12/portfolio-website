@@ -17,6 +17,8 @@ export interface WritingItem {
   minutes?: number;
   excerpt?: string;
   image?: SanityImage;
+  /** Podcast/video cover looked up from the link when `image` is empty (lib/sanity/v3/artwork.ts). */
+  artworkUrl?: string;
   hasCorrections?: boolean;
   featured?: boolean;
   relatedTalk?: TalkRef;

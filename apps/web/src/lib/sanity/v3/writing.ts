@@ -5,6 +5,7 @@
 import groq from 'groq';
 import { LEGACY_EXTERNAL_TYPE_FORMAT, type PublicationFormat, type Topic } from 'shared';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
+import { lookupArtwork } from './artwork';
 import type { WritingItem } from './types';
 
 const TOPIC_BY_CATEGORY: Record<string, Topic> = {
@@ -99,6 +100,14 @@ export function getWriting(): Promise<WritingItem[]> {
         relatedTalk: e.relatedTalk ?? undefined,
       })),
     ];
+    // Podcasts and videos without a cover in Sanity get the artwork from their link.
+    await Promise.all(
+      items
+        .filter((i) => !i.isInternal && i.format !== 'article' && !i.image?.asset)
+        .map(async (i) => {
+          i.artworkUrl = await lookupArtwork(i.href);
+        }),
+    );
     return items.filter((i) => i.date).sort((a, b) => b.date.localeCompare(a.date));
   });
 }

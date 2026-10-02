@@ -97,7 +97,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
         <span class="op__tile op__tile--y"></span>
         <span class="op__tile op__tile--b"></span>
         <span class="op__sq"></span>
-        {portrait?.asset && <SanityImg image={portrait} alt="" ratio={1} widths={[200, 400]} sizes="120px" loading="eager" class="op__face" />}
+        {portrait?.asset && <SanityImg image={portrait} alt="" ratio={1} widths={[160, 320, 480, 640, 800]} sizes="(max-aspect-ratio: 4/5) min(26vw, 120px), max(72px, 10vw)" quality={85} loading="eager" class="op__face" />}
       </div>
       <div>
         <div class="op__name">{name}</div>

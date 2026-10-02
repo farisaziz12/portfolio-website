@@ -2,7 +2,8 @@
 /**
  * Articles & podcasts, one section per format, each with the display that
  * suits it: articles as a card grid (newest one full width), podcasts as episode
- * cards, video as thumbnails. Format + Topic pills filter across sections
+ * cards with cover art, video as thumbnails. Covers come from Sanity, else
+ * the artwork looked up from the link (lib/sanity/v3/artwork.ts). Format + Topic pills filter across sections
  * (?format=podcast&topic=community); everything shows without JS.
  */
 import { TOPICS, TOPIC_SHORT, type PublicationFormat } from 'shared';
@@ -74,7 +75,13 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
           {s.items.map((i) => (
             <li class="lib__cell" data-filter-item data-format={i.format} data-topic={i.topic ?? ''}>
               <a href={i.href} class="lp" data-track={track(i)} {...ext(i)}>
-                <span class="lp__tile" aria-hidden="true"><Icon name="listen" size={22} /></span>
+                {i.image?.asset ? (
+                  <SanityImg image={i.image} alt="" ratio={1} widths={[96, 192, 288]} sizes="96px" class="lp__art" />
+                ) : i.artworkUrl ? (
+                  <img src={i.artworkUrl} alt="" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="lp__art" />
+                ) : (
+                  <span class="lp__tile" aria-hidden="true"><Icon name="listen" size={22} /></span>
+                )}
                 <span class="lp__body">
                   <span class="lp__show">{meta(i.source, i.sourceNote)}</span>
                   <span class="lp__title">{i.title}</span>
@@ -95,7 +102,11 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
             <li class="lib__cell" data-filter-item data-format={i.format} data-topic={i.topic ?? ''}>
               <a href={i.href} class="lv" data-track={track(i)} {...ext(i)}>
                 <span class="lv__thumb">
-                  {i.image?.asset && <SanityImg image={i.image} alt="" ratio={16 / 9} widths={[480, 800]} sizes="(max-width: 720px) 100vw, 33vw" class="lv__img" />}
+                  {i.image?.asset ? (
+                    <SanityImg image={i.image} alt="" ratio={16 / 9} widths={[480, 800]} sizes="(max-width: 720px) 100vw, 33vw" class="lv__img" />
+                  ) : i.artworkUrl && (
+                    <img src={i.artworkUrl} alt="" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="lv__img" />
+                  )}
                   <span class="lv__play" aria-hidden="true"><Icon name="play" size={18} /></span>
                   {i.minutes && <span class="lv__len">{i.minutes} min</span>}
                 </span>
@@ -156,12 +167,13 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
   /* Podcasts: episode cards, show first, play button on the right. */
   .lib__grid--podcasts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp {
-    display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px 20px;
+    display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px 20px;
     text-decoration: none; color: rgb(var(--text)); background: rgb(var(--surface));
     border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); transition: border-color 0.15s;
   }
   .lp:hover { border-color: rgb(var(--yellow)); }
-  .lp__tile { width: 64px; height: 64px; border-radius: var(--radius-card); display: grid; place-items: center; background: rgb(var(--yellow)); color: rgb(var(--c-ink)); }
+  .lp :global(.lp__art) { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-card); border: 1px solid rgb(var(--hairline)); box-sizing: border-box; }
+  .lp__tile { width: 96px; height: 96px; border-radius: var(--radius-card); display: grid; place-items: center; background: rgb(var(--yellow)); color: rgb(var(--c-ink)); }
   .lp__body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .lp__show { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
   .lp__title { font-size: 17.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; text-wrap: pretty; }
@@ -206,8 +218,8 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
     .lib__sec { padding-top: 32px; }
     .lib__grid--articles, .lib__grid--video { grid-template-columns: minmax(0, 1fr); }
     .la--lead .la__body { padding: 22px 22px; }
-    .lp { grid-template-columns: 48px minmax(0, 1fr); gap: 14px; padding: 16px; }
-    .lp__tile { width: 48px; height: 48px; }
+    .lp { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; padding: 16px; }
+    .lp__tile, .lp :global(.lp__art) { width: 64px; height: 64px; }
     .lp__act { display: none; }
   }
 </style>
