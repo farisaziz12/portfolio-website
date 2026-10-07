@@ -56,19 +56,19 @@ const meta = spotlight
 
 <style>
   .hp { border-top: 1px solid rgb(var(--hairline)); }
-  .hp__grid { display: flex; flex-direction: column; gap: 40px; }
+  .hp__grid { display: flex; flex-direction: column; gap: 28px; }
   /* Spotlight: kicker, then the quote with the attribution beside it. */
   .hp__spot {
-    margin: 0; padding-left: 24px; display: grid; gap: 18px 56px; align-items: end;
+    margin: 0; padding-left: 24px; display: grid; gap: 10px 56px; align-items: end;
     grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); grid-template-areas: 'kicker kicker' 'quote side';
   }
   .hp__kicker { grid-area: kicker; }
-  .hp__quote { grid-area: quote; max-width: 30ch; }
+  .hp__quote { grid-area: quote; max-width: 44ch; }
   .hp__side { grid-area: side; display: flex; flex-direction: column; gap: 12px; padding-bottom: 6px; }
   .hp__role { display: block; color: rgb(var(--text-muted)); }
   .hp__spot.ds-stripe::before { top: 0; bottom: 0; border-radius: 2px; }
   .hp__spot .ds-kicker { margin: 0; }
-  .hp__quote { margin: 0; font-size: clamp(26px, 3.2vw, 40px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; text-wrap: balance; color: rgb(var(--text)); }
+  .hp__quote { margin: 0; font-size: clamp(22px, 2.4vw, 32px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; text-wrap: balance; color: rgb(var(--text)); }
   .hp__who { font-size: 14px; line-height: 1.4; color: rgb(var(--text)); }
   .hp__meta { display: block; color: rgb(var(--text-faint)); }
   .hp__meta a { color: inherit; text-decoration: none; }
