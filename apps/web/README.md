@@ -26,7 +26,9 @@ npx astro check        # typecheck
 
 - **Everything is prerendered at build time except `/`.** The homepage sets
   `prerender = false` and is ISR-cached (~12h) so the "Next up" band and
-  availability labels stay fresh without redeploys.
+  availability labels stay fresh without scheduled redeploys. Static schedule
+  pages hide ended items in the browser (`lib/client/expire.ts`) until the next
+  Sanity publish rebuild.
 - **Navigation uses Astro ViewTransitions** (`ClientRouter`). Consequences:
   - Head scripts run once per visit, not per page. Anything that must re-run
     after navigation listens to `astro:after-swap` (theme, reveals, page inits).
