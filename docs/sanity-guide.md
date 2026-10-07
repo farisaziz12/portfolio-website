@@ -48,7 +48,7 @@ by both the Studio option lists and the site.
 
 | Page | Content |
 |---|---|
-| `/` | `homePage` (hero, featured refs, praise refs, community ref) + upcoming events, writing, stats (ISR ~1h) |
+| `/` | `homePage` (hero, featured refs, praise refs, community ref) + upcoming events, writing, stats (ISR ~12h) |
 | `/speaking` | `speakerProfile` (topicClusters, formats), upcoming events, stats, praise |
 | `/talks`, `/talks/[slug]` | `talk` + every session referencing it (history, recordings), praise about it, podcasts with `relatedTalk` |
 | `/events`, `/events/[slug]` | `event` editions + sessions (role filter), photos (`media.event`) |
@@ -171,7 +171,7 @@ Merges touching `apps/studio/**` deploy the hosted Studio via `.github/workflows
 ## When the site updates
 
 Every page except the home page is static: built once, served from the CDN. The home page uses Vercel ISR and
-regenerates at most once an hour (`astro.config.mjs`). Three things keep content current without making pages dynamic:
+regenerates at most twice a day (`astro.config.mjs`, 12h TTL). Three things keep content current without making pages dynamic:
 
 1. **Publishing in Sanity rebuilds the site.** A Sanity webhook calls the Vercel deploy hook on every publish or delete,
    so an edit is live once that build finishes.

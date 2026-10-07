@@ -70,7 +70,7 @@ back to an empty state or hardcoded proof numbers by design.
 
 | Route | Description |
 |-------|-------------|
-| `/` | Home — hero terminal, next events, proof, social wall (ISR ~1h) |
+| `/` | Home — hero terminal, next events, proof, social wall (ISR ~12h) |
 | `/speaking` | Speaking hub: topics, next up, conference wall |
 | `/events`, `/events/[slug]` | Full schedule/archive with filters + flags |
 | `/talks`, `/talks/[slug]` | Bookable talk catalogue and detail |

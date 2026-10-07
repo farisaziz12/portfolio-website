@@ -16,7 +16,7 @@ Without Sanity network access the site still renders — that is resilience, not
 
 ## Rendering
 
-- Everything is prerendered except `/` (`prerender = false`, ISR ~1h).
+- Everything is prerendered except `/` (`prerender = false`, ISR ~12h).
 - ViewTransitions (`ClientRouter`): head scripts run once per visit. Anything that must re-run after navigation listens to `astro:after-swap`.
 - React islands live in `src/components/islands/`. Use the lightest directive: `client:visible` for below-the-fold forms, `client:idle` for the hero terminal, `client:load` only when needed immediately. Server-rendered React with no directive ships zero JS.
 
