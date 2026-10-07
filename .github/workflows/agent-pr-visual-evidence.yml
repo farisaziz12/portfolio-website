@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Self-test checker
         run: node .github/scripts/check-agent-pr-visual-evidence.mjs --self-test

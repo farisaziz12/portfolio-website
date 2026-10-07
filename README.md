@@ -40,7 +40,7 @@ Engineer, Conference Speaker & Workshop Instructor.
 
 ## Quick start
 
-Prerequisites: Node.js 20+, pnpm 9+, a Sanity account.
+Prerequisites: Node.js 22.12+, pnpm 9+, a Sanity account.
 
 ```bash
 git clone https://github.com/farisaziz12/portfolio-website.git
