@@ -4,10 +4,11 @@
  * photo clipped in (the first hero photo; no mosaic).
  * Variant `fullbleed`: the photo behind the type with an ink scrim.
  * Photos crop around the editor's hotspot (SanityImg sets --fp).
- * Bottom-right ink strip lists the next one or two appearances.
+ * Bottom-right ink strip lists the next one or two events, each with my role.
  */
 import SkewHero from '../v3/SkewHero.astro';
 import SanityImg from '../v3/SanityImg.astro';
+import { roleLabel } from '../../lib/events-view';
 import { headlineParts, dayMonth, type HomePage, type EventEdition, type SanityImage } from '../../lib/sanity/v3';
 
 interface Props {
@@ -41,7 +42,7 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
           <span class="hh__item" data-until={e.endsAt}>
             {i > 0 && <span class="hh__sep" aria-hidden="true" data-until-sep>|</span>}
             <a href={`/events/${e.slug}`} class:list={['hh__next', { 'hh__next--more': i > 0 }]} data-track="home-next-up">
-              <strong>{e.seriesName || e.title}</strong>{` · ${place(e)} · ${dayMonth(e.date)}`}
+              <strong>{e.seriesName || e.title}</strong>{` · ${place(e)} · ${dayMonth(e.date)} · ${roleLabel(e)}`}
             </a>
           </span>
         ))}
@@ -69,7 +70,7 @@ const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.
       <div class="hh__strip hfb__strip" data-until-group>
         <span class="hh__strip-label">Next up</span>
         <a href={`/events/${next[0].slug}`} class="hh__next" data-track="home-next-up" data-until={next[0].endsAt}>
-          <strong>{next[0].seriesName || next[0].title}</strong>{` · ${place(next[0])} · ${dayMonth(next[0].date)}`}
+          <strong>{next[0].seriesName || next[0].title}</strong>{` · ${place(next[0])} · ${dayMonth(next[0].date)} · ${roleLabel(next[0])}`}
         </a>
       </div>
     )}

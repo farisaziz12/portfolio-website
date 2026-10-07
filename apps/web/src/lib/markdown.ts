@@ -12,6 +12,7 @@
  * runtime `Accept: text/markdown` rewriting is not possible on the CDN — the
  * `.md`-suffix URL convention is the supported path.
  */
+import { ordinalDate } from './ordinal';
 
 import { getCommunities, getProfile } from './sanity/v3';
 
@@ -47,7 +48,7 @@ export async function mdResponse(body: string, { footer: withFooter = true } = {
 export function mdDate(iso?: string): string {
   if (!iso) return '';
   try {
-    return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return ordinalDate(new Date(iso), { year: 'numeric', month: 'long', day: 'numeric' });
   } catch {
     return iso;
   }

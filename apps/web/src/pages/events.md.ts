@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ROLE_BUCKETS } from 'shared';
 import { eventPlace, fullDate, getPastEvents, getSpeakingStats, getUpcomingEvents, localTime, monthYear, primarySession, yearOf } from '../lib/sanity/v3';
-import { bucketBadge, kindLabel, liveSessions, sessionShort, sessionTiming } from '../lib/events-view';
+import { bucketBadge, kindLabel, liveSessions, roleLabel, sessionShort, sessionTiming } from '../lib/events-view';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
 
@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
     const sessions = liveSessions(e)
       .map((s) => `  - ${sessionShort(s)}${s.durationMinutes ? ` (${s.durationMinutes} min)` : ''} · ${sessionTiming(e, s) || (s.startsAt ? localTime(s.startsAt, e.timezone) : 'time TBA')}`)
       .join('\n');
-    return `- **${fullDate(e.date)}: ${e.title}** · ${kindLabel(e)} · ${eventPlace(e, { venue: true })} · ${SITE}/events/${e.slug}${sessions ? `\n${sessions}` : ''}`;
+    return `- **${fullDate(e.date)}: ${e.title}** · ${kindLabel(e)} · ${roleLabel(e)} · ${eventPlace(e, { venue: true })} · ${SITE}/events/${e.slug}${sessions ? `\n${sessions}` : ''}`;
   });
 
   const years = [...new Set(past.map((e) => yearOf(e.date)))];
@@ -35,16 +35,16 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Schedule: upcoming and past events · Faris Aziz`,
     ``,
-    `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
+    `> Upcoming events first (with my role at each: speaking, workshop, hosting or attending), then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
     ``,
-    `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.eventRecords} event records. As of ${stats.asOf}.`,
+    `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.upcoming} upcoming and ${past.length} past events. As of ${stats.asOf}.`,
     stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
     ``,
-    `## Upcoming (${upcoming.length} confirmed)`,
+    `## Upcoming (${upcoming.length} event${upcoming.length === 1 ? '' : 's'}, including ones I'm only attending)`,
     ``,
     up.length ? up.join('\n') : `_No public dates confirmed right now. Invite me: ${SITE}/invite_`,
     ``,
-    `## Archive (${past.length} past editions)`,
+    `## Archive (${past.length} past events)`,
     ``,
     `By role (an edition can count under more than one):`,
     ``,

@@ -4,7 +4,7 @@
  * line (kind · place · what), and an explicit role badge.
  */
 import { EVENT_KINDS, titleFor } from 'shared';
-import { eventPlace, primarySession, sessionLine, monthYear, type EventEdition } from '../../lib/sanity/v3';
+import { ordinal, eventPlace, primarySession, sessionLine, monthYear, type EventEdition } from '../../lib/sanity/v3';
 import { getCountryFlag } from '../../lib/flags';
 import { bucketBadge } from '../../lib/events-view';
 
@@ -20,6 +20,7 @@ const rows = events.slice(0, limit).map((e) => {
   return {
     e,
     day: Number(e.date.slice(8, 10)),
+    suffix: ordinal(Number(e.date.slice(8, 10))).replace(/^\d+/, ''),
     month: monthYear(e.date),
     meta: [titleFor(EVENT_KINDS, e.kind) || null, eventPlace(e, { venue: true }), s ? sessionLine(s) : null].filter(Boolean).join(' · '),
     bucket: s?.bucket,
@@ -32,7 +33,7 @@ const rows = events.slice(0, limit).map((e) => {
   {rows.map((r) => (
     <li data-until={r.e.endsAt}>
       <a href={`/events/${r.e.slug}`} class="ds-row uplist__row">
-        <span class="uplist__date"><span class="uplist__day">{r.day}</span><span class="uplist__month">{r.month}</span></span>
+        <span class="uplist__date"><span class="uplist__day">{r.day}<span class="uplist__ord">{r.suffix}</span></span><span class="uplist__month">{r.month}</span></span>
         <span class="uplist__main">
           <span class="ds-row__title uplist__title">{flags && <span aria-hidden="true">{getCountryFlag(r.e.location.country)} </span>}{r.e.title}</span>
           <span class="uplist__meta">{r.meta}</span>
@@ -47,6 +48,7 @@ const rows = events.slice(0, limit).map((e) => {
   .uplist__row { display: grid; grid-template-columns: 84px 1fr auto; gap: 18px; align-items: center; padding: 16px 0; }
   .uplist__date { display: flex; flex-direction: column; }
   .uplist__day { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .uplist__ord { font-size: 0.5em; letter-spacing: 0; margin-left: 1px; vertical-align: 0.6em; }
   .uplist__month { font-size: 12.5px; font-weight: 600; color: rgb(var(--text-muted)); }
   .uplist__main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .uplist__title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; transition: color 0.15s; }

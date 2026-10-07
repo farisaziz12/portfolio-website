@@ -2,10 +2,11 @@
  * Derived, role-specific counts. "Talks delivered" counts only past, not
  * cancelled talk sessions; hosting and attending are counted apart and never
  * inflate it. Countries count where I spoke, ran a workshop or hosted.
+ * `upcoming` counts everything on the schedule, attending included.
  */
 import { TALK_DELIVERY_ROLES } from 'shared';
 import { FALLBACK_SPEAKER_STATS } from '../../proof';
-import { getAllEvents } from './events';
+import { getAllEvents, isScheduled } from './events';
 import { memo } from './fetch';
 import { getCatalogueTalks, getWorkshops } from './talks';
 import { getWriting } from './writing';
@@ -70,7 +71,7 @@ export function getSpeakingStats(): Promise<SpeakingStats> {
       podcasts: writing.filter((w) => w.format === 'podcast').length,
       catalogueTalks: talks.length,
       catalogueWorkshops: workshops.filter((w) => w.isBookable).length,
-      upcoming: events.filter((e) => e.isUpcoming && e.buckets.some((b) => b !== 'attended')).length,
+      upcoming: events.filter(isScheduled).length,
       eventRecords: events.length,
       asOf,
       fallback: false,

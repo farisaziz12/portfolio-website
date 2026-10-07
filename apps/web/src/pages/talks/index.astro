@@ -10,15 +10,15 @@ import TrackRecord from '../../components/talks/TrackRecord.astro';
 import TalkRow from '../../components/talks/TalkRow.astro';
 import { TALK_SORTS, byPopularity, talkSortKeys } from '../../lib/talks';
 import { TOPICS } from 'shared';
-import { getAllPraise, getCatalogueTalks, getProfile, getSpeakingStats, getUpcomingEvents, numberWord } from '../../lib/sanity/v3';
+import { getAllPraise, getCatalogueTalks, getProfile, getSpeakingStats, getUpcomingEngagements, numberWord } from '../../lib/sanity/v3';
 import { breadcrumbs, itemList } from '../../lib/seo';
 
-const [catalogue, stats, upcomingAll, praise, profile] = await Promise.all([getCatalogueTalks(), getSpeakingStats(), getUpcomingEvents(), getAllPraise(), getProfile()]);
+const [catalogue, stats, upcomingAll, praise, profile] = await Promise.all([getCatalogueTalks(), getSpeakingStats(), getUpcomingEngagements(), getAllPraise(), getProfile()]);
 // Default order: most popular. The sort control re-orders client-side (?sort=recent|newest).
 const talks = [...catalogue].sort(byPopularity);
 
 const n = talks.length;
-const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b === 'spoke' || b === 'workshop' || b === 'hosted'));
+const upcoming = upcomingAll;
 const quotes = praise.filter((p) => p.topic === 'stage').slice(0, 2);
 const topics = TOPICS.filter((t) => talks.some((k) => k.pillar === t.value)).map((t) => ({ value: t.value, label: t.title }));
 

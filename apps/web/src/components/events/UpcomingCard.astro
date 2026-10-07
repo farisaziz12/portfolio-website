@@ -3,8 +3,8 @@
  * One upcoming edition as a card: big day number + month, "MEETUP · SPEAKING"
  * kicker, flag + title, and a meta line with place, sessions and local time.
  */
-import { monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
-import { bucketVerb, flagFor, kindLabel, upcomingMeta } from '../../lib/events-view';
+import { ordinal, monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
+import { flagFor, kindLabel, roleLabel, upcomingMeta } from '../../lib/events-view';
 
 interface Props {
   event: EventEdition;
@@ -12,15 +12,17 @@ interface Props {
 const { event: e } = Astro.props;
 const s = primarySession(e);
 const flag = flagFor(e);
+const day = Number(e.date.slice(8, 10));
+const suffix = ordinal(day).slice(String(day).length);
 ---
 
 <a href={`/events/${e.slug}`} class="ds-card upc" data-bucket={s?.bucket} data-track="events_upcoming_card">
   <span class="upc__date">
-    <span class="upc__day">{Number(e.date.slice(8, 10))}</span>
+    <span class="upc__day">{day}<span class="upc__ord">{suffix}</span></span>
     <span class="upc__month">{monthYear(e.date)}</span>
   </span>
   <span class="upc__main">
-    <span class="upc__kicker">{[kindLabel(e), bucketVerb(s?.bucket)].filter(Boolean).join(' · ')}</span>
+    <span class="upc__kicker">{[kindLabel(e), roleLabel(e)].filter(Boolean).join(' · ')}</span>
     <span class="upc__title">{flag && <span class="upc__flag" aria-hidden="true">{flag}</span>}{e.title}</span>
     <span class="upc__meta">{upcomingMeta(e)}</span>
   </span>
@@ -31,6 +33,7 @@ const flag = flagFor(e);
   .upc[data-bucket] { box-shadow: inset 3px 0 0 rgb(var(--role)); }
   .upc__date { display: flex; flex-direction: column; }
   .upc__day { font-size: 44px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+  .upc__ord { font-size: 0.4em; letter-spacing: 0; margin-left: 1px; vertical-align: 0.9em; }
   .upc__month { font-size: 13px; color: rgb(var(--text-muted)); margin-top: 4px; }
   .upc__main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .upc__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--role-ink, var(--accent-text))); }

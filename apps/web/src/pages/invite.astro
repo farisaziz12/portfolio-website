@@ -4,10 +4,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import InviteForm from '../components/islands/InviteForm';
 import AvailabilityCard from '../components/invite/AvailabilityCard.astro';
 import duckCelebrating from '../assets/illustrations/duck-celebrating.png';
-import { getAvailability, getProfile, getUpcomingEvents } from '../lib/sanity/v3';
+import { getAvailability, getProfile, getUpcomingEngagements } from '../lib/sanity/v3';
 import { breadcrumbs } from '../lib/seo';
 
-const [profile, availability, upcoming] = await Promise.all([getProfile(), getAvailability(), getUpcomingEvents()]);
+const [profile, availability, upcoming] = await Promise.all([getProfile(), getAvailability(), getUpcomingEngagements()]);
 
 // The island can't use <Illustration>, so hand it the optimised asset.
 const duck1x = await getImage({ src: duckCelebrating, width: 120, format: 'webp', quality: 82 });

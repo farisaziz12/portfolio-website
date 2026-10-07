@@ -19,7 +19,7 @@ import {
   getCatalogueTalks,
   getProfile,
   getSpeakingStats,
-  getUpcomingEvents,
+  getUpcomingEngagements,
   getWorkshops,
 } from '../lib/sanity/v3';
 import { bookingYears } from '../lib/availability';
@@ -29,7 +29,7 @@ import { breadcrumbs } from '../lib/seo';
 const [profile, stats, upcomingAll, talks, workshops, praise] = await Promise.all([
   getProfile(),
   getSpeakingStats(),
-  getUpcomingEvents(),
+  getUpcomingEngagements(),
   getCatalogueTalks(),
   getWorkshops(),
   getAllPraise(),
@@ -37,7 +37,7 @@ const [profile, stats, upcomingAll, talks, workshops, praise] = await Promise.al
 
 const photo = profile.photos.find((p) => p.tag === 'speaking' || p.tag === 'portrait') ?? profile.photos[0];
 const workshopPhoto = profile.photos.find((p) => p.tag === 'workshop');
-const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b !== 'attended'));
+const upcoming = upcomingAll;
 const bookableWorkshops = workshops.filter((w) => w.isBookable);
 
 // "two working days" → "2 days"; anything else is shown as written.

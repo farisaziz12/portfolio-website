@@ -147,10 +147,25 @@ export function getAllEvents(): Promise<EventEdition[]> {
   });
 }
 
+/** On the schedule: still to come, with at least one session that isn't cancelled. */
+export function isScheduled(e: EventEdition): boolean {
+  return e.isUpcoming && e.buckets.length > 0;
+}
+
+/** Something I give, run or host (attending alone doesn't count). */
+export function isEngagement(e: Pick<EventEdition, 'buckets'>): boolean {
+  return e.buckets.some((b) => b !== 'attended');
+}
+
+/** Everything coming up, attending included, soonest first. Counts and labels derive from this list. */
 export async function getUpcomingEvents(): Promise<EventEdition[]> {
   const all = await getAllEvents();
-  // Upcoming ascending; attending-only appearances aren't "where I'll be" for organisers.
-  return all.filter((e) => e.isUpcoming && e.buckets.some((b) => b !== 'attended')).reverse();
+  return all.filter(isScheduled).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Upcoming talks, workshops and hosting only, for sections that promise "where I'm speaking". */
+export async function getUpcomingEngagements(): Promise<EventEdition[]> {
+  return (await getUpcomingEvents()).filter(isEngagement);
 }
 
 export async function getPastEvents(): Promise<EventEdition[]> {
