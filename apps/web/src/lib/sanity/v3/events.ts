@@ -18,7 +18,7 @@ import { load, memo, IMAGE, TALK_REF, WORKSHOP_REF } from './fetch';
 import type { EventEdition, Session } from './types';
 
 const SESSION_FIELDS = `
-  _key, role, status, title, detail, startsAt, durationMinutes, stage,
+  _key, role, status, title, detail, startsAt, durationMinutes, stage, track, scheduleSourceUrl, scheduleCheckedAt,
   "recordingUrl": recording.url, "recordingMinutes": recording.durationMinutes,
   slidesUrl, slidesNote, repoUrl, featured,
   "talk": talk->${TALK_REF},
@@ -58,6 +58,9 @@ interface RawSession {
   startsAt?: string;
   durationMinutes?: number;
   stage?: string;
+  track?: string;
+  scheduleSourceUrl?: string;
+  scheduleCheckedAt?: string;
   recordingUrl?: string;
   recordingMinutes?: number;
   slidesUrl?: string;
@@ -99,7 +102,10 @@ export function normalizeEvent(raw: RawEvent, now = Date.now()): EventEdition {
       detail: s.detail,
       startsAt: s.startsAt,
       durationMinutes: s.durationMinutes ?? s.talk?.duration,
-      stage: s.stage,
+      stage: s.stage?.trim() || undefined,
+      track: s.track?.trim() || undefined,
+      scheduleSourceUrl: s.scheduleSourceUrl || undefined,
+      scheduleCheckedAt: s.scheduleCheckedAt || undefined,
       talk: s.talk ?? undefined,
       workshop: s.workshop ?? undefined,
       recordingUrl: s.recordingUrl,

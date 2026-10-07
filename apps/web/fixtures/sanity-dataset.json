@@ -905,7 +905,11 @@
      "_type": "reference",
      "_ref": "talk-payments"
     },
-    "startsAt": "2026-09-30T17:00:00Z"
+    "startsAt": "2026-09-30T17:00:00Z",
+    "stage": "Main room",
+    "track": "main room",
+    "scheduleSourceUrl": "https://devs.gent/schedule",
+    "scheduleCheckedAt": "2026-09-01T09:00:00Z"
    }
   ],
   "series": {
@@ -1168,7 +1172,13 @@
     "talk": {
      "_type": "reference",
      "_ref": "talk-caching"
-    }
+    },
+    "startsAt": "2025-09-20T12:30:00Z",
+    "durationMinutes": 30,
+    "track": "Frontend",
+    "stage": "Main stage",
+    "scheduleSourceUrl": "https://whatthestack.example/schedule#caching",
+    "scheduleCheckedAt": "2025-09-01T09:00:00Z"
    },
    {
     "_key": "b",
@@ -1178,13 +1188,16 @@
      "_type": "reference",
      "_ref": "workshop-react-arch"
     },
-    "detail": "Full-day workshop"
+    "detail": "Full-day workshop",
+    "startsAt": "2025-09-21T07:00:00Z",
+    "stage": "Room 2"
    }
   ],
   "series": {
    "_type": "reference",
    "_ref": "series-whatthestack"
-  }
+  },
+  "endDate": "2025-09-21"
  },
  {
   "_id": "event-cityjs-singapore-2025",

@@ -4,7 +4,7 @@
  * describe an edition and its sessions with the same words.
  */
 import { EVENT_KINDS, ROLE_BUCKETS, titleFor, type RoleBucket, type SessionRole } from 'shared';
-import { eventPlace, localTime, primarySession, type EventEdition, type Session } from './sanity/v3';
+import { eventPlace, primarySession, sessionClock, type EventEdition, type Session } from './sanity/v3';
 import { countryCode, getCountryFlag } from './flags';
 
 /** "Conference", "Meetup", "Workshop day" (short, for kickers). */
@@ -115,8 +115,21 @@ export function placeShort(e: Pick<EventEdition, 'location'>): string {
 /** Upcoming card meta: "Ghent, Belgium · Talk: Orchestrating… · 19:00 CEST". */
 export function upcomingMeta(e: EventEdition): string {
   const s = primarySession(e);
-  const time = s?.startsAt && s.status !== 'tba' ? localTime(s.startsAt, e.timezone) : '';
+  const time = s?.startsAt && s.status !== 'tba' ? sessionClock(s.startsAt, e.timezone, { day: multiDay(e) }) : '';
   return [eventPlace(e, { venue: true }), ...liveSessions(e).map(sessionShort), time].filter(Boolean).join(' · ');
+}
+
+/** Sessions at a multi-day edition name their day; one-day editions already show the date. */
+export function multiDay(e: Pick<EventEdition, 'date' | 'endDate'>): boolean {
+  return Boolean(e.endDate && e.endDate !== e.date);
+}
+
+const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/** "Frontend track · Main stage". One label when track and stage are the same name. */
+export function sessionPlace(s: Pick<Session, 'track' | 'stage'>): string {
+  const track = s.track && !(s.stage && same(s.track, s.stage)) ? (/\btrack\b/i.test(s.track) ? s.track : `${s.track} track`) : '';
+  return [track, s.stage].filter(Boolean).join(' · ');
 }
 
 /**
@@ -125,9 +138,9 @@ export function upcomingMeta(e: EventEdition): string {
  */
 export function sessionTiming(e: EventEdition, s: Session): string {
   if (s.status === 'cancelled') return 'Cancelled';
-  const time = s.startsAt && s.status !== 'tba' ? localTime(s.startsAt, e.timezone) : '';
+  const time = s.startsAt && s.status !== 'tba' ? sessionClock(s.startsAt, e.timezone, { day: multiDay(e) }) : '';
   if (e.isUpcoming && !time) return 'time and stage to be announced by the organisers';
-  return [time, s.stage].filter(Boolean).join(' · ');
+  return [time, sessionPlace(s)].filter(Boolean).join(' · ');
 }
 
 export function sessionMeta(e: EventEdition, s: Session): string {

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { eventPlace, getAllEvents, type EventEdition } from '../../lib/sanity/v3';
-import { liveSessions, sessionShort } from '../../lib/events-view';
+import { liveSessions, sessionPlace, sessionShort } from '../../lib/events-view';
 import { SITE } from '../../lib/seo';
 
 /** "Add to calendar" file for an edition: timed when the session start is known, all-day otherwise. */
@@ -41,7 +41,7 @@ function ics(e: EventEdition): string {
     ...when,
     `SUMMARY:${esc(`${e.title}: Faris Aziz`)}`,
     `DESCRIPTION:${esc([summary, url].filter(Boolean).join('\n'))}`,
-    `LOCATION:${esc(eventPlace(e, { venue: true }))}`,
+    `LOCATION:${esc([timed ? sessionPlace(timed) : '', eventPlace(e, { venue: true })].filter(Boolean).join(', '))}`,
     `URL:${url}`,
     'END:VEVENT',
     'END:VCALENDAR',

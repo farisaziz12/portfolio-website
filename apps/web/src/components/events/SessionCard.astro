@@ -2,7 +2,8 @@
 /**
  * "My sessions at this edition": format · length · time (or the explicit
  * TBA line), the talk/workshop title linking to its page, a one-paragraph
- * description, and an explicit role badge.
+ * description, and an explicit role badge. Time is in the event's timezone
+ * (with the day at multi-day editions); track and stage follow when known.
  */
 import type { EventEdition, Session } from '../../lib/sanity/v3';
 import { roleName, sessionHref, sessionMeta, sessionTitle } from '../../lib/events-view';
@@ -19,7 +20,14 @@ const href = sessionHref(s);
 
 <article class:list={['ds-card sess', { 'is-cancelled': s.status === 'cancelled' }]}>
   <div class="sess__main">
-    <p class="sess__meta">{sessionMeta(event, s)}</p>
+    <p class="sess__meta">
+      {sessionMeta(event, s)}
+      {s.scheduleSourceUrl && (
+        <>
+          {' · '}<a href={s.scheduleSourceUrl} class="sess__src" target="_blank" rel="noopener noreferrer" data-track="event-session-schedule">Official schedule</a>
+        </>
+      )}
+    </p>
     <h3 class="sess__title">
       {href ? <a href={href} class="sess__link">{sessionTitle(s)}</a> : sessionTitle(s)}
     </h3>
@@ -35,6 +43,8 @@ const href = sessionHref(s);
   .sess__title { font-size: clamp(22px, 2.4vw, 26px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; overflow-wrap: anywhere; }
   .sess__link { color: rgb(var(--text)); text-decoration: none; transition: color 0.15s; }
   .sess__link:hover { color: rgb(var(--accent-text)); }
+  .sess__src { color: inherit; text-decoration: underline; text-decoration-color: rgb(var(--hairline-strong)); text-underline-offset: 0.2em; }
+  .sess__src:hover { color: rgb(var(--text)); text-decoration-color: currentColor; }
   .sess__desc { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); max-width: 60ch; }
   .sess__badge { padding: 6px 12px; color: rgb(var(--text-muted)); }
   .is-cancelled .sess__title { text-decoration: line-through; color: rgb(var(--text-faint)); }
