@@ -11,14 +11,14 @@ import PraiseCard from '../components/v3/PraiseCard.astro';
 import InvitePanel from '../components/v3/InvitePanel.astro';
 import CommunityPillars from '../components/community/CommunityPillars.astro';
 import CaseStudy from '../components/community/CaseStudy.astro';
-import { getPrimaryCommunity, getProfile, getAllPraise, getWriting, getSpeakingStats, getHomePage, getMetricsByDomain, getPhotos, currentMonthYear, type Praise, type SanityImage } from '../lib/sanity/v3';
+import { getPrimaryCommunity, getProfile, getCommunityPraise, getWriting, getSpeakingStats, getHomePage, getMetricsByDomain, getPhotos, currentMonthYear, type SanityImage } from '../lib/sanity/v3';
 import { breadcrumbs, SITE } from '../lib/seo';
 
 const home = await getHomePage();
-const [primary, profile, praise, writing, stats, communityMetrics, media] = await Promise.all([
+const [primary, profile, quotes, writing, stats, communityMetrics, media] = await Promise.all([
   getPrimaryCommunity(home.communityId),
   getProfile(),
-  getAllPraise(),
+  getCommunityPraise(),
   getWriting(),
   getSpeakingStats(),
   getMetricsByDomain('community'),
@@ -45,18 +45,6 @@ const story = storyPost ? { label: storyPost.title, href: storyPost.href } : { l
 const buildHref = community?.platformProject?.slug ? `/projects/${community.platformProject.slug}` : undefined;
 const hostLine = stats.hosted > 0 ? `${stats.hosted} ${stats.hosted === 1 ? 'evening' : 'evenings'} hosted, as of ${currentMonthYear()}` : undefined;
 
-// Two quotes about community, the stage or a workshop, one per topic where possible.
-const pickPraise = (): Praise[] => {
-  const order = ['community', 'workshop', 'stage'] as const;
-  const picked: Praise[] = [];
-  for (const t of order) {
-    const p = praise.find((x) => x.topic === t && !picked.includes(x));
-    if (p) picked.push(p);
-  }
-  for (const p of praise) if (picked.length < 2 && order.includes(p.topic as (typeof order)[number]) && !picked.includes(p)) picked.push(p);
-  return picked.slice(0, 2);
-};
-const quotes = pickPraise();
 
 const description = `How Faris Aziz hosts meetups, teaches at them and builds the systems behind them, with ${name} as the case study: dated metrics and the conference platform.`.slice(0, 160);
 ---
@@ -117,13 +105,13 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
     </div>
   )}
 
-  <section class="ds-wrap cm-bottom" aria-label="What organisers say, and an invitation">
-    <div class="cm-bottom__grid">
+  <section class="ds-wrap cm-bottom" aria-label="What people say about ZurichJS, and an invitation">
+    <div class:list={['cm-bottom__grid', `cm-bottom__grid--quotes-${quotes.length}`]}>
       {quotes.map((q) => <PraiseCard praise={q} />)}
       <InvitePanel
         kicker="Meetups & community events"
-        headline="Running a meetup or a community conference?"
-        body="I'll come and talk, run a workshop, or tell you what broke when we built ours."
+        headline="Running a conference?"
+        body="I'd be more than happy to give a talk, run a workshop, or share my experiences."
         primary={{ label: 'Invite me', href: '/invite' }}
         secondary={{ label: 'See the workshops', href: '/workshops' }}
         art="none"
@@ -144,9 +132,13 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
   .cm-bottom__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
   .cm-bottom__grid > :global(*) { min-width: 0; }
   .cm-bottom :global(.cm-panel .ipanel__title) { font-size: 24px; line-height: 1.02; letter-spacing: -0.035em; }
+  /* Fewer than two community quotes: the invite panel takes the free columns. */
+  .cm-bottom__grid--quotes-1 :global(.cm-panel) { grid-column: span 2; }
+  .cm-bottom__grid--quotes-0 :global(.cm-panel) { grid-column: 1 / -1; }
   @media (max-width: 960px) {
     .cm-bottom__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cm-bottom :global(.cm-panel) { grid-column: 1 / -1; }
+    .cm-bottom__grid--quotes-1 > :global(:first-child) { grid-column: 1 / -1; }
   }
   @media (max-width: 720px) {
     .cm-strip { display: none; }

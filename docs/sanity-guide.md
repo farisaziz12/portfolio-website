@@ -21,7 +21,7 @@ eventSeries ── React Summit, CityJS, ZurichJS (brand, optional)
              speaker | keynote | lightning | workshop | panel | host | organizer | judge | mentor | guest | attendee
              ├─ talk ──────→ talk      (bookable, timeless; versions via parentTalk)
              ├─ workshop ──→ workshop  (formats[] with agendas)
-             └─ recording.url · slidesUrl · startsAt · stage · status (tba / cancelled)
+             └─ recording.url · slidesUrl · startsAt · durationMinutes · stage · track · scheduleSourceUrl · status (tba / cancelled)
 
 praise ── one quote: platform · url · date · author · topic → talk / workshop / event
 metric ── one dated, defined number: value · label · asOf · definition · status (only "approved" is public)
@@ -74,6 +74,13 @@ same loaders: publish once, every surface updates.
    `location` (standard English country name; it drives the flag), `url`.
 2. **My sessions** tab → add a session: `role`, the `talk` (or `workshop`), `status` "Time & stage TBA" until the
    organisers publish the programme; then `startsAt` + `stage`.
+   - `startsAt` is that session's own slot on its scheduled day (not the first day of the event), entered in the
+     event's `timezone`. The site shows it in that zone, with the day at multi-day editions.
+   - `durationMinutes` only when the schedule states it or gives an end time. Never the talk's usual length.
+   - `stage` is the physical stage or room; `track` is the programme track. Neither is the venue. Leave a field
+     blank when the schedule doesn't say.
+   - `scheduleSourceUrl` = the official schedule page or session permalink; `scheduleChecked` = when you checked it.
+     Two sessions at one edition each get their own values.
 3. After the day: add `recording.url` and `slidesUrl` to the session. Nothing else to update.
 
 ### Add a bookable talk

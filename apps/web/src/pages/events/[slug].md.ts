@@ -41,6 +41,7 @@ export const GET: APIRoute = async ({ props }) => {
       `- Role: ${roleName(s)} · status: ${s.status}`,
       `- ${sessionMeta(e, s)}`,
       link ? `- Page: ${link}` : '',
+      s.scheduleSourceUrl ? `- Schedule source: ${s.scheduleSourceUrl}${s.scheduleCheckedAt ? ` (checked ${fullDate(s.scheduleCheckedAt.slice(0, 10))})` : ''}` : '',
       desc ? `\n${desc}` : '',
       res.length ? `\nResources:\n${res.join('\n')}` : '',
     ]

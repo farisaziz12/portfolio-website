@@ -143,7 +143,8 @@ def sess(key, role, talk=None, workshop=None, **kw):
     s.update(kw); return s
 
 ev("devs-ghent-2026", "Devs.Ghent", "2026-09-30", "Ghent", "Belgium", "devs-ghent", "meetup",
-   [sess("a", "speaker", "talk-payments", startsAt="2026-09-30T17:00:00Z")], tz="Europe/Brussels", url="https://devs.gent")
+   [sess("a", "speaker", "talk-payments", startsAt="2026-09-30T17:00:00Z", stage="Main room", track="main room",
+         scheduleSourceUrl="https://devs.gent/schedule", scheduleCheckedAt="2026-09-01T09:00:00Z")], tz="Europe/Brussels", url="https://devs.gent")
 ev("game-of-codes-2026", "Game of Codes 2026", "2026-10-09", "Niš", "Serbia", "game-of-codes", "conference",
    [sess("a", "speaker", "talk-resilient", status="tba", durationMinutes=25)], tz="Europe/Belgrade",
    loc={"venue": "Science & Technology Park"}, url="https://gameofcodes.rs", language="English")
@@ -160,7 +161,10 @@ ev("zurichjs-react-arch-2025", "ZurichJS · React Architecture workshop", "2025-
 ev("zurichjs-december-2026", "ZurichJS December meetup", "2026-12-03", "Zurich", "Switzerland", "zurichjs", "meetup", [sess("a", "host")])
 ev("zurichjs-anniversary-2025", "ZurichJS 1st anniversary", "2025-11-05", "Zurich", "Switzerland", "zurichjs", "meetup", [sess("a", "host")])
 ev("whatthestack-2025", "WhatTheStack", "2025-09-20", "Skopje", "North Macedonia", "whatthestack", "conference",
-   [sess("a", "speaker", "talk-caching"), sess("b", "workshop", workshop="workshop-react-arch", detail="Full-day workshop")], tz="Europe/Skopje")
+   [sess("a", "speaker", "talk-caching", startsAt="2025-09-20T12:30:00Z", durationMinutes=30, track="Frontend", stage="Main stage",
+         scheduleSourceUrl="https://whatthestack.example/schedule#caching", scheduleCheckedAt="2025-09-01T09:00:00Z"),
+    sess("b", "workshop", workshop="workshop-react-arch", detail="Full-day workshop", startsAt="2025-09-21T07:00:00Z", stage="Room 2")],
+   tz="Europe/Skopje", endDate="2025-09-21")
 ev("cityjs-singapore-2025", "CityJS Singapore", "2025-07-18", "Singapore", "Singapore", "cityjs", "conference", [sess("a", "speaker", "talk-payments")], tz="Asia/Singapore")
 ev("cityjs-athens-2025", "CityJS Athens", "2025-06-05", "Athens", "Greece", "cityjs", "conference", [sess("a", "speaker", "talk-caching")], tz="Europe/Athens")
 ev("react-day-berlin-2024", "React Day Berlin 2024", "2024-12-13", "Berlin", "Germany", None, "conference",

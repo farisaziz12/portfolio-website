@@ -1,15 +1,16 @@
 import type { APIRoute } from 'astro';
-import { getPrimaryCommunity, getMetricsByDomain, getWriting, getSpeakingStats, getHomePage, fullDate, currentMonthYear } from '../lib/sanity/v3';
+import { getPrimaryCommunity, getMetricsByDomain, getWriting, getSpeakingStats, getHomePage, getCommunityPraise, shortQuote, praiseAttribution, fullDate, currentMonthYear } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
   const home = await getHomePage();
-  const [primary, communityMetrics, writing, stats] = await Promise.all([
+  const [primary, communityMetrics, writing, stats, quotes] = await Promise.all([
     getPrimaryCommunity(home.communityId),
     getMetricsByDomain('community'),
     getWriting(),
     getSpeakingStats(),
+    getCommunityPraise(),
   ]);
   const c = primary && !primary.metrics.length ? { ...primary, metrics: communityMetrics.filter((m) => !m.legacy) } : primary;
   const name = c?.name ?? 'ZurichJS';
@@ -56,6 +57,16 @@ export const GET: APIRoute = async () => {
           ...(c.platformProject ? [`The conference platform as an engineering project: ${SITE}/projects/${c.platformProject.slug}`, ''] : []),
           `Aftermovie: ${c.aftermovie?.published && c.aftermovie.url ? c.aftermovie.url : 'not yet published'}.`,
           '',
+        ]
+      : []),
+    ...(quotes.length
+      ? [
+          `## What people say about ${name}`,
+          '',
+          ...quotes.flatMap((q) => {
+            const who = praiseAttribution(q);
+            return [`> “${shortQuote(q)}”`, '>', `> ${q.url ? `[${who}](${q.url})` : who}`, ''];
+          }),
         ]
       : []),
     ...(posts.length

@@ -146,7 +146,7 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
   }
   .la:hover { border-color: rgb(var(--yellow)); }
   .la :global(.la__img) { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
-  .la__body { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; }
+  .la__body { position: relative; flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; background: rgb(var(--surface)); }
   .la__src { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
   .la__title { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; text-wrap: balance; }
   .la__ex { font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -211,7 +211,10 @@ const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(B
   @media (max-width: 960px) {
     .lib__grid--articles, .lib__grid--video { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .lib__grid--podcasts { grid-template-columns: minmax(0, 1fr); }
-    .la--lead.la--img { grid-template-columns: minmax(0, 1fr); }
+    /* Stacked lead: flex, not a one-column grid. WebKit can't resolve the image's
+       height: 100% in an auto grid row and falls back to its 675px height attribute. */
+    .la--lead.la--img { display: flex; }
+    .la--lead.la--img :global(.la__img) { height: auto; }
   }
   @media (max-width: 720px) {
     .lib__filters { flex-direction: column; align-items: flex-start; }

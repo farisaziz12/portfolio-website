@@ -6,7 +6,7 @@
  * - `platform`: styled like the network it came from (LinkedIn / X / Bluesky).
  *   Every platform card links to the original post.
  */
-import { PLATFORM_LABEL, shortQuote, monthYear, type Praise } from '../../lib/sanity/v3';
+import { PLATFORM_LABEL, praiseAttribution, shortQuote, type Praise } from '../../lib/sanity/v3';
 
 const longDate = (iso?: string) =>
   iso ? ordinalDate(new Date(`${iso.slice(0, 10)}T12:00:00Z`), { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
@@ -26,8 +26,7 @@ interface Props {
 
 const { praise: p, variant = 'card', full = false, context, class: className } = Astro.props;
 const text = full ? p.quote : shortQuote(p);
-const when = [PLATFORM_LABEL[p.platform] !== 'Direct' ? PLATFORM_LABEL[p.platform] : null, monthYear(p.date)].filter(Boolean).join(', ');
-const meta = [p.author.name, p.author.headline, when, context].filter(Boolean).join(' · ');
+const meta = [praiseAttribution(p), context].filter(Boolean).join(' · ');
 const Tag = p.url ? 'a' : 'div';
 const linkAttrs = p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {};
 const initials = p.author.name.split(/\s+/).map((n) => n[0]).slice(0, 2).join('');

@@ -98,6 +98,27 @@ export function localTime(iso?: string, timeZone = DEFAULT_TZ): string {
   }
 }
 
+/** "New York" from "America/New_York". */
+export function zoneCity(timeZone: string): string {
+  return (timeZone.split('/').pop() ?? timeZone).replace(/_/g, ' ');
+}
+
+/**
+ * A session start in the event's timezone: "14:30 CEST", or with `day`
+ * "Thu 17 Sep, 14:30 CEST". Zones with only an offset label get the city
+ * too: "09:30 GMT-4 (New York time)".
+ */
+export function sessionClock(iso?: string, timeZone = DEFAULT_TZ, opts: { day?: boolean } = {}): string {
+  const time = localTime(iso, timeZone);
+  if (!time) return '';
+  const clear = /\b(GMT|UTC)[+-]/.test(time) ? `${time} (${zoneCity(timeZone)} time)` : time;
+  if (!opts.day) return clear;
+  const at = new Date(iso!);
+  const wd = at.toLocaleDateString('en-GB', { weekday: 'short', timeZone });
+  const [, m, d] = at.toLocaleDateString('en-CA', { timeZone }).split('-').map(Number);
+  return `${wd} ${d} ${MONTHS_SHORT[m - 1]}, ${clear}`;
+}
+
 /** "Sep 2026" for today, used on "as of" labels of derived counts. */
 export function currentMonthYear(now = new Date()): string {
   return `${MONTHS_SHORT[now.getUTCMonth()]} ${now.getUTCFullYear()}`;

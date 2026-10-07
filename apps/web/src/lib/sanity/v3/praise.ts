@@ -6,6 +6,7 @@
 import groq from 'groq';
 import { PRAISE_TOPICS, type PraisePlatform, type PraiseTopic } from 'shared';
 import { load, memo, TALK_REF, WORKSHOP_REF } from './fetch';
+import { monthYear } from './dates';
 import type { Praise } from './types';
 
 const EVENT_REF = `{ _id, title, "slug": slug.current }`;
@@ -120,13 +121,30 @@ export function getAllPraise(): Promise<Praise[]> {
           finish(p, { legacy: true, topic: TESTIMONIAL_CONTEXT[p.context ?? ''] ?? TESTIMONIAL_TYPE[p.type ?? ''] ?? 'work' })
         ),
     ].filter((p): p is Praise => Boolean(p));
-    return out.sort(
-      (a, b) =>
-        Number(b.featured) - Number(a.featured) ||
-        (a.order ?? 999) - (b.order ?? 999) ||
-        (b.date ?? '').localeCompare(a.date ?? '')
-    );
+    return out.sort(byCmsOrder);
   });
+}
+
+/** CMS order: featured first, then `order` ascending, then newest. */
+export function byCmsOrder(a: Praise, b: Praise): number {
+  return (
+    Number(b.featured) - Number(a.featured) ||
+    (a.order ?? 999) - (b.order ?? 999) ||
+    (b.date ?? '').localeCompare(a.date ?? '')
+  );
+}
+
+/**
+ * The first `limit` community-topic quotes from an already CMS-ordered list.
+ * No fallback to stage or workshop praise: fewer community quotes means fewer cards.
+ */
+export function pickCommunityPraise(all: Praise[], limit = 2): Praise[] {
+  return all.filter((p) => p.topic === 'community').slice(0, limit);
+}
+
+/** Quotes about ZurichJS and its organisers, for the community page and its mirror. */
+export async function getCommunityPraise(limit = 2): Promise<Praise[]> {
+  return pickCommunityPraise(await getAllPraise(), limit);
 }
 
 export async function getFeaturedPraise(limit = 6): Promise<Praise[]> {
@@ -161,3 +179,9 @@ export const PLATFORM_LABEL: Record<PraisePlatform, string> = {
   mentorcruise: 'MentorCruise',
   direct: 'Direct',
 };
+
+/** "Name · Headline · LinkedIn, Mar 2026": the attribution line under a quote card. */
+export function praiseAttribution(p: Pick<Praise, 'author' | 'platform' | 'date'>): string {
+  const when = [PLATFORM_LABEL[p.platform] !== 'Direct' ? PLATFORM_LABEL[p.platform] : null, monthYear(p.date)].filter(Boolean).join(', ');
+  return [p.author.name, p.author.headline, when].filter(Boolean).join(' · ');
+}

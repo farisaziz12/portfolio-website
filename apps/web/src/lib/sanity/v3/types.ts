@@ -52,7 +52,13 @@ export interface Session {
   detail?: string;
   startsAt?: string;
   durationMinutes?: number;
+  /** Physical stage or room. */
   stage?: string;
+  /** Programme track, distinct from the stage or room. */
+  track?: string;
+  /** Official schedule page or session permalink, and when it was checked. */
+  scheduleSourceUrl?: string;
+  scheduleCheckedAt?: string;
   talk?: TalkRef;
   workshop?: WorkshopRef;
   recordingUrl?: string;
