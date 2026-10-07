@@ -67,7 +67,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
   {band && <span class="ds-band" aria-hidden="true"></span>}
 </header>
 
-<dialog id="siteDrawer" class="drawer" aria-label="Site menu">
+<dialog id="siteDrawer" class="drawer" aria-label="Site menu" tabindex="-1">
   <span class="drawer__wipe" aria-hidden="true"></span>
   <div class="drawer__head">
     <a href="/" class="hdr__brand">Faris Aziz</a>
@@ -131,6 +131,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
     background: transparent; color: rgb(var(--text)); overscroll-behavior: contain; overflow: hidden;
   }
   .drawer[open] { display: flex; flex-direction: column; }
+  .drawer:focus { outline: none; }
   /* The panel is the dialog's content; it slides while the dialog itself stays put. */
   .drawer > :not(.drawer__wipe) { position: relative; z-index: 1; background: rgb(var(--ground)); }
   .drawer__nav { background: rgb(var(--ground)); }
@@ -200,6 +201,9 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
       window.clearTimeout(closing);
       drawer.classList.remove('is-open', 'is-closing');
       drawer.showModal();
+      // showModal() focuses the first link (the brand), and Safari rings it even after a tap.
+      // Focus the dialog instead; Tab still moves into the menu and the trap holds.
+      drawer.focus({ preventScroll: true });
       opener?.setAttribute('aria-expanded', 'true');
       // Next frame, so the transition starts from the closed state.
       requestAnimationFrame(() => requestAnimationFrame(() => drawer.classList.add('is-open')));
