@@ -1,0 +1,299 @@
+---
+/**
+ * /connect — post-talk landing for QR codes on the last slide.
+ * Mobile-first: socials, a couple of CTAs, and a short who-I-am blurb.
+ * Not in primary nav; people arrive from a slide, not the menu.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SanityImg from '../components/v3/SanityImg.astro';
+import Illustration from '../components/v3/Illustration.astro';
+import Icon from '../components/v3/Icon.astro';
+import InvitePanel from '../components/v3/InvitePanel.astro';
+import { getAboutPage, getProfile, getSiteSettings, getSpeakingStats, basedIn, fullDate } from '../lib/sanity/v3';
+import { breadcrumbs } from '../lib/seo';
+
+const [profile, settings, about, stats] = await Promise.all([
+  getProfile(),
+  getSiteSettings(),
+  getAboutPage(),
+  getSpeakingStats(),
+]);
+
+const photo = profile.photos[0];
+const city = basedIn(profile.travelBase).city;
+const discovery = settings.discoveryCallUrl;
+
+const socials = [
+  { label: 'LinkedIn', href: profile.links.linkedin, hint: 'Fastest way to say hi' },
+  { label: 'Bluesky', href: profile.links.bluesky },
+  { label: 'X', href: profile.links.twitter },
+  { label: 'GitHub', href: profile.links.github },
+  { label: 'YouTube', href: profile.links.youtube },
+].filter((s): s is { label: string; href: string; hint?: string } => Boolean(s.href));
+
+const linkedin = socials.find((s) => s.label === 'LinkedIn');
+
+const explore = [
+  { label: 'Talks', href: '/talks', body: 'Premises, recordings, and delivery history' },
+  { label: 'About', href: '/about', body: 'The longer story, in my own words' },
+  { label: 'Schedule', href: '/events', body: 'Where I am next, and where I have been' },
+  { label: 'Press kit', href: '/press-kit', body: 'Bios, photos, and the rider' },
+];
+
+const blurb = about.intro || profile.bios.short;
+const proof =
+  !stats.fallback && stats.talksDelivered > 0
+    ? `${stats.talksDelivered} talks delivered in ${stats.countries} countries, as of ${fullDate(stats.asOf)}.`
+    : null;
+
+const description =
+  'Thanks for coming to the talk. Connect with Faris Aziz on LinkedIn and elsewhere, book a quick call, or invite him to speak.';
+---
+
+<BaseLayout
+  title="Connect · Faris Aziz"
+  description={description}
+  image="/og/connect.png"
+  markdownAlternate="/connect.md"
+  extraSchema={[breadcrumbs([{ name: 'Connect', path: '/connect' }])]}
+>
+  <div class="ds-wrap connect">
+    <header class="connect__hero">
+      <div class="connect__face">
+        {photo?.asset ? (
+          <SanityImg
+            image={photo}
+            alt={photo.alt || `${profile.name}`}
+            ratio={1}
+            widths={[160, 240, 320]}
+            sizes="112px"
+            loading="eager"
+            fetchpriority="high"
+            class="connect__photo"
+          />
+        ) : (
+          <Illustration name="faris-speaking" width={112} class="connect__art" loading="eager" />
+        )}
+      </div>
+      <p class="ds-kicker">After the talk</p>
+      <h1 class="ds-h1 connect__title">Thanks for coming.</h1>
+      <p class="ds-lede connect__lede">
+        Happy you were here. Grab a link, book a call, or invite me to your event.
+      </p>
+      <p class="connect__meta">{profile.tagline} · {city}</p>
+    </header>
+
+    <section class="connect__actions" aria-label="Primary actions">
+      {linkedin && (
+        <a
+          href={linkedin.href}
+          class="ds-btn ds-btn--yellow ds-btn--lg ds-btn--block"
+          target="_blank"
+          rel="me noopener noreferrer"
+          data-track="connect_linkedin"
+        >
+          Connect on LinkedIn <Icon name="external" size={14} />
+        </a>
+      )}
+      {discovery && (
+        <a href={discovery} class="ds-btn ds-btn--cream ds-btn--lg ds-btn--block" data-track="connect_call">
+          Book a quick call
+        </a>
+      )}
+      <a href="/invite" class="ds-btn ds-btn--outline ds-btn--lg ds-btn--block" data-track="connect_invite">
+        Invite me to speak
+      </a>
+    </section>
+
+    {socials.length > 0 && (
+      <section class="connect__socials" aria-labelledby="socials-h">
+        <h2 id="socials-h" class="connect__h2">Elsewhere</h2>
+        <ul class="connect__list">
+          {socials.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                class="connect__row"
+                target="_blank"
+                rel="me noopener noreferrer"
+                data-track={`connect_social_${s.label.toLowerCase()}`}
+              >
+                <span class="connect__row-label">
+                  {s.label}
+                  {s.hint && <span class="connect__row-hint">{s.hint}</span>}
+                </span>
+                <Icon name="arrow" size={14} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section class="connect__about" aria-labelledby="about-h">
+      <h2 id="about-h" class="connect__h2">Who I am</h2>
+      <p class="connect__blurb">{blurb}</p>
+      {proof && <p class="connect__proof">{proof}</p>}
+      <a href="/about" class="ds-link ds-link--sm" data-track="connect_about">Read the longer story</a>
+    </section>
+
+    <section class="connect__explore" aria-labelledby="explore-h">
+      <h2 id="explore-h" class="connect__h2">On this site</h2>
+      <ul class="connect__list">
+        {explore.map((item) => (
+          <li>
+            <a href={item.href} class="connect__row" data-track={`connect_explore_${item.label.toLowerCase().replace(/\s+/g, '-')}`}>
+              <span class="connect__row-label">
+                {item.label}
+                <span class="connect__row-hint">{item.body}</span>
+              </span>
+              <Icon name="arrow" size={14} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <InvitePanel
+      kicker="Your stage next?"
+      headline="Invite me to speak."
+      body={`Talks and workshops on production engineering, payments at scale, and growing into leadership. I reply within ${profile.replyTime}.`}
+      secondary={{ label: 'Or send a quick message', href: '/contact' }}
+      track="connect-invite-panel"
+      class="connect__panel"
+    />
+  </div>
+</BaseLayout>
+
+<style>
+  .connect {
+    max-width: 440px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    padding-top: 40px;
+    padding-bottom: 72px;
+  }
+
+  .connect__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+  .connect__face {
+    width: 112px;
+    height: 112px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgb(var(--surface));
+    border: 2px solid rgb(var(--hairline-strong));
+    margin-bottom: 8px;
+  }
+  .connect__face :global(.connect__photo),
+  .connect__face :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--fp, 50% 20%);
+    display: block;
+  }
+  .connect__face :global(.connect__art) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .connect__title {
+    margin: 0;
+    font-size: clamp(34px, 8vw, 44px);
+    text-wrap: balance;
+  }
+  .connect__lede {
+    margin: 0;
+    font-size: 17px;
+    max-width: 34ch;
+  }
+  .connect__meta {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: rgb(var(--text-faint));
+  }
+
+  .connect__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .connect__actions .ds-btn {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .connect__h2 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(var(--accent-text));
+  }
+
+  .connect__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .connect__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--hairline));
+    border-radius: var(--radius-card);
+    color: rgb(var(--text));
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .connect__row:hover { border-color: rgb(var(--yellow)); }
+  .connect__row-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+  }
+  .connect__row-hint {
+    font-weight: 500;
+    font-size: 13px;
+    color: rgb(var(--text-faint));
+  }
+
+  .connect__about { display: flex; flex-direction: column; gap: 10px; }
+  .connect__blurb {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.55;
+    color: rgb(var(--text));
+    text-wrap: pretty;
+  }
+  .connect__proof {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(var(--text-muted));
+  }
+
+  .connect__panel { margin-top: 8px; }
+
+  @media (min-width: 720px) {
+    .connect { padding-top: 56px; }
+  }
+</style>

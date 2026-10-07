@@ -113,7 +113,7 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
     // that's where watching friction pays off. startSessionRecording() is
     // sticky, so a session that lands on /contact keeps recording afterwards.
     // /services replaced /consulting (a redirect now), so it must be listed itself.
-    var RECORD_PATHS = ['/invite', '/contact', '/services', '/mentorship'];
+    var RECORD_PATHS = ['/invite', '/contact', '/services', '/mentorship', '/connect'];
     function maybeRecord() {
       var p = location.pathname;
       var hit = RECORD_PATHS.some(function (pre) {

@@ -54,6 +54,7 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 - [Services](${SITE}/services.md): events, advisory, mentorship
 - [Mentorship](${SITE}/mentorship.md)
 - [Contact](${SITE}/contact.md)
+- [Connect](${SITE}/connect.md): post-talk QR landing: socials, book a call, invite me
 
 ## Optional
 

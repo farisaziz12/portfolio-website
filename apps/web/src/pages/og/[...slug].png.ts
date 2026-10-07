@@ -72,6 +72,7 @@ export async function getStaticPaths() {
     services: { kicker: 'Services', title: 'How I can help.', meta: 'Events: speaking and workshops · Advisory · Mentorship. A sentence is enough to start.' },
     mentorship: { kicker: 'Mentorship', title: 'Help with getting to senior, leading a team, or giving your first talk.', meta: 'One-to-one, every two to four weeks.' },
     contact: { kicker: 'Contact', title: "Hey, what's on your mind?", meta: 'Invite me to speak, or just drop me a message.' },
+    connect: { kicker: 'After the talk', title: 'Thanks for coming.', meta: 'Socials, a quick call, or invite me to speak.' },
     projects: { kicker: 'About · Projects', title: 'Things I built.', meta: 'Open source and production systems.' },
     gallery: { kicker: 'About · Gallery', title: 'Stages, hallways, and the bits in between.', meta: 'Photos from events, credited.' },
   };
