@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.ts", ".cursor/hooks/*.mjs"],
+      "ignore": ["src/**"],
+      "ignoreDependencies": ["prettier", "astro-eslint-parser"]
+    },
+    "apps/web": {
+      "entry": ["src/pages/**/*.{astro,ts,tsx}", "src/emails/*.tsx", "scripts/*.{mjs,ts}"],
+      "ignoreDependencies": ["@fontsource/figtree"]
+    }
+  },
+  "rules": { "exports": "off", "types": "off", "duplicates": "off" }
+}

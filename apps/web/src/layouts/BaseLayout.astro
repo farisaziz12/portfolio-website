@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import SEO from '../components/shared/SEO.astro';
@@ -112,7 +112,7 @@ const {
       }}
     />
 
-    <ViewTransitions />
+    <ClientRouter />
 
     <!-- Analytics: loader + init + sitewide auto-events (cta_click, outbound
          links, scroll depth, session-recording gate) all live in posthog.astro.
@@ -120,7 +120,7 @@ const {
     <PostHog />
 
     <!-- Theme: dark by default; a stored preference wins. Sets both `.dark` (Tailwind) and `data-theme` (DS v2).
-         Re-applied on astro:after-swap because ViewTransitions replaces <html> attributes with the
+         Re-applied on astro:after-swap because ClientRouter replaces <html> attributes with the
          server-rendered ones (no class/data-theme), which would otherwise strip the applied theme on
          every client-side navigation. -->
     <script is:inline>
