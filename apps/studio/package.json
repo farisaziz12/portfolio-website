@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@sanity/code-input": "^4.1.4",
-    "@sanity/icons": "^3.8.0",
     "@sanity/table": "^2.0.1",
     "@sanity/vision": "^3.99.0",
     "react": "^19.3.0",
