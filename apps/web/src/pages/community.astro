@@ -88,7 +88,7 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
       : []),
   ]}
 >
-  <SkewHero image={heroPhoto} imageAlt={heroPhoto?.alt || `Faris hosting a ${name} meetup`} height={540} focus="50% 30%">
+  <SkewHero image={heroPhoto} imageAlt={heroPhoto?.alt || 'Faris speaking at a community event'} height={540} focus="50% 30%">
     <Kicker parts={['Community']} />
     <h1 class="ds-h1">I run meetups, teach at them, and write the code behind them.</h1>
     <p class="ds-lede cm-lede">
@@ -98,7 +98,7 @@ const description = `How Faris Aziz hosts meetups, teaches at them and builds th
       <a href="/invite" class="ds-link" data-track="community-hero-invite">Bring me to your community</a>
       <a href="/blog?topic=community" class="ds-link ds-link--muted" data-track="community-hero-writing">Community articles &amp; podcasts</a>
     </div>
-    {heroPhoto && <span slot="strip" class="cm-strip">{heroPhoto.caption || `${name} meetup`}</span>}
+    {heroPhoto?.caption && <span slot="strip" class="cm-strip">{heroPhoto.caption}</span>}
   </SkewHero>
 
   {community ? (
