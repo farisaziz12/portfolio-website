@@ -8,7 +8,7 @@
  * (translateY(-3%) + fade, 0.6s). Phones get their own scale and a stacked
  * card (container queries on the overlay).
  *
- * Rules: plays once per session (sessionStorage.introSeen), only on a full
+ * Rules: plays once per browser (localStorage.introSeen), not once per session, only on a full
  * load of `/` (never on a ViewTransitions route change), replays on
  * `?intro=replay` or the `intro:replay` document event (header link).
  * Skip button + Esc from 0s; the overlay starts below the header so the nav
@@ -17,7 +17,7 @@
  * No flash: an inline script right before the overlay decides BEFORE first
  * paint (html[data-intro]): "play" shows the overlay at once as a short
  * pre-roll (ink frame, "F.", the band growing), and the cuts start once the
- * webfont is ready (at least 300ms, at most 700ms). "skip" (already seen this session) shows
+ * webfont is ready (at least 300ms, at most 700ms). "skip" (already seen in this browser) shows
  * no overlay at all: the hero just rises in (a curtain over a fresh load read as a flash).
  * A reload, back/forward or #section link gets "none": the browser restores a
  * scroll position there, and a curtain over it would interrupt.
@@ -55,7 +55,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
       const replay = /[?&]intro=replay/.test(location.search);
       let seen = true;
       try {
-        seen = sessionStorage.getItem('introSeen') === '1';
+        seen = localStorage.getItem('introSeen') === '1';
       } catch {
         /* storage blocked: stay quiet */
       }
@@ -251,7 +251,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     stop?.();
     (window as unknown as { __opPlaying?: boolean }).__opPlaying = true;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    try { sessionStorage.setItem(KEY, '1'); } catch { /* storage blocked */ }
+    try { localStorage.setItem(KEY, '1'); } catch { /* storage blocked */ }
     // Start below the header so the nav stays visible and clickable.
     const header = document.querySelector('header');
     const top = Math.max(0, header ? header.getBoundingClientRect().bottom : 0);
