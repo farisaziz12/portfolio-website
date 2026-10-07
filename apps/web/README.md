@@ -25,7 +25,7 @@ npx astro check        # typecheck
 ## How rendering works
 
 - **Everything is prerendered at build time except `/`.** The homepage sets
-  `prerender = false` and is ISR-cached (~1h) so the "Next up" band and
+  `prerender = false` and is ISR-cached (~12h) so the "Next up" band and
   availability labels stay fresh without redeploys.
 - **Navigation uses Astro ViewTransitions** (`ClientRouter`). Consequences:
   - Head scripts run once per visit, not per page. Anything that must re-run

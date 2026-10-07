@@ -41,7 +41,7 @@ export default defineConfig({
   // Workshop short-path redirects are SSR with Cache-Control: no-store (see [shortPath].astro).
   adapter: vercel({
     isr: {
-      expiration: 60 * 60, // 1 hour
+      expiration: 60 * 60 * 12, // 12 hours — at most twice a day on traffic
       exclude: [
         /^\/api\/.+/,
         /^\/admin(\/.*)?$/,

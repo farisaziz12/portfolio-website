@@ -6,8 +6,8 @@
  * As the year rolls forward, every "Available · Q… …" string updates
  * automatically — no manual edits needed.
  *
- * The home page is ISR-cached at 1-hour granularity, so the label
- * refreshes hourly on the live site without a redeploy.
+ * The home page is ISR-cached at 12-hour granularity, so the label
+ * refreshes at most twice a day on the live site without a redeploy.
  */
 
 export interface QuarterInfo {
