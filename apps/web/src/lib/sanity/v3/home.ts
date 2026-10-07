@@ -40,7 +40,10 @@ export async function getHomePraise(): Promise<{ spotlight?: Praise; cards: Prai
   const [home, all] = await Promise.all([getHomePage(), getAllPraise()]);
   const byId = new Map(all.map((p) => [p._id, p]));
   const chosen = home.praiseIds.map((id) => byId.get(id)).filter((p): p is Praise => Boolean(p));
-  const list = chosen.length ? chosen : await getFeaturedPraise(7);
   const underPosters = (home.featuredQuoteId && byId.get(home.featuredQuoteId)) || all.find((p) => p.topic === 'talk' && p.talk);
+  // The under-posters quote never repeats in "What people say", and nobody is quoted twice on the page.
+  const seen = new Set<string>(underPosters ? [underPosters.author.name] : []);
+  const pool = chosen.length ? chosen : await getFeaturedPraise(20);
+  const list = pool.filter((p) => p._id !== underPosters?._id && !seen.has(p.author.name) && seen.add(p.author.name));
   return { spotlight: list[0], cards: list.slice(1, 7), underPosters };
 }
