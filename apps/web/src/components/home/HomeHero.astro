@@ -1,0 +1,139 @@
+---
+/**
+ * Home hero. Variant `band` (default): SkewHero with the yellow band and one
+ * photo clipped in (the first hero photo; no mosaic).
+ * Variant `fullbleed`: the photo behind the type with an ink scrim.
+ * Photos crop around the editor's hotspot (SanityImg sets --fp).
+ * Bottom-right ink strip lists the next one or two appearances.
+ */
+import SkewHero from '../v3/SkewHero.astro';
+import SanityImg from '../v3/SanityImg.astro';
+import { headlineParts, dayMonth, type HomePage, type EventEdition, type SanityImage } from '../../lib/sanity/v3';
+
+interface Props {
+  home: HomePage;
+  /** Hero photos, already resolved (Home page picks, else press photos). */
+  photos: SanityImage[];
+  kicker: string;
+  upcoming: EventEdition[];
+}
+
+const { home, photos, kicker, upcoming } = Astro.props;
+const parts = headlineParts(home.headline);
+const next = upcoming.slice(0, 2);
+const variant = home.heroVariant === 'fullbleed' ? 'fullbleed' : 'band';
+const place = (e: EventEdition) => (e.location.isOnline ? 'Online' : e.location.city);
+---
+
+{variant === 'band' ? (
+  <SkewHero image={photos[0]} focus="60% 40%" height={620} bandWidth={50} giant="Faris" class="hh">
+    <p class="ds-kicker">{kicker}</p>
+    <h1 class="hh__h1">{parts.map((p) => (p.mark ? <span class="ds-mark">{p.text}</span> : p.text))}</h1>
+    <p class="hh__intro">{home.intro}</p>
+    <div class="hh__actions">
+      <a href={home.primaryCta.href} class="ds-btn ds-btn--cream ds-btn--lg" data-track="home-hero-primary">{home.primaryCta.label}</a>
+      <a href={home.secondaryCta.href} class="ds-link" data-track="home-hero-secondary">{home.secondaryCta.label}</a>
+    </div>
+    {next.length > 0 && (
+      <div slot="strip" class="hh__strip" data-until-group>
+        <span class="hh__strip-label">Next up</span>
+        {next.map((e, i) => (
+          <span class="hh__item" data-until={e.endsAt}>
+            {i > 0 && <span class="hh__sep" aria-hidden="true" data-until-sep>|</span>}
+            <a href={`/events/${e.slug}`} class:list={['hh__next', { 'hh__next--more': i > 0 }]} data-track="home-next-up">
+              <strong>{e.seriesName || e.title}</strong>{` · ${place(e)} · ${dayMonth(e.date)}`}
+            </a>
+          </span>
+        ))}
+      </div>
+    )}
+  </SkewHero>
+) : (
+  <section class="hfb">
+    <div class="hfb__photo" aria-hidden="true">
+      <SanityImg image={photos[0]} alt="" widths={[960, 1400, 1920]} sizes="100vw" loading="eager" fetchpriority="high" class="hfb__img" />
+    </div>
+    <span class="hfb__band" aria-hidden="true"></span>
+    <div class="ds-wrap hfb__text">
+      <div class="hfb__col">
+        <p class="ds-kicker">{kicker}</p>
+        <h1 class="hh__h1 hh__h1--xl">{parts.map((p) => (p.mark ? <span class="ds-mark">{p.text}</span> : p.text))}</h1>
+        <p class="hh__intro">{home.intro}</p>
+        <div class="hh__actions">
+          <a href={home.primaryCta.href} class="ds-btn ds-btn--cream ds-btn--lg" data-track="home-hero-primary">{home.primaryCta.label}</a>
+          <a href={home.secondaryCta.href} class="ds-link" data-track="home-hero-secondary">{home.secondaryCta.label}</a>
+        </div>
+      </div>
+    </div>
+    {next[0] && (
+      <div class="hh__strip hfb__strip" data-until-group>
+        <span class="hh__strip-label">Next up</span>
+        <a href={`/events/${next[0].slug}`} class="hh__next" data-track="home-next-up" data-until={next[0].endsAt}>
+          <strong>{next[0].seriesName || next[0].title}</strong>{` · ${place(next[0])} · ${dayMonth(next[0].date)}`}
+        </a>
+      </div>
+    )}
+  </section>
+)}
+
+<style>
+  .hh__h1 { margin: 0; font-size: clamp(32px, 4.4vw, 52px); line-height: 1; letter-spacing: -0.04em; font-weight: 800; text-wrap: balance; }
+  .hh__h1--xl { font-size: clamp(34px, 5vw, 60px); line-height: 0.98; }
+  .hh__intro { margin: 0; font-size: clamp(16px, 1.6vw, 18px); line-height: 1.5; color: rgb(var(--text-muted)); max-width: 42ch; }
+  .hh__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+  .hh__actions .ds-link { padding: 12px 2px; }
+  :global(.hh .skh__text) { padding-top: 64px; }
+  /* Tablet: a narrower band so the skew never runs under the intro (SkewHero sets the vars inline). */
+  @media (min-width: 721px) and (max-width: 1100px) {
+    :global(.skh.hh) { --band-w: 40% !important; --photo-w: 32% !important; }
+    :global(.hh .skh__col) { max-width: min(480px, 55%); }
+  }
+
+  .hh__strip {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 20px; box-sizing: border-box;
+    background: rgb(var(--ground)); border-left: 6px solid rgb(var(--yellow)); font-size: 14px; font-weight: 600;
+  }
+  .hh__strip-label { color: rgb(var(--accent-text)); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; font-size: 11px; }
+  .hh__next { color: rgb(var(--text)); text-decoration: none; transition: color 0.15s; }
+  .hh__next strong { font-weight: 800; }
+  .hh__next:hover { color: rgb(var(--accent-text)); }
+  .hh__sep { color: rgb(var(--hairline-strong)); }
+  .hh__item { display: inline-flex; align-items: center; gap: 14px; }
+  .hh__item[hidden], .hh__sep[hidden] { display: none; }
+
+  /* Full-bleed variant */
+  .hfb { position: relative; overflow: hidden; min-height: 640px; display: flex; align-items: flex-start; color: rgb(var(--c-cream)); background: rgb(var(--c-ink)); }
+  .hfb__photo { position: absolute; inset: 0; }
+  .hfb__photo :global(.hfb__img) { width: 100%; height: 100%; object-fit: cover; object-position: var(--fp, 50% 35%); display: block; }
+  .hfb__photo::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgb(var(--c-ink) / 0.96) 0%, rgb(var(--c-ink) / 0.85) 42%, rgb(var(--c-ink) / 0.2) 75%, rgb(var(--c-ink) / 0) 100%);
+  }
+  .hfb__band { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: var(--band); }
+  .hfb__text { position: relative; z-index: 1; padding-top: 64px; padding-bottom: 96px; }
+  .hfb__col { display: flex; flex-direction: column; gap: 24px; max-width: 600px; }
+  .hfb .ds-kicker { color: rgb(var(--c-yellow)); }
+  .hfb .hh__intro { color: rgb(var(--c-muted)); }
+  .hfb .ds-link { color: rgb(var(--c-cream)); }
+  .hfb__strip { position: absolute; right: var(--gutter); bottom: 30px; z-index: 2; background: rgb(var(--c-ink)); }
+  .hfb__strip .hh__next { color: rgb(var(--c-cream)); }
+  .hfb__strip .hh__strip-label { color: rgb(var(--c-yellow)); }
+
+  @media (max-width: 720px) {
+    :global(.hh .skh__text) { padding-top: 22px; }
+    .hh__actions { flex-direction: column; align-items: stretch; gap: 8px; }
+    .hh__actions .ds-btn { width: 100%; }
+    .hh__actions .ds-link { align-self: center; text-align: center; }
+    .hh__strip { width: 100%; background: rgb(var(--surface)); padding: 12px var(--gutter); }
+    .hh__next { display: inline-flex; align-items: center; min-height: 32px; }
+    .hh__sep, .hh__next--more { display: none; }
+
+    .hfb { flex-direction: column; min-height: 0; }
+    .hfb__photo { position: relative; inset: auto; height: 260px; }
+    .hfb__photo::after { background: linear-gradient(180deg, rgb(var(--c-ink) / 0) 40%, rgb(var(--c-ink) / 0.9) 100%); }
+    .hfb__band { position: relative; display: block; height: 8px; }
+    .hfb__text { padding-top: 22px; padding-bottom: 28px; }
+    .hfb__col { gap: 18px; }
+    .hfb__strip { position: relative; right: auto; bottom: auto; background: rgb(var(--c-surface)); }
+  }
+</style>

@@ -9,8 +9,8 @@ This file is the always-on map. Do **not** copy long guides into chat — open t
 | Piece | Where | Notes |
 |---|---|---|
 | Astro 5 + React islands | `apps/web` | Vercel. Homepage is ISR (`prerender = false`); everything else is prerendered. |
-| Sanity v3 | `apps/studio` | Content. GROQ in `apps/web/src/lib/sanity/queries.ts`. |
-| Design System v2.1 | `apps/web/src/styles/global.css` | Tokens + `ds-*` classes. Guardrails: `apps/web/scripts/ui-guardrails.mjs`. Taste: `docs/taste.md`. |
+| Sanity v3 | `apps/studio` | Content model V3 (editions → sessions with roles). All GROQ lives in the loaders in `apps/web/src/lib/sanity/v3/`. Vocabulary: `packages/shared/src/content-model.ts`. |
+| Design System v3 | `apps/web/src/styles/tokens.css`, `ds.css`, `components/v3/` | "Panels & Bands": Figtree, yellow accent, skewed bands. Rules: `docs/ui-rules.md`. Guardrails: `apps/web/scripts/ui-guardrails.mjs`. |
 | Resend + React Email | `apps/web/src/emails`, `apps/web/src/pages/api` | No `mailto:` on the site. Spec: `apps/web/CLAUDE.md`. |
 | PostHog (EU) | `apps/web/src/components/posthog.astro`, `apps/web/src/lib/analytics.ts` | Inventory: `docs/measurement.md`. |
 
@@ -21,11 +21,15 @@ Ignore `/src` at the repo root — leftover Next.js, not part of the build.
 ```sh
 pnpm install
 pnpm web          # site → http://localhost:4321
+SANITY_FIXTURES=1 pnpm web   # same, offline, against apps/web/fixtures/sanity-dataset.json
 pnpm studio       # Sanity Studio
 pnpm lint         # ESLint + UI guardrails + file-size/convention ratchet
 pnpm --filter web lint:ui
 pnpm --filter web lint:conventions
 pnpm --filter web typecheck     # astro check
+pnpm test         # loader contract tests + migration tests
+pnpm migrate:v3   # V2 → V3 content migration (dry-run by default)
+pnpm voice:cms    # AI-tell report for Sanity content (SANITY_FIXTURES=1 offline, --json for agents)
 ```
 
 The site must still render without Sanity/Resend/PostHog credentials (empty states / hardcoded proof fallbacks). Missing env is not a crash.
@@ -38,6 +42,8 @@ The site must still render without Sanity/Resend/PostHog credentials (empty stat
 | Email / Resend / no-mailto | `apps/web/CLAUDE.md` |
 | Tokens, a11y, no emojis, component checklist | `docs/ui-rules.md` (tokens in `global.css` win if they disagree) |
 | Content model, talk vs event, editing recipes | `docs/sanity-guide.md` |
+| Migrating / cleaning content with the Sanity MCP | `docs/sanity-mcp-prompts.md` |
+| Writing or reviewing any copy (voice, AI tells) | `docs/voice.md` · skill `voice-copy` |
 | Events, identify, recordings | `docs/measurement.md` |
 | Cursor rules / skills / MCPs | `.cursor/README.md` |
 
@@ -47,15 +53,16 @@ Nested `AGENTS.md` files in `apps/web` and `apps/studio` apply when you work in 
 
 1. **No `mailto:`** in site UI. Contact goes through Resend forms. The only allowed `mailto:` is inside admin email templates.
 2. **No raw Tailwind palette classes** (`bg-slate-800`, `text-blue-500`, …). Use `ds-*` / `rgb(var(--token) / …)`. `pnpm lint` fails the build.
-3. **No new hex literals** outside `global.css` and emails (satori `og.ts` is allowlisted). No new inline `style=""` in `.astro` files.
+3. **No new hex literals** outside `styles/tokens.css` and emails (satori `og.ts` is allowlisted). No new inline `style=""` in `.astro` files.
 4. **No emojis in the UI** (country flags excepted). Decorative emoji counts are ratcheted — they can only shrink.
 5. **File-size ratchet.** New files stay under the cap in `apps/web/scripts/conventions.mjs`. Existing giants cannot grow; split instead of raising a baseline. Explicit `any` and missing `.md` mirrors are ratcheted the same way.
-6. **Sanity fetches are failure-tolerant:** `sanityFetch(...).catch(() => [])` (or a fallback object). A CMS outage must never 500 a page.
-7. **Numbers come from data**, not copy (`lib/availability.ts`, `lib/proof.ts`, live queries).
-8. **Talk ≠ event.** A talk is bookable and timeless. An event has a date. Never model an upcoming appearance as a talk.
+6. **Sanity fetches are failure-tolerant.** Pages read through `lib/sanity/v3` loaders (they never throw). Any direct `sanityFetch(...)` must `.catch(...)`. A CMS outage must never 500 a page.
+7. **Numbers come from data**, not copy: derived counts (`getSpeakingStats()`, role-specific), dated metrics (`metric`, approved only).
+8. **Talk ≠ event.** A talk is bookable and timeless. An event is a dated edition; what Faris did there is `sessions[]` with an explicit role. Recordings/slides go on the session.
 9. **Agent surface stays in sync.** New/renamed public pages need a `.md` mirror, an `llms.txt.ts` entry, and an OG card in `pages/og/[...slug].png.ts`.
 10. **Do not reimplement** theme, scroll-reveal, `data-track` analytics, or cal.com modal — they live in `BaseLayout.astro`.
 11. **Do not add analytics events** unless a decision depends on them. If you do, update `AnalyticsEvent` and `docs/measurement.md` together.
+12. **Copy sounds like Faris, not an AI.** `pnpm lint` fails on AI tells in site copy (`packages/shared/src/voice.ts`); read `docs/voice.md` before writing copy. Never edit praise quotes.
 
 ## MCPs for this repo
 

@@ -7,8 +7,4 @@ type Props = $<Block>;
 const { node } = Astro.props;
 const id = generateHeadingIdFromBlock(node);
 ---
-<h2 id={id} class="text-3xl font-display font-bold mt-14 mb-5">
-  <a href={`#${id}`} class="heading-link !text-ink no-underline hover:!text-ink cursor-pointer" data-heading-id={id}>
-    <span class="text-ink"><slot /></span>
-  </a>
-</h2>
+<h2 id={id} class="pt-h pt-h2"><a href={`#${id}`} class="pt-anchor"><slot /></a></h2>

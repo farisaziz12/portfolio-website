@@ -1,9 +1,7 @@
-import {
-  Body, Container, Head, Heading, Html, Link, Preview,
-  Section, Text, Hr,
-} from '@react-email/components'
+import { Body, Container, Head, Heading, Html, Link, Preview, Section, Text, Hr } from '@react-email/components'
 import * as React from 'react'
 import * as s from './styles'
+import { EmailHeader } from './parts'
 
 interface Props {
   name: string
@@ -26,11 +24,7 @@ export function MentorshipAdminEmail({
       <Preview>Mentorship inquiry · {name}</Preview>
       <Body style={s.body}>
         <Container style={s.container}>
-          <Section style={s.terminalHeader}>
-            <Text style={s.terminalDots}>● ● ●</Text>
-            <Text style={s.terminalText}>$ ack mentorship-inquiry</Text>
-            <Text style={s.terminalOutput}>New inquiry from {name}.</Text>
-          </Section>
+          <EmailHeader label="New inquiry" />
 
           <Section style={s.content}>
             <Text style={s.kicker}>Mentorship inquiry</Text>

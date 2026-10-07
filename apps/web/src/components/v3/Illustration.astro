@@ -1,0 +1,45 @@
+---
+/**
+ * The four deck-kit illustrations, used unmodified (no mirroring, recolouring
+ * or cropping). Placement rules: Faris on the cream invitation panel (once
+ * per page at most); celebrating duck only for genuine success/recognition;
+ * curious duck for technical asides. Photos are evidence, these are character.
+ */
+import { Image } from 'astro:assets';
+import farisSpeaking from '../../assets/illustrations/faris-speaking.png';
+import farisThinking from '../../assets/illustrations/faris-thinking.png';
+import duckCurious from '../../assets/illustrations/duck-curious.png';
+import duckCelebrating from '../../assets/illustrations/duck-celebrating.png';
+
+const ART = {
+  'faris-speaking': { src: farisSpeaking, alt: 'Illustration of Faris holding a microphone' },
+  'faris-thinking': { src: farisThinking, alt: 'Illustration of Faris thinking' },
+  'duck-curious': { src: duckCurious, alt: 'Illustrated rubber duck with glasses, curious' },
+  'duck-celebrating': { src: duckCelebrating, alt: 'Illustrated rubber duck celebrating' },
+} as const;
+
+interface Props {
+  name: keyof typeof ART;
+  /** Rendered width in CSS px (height follows the artwork). */
+  width: number;
+  class?: string;
+  /** Decorative by default: character, not information. */
+  decorative?: boolean;
+  loading?: 'lazy' | 'eager';
+}
+
+const { name, width, class: className, decorative = true, loading = 'lazy' } = Astro.props;
+const art = ART[name];
+---
+
+<Image
+  src={art.src}
+  alt={decorative ? '' : art.alt}
+  width={width}
+  widths={[width, width * 2]}
+  sizes={`${width}px`}
+  format="webp"
+  quality={82}
+  loading={loading}
+  class={className}
+/>

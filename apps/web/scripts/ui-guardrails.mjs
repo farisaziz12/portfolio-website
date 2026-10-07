@@ -25,14 +25,13 @@ const SRC = join(ROOT, 'src');
 // ——— Baselines: current counts. Lower them as cleanup continues; the check
 // fails only when a count EXCEEDS its baseline (i.e. a regression).
 const BASELINES = {
-  inlineStyles: 50, // style="…" attributes in .astro files
-  hexLiterals: 15, // hex colors outside global.css/emails (scrims over images etc.)
+  inlineStyles: 2, // style="…" attributes in .astro files (V3 ratchet)
+  hexLiterals: 3, // hex outside styles/tokens.css + emails (V3 ratchet)
 };
 
 // Files allowed to contain raw palette *strings* (not rendered classes):
 const PALETTE_ALLOWLIST = new Set([
-  // Legacy Sanity `category.color` values used as lookup keys only.
-  'src/components/impact/MetricCard.astro',
+
 ]);
 
 const PALETTE_RE =
@@ -69,7 +68,7 @@ for (const file of walk(SRC)) {
 
   // og.ts renders social cards with satori, which has no CSS-variable support —
   // hex literals there are mandatory (kept in sync with global.css tokens).
-  if (!rel.endsWith('global.css') && rel !== 'src/lib/og.ts') {
+  if (!rel.endsWith('.css') && rel !== 'src/lib/og.ts') {
     for (const m of text.matchAll(HEX_RE)) {
       if (HEX_ALLOWED.test(m[0])) continue;
       hexCount++;

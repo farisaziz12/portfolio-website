@@ -3,7 +3,7 @@ export const prerender = false
 import type { APIRoute } from 'astro'
 import { WorkshopFollowUpEmail } from '../../../emails/WorkshopFollowUpEmail'
 import { sanityFetch } from '../../../lib/sanity/client'
-import { workshopInstanceBySlugQuery } from '../../../lib/sanity/queries'
+import { workshopInstanceBySlugQuery } from '../../../lib/sanity/workshop-queries'
 import { env, getFrom, resend, sendOrLog } from '../../../lib/email'
 import {
   ADMIN_SESSION_COOKIE,

@@ -1,0 +1,56 @@
+---
+/** Career timeline: period · role · organisation, public entries only. */
+import ImpactSplit from './ImpactSplit.astro';
+import type { CareerEntry } from '../../lib/sanity/v3';
+
+interface Props {
+  career: CareerEntry[];
+}
+const { career } = Astro.props;
+---
+
+{career.length > 0 && (
+  <ImpactSplit kicker="Career" title="A non-traditional route to building things." id="career" rule>
+    <a slot="head" href="/about" class="ds-link ds-link--sm" data-track="impact_longer_story">The longer story</a>
+    <ol class="ctl" role="list">
+      {career.map((c) => (
+        <li class="ctl__row">
+          <span class="ctl__when">{c.periodLabel || c.period}</span>
+          <div>
+            <h3 class="ctl__title">
+              {c.url ? <a href={c.url} target="_blank" rel="noopener noreferrer">{[c.role, c.name].filter(Boolean).join(' · ')}</a> : [c.role, c.name].filter(Boolean).join(' · ')}
+            </h3>
+            {c.description && <p class="ctl__desc">{c.description}</p>}
+            {c.clients?.length ? (
+              <ul class="ctl__clients" aria-label={`Clients at ${c.name}`}>
+                {c.clients.map((cl) => (
+                  <li>
+                    {cl.url ? <a href={cl.url} target="_blank" rel="noopener noreferrer" class="ds-textlink">{cl.name}</a> : <span class="ctl__client">{cl.name}</span>}
+                    {cl.note && <span class="ctl__note"> · {cl.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </ImpactSplit>
+)}
+
+<style>
+  .ctl { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid rgb(var(--hairline)); }
+  .ctl__row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 24px; padding: 18px 0; border-top: 1px solid rgb(var(--hairline)); }
+  .ctl__when { font-size: 13px; color: rgb(var(--text-faint)); padding-top: 4px; }
+  .ctl__title { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; }
+  .ctl__title a { color: inherit; text-decoration: none; }
+  .ctl__title a:hover { color: rgb(var(--accent-text)); }
+  .ctl__desc { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
+  .ctl__clients { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.5; }
+  .ctl__clients a, .ctl__client { font-weight: 700; }
+  .ctl__note { color: rgb(var(--text-muted)); }
+  @media (max-width: 520px) {
+    .ctl__row { grid-template-columns: 1fr; gap: 4px; }
+    .ctl__when { padding-top: 0; }
+  }
+</style>

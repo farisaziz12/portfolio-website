@@ -1,5 +1,7 @@
 import { defineType, defineField } from 'sanity';
 
+/** Singleton: SEO defaults, the site-wide "Now" line and profile links. */
+
 export default defineType({
   name: 'siteSettings',
   title: 'Site Settings',
@@ -67,6 +69,26 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'nowLine',
+      title: '"Now" line',
+      type: 'string',
+      description: 'The one string that says what you do today. Kicker on home, nav meta, OG cards: "Software engineer · speaker · ZurichJS co-founder". Swap it on announcement day.',
+    }),
+    defineField({
+      name: 'discoveryCallUrl',
+      title: 'Intro call link',
+      type: 'url',
+      description: 'cal.com link. Opens as an on-site modal.',
+      initialValue: 'https://cal.com/farisaziz12/discovery-call',
+    }),
+    defineField({
+      name: 'introEnabled',
+      title: 'Play the opener',
+      type: 'boolean',
+      description: 'The 3.6 s intro on first visit per session. Off = hero only.',
+      initialValue: true,
+    }),
+    defineField({
       name: 'twitterHandle',
       title: 'Twitter/X Handle',
       type: 'string',
@@ -80,6 +102,11 @@ export default defineType({
     defineField({
       name: 'githubUrl',
       title: 'GitHub URL',
+      type: 'url',
+    }),
+    defineField({
+      name: 'blueskyUrl',
+      title: 'Bluesky URL',
       type: 'url',
     }),
     defineField({

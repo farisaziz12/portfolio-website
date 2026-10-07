@@ -1,0 +1,74 @@
+---
+/**
+ * Numbered poster card (Featured row, Services). A huge 01/02/03 numeral is
+ * cropped off the card edge. `lead` = yellow flagship; `ink` = surface card.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  n: number;
+  /** Glyph before the action label. */
+  icon?: 'play' | 'listen' | 'external' | 'arrow' | 'written';
+  tone?: 'lead' | 'ink';
+  kicker?: string;
+  kickerRight?: string;
+  title: string;
+  text?: string;
+  action?: string;
+  href: string;
+  external?: boolean;
+  track?: string;
+  class?: string;
+}
+const { n, icon, tone = 'ink', kicker, kickerRight, title, text, action, href, external = false, track, class: className } = Astro.props;
+const num = String(n).padStart(2, '0');
+const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<a href={href} class:list={['poster', `poster--${tone}`, className]} data-track={track} {...ext}>
+  <span class="poster__num" aria-hidden="true" data-num={num}></span>
+  <span class="poster__top">
+    {kicker && <span>{kicker}</span>}
+    {kickerRight && <span class="poster__right">{kickerRight}</span>}
+  </span>
+  <span class="poster__body">
+    <span class="poster__title">{title}</span>
+    {text && <span class="poster__text">{text}</span>}
+    {action && <span class="poster__action">{icon && <Icon name={icon} size={12} />}{action}</span>}
+  </span>
+</a>
+
+<style>
+  .poster {
+    position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+    min-height: 300px; height: 100%; box-sizing: border-box; padding: 24px; border-radius: var(--radius-card); text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .poster--lead { background: rgb(var(--yellow)); color: rgb(var(--c-ink)); }
+  .poster--lead:hover { background: rgb(var(--c-cream)); }
+  .poster--ink { background: rgb(var(--surface)); color: rgb(var(--text)); border: 1px solid rgb(var(--hairline)); padding: 22px; }
+  .poster--ink:hover { border-color: rgb(var(--yellow)); }
+  /* Decorative watermark number: drawn from data-num via ::before, so it's
+     artwork rather than text (no contrast requirement, not read out). */
+  .poster__num { position: absolute; font-weight: 900; line-height: 1; letter-spacing: -0.08em; pointer-events: none; }
+  .poster__num::before { content: attr(data-num); }
+  .poster--lead .poster__num { right: -60px; top: -80px; font-size: 300px; color: rgb(var(--c-ink)); opacity: 0.07; }
+  .poster--ink .poster__num { right: -30px; bottom: -90px; font-size: 240px; color: rgb(var(--text)); opacity: 0.04; }
+  .poster__top { position: relative; display: flex; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .poster--ink .poster__top { color: rgb(var(--accent-text)); }
+  .poster__right { text-align: right; }
+  .poster__body { position: relative; display: flex; flex-direction: column; gap: 10px; }
+  .poster__title { font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; text-wrap: balance; }
+  .poster--lead .poster__title { font-size: clamp(26px, 2.8vw, 32px); max-width: 17ch; }
+  .poster--ink .poster__title { font-size: clamp(20px, 2vw, 23px); line-height: 1.08; }
+  .poster__text { font-size: 14.5px; line-height: 1.45; max-width: 40ch; }
+  .poster--lead .poster__text { color: rgb(58 54 48); }
+  .poster__action { align-self: flex-start; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; box-sizing: border-box; padding: 0 16px; border-radius: var(--radius-btn); font-weight: 800; font-size: 14px; }
+  .poster--lead .poster__action { background: rgb(var(--c-ink)); color: rgb(var(--c-cream)); }
+  .poster--ink .poster__action { border: 2px solid currentColor; font-size: 13px; }
+  @media (max-width: 720px) {
+    .poster { min-height: 0; }
+    .poster--lead { min-height: 220px; }
+    .poster--lead .poster__num { font-size: 200px; right: -30px; top: -50px; }
+  }
+</style>

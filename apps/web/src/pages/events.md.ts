@@ -1,42 +1,56 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { upcomingEventsQuery, pastEventsQuery } from '../lib/sanity/queries';
-import { mdResponse, mdDate } from '../lib/markdown';
-
-interface EventItem {
-  title: string;
-  slug: string;
-  type?: string;
-  conference?: string;
-  date: string;
-  location?: { city?: string; country?: string; isOnline?: boolean };
-}
-
-function line(e: EventItem): string {
-  const loc = e.location?.isOnline
-    ? 'Online'
-    : [e.location?.city, e.location?.country].filter(Boolean).join(', ');
-  return `- ${mdDate(e.date)}: **${e.title}**${e.conference ? ` at ${e.conference}` : ''}${loc ? ` (${loc})` : ''}${e.type ? ` · ${e.type}` : ''} · https://faziz-dev.com/events/${e.slug}`;
-}
+import { ROLE_BUCKETS } from 'shared';
+import { eventPlace, fullDate, getPastEvents, getSpeakingStats, getUpcomingEvents, localTime, monthYear, primarySession, yearOf } from '../lib/sanity/v3';
+import { bucketBadge, kindLabel, liveSessions, sessionShort, sessionTiming } from '../lib/events-view';
+import { mdResponse } from '../lib/markdown';
+import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
-  const [upcoming, past] = await Promise.all([
-    sanityFetch<EventItem[]>(upcomingEventsQuery).catch(() => []),
-    sanityFetch<EventItem[]>(pastEventsQuery).catch(() => []),
-  ]);
+  const [upcoming, past, stats] = await Promise.all([getUpcomingEvents(), getPastEvents(), getSpeakingStats()]);
+
+  const up = upcoming.map((e) => {
+    const sessions = liveSessions(e)
+      .map((s) => `  - ${sessionShort(s)}${s.durationMinutes ? ` (${s.durationMinutes} min)` : ''} · ${sessionTiming(e, s) || (s.startsAt ? localTime(s.startsAt, e.timezone) : 'time TBA')}`)
+      .join('\n');
+    return `- **${fullDate(e.date)}: ${e.title}** · ${kindLabel(e)} · ${eventPlace(e, { venue: true })} · ${SITE}/events/${e.slug}${sessions ? `\n${sessions}` : ''}`;
+  });
+
+  const years = [...new Set(past.map((e) => yearOf(e.date)))];
+  const archive = years.map((y) => {
+    const rows = past
+      .filter((e) => yearOf(e.date) === y)
+      .map((e) => {
+        const role = e.buckets.map((b) => bucketBadge(b, e.isUpcoming)).join(' + ') || bucketBadge(primarySession(e)?.bucket, e.isUpcoming);
+        const what = liveSessions(e).map(sessionShort).join(' · ');
+        return `- ${monthYear(e.date)}: **${e.title}** (${eventPlace(e)}) · ${role}${what ? ` · ${what}` : ''} · ${SITE}/events/${e.slug}`;
+      });
+    return `### ${y}\n\n${rows.join('\n')}`;
+  });
+
+  const byRole = ROLE_BUCKETS.map((b) => {
+    const n = past.filter((e) => e.buckets.includes(b.value)).length;
+    return `- ${b.title}: ${n} past edition${n === 1 ? '' : 's'}`;
+  }).join('\n');
 
   const body = [
-    `# Speaking schedule · Faris Aziz`,
+    `# Schedule: upcoming and past events · Faris Aziz`,
     ``,
-    `> Where I'll be next and everywhere I've been. Invite me to your event: https://faziz-dev.com/invite`,
+    `> Upcoming appearances first, then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
     ``,
-    `## Upcoming (${upcoming.length})`,
+    `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.eventRecords} event records. As of ${stats.asOf}.`,
+    stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
     ``,
-    upcoming.length ? upcoming.map(line).join('\n') : '_No public dates confirmed right now; invite me: https://faziz-dev.com/invite_',
+    `## Upcoming (${upcoming.length} confirmed)`,
     ``,
-    `## Past (${past.length})`,
+    up.length ? up.join('\n') : `_No public dates confirmed right now. Invite me: ${SITE}/invite_`,
     ``,
-    past.map(line).join('\n'),
+    `## Archive (${past.length} past editions)`,
+    ``,
+    `By role (an edition can count under more than one):`,
+    ``,
+    byRole,
+    ``,
+    archive.join('\n\n'),
   ].join('\n');
 
   return mdResponse(body);

@@ -1,410 +1,188 @@
 ---
+/**
+ * /mentorship: 1:1 mentorship, a few seats at a time. V3 Mentorship mock.
+ * Right column: the cream "Apply for a seat" panel (Apply → #apply form) and "How it works".
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
-import IconChip from '../components/design/IconChip.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import ServiceOfferCard from '../components/services/ServiceOfferCard.astro';
-import SocialWallIsland from '../components/islands/SocialWallIsland';
-import MentorshipInquiryForm from '../components/islands/MentorshipInquiryForm';
-import { sanityFetch, urlFor } from '../lib/sanity/client';
-import { mentorshipOffersQuery, featuredSocialPostsQuery } from '../lib/sanity/queries';
-import { availabilityLabel } from '../lib/availability';
-import type { ServiceOffer, SocialPost } from '../lib/sanity/types';
+import Kicker from '../components/v3/Kicker.astro';
+import SectionHead from '../components/v3/SectionHead.astro';
+import PraiseCard from '../components/v3/PraiseCard.astro';
+import Illustration from '../components/v3/Illustration.astro';
+import ProgramCard from '../components/services/ProgramCard.astro';
+import MentorshipApply from '../components/services/MentorshipApply.astro';
+import { getServiceOffers, getPraiseFor, getMetricsByDomain, getProfile } from '../lib/sanity/v3';
+import { MENTORSHIP_COPY as C, MENTORCRUISE_URL, cfpMetric, mentorshipFocus, mentorshipPrograms, mentorshipDetails, offerPrice } from '../lib/services';
+import { breadcrumbs, SITE } from '../lib/seo';
 
-
-
-const [offers, socialPosts] = await Promise.all([
-  sanityFetch<ServiceOffer[]>(mentorshipOffersQuery).catch(() => []),
-  sanityFetch<SocialPost[]>(featuredSocialPostsQuery).catch(() => []),
+const [offers, praise, communityMetrics, profile] = await Promise.all([
+  getServiceOffers(),
+  getPraiseFor({ topic: 'mentoring' }),
+  getMetricsByDomain('community'),
+  getProfile(),
 ]);
 
-// Same social-card treatment as home and /about (avatars resolved server-side).
-const socialPostImages: Record<string, string> = {};
-for (const p of socialPosts) {
-  if (p.authorImage) {
-    try { socialPostImages[p._id] = urlFor(p.authorImage).width(48).height(48).url(); } catch {}
-  }
-}
-const normalizedSocialPosts = socialPosts.map((p) => ({
-  _id: p._id,
-  platform: p.platform,
-  author: p.author,
-  authorRole: p.authorRole,
-  authorHandle: p.authorHandle,
-  content: p.content,
-  url: p.url,
-  postDate: p.postDate,
-}));
+const focus = mentorshipFocus(cfpMetric(communityMetrics));
+const programs = mentorshipPrograms(offers);
+const details = mentorshipDetails(programs);
+const quotes = praise.slice(0, 2);
+const fallbackHref = programs.find((o) => o.bookingUrl?.includes('mentorcruise'))?.bookingUrl ?? profile.links.mentorcruise ?? MENTORCRUISE_URL;
 
-const topics = [
+const schema = [
   {
-    title: 'Career growth',
-    items: ['Promotion strategies', 'Salary negotiation', 'Role transitions', 'Reading the room politically'],
-    icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/>',
+    '@type': 'Service',
+    '@id': `${SITE}/mentorship#service`,
+    name: '1:1 engineering mentorship',
+    serviceType: 'Career, craft and speaking mentorship',
+    description: C.lede,
+    audience: { '@type': 'Audience', audienceType: 'Individual engineers' },
+    provider: { '@id': `${SITE}/#person` },
+    areaServed: 'Worldwide',
+    url: `${SITE}/mentorship`,
+    ...(programs.length
+      ? {
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'Mentorship programmes',
+            itemListElement: programs.map((o) => ({
+              '@type': 'Offer',
+              name: o.title,
+              ...(o.shortDescription ? { description: o.shortDescription } : {}),
+              ...(o.bookingUrl ? { url: o.bookingUrl } : {}),
+              ...(offerPrice(o) && o.priceFrom ? { price: o.priceFrom, priceCurrency: (o.priceCurrency || 'CHF').toUpperCase() } : {}),
+            })),
+          },
+        }
+      : {}),
   },
-  {
-    title: 'Technical mastery',
-    items: ['React & Next.js patterns', 'System design at scale', 'Code review craft', 'Architecture thinking'],
-    icon: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
-  },
-  {
-    title: 'Public speaking',
-    items: ['CFP writing that lands', 'Talk preparation', 'Stage presence', 'Building a personal brand'],
-    icon: '<path d="M9 3h6v8a3 3 0 0 1-6 0z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
-  },
-  {
-    title: 'Remote & async',
-    items: ['Async communication', 'Working across timezones', 'Work-life sustainability', 'Global opportunities'],
-    icon: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
-  },
-];
-
-const approach = [
-  {
-    title: 'Outcome-first',
-    desc: "We start with what you want to change, not the tools. Every session ends with what you'll do next.",
-    icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
-  },
-  {
-    title: 'Honest feedback',
-    desc: "I won't blow smoke. If your code or career strategy has problems, I'll tell you. Clear is kind; unclear is unkind in the long run.",
-    icon: '<path d="M3 12l6 6L21 6"/>',
-  },
-  {
-    title: 'Private and safe',
-    desc: "Everything we discuss stays between us. You can bring the messy stuff; that's where growth happens.",
-    icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  },
-  {
-    title: 'Real accountability',
-    desc: 'Goals get tracked. We follow up. You leave each session knowing what you committed to.',
-    icon: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
-  },
-];
-
-const faq = [
-  {
-    question: 'How long are mentorship engagements?',
-    answer: 'Most engagements run 3–6 months in either weekly or bi-weekly cadence. Long enough to build momentum, short enough to keep focus.',
-    open: true,
-  },
-  {
-    question: "I'm a senior engineer, is this worth it?",
-    answer: "Especially. Senior engineers tend to plateau on the political and strategic side, not the technical. That's where I focus most.",
-    open: false,
-  },
-  {
-    question: 'What if our sessions stop being useful?',
-    answer: 'Then we stop. If a session ever feels like it didn\'t move you forward, tell me: I\'ll either change the approach or end the engagement and refund.',
-    open: false,
-  },
-  {
-    question: 'Can we focus on just one skill area?',
-    answer: 'Yes. Some folks come for talk prep, others for code review craft, others for whole-career mapping. We scope at the start.',
-    open: false,
-  },
+  breadcrumbs([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+    { name: 'Mentorship', path: '/mentorship' },
+  ]),
 ];
 ---
 
 <BaseLayout
-  title="Mentorship | Faris Aziz"
-  description="1:1 mentorship for engineers who want to level up their careers. Career coaching, technical skills, and personal growth."
-  pathname="/mentorship"
+  title="Mentorship: senior, lead, or your first talk | Faris Aziz"
+  description="1:1 mentorship for engineers getting to senior or lead, owning systems in production, or giving their first conference talk. A few seats at a time."
   image="/og/mentorship.png"
   markdownAlternate="/mentorship.md"
-  extraSchema={[
-    {
-      '@type': 'Service',
-      name: '1:1 engineering mentorship',
-      serviceType: 'Career and technical mentorship',
-      description:
-        '1:1 coaching for software engineers: career strategy, technical mastery, public speaking, and sustainable growth. Weekly or bi-weekly cadence, 3–6 month engagements.',
-      provider: { '@id': 'https://faziz-dev.com/#person' },
-      areaServed: 'Worldwide',
-      url: 'https://faziz-dev.com/mentorship',
-    },
-  ]}
+  extraSchema={schema}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <nav class="page-crumbs" aria-label="Breadcrumb">
-        <a href="/contact">Work with me</a>
-        <span class="page-crumbs__sep">/</span>
-        <span class="page-crumbs__cur">Mentorship</span>
-      </nav>
-      <Kicker variant="signal">Mentorship · for individual engineers</Kicker>
-      <h1 class="page-hero__title">
-        You're closer than <span class="accent-word">you think</span>.
-      </h1>
-      <p class="page-hero__lead">
-        1:1 coaching from someone who's done mid → senior → staff in half a decade. We work on the things that actually move you forward: technical, strategic, political.
-      </p>
-      <div class="page-hero__actions">
-        <a href="#apply" class="ds-btn ds-btn-primary ds-btn-lg">
-          Send an inquiry
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="#programs" class="ds-btn ds-btn-secondary ds-btn-lg">See programs</a>
-      </div>
-    </div>
-  </header>
+  <div class="ds-wrap">
+    <div class="mgrid">
+      <header class="mhead">
+        <Kicker parts={C.kicker} />
+        <h1 class="ds-h1 mhead__title">{C.title}</h1>
+        <p class="ds-lede mhead__lede">{C.lede}</p>
+      </header>
 
-  <section class="page-section">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">What we can work on</Kicker>
-        <h2 class="page-h2 ds-reveal">Pick a focus, or <span class="mark">bring all of it</span></h2>
-      </div>
-      <div class="page-grid-2 wide">
-        {topics.map((t) => (
-          <div class="ds-card mentorship-topic ds-reveal">
-            <IconChip variant="signal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={t.icon} />
-            </IconChip>
-            <h3 class="mentorship-topic__title">{t.title}</h3>
-            <ul class="event-list">
-              {t.items.map((it) => (
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>{it}</span>
-                </li>
-              ))}
-            </ul>
+      <aside class="maside" aria-label="Apply and how it works">
+        <section class="ds-panel apanel" aria-labelledby="apanel-title">
+          <div class="apanel__copy">
+            <p class="ds-kicker">{C.apply.kicker}</p>
+            <h2 id="apanel-title" class="apanel__title">{C.apply.title}</h2>
+            <p class="apanel__body">{C.apply.body}</p>
+            <a href="#apply" class="ds-btn ds-btn--panel ds-btn--block" data-track="mentorship-apply">Apply</a>
           </div>
-        ))}
+          <Illustration name="faris-thinking" width={100} class="apanel__art" loading="eager" />
+        </section>
+
+        <section class="ds-card how" aria-labelledby="how-title">
+          <h2 id="how-title" class="ds-kicker">How it works</h2>
+          <dl class="ds-dl how__dl">
+            {details.map((d) => (<><dt>{d.label}</dt><dd>{d.value}</dd></>))}
+          </dl>
+        </section>
+      </aside>
+
+      <div class="mbody">
+        <section aria-labelledby="focus-title">
+          <h2 id="focus-title" class="sr-only">What we can work on</h2>
+          <ul class="ds-grid-3 focus" role="list">
+            {focus.map((f) => (
+              <li class="ds-card focus__card">
+                <p class="ds-kicker">{f.kicker}</p>
+                <h3 class="focus__title">{f.title}</h3>
+                <p class="focus__body">{f.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {quotes.length > 0 && (
+          <section class="praise" aria-labelledby="praise-title">
+            <SectionHead
+              id="praise-title"
+              title="From people I've mentored and taught"
+              size="label"
+              link={{ label: 'All mentions', href: '/appreciation?topic=mentoring' }}
+              class="praise__head"
+            />
+            <div class="ds-grid-2">
+              {quotes.map((p) => <PraiseCard praise={p} variant="stripe" full class="praise__card" />)}
+            </div>
+            <p class="ds-meta praise__note">{C.praiseNote}</p>
+          </section>
+        )}
+
+        {programs.length > 0 && (
+          <section class="programs" aria-labelledby="programs-title">
+            <SectionHead id="programs-title" title="Programmes" size="label" class="praise__head" />
+            <div class="ds-grid-2">
+              {programs.map((o) => <ProgramCard offer={o} />)}
+            </div>
+          </section>
+        )}
       </div>
     </div>
-  </section>
 
-  <!-- APPLY — the default inquiry path. MentorCruise is offered as an alternative underneath the form. -->
-  <section id="apply" class="page-section page-section--alt">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Start here</Kicker>
-        <h2 class="page-h2 ds-reveal">Send an <span class="mark">inquiry</span></h2>
-        <p class="page-hero__lead" style="margin-inline:auto;text-align:center;">Tell me where you're at, what you want to work on, and your budget. I reply within two days with whether we're a fit and how I'd structure it.</p>
-      </div>
-      <div class="mentorship-form-wrap">
-        <MentorshipInquiryForm client:load />
-        <p class="mentorship-alt">
-          Prefer a platform?
-          <a href="https://mentorcruise.com/mentor/farisaziz/" target="_blank" rel="noopener noreferrer" class="ds-link">
-            Book me on MentorCruise
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
-        </p>
-      </div>
-    </div>
-  </section>
-
-  {offers.length > 0 && (
-    <section id="programs" class="page-section">
-      <div class="container">
-        <div class="page-section__heading">
-          <Kicker class="ds-reveal">Programs</Kicker>
-          <h2 class="page-h2 ds-reveal">Pick a cadence</h2>
-        </div>
-        <div class="page-grid-3 wide">
-          {offers.map((offer) => <ServiceOfferCard offer={offer} />)}
-        </div>
-      </div>
-    </section>
-  )}
-
-  {socialPosts.length > 0 && (
-    <section class="page-section">
-      <div class="container">
-        <div class="page-section__heading">
-          <Kicker class="ds-reveal">From mentees</Kicker>
-          <h2 class="page-h2 ds-reveal">In their <span class="mark">own words</span></h2>
-        </div>
-        <SocialWallIsland
-          client:visible
-          posts={normalizedSocialPosts}
-          testimonials={[]}
-          socialPostImages={socialPostImages}
-          testimonialImages={{}}
-        />
-      </div>
-    </section>
-  )}
-
-  <section class="page-section page-section--alt">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">My approach</Kicker>
-        <h2 class="page-h2 ds-reveal">How I actually run sessions</h2>
-      </div>
-      <div class="page-grid-2 wide">
-        {approach.map((a) => (
-          <div class="ds-card mentorship-approach ds-reveal">
-            <IconChip>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={a.icon} />
-            </IconChip>
-            <h3 class="mentorship-approach__title">{a.title}</h3>
-            <p class="mentorship-approach__desc">{a.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="page-section">
-    <div class="container">
-      <div class="page-section__heading">
-        <Kicker class="ds-reveal">Common questions</Kicker>
-        <h2 class="page-h2 ds-reveal">FAQ</h2>
-      </div>
-      <div class="svc-faq ds-reveal">
-        {faq.map((item) => (
-          <details open={item.open}>
-            <summary>{item.question}</summary>
-            <div class="svc-faq__ans">{item.answer}</div>
-          </details>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status={availabilityLabel('Mentees')}
-          title="Stuck is temporary"
-          body="If you're plateaued, second-guessing your next move, or just want a sharper feedback loop, let's talk. I reply within two days."
-          primaryHref="#apply"
-          primaryLabel="Send an inquiry"
-          secondaryHref={null}
-        />
-        <p class="ds-crosslink">Looking for something else? <a href="/consulting" class="ds-link">Team consulting</a>, or <a href="/invite" class="ds-link">invite me to speak</a>.</p>
-      </div>
-    </div>
-  </section>
-
+    <MentorshipApply replyTime={profile.replyTime} fallbackHref={fallbackHref} />
+  </div>
 </BaseLayout>
 
 <style>
-  /* Inquiry-form card wrapper — matches the panel treatment used on /invite */
-  .mentorship-form-wrap {
-    max-width: 680px;
-    margin: 0 auto;
-    background: rgb(var(--surface-2));
-    border: 1px solid rgb(var(--edge));
-    border-radius: 14px;
-    padding: clamp(1.5rem, 3vw, 2.2rem);
+  .mgrid {
+    display: grid; grid-template-columns: minmax(0, 1fr) 400px; grid-template-rows: auto 1fr;
+    grid-template-areas: 'head aside' 'body aside'; gap: 30px 56px;
+    padding-block: clamp(32px, 5vw, 48px) clamp(40px, 5vw, 64px);
   }
+  .mhead { grid-area: head; display: flex; flex-direction: column; gap: 14px; }
+  .mhead__title { font-size: clamp(36px, 4.6vw, 48px); line-height: 0.98; letter-spacing: -0.04em; }
+  .mhead__lede { font-size: 17px; line-height: 1.55; max-width: 58ch; }
+  .maside { grid-area: aside; display: flex; flex-direction: column; gap: 14px; align-self: start; }
+  .mbody { grid-area: body; display: flex; flex-direction: column; gap: 30px; min-width: 0; }
 
-  .mentorship-alt {
-    margin-top: 1.2rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid rgb(var(--edge));
-    font-size: 0.92rem;
-    color: rgb(var(--ink-muted));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
+  .apanel { display: grid; grid-template-columns: minmax(0, 1fr) 100px; gap: 14px; align-items: center; padding: 24px; }
+  .apanel__copy { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .apanel__title { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .apanel__body { margin: 0; font-size: 14px; line-height: 1.5; }
+  .apanel :global(.apanel__art) { width: 100px; height: auto; justify-self: end; }
 
-  .mentorship-topic {
-    padding: 1.6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .mentorship-topic__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.15rem;
-    color: rgb(var(--ink));
-    margin-top: 0.5rem;
-  }
-  .mentorship-approach {
-    padding: 1.6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .mentorship-approach__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: rgb(var(--ink));
-    margin-top: 0.5rem;
-  }
-  .mentorship-approach__desc {
-    color: rgb(var(--ink-muted));
-    line-height: 1.55;
-  }
+  .how { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+  .how__dl { font-size: 14px; line-height: 1.5; gap: 6px 14px; }
+  .how__dl :global(dd) { color: rgb(var(--text-muted)); }
 
-  .event-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.5rem;
-  }
-  .event-list li {
-    display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    color: rgb(var(--ink-muted));
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
-  .event-list svg {
-    width: 18px;
-    height: 18px;
-    color: rgb(var(--signal));
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
+  .focus { margin: 0; padding: 0; list-style: none; }
+  .focus__card { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
+  .focus__title { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; }
+  .focus__body { margin: 0; font-size: 14px; line-height: 1.5; color: rgb(var(--text-muted)); }
 
-  /* FAQ — reuses the same .svc-faq class for visual consistency with /services */
-  .svc-faq {
-    max-width: 760px;
-    margin-inline: auto;
-    display: grid;
-    gap: 0.7rem;
+  .praise, .programs { display: flex; flex-direction: column; gap: 12px; }
+  .mbody :global(.praise__head) { margin-bottom: 0; }
+  .praise :global(.praise__card) { height: 100%; padding: 22px; }
+  .praise :global(.pq-stripe__quote) { font-size: 15.5px; line-height: 1.5; }
+  .praise__note { margin: 0; }
+
+  @media (max-width: 1040px) {
+    .mgrid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: 'head' 'aside' 'body'; }
+    .maside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   }
-  .svc-faq details {
-    border: 1px solid rgb(var(--edge));
-    border-radius: 10px;
-    background: rgb(var(--surface-2));
-    overflow: hidden;
+  @media (max-width: 720px) {
+    .maside { grid-template-columns: 1fr; }
   }
-  .svc-faq summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 1.1rem 1.3rem;
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.02rem;
-    color: rgb(var(--ink));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-  }
-  .svc-faq summary::-webkit-details-marker { display: none; }
-  .svc-faq summary::after {
-    content: '+';
-    font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
-    color: rgb(var(--accent-bright));
-    font-size: 1.3rem;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .svc-faq details[open] summary::after { transform: rotate(45deg); }
-  .svc-faq__ans {
-    padding: 0 1.3rem 1.2rem;
-    color: rgb(var(--ink-muted));
-    font-size: 0.96rem;
-    line-height: 1.6;
+  @media (max-width: 380px) {
+    .apanel { grid-template-columns: 1fr; }
+    .apanel :global(.apanel__art) { width: 84px; grid-row: 1; }
   }
 </style>

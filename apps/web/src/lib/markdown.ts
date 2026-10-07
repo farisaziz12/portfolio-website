@@ -13,17 +13,33 @@
  * `.md`-suffix URL convention is the supported path.
  */
 
-const FOOTER = `
+import { getCommunities, getProfile } from './sanity/v3';
+
+/** Who, where and how to reach me, from the speaker profile (Sanity). */
+async function footer(): Promise<string> {
+  const [profile, communities] = await Promise.all([getProfile(), getCommunities()]);
+  const community = communities.find((c) => /found/i.test(c.role ?? '')) ?? communities[0];
+  const who = [`${profile.name}: software engineer, speaker`, community ? `${community.name} co-founder` : null].filter(Boolean).join(', ');
+  const links = [
+    ['LinkedIn', profile.links.linkedin],
+    ['GitHub', profile.links.github],
+    ['Bluesky', profile.links.bluesky],
+  ]
+    .filter(([, href]) => href)
+    .map(([label, href]) => `${label}: ${href}`)
+    .join(' · ');
+  return `
 
 ---
 
-Faris Aziz: Staff Software Engineer & Conference Speaker, Geneva.
-Site: https://faziz-dev.com · Invite to speak: https://faziz-dev.com/invite · Consulting: https://cal.com/farisaziz12/discovery-call · Mentorship: https://faziz-dev.com/mentorship
-LinkedIn: https://linkedin.com/in/farisaziz12 · GitHub: https://github.com/farisaziz12 · Bluesky: https://bsky.app/profile/farisaziz.com
+${who}. ${profile.travelBase}.
+Site: https://faziz-dev.com · Invite to speak: https://faziz-dev.com/invite · Services: https://faziz-dev.com/services · Mentorship: https://faziz-dev.com/mentorship · Index for agents: https://faziz-dev.com/llms.txt
+${links}
 `;
+}
 
-export function mdResponse(body: string, { footer = true } = {}): Response {
-  return new Response(body.trimEnd() + (footer ? FOOTER : '') + '\n', {
+export async function mdResponse(body: string, { footer: withFooter = true } = {}): Promise<Response> {
+  return new Response(body.trimEnd() + (withFooter ? await footer() : '') + '\n', {
     headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
   });
 }

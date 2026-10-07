@@ -1,0 +1,225 @@
+---
+/**
+ * Articles & podcasts, one section per format, each with the display that
+ * suits it: articles as a card grid (newest one full width), podcasts as episode
+ * cards with cover art, video as thumbnails. Covers come from Sanity, else
+ * the artwork looked up from the link (lib/sanity/v3/artwork.ts). Format + Topic pills filter across sections
+ * (?format=podcast&topic=community); everything shows without JS.
+ */
+import { TOPICS, TOPIC_SHORT, type PublicationFormat } from 'shared';
+import FilterPills from '../v3/FilterPills.astro';
+import SanityImg from '../v3/SanityImg.astro';
+import Icon from '../v3/Icon.astro';
+import { monthYear, writingAction, type WritingItem } from '../../lib/sanity/v3';
+
+interface Props {
+  items: WritingItem[];
+}
+
+const { items } = Astro.props;
+
+const SECTIONS: { format: PublicationFormat; label: string; pill: string }[] = [
+  { format: 'article', label: 'Articles', pill: 'Articles' },
+  { format: 'podcast', label: 'Podcasts', pill: 'Podcasts' },
+  { format: 'video', label: 'Video', pill: 'Video' },
+];
+const sections = SECTIONS.map((s) => ({ ...s, items: items.filter((i) => i.format === s.format) })).filter((s) => s.items.length);
+const formats = sections.map((s) => ({ value: s.format, label: s.pill, count: s.items.length }));
+const topics = TOPICS.filter((t) => items.some((i) => i.topic === t.value)).map((t) => ({ value: t.value, label: TOPIC_SHORT[t.value] }));
+
+const ext = (i: WritingItem) => (i.isInternal ? {} : { target: '_blank', rel: 'noopener noreferrer' });
+const track = (i: WritingItem) => (i.isInternal ? 'writing-read' : `writing-${i.format}`);
+const topicOf = (i: WritingItem) => (i.topic ? TOPIC_SHORT[i.topic] : undefined);
+const where = (i: WritingItem) => (i.isInternal ? 'On this site' : i.source);
+const meta = (...parts: (string | undefined | null | false)[]) => parts.filter(Boolean).join(' · ');
+---
+
+<div class="lib" data-filter-root>
+  {(formats.length > 1 || topics.length > 1) && (
+    <div class="lib__filters">
+      {formats.length > 1 && <FilterPills name="format" label="Show" options={formats} allCount={items.length} />}
+      {topics.length > 1 && <FilterPills name="topic" label="Topic" options={topics} />}
+    </div>
+  )}
+
+  {sections.map((s) => (
+    <section class={`lib__sec lib__sec--${s.format}`} data-filter-group aria-labelledby={`lib-${s.format}`}>
+      <h2 class="lib__h" id={`lib-${s.format}`}>{s.label}</h2>
+
+      {s.format === 'article' && (
+        <ul class="lib__grid lib__grid--articles">
+          {s.items.map((i, n) => (
+            <li class:list={['lib__cell', { 'lib__cell--lead': n === 0 }]} data-filter-item data-format={i.format} data-topic={i.topic ?? ''}>
+              <a href={i.href} class:list={['la', { 'la--lead': n === 0, 'la--img': i.image?.asset }]} data-track={track(i)} {...ext(i)}>
+                {i.image?.asset && (
+                  <SanityImg image={i.image} alt="" ratio={16 / 9} widths={[480, 800, 1200]} sizes={n === 0 ? '(max-width: 960px) 100vw, 50vw' : '(max-width: 720px) 100vw, 33vw'} class="la__img" />
+                )}
+                <span class="la__body">
+                  <span class="la__src">{meta(where(i), i.sourceNote)}</span>
+                  <span class="la__title">{i.title}</span>
+                  {i.excerpt && <span class="la__ex">{i.excerpt}</span>}
+                  <span class="la__foot">
+                    <span class="la__meta">{meta(monthYear(i.date), topicOf(i))}</span>
+                    <span class="la__act">{writingAction(i)}</span>
+                  </span>
+                </span>
+                {!i.isInternal && <span class="sr-only"> (opens in a new tab)</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {s.format === 'podcast' && (
+        <ul class="lib__grid lib__grid--podcasts">
+          {s.items.map((i) => (
+            <li class="lib__cell" data-filter-item data-format={i.format} data-topic={i.topic ?? ''}>
+              <a href={i.href} class="lp" data-track={track(i)} {...ext(i)}>
+                {i.image?.asset ? (
+                  <SanityImg image={i.image} alt="" ratio={1} widths={[96, 192, 288]} sizes="96px" class="lp__art" />
+                ) : i.artworkUrl ? (
+                  <img src={i.artworkUrl} alt="" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="lp__art" />
+                ) : (
+                  <span class="lp__tile" aria-hidden="true"><Icon name="listen" size={22} /></span>
+                )}
+                <span class="lp__body">
+                  <span class="lp__show">{meta(i.source, i.sourceNote)}</span>
+                  <span class="lp__title">{i.title}</span>
+                  {i.excerpt && <span class="lp__ex">{i.excerpt}</span>}
+                  <span class="lp__meta">{meta(monthYear(i.date), i.minutes ? `${i.minutes} min` : null, topicOf(i))}</span>
+                </span>
+                <span class="lp__act" aria-hidden="true"><Icon name="play" size={12} /></span>
+                <span class="sr-only"> Listen (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {s.format === 'video' && (
+        <ul class="lib__grid lib__grid--video">
+          {s.items.map((i) => (
+            <li class="lib__cell" data-filter-item data-format={i.format} data-topic={i.topic ?? ''}>
+              <a href={i.href} class="lv" data-track={track(i)} {...ext(i)}>
+                <span class="lv__thumb">
+                  {i.image?.asset ? (
+                    <SanityImg image={i.image} alt="" ratio={16 / 9} widths={[480, 800]} sizes="(max-width: 720px) 100vw, 33vw" class="lv__img" />
+                  ) : i.artworkUrl && (
+                    <img src={i.artworkUrl} alt="" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="lv__img" />
+                  )}
+                  <span class="lv__play" aria-hidden="true"><Icon name="play" size={18} /></span>
+                  {i.minutes && <span class="lv__len">{i.minutes} min</span>}
+                </span>
+                <span class="lv__title">{i.title}</span>
+                <span class="lv__meta">{meta(i.source, monthYear(i.date), topicOf(i))}</span>
+                <span class="sr-only"> Watch (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  ))}
+
+  <p class="lib__empty" data-filter-empty hidden>
+    Nothing in that combination yet. <button type="button" class="lib__reset" data-filter-reset>Show everything</button>
+  </p>
+</div>
+
+<style>
+  .lib__filters {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px 24px; flex-wrap: wrap;
+    padding: 20px 0; border-block: 1px solid rgb(var(--hairline));
+  }
+  .lib__sec { padding-top: 40px; }
+  .lib__h { margin: 0 0 18px; font-size: clamp(26px, 3vw, 34px); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .lib__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .lib__cell { min-width: 0; display: flex; }
+  .lib__cell > a { flex: 1; min-width: 0; }
+
+  /* Articles: the newest one full width, the rest a three-column grid. */
+  .lib__grid--articles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lib__cell--lead { grid-column: 1 / -1; }
+  .la {
+    position: relative; display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: rgb(var(--text));
+    background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); transition: border-color 0.15s;
+  }
+  .la:hover { border-color: rgb(var(--yellow)); }
+  .la :global(.la__img) { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .la__body { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; }
+  .la__src { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .la__title { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; text-wrap: balance; }
+  .la__ex { font-size: 14.5px; line-height: 1.5; color: rgb(var(--text-muted)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .la__foot { margin-top: auto; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .la__meta { font-size: 12.5px; color: rgb(var(--text-faint)); }
+  .la__act { flex: none; font-size: 13px; font-weight: 800; color: rgb(var(--text)); white-space: nowrap; }
+  .la:hover .la__act { color: rgb(var(--accent-text)); }
+  /* The lead card: bigger type; without a cover it gets the band edge so it still reads as the lead. */
+  .la--lead .la__body { padding: 28px 32px; gap: 12px; }
+  .la--lead .la__title { font-size: clamp(26px, 3vw, 36px); line-height: 1.02; letter-spacing: -0.045em; max-width: 24ch; }
+  .la--lead .la__ex { font-size: 16px; max-width: 60ch; }
+  .la--lead:not(.la--img) { padding-left: 8px; }
+  .la--lead:not(.la--img)::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--band-v); }
+  .la--lead.la--img { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .la--lead .la__body { justify-content: center; }
+  .la--lead.la--img :global(.la__img) { height: 100%; }
+
+  /* Podcasts: episode cards, show first, play button on the right. */
+  .lib__grid--podcasts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp {
+    display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px 20px;
+    text-decoration: none; color: rgb(var(--text)); background: rgb(var(--surface));
+    border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); transition: border-color 0.15s;
+  }
+  .lp:hover { border-color: rgb(var(--yellow)); }
+  .lp :global(.lp__art) { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-card); border: 1px solid rgb(var(--hairline)); box-sizing: border-box; }
+  .lp__tile { width: 96px; height: 96px; border-radius: var(--radius-card); display: grid; place-items: center; background: rgb(var(--yellow)); color: rgb(var(--c-ink)); }
+  .lp__body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .lp__show { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .lp__title { font-size: 17.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; text-wrap: pretty; }
+  .lp__ex { font-size: 14px; line-height: 1.45; color: rgb(var(--text-muted)); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .lp__meta { font-size: 12.5px; color: rgb(var(--text-faint)); }
+  .lp__act {
+    align-self: center; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; padding-left: 2px; box-sizing: border-box;
+    border: 2px solid rgb(var(--accent-text)); color: rgb(var(--accent-text)); transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .lp:hover .lp__act { background: rgb(var(--yellow)); border-color: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
+
+  /* Video: thumbnails. */
+  .lib__grid--video { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lv { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: rgb(var(--text)); }
+  .lv__thumb {
+    position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-card);
+    background: rgb(var(--blue)); border: 1px solid rgb(var(--hairline));
+  }
+  .lv__thumb :global(.lv__img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .lv__play {
+    position: relative; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; padding-left: 3px; box-sizing: border-box;
+    background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); transition: background-color 0.15s;
+  }
+  .lv:hover .lv__play { background: rgb(var(--yellow)); }
+  .lv__len { position: absolute; right: 8px; bottom: 8px; padding: 2px 6px; border-radius: var(--radius-btn); font-size: 12px; font-weight: 700; background: rgb(var(--c-ink) / 0.85); color: rgb(var(--c-cream)); }
+  .lv__title { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; text-wrap: pretty; transition: color 0.15s; }
+  .lv:hover .lv__title { color: rgb(var(--accent-text)); }
+  .lv__meta { font-size: 12.5px; color: rgb(var(--text-faint)); }
+
+  .lib__empty { padding: 32px 0; margin: 0; font-size: 15px; color: rgb(var(--text-faint)); }
+  .lib__reset { min-height: 44px; background: none; border: 0; padding: 0 4px; color: rgb(var(--accent-text)); font: 700 15px var(--font); cursor: pointer; }
+  .lib__reset:hover { text-decoration: underline; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 960px) {
+    .lib__grid--articles, .lib__grid--video { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lib__grid--podcasts { grid-template-columns: minmax(0, 1fr); }
+    .la--lead.la--img { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 720px) {
+    .lib__filters { flex-direction: column; align-items: flex-start; }
+    .lib__sec { padding-top: 32px; }
+    .lib__grid--articles, .lib__grid--video { grid-template-columns: minmax(0, 1fr); }
+    .la--lead .la__body { padding: 22px 22px; }
+    .lp { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; padding: 16px; }
+    .lp__tile, .lp :global(.lp__art) { width: 64px; height: 64px; }
+    .lp__act { display: none; }
+  }
+</style>

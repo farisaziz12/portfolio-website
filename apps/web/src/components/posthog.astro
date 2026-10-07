@@ -37,7 +37,13 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
           (p.crossOrigin = 'anonymous'),
           (p.async = true),
           (p.src = s.api_host + '/static/array.js'),
-          (r = t.getElementsByTagName('script')[0]).parentNode.insertBefore(p, r);
+          // Site change: fetch the SDK after the page has loaded and gone idle (2s cap),
+          // so analytics never competes with first paint. Calls queue in the stub meanwhile.
+          (r = function() {
+            var go = function() { var f = t.getElementsByTagName('script')[0]; f.parentNode.insertBefore(p, f); };
+            'requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 2000 }) : setTimeout(go, 1);
+          }),
+          t.readyState === 'complete' ? r() : window.addEventListener('load', r, { once: true });
         var u = e;
         void 0 !== a ? (u = e[a] = []) : (a = 'posthog');
         u.people = u.people || [];
@@ -60,7 +66,7 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
 
   (function () {
     if (!POSTHOG_KEY) {
-      console.debug('[posthog] PUBLIC_POSTHOG_KEY not set — analytics disabled');
+      console.debug('[posthog] PUBLIC_POSTHOG_KEY not set: analytics disabled');
       return;
     }
     // Local dev never pollutes production analytics.
@@ -82,6 +88,8 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
       capture_dead_clicks: true,
       // Client-side error tracking (PostHog "Error tracking" product).
       capture_exceptions: true,
+      // No PostHog surveys on this site: don't download the surveys bundle.
+      disable_surveys: true,
       // Recording is opt-in per page: armed here, started by the gate below.
       disable_session_recording: true,
       session_recording: {
@@ -104,7 +112,8 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
     // Record only sessions that touch a conversion page (docs/measurement.md):
     // that's where watching friction pays off. startSessionRecording() is
     // sticky, so a session that lands on /contact keeps recording afterwards.
-    var RECORD_PATHS = ['/invite', '/contact', '/consulting', '/mentorship'];
+    // /services replaced /consulting (a redirect now), so it must be listed itself.
+    var RECORD_PATHS = ['/invite', '/contact', '/services', '/mentorship'];
     function maybeRecord() {
       var p = location.pathname;
       var hit = RECORD_PATHS.some(function (pre) {
@@ -193,5 +202,96 @@ const POSTHOG_HOST = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://eu.i.postho
       if (!ticking) { ticking = true; window.requestAnimationFrame(measureDepth); }
     }, { passive: true });
     document.addEventListener('astro:after-swap', resetDepth);
+
+    // --- content_viewed: which talk / workshop / event / post was looked at ---
+    // Pages declare what they are in <meta name="analytics:content"> (BaseLayout
+    // `content` prop), so interest is queryable by slug, not by URL parsing.
+    var lastContent = null;
+    function contentViewed() {
+      var m = document.querySelector('meta[name="analytics:content"]');
+      if (!m) return;
+      var raw = m.getAttribute('content') || '';
+      if (raw === lastContent) return;
+      lastContent = raw;
+      try {
+        var c = JSON.parse(raw);
+        c.path = location.pathname;
+        posthog.capture('content_viewed', c);
+      } catch (_) {}
+    }
+    contentViewed();
+    document.addEventListener('astro:page-load', contentViewed);
+
+    // --- filter_applied: list filters (lib/client/filters.ts dispatches) --------
+    document.addEventListener('filters:change', function (e) {
+      var d = e.detail || {};
+      posthog.capture('filter_applied', { filter: d.key, value: d.value, shown: d.shown, path: location.pathname });
+    });
+
+    // --- video: inline <video> plays, embedded players, recordings opened ------
+    document.addEventListener('play', function (e) {
+      var v = e.target;
+      if (!v || v.tagName !== 'VIDEO' || v.dataset.phPlayed) return;
+      v.dataset.phPlayed = '1';
+      posthog.capture('video_played', { kind: 'inline', title: v.getAttribute('title') || v.getAttribute('aria-label') || undefined, path: location.pathname });
+    }, true);
+    // A click into a YouTube/Vimeo iframe blurs the window with the iframe focused.
+    window.addEventListener('blur', function () {
+      window.setTimeout(function () {
+        var f = document.activeElement;
+        if (!f || f.tagName !== 'IFRAME' || f.dataset.phPlayed) return;
+        var src = f.getAttribute('src') || '';
+        if (!/youtube|youtu\.be|vimeo/.test(src)) return;
+        f.dataset.phPlayed = '1';
+        posthog.capture('video_played', { kind: 'embed', provider: /vimeo/.test(src) ? 'vimeo' : 'youtube', title: f.getAttribute('title') || undefined, path: location.pathname });
+      }, 0);
+    });
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (!/youtube\.com|youtu\.be|vimeo\.com|gitnation\.com/.test(href)) return;
+      posthog.capture('video_opened', { href: href, label: (a.textContent || '').trim().slice(0, 60), path: location.pathname });
+    });
+
+    // --- form_abandoned: started, touched fields, left without submitting ------
+    // Field NAMES only, never values. Sent with sendBeacon on pagehide or when
+    // navigating away inside the site.
+    var forms = new Map();
+    function formName(f) { return f.getAttribute('data-form') || f.getAttribute('name') || f.id || 'form'; }
+    // React ids look like "_r4R_0_-message": keep the readable part.
+    function fieldName(el) { return el.getAttribute('name') || (el.id || '').split('-').pop() || el.getAttribute('aria-label') || el.tagName.toLowerCase(); }
+    document.addEventListener('focusin', function (e) {
+      var el = e.target;
+      var f = el && el.closest ? el.closest('form') : null;
+      if (!f || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (!forms.has(f)) forms.set(f, { t0: Date.now(), touched: {}, last: null, submitted: false });
+      forms.get(f).last = fieldName(el);
+    });
+    document.addEventListener('input', function (e) {
+      var el = e.target;
+      var f = el && el.closest ? el.closest('form') : null;
+      var st = f && forms.get(f);
+      if (st) st.touched[fieldName(el)] = true;
+    });
+    document.addEventListener('submit', function (e) {
+      var st = forms.get(e.target);
+      if (st) st.submitted = true;
+    }, true);
+    function flushAbandoned() {
+      forms.forEach(function (st, f) {
+        var fields = Object.keys(st.touched);
+        if (st.submitted || !fields.length || st.sent) return;
+        st.sent = true;
+        try {
+          posthog.capture('form_abandoned', {
+            form: formName(f), fields_touched: fields, field_count: fields.length, last_field: st.last,
+            seconds: Math.round((Date.now() - st.t0) / 1000), path: location.pathname,
+          }, { transport: 'sendBeacon' });
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('pagehide', flushAbandoned);
+    document.addEventListener('astro:before-preparation', function () { flushAbandoned(); forms = new Map(); });
   })();
 </script>

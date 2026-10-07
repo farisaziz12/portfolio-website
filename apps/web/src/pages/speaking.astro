@@ -1,306 +1,145 @@
 ---
+/**
+ * Speaking hub (V3 `Speaking.dc.html`): skewed hero, derived counts, the next
+ * appearances, topic pillars, workshops + formats, stage quotes and the
+ * cream invitation panel. Every number comes from session records.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import ContactPanel from '../components/design/ContactPanel.astro';
-import { EventRow } from '../components/events/EventRow';
-import { sanityFetch } from '../lib/sanity/client';
+import SkewHero from '../components/v3/SkewHero.astro';
+import Kicker from '../components/v3/Kicker.astro';
+import StatRow from '../components/v3/StatRow.astro';
+import UpcomingList from '../components/v3/UpcomingList.astro';
+import PraiseCard from '../components/v3/PraiseCard.astro';
+import InvitePanel from '../components/v3/InvitePanel.astro';
+import PillarCards from '../components/speaking/PillarCards.astro';
+import WorkshopsFormats from '../components/speaking/WorkshopsFormats.astro';
 import {
-  upcomingEventsQuery,
-  pastEventsQuery,
-  speakingStatsQuery,
-  allTalksQuery,
-} from '../lib/sanity/queries';
-import { topConferences } from '../lib/conferences';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
+  currentMonthYear,
+  getAllPraise,
+  getCatalogueTalks,
+  getProfile,
+  getSpeakingStats,
+  getUpcomingEvents,
+  getWorkshops,
+} from '../lib/sanity/v3';
 import { bookingYears } from '../lib/availability';
+import { lengthRange } from '../lib/workshops-view';
+import { breadcrumbs } from '../lib/seo';
 
-interface UpcomingEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  type: string;
-  conference?: string;
-  date: string;
-  location?: { city?: string; country?: string; isOnline?: boolean };
-  links?: { eventUrl?: string; videoUrl?: string };
-}
-
-interface PastEvent {
-  _id: string;
-  title: string;
-  conference?: string;
-  date: string;
-}
-
-interface SpeakingStats {
-  totalEvents: number;
-  upcomingEvents: number;
-  countries: number;
-  cities: number;
-  talks: number;
-  workshops: number;
-}
-
-interface TalkListItem {
-  _id: string;
-  title: string;
-  slug: string;
-  abstract?: string;
-  duration?: number;
-  eventCount?: number;
-  latestEvent?: { conference?: string; location?: string };
-}
-
-const [upcomingEvents, pastEvents, stats, talks] = await Promise.all([
-  sanityFetch<UpcomingEvent[]>(upcomingEventsQuery).catch(() => []),
-  sanityFetch<PastEvent[]>(pastEventsQuery).catch(() => []),
-  sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
-  sanityFetch<TalkListItem[]>(allTalksQuery).catch(() => []),
+const [profile, stats, upcomingAll, talks, workshops, praise] = await Promise.all([
+  getProfile(),
+  getSpeakingStats(),
+  getUpcomingEvents(),
+  getCatalogueTalks(),
+  getWorkshops(),
+  getAllPraise(),
 ]);
 
-const upcomingCount = upcomingEvents.length;
-const conferenceWall = topConferences(pastEvents);
-const nextThree = upcomingEvents.slice(0, 3);
+const photo = profile.photos.find((p) => p.tag === 'speaking' || p.tag === 'portrait') ?? profile.photos[0];
+const workshopPhoto = profile.photos.find((p) => p.tag === 'workshop');
+const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b !== 'attended'));
+const bookableWorkshops = workshops.filter((w) => w.isBookable);
 
-function firstLine(abstract?: string) {
-  if (!abstract) return '';
-  const line = abstract.split('\n')[0].replace(/\s+/g, ' ').trim();
-  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
-}
+// "two working days" → "2 days"; anything else is shown as written.
+const reply = /\btwo\b/i.test(profile.replyTime) ? '2 days' : profile.replyTime;
 
-const featuredTalks = [...talks]
-  .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
-  .slice(0, 3);
+const stats4 = [
+  { value: stats.talksDelivered, label: 'talks delivered', meta: `from session records, ${currentMonthYear()}` },
+  { value: stats.countries, label: 'countries', meta: 'speaking and hosting' },
+  { value: bookableWorkshops.length || stats.catalogueWorkshops, label: 'workshops', meta: lengthRange(bookableWorkshops) || undefined },
+  { value: reply, label: 'to reply to an invitation' },
+];
+
+// "On stage": one quote about a talk, one about the stage presence.
+const onTalk = praise.find((p) => p.topic === 'talk');
+const onStage = praise.find((p) => p.topic === 'stage' && p !== onTalk);
+const quotes = [onTalk, onStage, ...praise.filter((p) => p.topic === 'stage' || p.topic === 'talk')]
+  .filter((p, i, a): p is NonNullable<typeof p> => Boolean(p) && a.indexOf(p) === i)
+  .slice(0, 2);
+
+const description = `Talks and workshops on production engineering, payments at scale and leadership. ${stats.talksDelivered} talks delivered in ${stats.countries} countries.`;
 ---
 
 <BaseLayout
-  title="Speaking: Talks & Workshops | Faris Aziz"
-  description={`Book Faris Aziz to speak: ${stats.totalEvents} talks across ${stats.countries} countries. Production-grade engineering, framework-agnostic, drawn from real case studies.`}
-  pathname="/speaking"
+  title="Speaking"
+  description={description}
   image="/og/speaking.png"
   markdownAlternate="/speaking.md"
+  band={false}
+  extraSchema={[breadcrumbs([{ name: 'Speaking', path: '/speaking' }])]}
 >
-  <header class="speaking-hero">
-    <div class="container speaking-hero__inner">
-      <Kicker>Booking {bookingYears()}</Kicker>
-      <h1 class="speaking-hero__title heading-sentence">Invite me to speak.</h1>
-      <p class="speaking-hero__lead">
-        I speak about production and scale: the pragmatic decisions and leadership calls behind real systems, drawn from case studies rather than theory. React and Next.js are home base, but I'm framework-agnostic at heart. What I actually care about is the web, incredible UX, and lifting up the engineers who build it.
-      </p>
-      <p class="ds-proof">
-        <b>{stats.totalEvents}</b> events across <b>{stats.countries}</b> countries
-        and <b>{stats.cities}</b> cities.
-      </p>
-
-      <div class="speaking-hero__actions">
-        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
-          Invite me to speak
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="#talks" class="ds-btn ds-btn-secondary ds-btn-lg">See the talks</a>
-      </div>
+  <SkewHero image={photo} imageAlt={photo?.alt ?? 'Faris speaking on stage'} height={520} bandWidth={50}>
+    <Kicker parts={['Speaking', `Booking ${bookingYears()}`]} />
+    <h1 class="ds-h1">Production stories, told from the inside.</h1>
+    <p class="ds-lede hero__lede">
+      Talks and workshops about scale, resilience, payments and the leadership calls behind real systems. React and Next.js are home base; the lessons aren't framework-specific. Every talk is adapted to its audience.
+    </p>
+    <div class="hero__actions">
+      <a href="/invite" class="ds-btn ds-btn--cream ds-btn--lg" data-track="speaking-hero-invite">Invite me to speak</a>
+      <a href="/talks" class="ds-link hero__link" data-track="speaking-hero-talks">Browse the talks</a>
     </div>
-  </header>
+  </SkewHero>
 
-  <section class="speaking-section">
-    <div class="container wide">
-      <div class="speaking-section__head">
-        <h2 class="speaking-h2">What's next on the calendar.</h2>
-        {upcomingCount > 0 && (
-          <span class="ds-pill ds-pill--signal">
-            <span class="ds-dot ds-dot--pulse"></span>
-            {upcomingCount} confirmed
-          </span>
-        )}
-      </div>
+  <StatRow stats={stats4} />
 
-      {upcomingCount > 0 ? (
-        <>
-          <div class="events-list">
-            {nextThree.map((e, i) => <EventRow event={e} index={i} />)}
-          </div>
-          <p class="speaking-more">
-            <a href="/events" class="ds-link">
-              Full schedule
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
-          </p>
-        </>
-      ) : (
-        <div class="speaking-empty">
-          <p>No upcoming events confirmed yet. Check back soon, or invite me directly.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary speaking-empty__cta">Invite me to speak</a>
+  {upcoming.length > 0 && (
+    <section class="next" aria-labelledby="next-title">
+      <span class="next__edge" aria-hidden="true"></span>
+      <div class="ds-wrap next__wrap">
+        <div class="next__head">
+          <p class="ds-kicker">Next on the calendar</p>
+          <h2 id="next-title" class="next__title">Come and say hello.</h2>
+          <a href="/events" class="ds-link ds-link--sm next__link">Full schedule and archive</a>
         </div>
-      )}
-    </div>
-  </section>
-
-  {featuredTalks.length > 0 && (
-    <section class="speaking-section anchor-target" id="talks">
-      <div class="container">
-        <h2 class="speaking-h2">A few talks I give.</h2>
-        <p class="speaking-lead">
-          These are the ones I get asked for most. Every talk is adapted to the room; the catalogue has the rest.
-        </p>
-        <ul class="speaking-talks">
-          {featuredTalks.map((t) => (
-            <li>
-              <a href={`/talks/${t.slug}`} class="speaking-talk">
-                <span class="speaking-talk__title">{t.title}</span>
-                {firstLine(t.abstract) && <span class="speaking-talk__desc">{firstLine(t.abstract)}</span>}
-                {(t.latestEvent?.conference || t.duration) && (
-                  <span class="speaking-talk__meta">
-                    {[t.latestEvent?.conference, t.duration ? `${t.duration} min` : null].filter(Boolean).join(' · ')}
-                  </span>
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <p class="speaking-more">
-          <a href="/talks" class="ds-link">
-            All bookable talks
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </p>
-        {conferenceWall.length > 0 && (
-          <p class="speaking-stages">
-            Stages I've shared: {conferenceWall.slice(0, 8).join(', ')}.
-          </p>
-        )}
+        <UpcomingList events={upcoming} limit={4} />
       </div>
     </section>
   )}
 
-  <section class="speaking-section speaking-section--contact anchor-target" id="invite">
-    <div class="container">
-      <div class="wide">
-        <ContactPanel
-          status={`Booking ${bookingYears()} dates now`}
-          title="Invite me to your event"
-          body="Drop me a message on my socials, or fill in the form. I reply within two days. Community meetups are usually on the house."
-          primaryHref="/invite"
-          primaryLabel="Send an invite"
-          secondaryHref="/talks"
-          secondaryLabel="Browse my talks"
-        />
-      </div>
-    </div>
-  </section>
+  <PillarCards pillars={profile.topicPillars} talks={talks} />
 
+  <WorkshopsFormats workshops={bookableWorkshops} formats={profile.formats} photo={workshopPhoto} />
+
+  <section class="ds-wrap close">
+    {quotes.length > 0 && (
+      <div class="close__quotes">
+        {quotes.map((p) => <PraiseCard praise={p} />)}
+      </div>
+    )}
+    <InvitePanel
+      headline="Tell me about your event."
+      body={`Three required fields. I reply within ${profile.replyTime}.`}
+      primary={{ label: 'Invite me', href: '/invite' }}
+      secondary={{ label: 'Press kit', href: '/press-kit' }}
+      track="speaking-invite-panel"
+    />
+  </section>
 </BaseLayout>
 
 <style>
-  .speaking-hero {
-    position: relative;
-    border-bottom: 1px solid rgb(var(--edge));
-    padding-block: clamp(3.25rem, 7vw, 5.5rem);
-  }
-  .speaking-hero__inner { position: relative; }
-  .speaking-hero__title { margin-top: 1.1rem; }
-  .speaking-hero__lead {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-    margin-top: 1.25rem;
-  }
-  .speaking-hero__actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
-  }
+  .hero__lede { font-size: 17px; max-width: 44ch; }
+  .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+  .hero__link { min-height: 44px; box-sizing: border-box; padding: 12px 2px 9px; font-size: 15px; }
 
-  .speaking-section { padding-block: clamp(3.25rem, 7vw, 5.5rem); }
-  .speaking-section--contact { padding-top: 0; }
-  .speaking-section__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 1.4rem;
-  }
-  .speaking-h2 {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: clamp(1.5rem, 2.4vw, 2rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    color: rgb(var(--ink));
-  }
-  .speaking-lead {
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-    margin-top: 0.75rem;
-  }
+  .next { position: relative; padding-block: 56px; }
+  .next__edge { position: absolute; left: 0; top: 56px; bottom: 56px; width: 16px; background: linear-gradient(90deg, rgb(var(--yellow)) 0 12px, rgb(var(--blue)) 12px 16px); }
+  .next__wrap { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 48px; padding-left: calc(var(--gutter) + 16px); }
+  .next__head { display: flex; flex-direction: column; align-items: flex-start; }
+  .next__title { margin-top: 10px; font-size: clamp(28px, 3.2vw, 36px); line-height: 0.98; letter-spacing: -0.04em; font-weight: 800; }
+  .next__link { margin-top: 16px; }
 
-  .events-list { display: grid; gap: 0.2rem; }
-  .speaking-more { margin-top: 1.4rem; }
-  .speaking-empty {
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
-  }
-  .speaking-empty__cta { margin-top: 1rem; }
+  .close { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding-bottom: 64px; align-items: stretch; }
+  .close__quotes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-  .speaking-talks {
-    list-style: none;
-    margin: 1.6rem 0 0;
-    padding: 0;
-    max-width: 68ch;
-    border-top: 1px solid rgb(var(--edge));
+  @media (max-width: 900px) {
+    .close { grid-template-columns: 1fr; gap: 28px; }
   }
-  .speaking-talk {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 1.15rem 0.1rem;
-    border-bottom: 1px solid rgb(var(--edge));
-    min-height: 44px;
-    color: inherit;
-    text-decoration: none;
+  @media (max-width: 720px) {
+    .next { padding-block: 40px; }
+    .next__edge { top: 40px; bottom: 40px; width: 8px; background: rgb(var(--yellow)); }
+    .next__wrap { grid-template-columns: 1fr; gap: 20px; padding-left: calc(var(--gutter) + 6px); }
   }
-  .speaking-talk:hover .speaking-talk__title,
-  .speaking-talk:focus-visible .speaking-talk__title {
-    color: rgb(var(--accent-bright));
-  }
-  .speaking-talk:focus-visible {
-    outline: 2px solid rgb(var(--accent));
-    outline-offset: 2px;
-  }
-  .speaking-talk__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 600;
-    font-size: 1.15rem;
-    line-height: 1.35;
-    color: rgb(var(--ink));
-    letter-spacing: -0.015em;
-    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .speaking-talk__desc {
-    font-size: 0.98rem;
-    line-height: 1.55;
-    color: rgb(var(--ink-muted));
-  }
-  .speaking-talk__meta {
-    font-size: 0.875rem;
-    color: rgb(var(--ink-faint));
-  }
-
-  .speaking-stages {
-    margin-top: 1.75rem;
-    font-size: 1.0625rem;
-    line-height: 1.7;
-    color: rgb(var(--ink-muted));
-    max-width: 68ch;
+  @media (max-width: 560px) {
+    .close__quotes { grid-template-columns: 1fr; }
   }
 </style>

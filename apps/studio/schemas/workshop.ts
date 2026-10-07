@@ -1,137 +1,136 @@
-import { defineType, defineField } from 'sanity';
+import { defineType, defineField, defineArrayMember } from 'sanity';
+import { TOPICS, titleFor } from 'shared';
+import { options, hiddenWhenEmpty, legacyReason, imageWithAlt, slugField, seoField, orderField } from './_fields';
 
+const richText = defineArrayMember({
+  type: 'block',
+  styles: [
+    { title: 'Normal', value: 'normal' },
+    { title: 'H4', value: 'h4' },
+  ],
+  lists: [
+    { title: 'Bullet', value: 'bullet' },
+    { title: 'Number', value: 'number' },
+  ],
+  marks: {
+    decorators: [
+      { title: 'Bold', value: 'strong' },
+      { title: 'Italic', value: 'em' },
+      { title: 'Code', value: 'code' },
+    ],
+    annotations: [
+      { name: 'link', type: 'object', title: 'Link', fields: [{ name: 'href', type: 'url', title: 'URL' }] },
+    ],
+  },
+});
+
+const agendaFields = [
+    defineField({ name: 'at', title: 'Starts at', type: 'string', description: 'Offset from the start: "0:00", "1:45".' }),
+    defineField({ name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() }),
+    defineField({ name: 'summary', title: 'One line', type: 'string' }),
+    defineField({ name: 'isBreak', title: 'Break', type: 'boolean', initialValue: false }),
+    defineField({ name: 'duration', title: 'Duration (legacy)', type: 'string', hidden: hiddenWhenEmpty }),
+    defineField({ name: 'description', title: 'Details (expanded)', type: 'array', of: [richText] }),
+];
+
+const agendaPreview = {
+  select: { title: 'title', at: 'at', isBreak: 'isBreak' },
+  prepare: ({ title, at, isBreak }: { title?: string; at?: string; isBreak?: boolean }) => ({
+    title: `${at ? `${at}  ` : ''}${title || 'Untitled'}`,
+    subtitle: isBreak ? 'Break' : undefined,
+  }),
+};
+
+const agendaItem = defineArrayMember({ name: 'agendaItem', type: 'object', fields: agendaFields, preview: agendaPreview });
+/** V2 agenda items were anonymous objects; keep the shape so old data validates. */
+const legacyAgendaItem = defineArrayMember({ type: 'object', fields: agendaFields, preview: agendaPreview });
+
+/**
+ * A bookable workshop template. Each delivery is an event session with
+ * role "workshop" (public history) plus, optionally, a Workshop Instance
+ * (the token-gated attendee page).
+ */
 export default defineType({
   name: 'workshop',
   title: 'Workshop',
   type: 'document',
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'agenda', title: 'Agenda' },
+    { name: 'booking', title: 'Booking box' },
+    { name: 'seo', title: 'SEO' },
+  ],
   fields: [
+    defineField({ name: 'title', title: 'Title', type: 'string', group: 'content', validation: (Rule) => Rule.required() }),
+    slugField('title', 'content'),
+    defineField({ name: 'pillar', title: 'Topic pillar', type: 'string', group: 'content', options: { list: options(TOPICS), layout: 'radio' } }),
     defineField({
-      name: 'title',
-      title: 'Title',
+      name: 'summary',
+      title: 'One-line summary',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      group: 'content',
+      validation: (Rule) => Rule.max(160).warning('One sentence'),
     }),
+    defineField({ name: 'description', title: 'Intro', type: 'text', rows: 4, group: 'content' }),
+    defineField({ name: 'outcomes', title: 'You leave with', type: 'array', of: [{ type: 'string' }], group: 'content' }),
+    defineField({ name: 'prerequisites', title: 'Prerequisites', type: 'array', of: [{ type: 'string' }], group: 'content' }),
+    defineField({ name: 'technologies', title: 'Technologies', type: 'array', of: [{ type: 'string' }], options: { layout: 'tags' }, group: 'content' }),
+    imageWithAlt('image', 'Photo', { group: 'content' }),
+
     defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'title', maxLength: 96 },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'description',
-      title: 'Description',
-      type: 'text',
-      rows: 4,
-    }),
-    defineField({
-      name: 'duration',
-      title: 'Duration',
-      type: 'string',
-      description: 'e.g., "3 hours", "Full day"',
-    }),
-    defineField({
-      name: 'outcomes',
-      title: 'Learning Outcomes',
+      name: 'formats',
+      title: 'Formats',
       type: 'array',
-      of: [{ type: 'string' }],
-      description: 'What will participants learn?',
+      group: 'agenda',
+      description: 'One entry per edition length (3-hour, full day). The page shows a switch.',
+      of: [
+        defineArrayMember({
+          name: 'workshopFormat',
+          type: 'object',
+          fields: [
+            defineField({ name: 'label', title: 'Label', type: 'string', description: '"3-hour edition", "Full day".', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'duration', title: 'Length', type: 'string', description: '"3 h", "6.5 h".' }),
+            defineField({ name: 'agenda', title: 'Agenda', type: 'array', of: [agendaItem] }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'duration' } },
+        }),
+      ],
     }),
     defineField({
       name: 'agenda',
-      title: 'Agenda',
+      title: 'Agenda (legacy, single format)',
       type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() },
-            { name: 'duration', title: 'Duration', type: 'string', description: 'e.g., "30 min", "1 hour"' },
-            {
-              name: 'description',
-              title: 'Description',
-              type: 'array',
-              of: [
-                {
-                  type: 'block',
-                  styles: [
-                    { title: 'Normal', value: 'normal' },
-                    { title: 'H4', value: 'h4' },
-                  ],
-                  lists: [
-                    { title: 'Bullet', value: 'bullet' },
-                    { title: 'Number', value: 'number' },
-                  ],
-                  marks: {
-                    decorators: [
-                      { title: 'Bold', value: 'strong' },
-                      { title: 'Italic', value: 'em' },
-                      { title: 'Code', value: 'code' },
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: 'Link',
-                        fields: [{ name: 'href', type: 'url', title: 'URL' }],
-                      },
-                    ],
-                  },
-                },
-              ],
-              description: 'Detailed description of this agenda item (shown when expanded)',
-            },
-          ],
-          preview: {
-            select: { title: 'title', duration: 'duration' },
-            prepare({ title, duration }) {
-              return { title: title || 'Untitled', subtitle: duration };
-            },
-          },
-        },
-      ],
+      group: 'agenda',
+      of: [legacyAgendaItem],
+      hidden: hiddenWhenEmpty,
+      deprecated: legacyReason('Move it into Formats.'),
     }),
+
+    defineField({ name: 'duration', title: 'Length summary', type: 'string', group: 'booking', description: '"3 h or full day (6.5 h)".' }),
     defineField({
-      name: 'prerequisites',
-      title: 'Prerequisites',
-      type: 'array',
-      of: [{ type: 'string' }],
-    }),
-    defineField({
-      name: 'technologies',
-      title: 'Technologies',
-      type: 'array',
-      of: [{ type: 'string' }],
-      options: { layout: 'tags' },
-    }),
-    defineField({
-      name: 'isBookable',
-      title: 'Bookable',
-      type: 'boolean',
-      description: 'Can this workshop be booked by event organizers?',
-      initialValue: true,
-    }),
-    defineField({
-      name: 'seo',
-      title: 'SEO',
+      name: 'participants',
+      title: 'Group size',
       type: 'object',
+      group: 'booking',
+      options: { columns: 2 },
       fields: [
-        { name: 'metaTitle', title: 'Meta Title', type: 'string' },
-        { name: 'metaDescription', title: 'Meta Description', type: 'text', rows: 2 },
-        { name: 'ogImage', title: 'OG Image', type: 'image' },
+        defineField({ name: 'min', title: 'Min', type: 'number' }),
+        defineField({ name: 'max', title: 'Max', type: 'number' }),
       ],
     }),
+    defineField({ name: 'room', title: 'Room needs', type: 'string', group: 'booking', description: '"Tables, power, reliable wifi, projector".' }),
+    defineField({ name: 'after', title: 'What they keep', type: 'string', group: 'booking', description: '"Repo, slides and resources via the attendee link".' }),
+    defineField({ name: 'relatedTalk', title: 'The talk version', type: 'reference', to: [{ type: 'talk' }], group: 'booking' }),
+    defineField({ name: 'isBookable', title: 'Bookable', type: 'boolean', group: 'booking', initialValue: true }),
+    orderField('booking'),
+    seoField(),
   ],
   preview: {
-    select: {
-      title: 'title',
-      duration: 'duration',
-    },
-    prepare({ title, duration }) {
-      return {
-        title,
-        subtitle: duration || 'Duration not set',
-      };
-    },
+    select: { title: 'title', duration: 'duration', pillar: 'pillar', media: 'image' },
+    prepare: ({ title, duration, pillar, media }) => ({
+      title,
+      subtitle: [duration, titleFor(TOPICS, pillar)].filter(Boolean).join(' · ') || 'No length set',
+      media,
+    }),
   },
 });

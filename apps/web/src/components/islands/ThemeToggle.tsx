@@ -9,7 +9,8 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    let savedTheme: string | null = null;
+    try { savedTheme = localStorage.getItem('theme'); } catch { /* storage blocked */ }
     setTheme(savedTheme === 'light' ? 'light' : 'dark');
 
     // Stay in sync when something else (e.g. the command palette) flips the theme.
@@ -26,8 +27,12 @@ export default function ThemeToggle() {
     const root = document.documentElement;
     root.classList.toggle('dark', theme === 'dark');
     root.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    try { localStorage.setItem('faziz-theme', theme); } catch { /* quota / private mode */ }
+    try {
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('faziz-theme', theme);
+    } catch { /* quota / private mode */ }
+    // Keep other toggles (header + footer) in sync.
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
   }, [theme, mounted]);
 
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -72,11 +77,11 @@ export default function ThemeToggle() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <button
-        type="button"
-        className="p-2 rounded-lg bg-surface-2 w-9 h-9"
-        aria-label="Toggle theme"
-      />
+      <button type="button" className="theme-toggle" aria-label="Toggle theme">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" strokeWidth={2} />
+        </svg>
+      </button>
     );
   }
 
@@ -85,12 +90,14 @@ export default function ThemeToggle() {
       type="button"
       ref={btnRef}
       onClick={toggleTheme}
-      className="group p-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-edge transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+      className="theme-toggle"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (
         <svg
-          className="w-5 h-5 text-ink-muted group-hover:text-ink transition-colors"
+          width="18"
+          height="18"
+          aria-hidden="true"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -104,7 +111,9 @@ export default function ThemeToggle() {
         </svg>
       ) : (
         <svg
-          className="w-5 h-5 text-[rgb(var(--warn))] group-hover:text-ink transition-colors"
+          width="18"
+          height="18"
+          aria-hidden="true"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

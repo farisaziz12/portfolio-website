@@ -1,137 +1,127 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Kicker from '../../components/design/Kicker.astro';
-import GridTexture from '../../components/design/GridTexture.astro';
-import ContactPanel from '../../components/design/ContactPanel.astro';
-import EventsFilter from '../../components/islands/EventsFilter';
-import { sanityFetch } from '../../lib/sanity/client';
-import { allEventsQuery, speakingStatsQuery } from '../../lib/sanity/queries';
+import FilterPills from '../../components/v3/FilterPills.astro';
+import UpcomingCard from '../../components/events/UpcomingCard.astro';
+import ArchiveRow from '../../components/events/ArchiveRow.astro';
+import { ROLE_BUCKETS } from 'shared';
+import { getPastEvents, getSpeakingStats, getUpcomingEvents, yearOf, type EventEdition } from '../../lib/sanity/v3';
+import { breadcrumbs, itemList } from '../../lib/seo';
+import { countryCode, getCountryFlag } from '../../lib/flags';
 
-interface SanityEvent {
-  _id: string;
-  title: string;
-  slug: string;
-  type: string;
-  conference: string;
-  date: string;
-  location?: { city?: string; country?: string; isOnline?: boolean };
-  description?: string;
-  talk?: { _id: string; title: string; slug: string };
-  links?: { eventUrl?: string; videoUrl?: string; slidesUrl?: string };
-  featured?: boolean;
+const [upcoming, past, stats] = await Promise.all([getUpcomingEvents(), getPastEvents(), getSpeakingStats()]);
+
+const FLAG_LIMIT = 18;
+const flagged = stats.countryList.filter((c) => countryCode(c));
+const flags = flagged.slice(0, FLAG_LIMIT).map((c) => ({ country: c, flag: getCountryFlag(c) }));
+const moreFlags = flagged.length - flags.length;
+
+// Archive: past only, grouped by year (newest first; loaders return date-desc).
+const years: { year: number; events: EventEdition[] }[] = [];
+for (const e of past) {
+  const y = yearOf(e.date);
+  const g = years.find((x) => x.year === y);
+  if (g) g.events.push(e);
+  else years.push({ year: y, events: [e] });
 }
+const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title, bucket: b.value }));
 
-interface SpeakingStats {
-  totalEvents: number;
-  upcomingEvents: number;
-  countries: number;
-  cities: number;
-  talks: number;
-  workshops: number;
-}
-
-let events: SanityEvent[] = [];
-let stats: SpeakingStats | null = null;
-try {
-  const [eventsData, statsData] = await Promise.all([
-    sanityFetch<SanityEvent[]>(allEventsQuery).catch(() => []),
-    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => null),
-  ]);
-  events = eventsData || [];
-  stats = statsData || null;
-} catch (error) {
-  console.error('Failed to fetch events data:', error);
-}
-
-const totalEvents = stats?.totalEvents ?? events.length;
-const countries = stats?.countries ?? new Set(events.map((e) => e.location?.country).filter(Boolean)).size;
-const cities = stats?.cities ?? new Set(events.map((e) => e.location?.city).filter(Boolean)).size;
+const schema = [
+  breadcrumbs([
+    { name: 'Speaking', path: '/speaking' },
+    { name: 'Events', path: '/events' },
+  ]),
+  ...(upcoming.length ? [itemList('Upcoming appearances', upcoming.map((e) => `/events/${e.slug}`))] : []),
+];
 ---
 
 <BaseLayout
-  title="Schedule: upcoming events & archive | Faris Aziz"
-  description="Complete archive of speaking engagements by Faris Aziz at conferences, meetups, and workshops around the world."
-  pathname="/events"
+  title="Schedule: upcoming and past events | Faris Aziz"
+  description="Upcoming talks and workshops by Faris Aziz, plus the full archive of events with my role at each: spoke, ran a workshop, hosted or attended."
   image="/og/events.png"
   markdownAlternate="/events.md"
+  extraSchema={schema}
 >
-  <header class="page-hero">
-    <GridTexture />
-    <div class="container page-hero__inner">
-      <Kicker>Speaking · schedule</Kicker>
-      <h1 class="page-hero__title">
-        Every stage, in <span class="accent-word">one place</span>.
-      </h1>
-      <p class="page-hero__lead">
-        Where I'll be next, and everywhere I've been: conferences, meetups, workshops and panels, filterable by format and ordered by date.
+  <div class="ds-wrap">
+    <header class="ev-hero">
+      <p class="ds-kicker"><a href="/speaking" class="is-muted ev-crumb">Speaking</a><span aria-hidden="true"> · </span>Schedule</p>
+      <h1 class="ds-h1">My upcoming events, and all the past ones.</h1>
+      <p class="ds-lede">
+        The next few are at the top. Below that is every event I've been part of, whether I gave a talk, ran a
+        workshop, hosted, or just went to listen.
       </p>
+    </header>
 
-      <div class="page-hero__stats">
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{totalEvents}</div>
-          <div class="ds-stat__label">Events</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{countries}</div>
-          <div class="ds-stat__label">Countries</div>
-        </div>
-        <div>
-          <div class="ds-stat__value ds-stat__value--sm">{cities}</div>
-          <div class="ds-stat__label">Cities</div>
-        </div>
-      </div>
-
-      <div class="page-hero__actions">
-        <a href="/invite" class="ds-btn ds-btn-primary ds-btn-lg">
-          Invite me to speak
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/talks" class="ds-btn ds-btn-secondary ds-btn-lg">Browse talks</a>
-      </div>
-    </div>
-  </header>
-
-  <section class="page-section">
-    <div class="container wide">
-      <div class="page-section__head">
-        <div>
-          <Kicker>Archive</Kicker>
-          <h2 class="page-h2">Every event</h2>
-        </div>
-        <span class="ds-pill ds-pill--signal">
-          <span class="ds-dot ds-dot--pulse"></span>
-          {totalEvents} total
+    {stats.countries > 0 && (
+      <div class="ev-flags">
+        <span class="ds-kicker">{stats.countries} {stats.countries === 1 ? 'country' : 'countries'}</span>
+        <span class="ev-flags__row" role="img" aria-label={`Countries: ${flagged.join(', ')}`}>
+          {flags.map((f) => <span title={f.country}>{f.flag}</span>)}
         </span>
+        {moreFlags > 0 && <span class="ev-flags__more" aria-hidden="true">+{moreFlags}</span>}
       </div>
+    )}
 
-      {events.length > 0 ? (
-        <EventsFilter client:load events={events} splitByTime={true} />
+    <section class="ev-up" aria-labelledby="ev-up-h">
+      <h2 id="ev-up-h" class="ev-label">Upcoming · {upcoming.length} confirmed</h2>
+      {upcoming.length ? (
+        <ul class="ds-grid-2 ev-up__grid" role="list" data-until-group>
+          {upcoming.map((e) => <li data-until={e.endsAt}><UpcomingCard event={e} /></li>)}
+        </ul>
       ) : (
-        <div class="page-empty">
-          <h3>Coming soon</h3>
-          <p>Events will appear here once content is migrated to Sanity.</p>
-          <a href="/invite" class="ds-btn ds-btn-primary" style="margin-top:1rem;">Invite me to speak</a>
-        </div>
+        <p class="ds-card ds-card--dashed ev-up__empty">
+          No public dates confirmed right now. <a href="/invite" class="ds-textlink" data-track="events_empty_invite">Invite me to yours</a>.
+        </p>
       )}
-    </div>
-  </section>
+    </section>
 
-  <section class="page-section page-section--contact">
-    <div class="container">
-      <div class="wide ds-reveal">
-        <ContactPanel
-          status="Currently accepting invitations"
-          title="Want me at your event?"
-          body="Always open to new conferences, meetups, and workshops. Tell me about your audience and I'll tailor a talk to fit."
-          primaryHref="/invite"
-          primaryLabel="Invite me to speak"
-          secondaryHref="/talks"
-          secondaryLabel="Browse my talks"
-        />
+    <section class="ev-arch" aria-labelledby="ev-arch-h" data-filter-root>
+      <div class="ev-arch__head">
+        <h2 id="ev-arch-h" class="ev-label">
+          Archive · <span data-filter-shown>{past.length}</span> shown · {stats.eventRecords} records total
+        </h2>
+        <FilterPills name="role" options={roleOptions} />
       </div>
-    </div>
-  </section>
 
+      {years.map((g) => (
+        <section class="ev-year" data-filter-group aria-label={String(g.year)}>
+          <h3 class="ev-year__label">{g.year}</h3>
+          <ol class="ds-rows">
+            {g.events.map((e) => <ArchiveRow event={e} />)}
+          </ol>
+        </section>
+      ))}
+
+      <div class="ev-empty" data-filter-empty hidden>
+        <p>Nothing here yet.</p>
+        <button type="button" class="ds-btn ds-btn--outline ds-btn--sm" data-filter-reset>Show everything</button>
+      </div>
+      {!past.length && <p class="ev-empty">Nothing here yet.</p>}
+    </section>
+  </div>
 </BaseLayout>
+
+<style>
+  .ev-hero { display: flex; flex-direction: column; gap: 14px; max-width: 700px; padding: 48px 0 28px; }
+  .ev-crumb { text-decoration: none; }
+  .ev-crumb:hover { color: rgb(var(--text)); }
+  .ev-hero .ds-h1 { font-size: clamp(38px, 6vw, 52px); }
+  .ev-hero .ds-lede { font-size: 17px; }
+
+  .ev-flags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 32px; }
+  .ev-flags .ds-kicker { margin-right: 8px; }
+  .ev-flags__row { display: inline-flex; flex-wrap: wrap; gap: 0 4px; font-size: 20px; line-height: 1.3; }
+  .ev-flags__more { font-size: 13px; color: rgb(var(--text-faint)); }
+
+  .ev-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); margin: 0; }
+  .ev-up { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 40px; }
+  .ev-up__grid { list-style: none; margin: 0; padding: 0; }
+  .ev-up__empty { margin: 0; font-size: 15px; color: rgb(var(--text-muted)); }
+
+  .ev-arch { display: flex; flex-direction: column; gap: 16px; padding-bottom: 64px; }
+  .ev-arch__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 20px; }
+  .ev-year__label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: rgb(var(--text-faint)); padding: 10px 0 8px; }
+  .ev-year + .ev-year { margin-top: 8px; }
+  .ev-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; border-top: 1px solid rgb(var(--hairline)); }
+  .ev-empty p, p.ev-empty { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+  .ev-empty[hidden] { display: none; }
+</style>

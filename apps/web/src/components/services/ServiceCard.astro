@@ -1,0 +1,54 @@
+---
+/**
+ * One "How I can help" card: yellow number, audience tag, title, stacked
+ * "Get in touch if" / "You get" labels, CTAs pinned to the bottom.
+ */
+import type { ServiceCardData } from '../../lib/services';
+
+interface Props {
+  card: ServiceCardData;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { card, headingLevel: H = 'h2' } = Astro.props;
+const external = (href: string) => /^https?:\/\//.test(href);
+const ext = (href: string) => (external(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+---
+
+<article class="svc ds-card" aria-labelledby={`svc-${card.type}`}>
+  <div class="svc__top">
+    <span class="svc__n ds-num" aria-hidden="true">{card.n}</span>
+    <span class="svc__aud">{card.audience}</span>
+  </div>
+  <H id={`svc-${card.type}`} class="svc__title">{card.title}</H>
+  <dl class="svc__dl">
+    <dt>Get in touch if</dt>
+    <dd>{card.reachOutIf}</dd>
+    <dt>You get</dt>
+    <dd>{card.youGet}</dd>
+  </dl>
+  <div class="svc__foot">
+    <a href={card.primary.href} class="ds-btn ds-btn--yellow" data-track={`services-${card.type}`} {...ext(card.primary.href)}>
+      {card.primary.label}
+    </a>
+    {card.secondary && (
+      <a href={card.secondary.href} class="ds-link ds-link--sm" data-track={`services-${card.type}-secondary`} {...ext(card.secondary.href)}>
+        {card.secondary.label}
+      </a>
+    )}
+  </div>
+</article>
+
+<style>
+  .svc { display: flex; flex-direction: column; gap: 14px; height: 100%; padding: clamp(22px, 2.4vw, 28px); }
+  .svc__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .svc__n { font-size: 40px; line-height: 1; color: rgb(var(--accent-text)); }
+  .svc__aud { font-size: 12.5px; line-height: 1.35; color: rgb(var(--text-faint)); text-align: right; max-width: 24ch; }
+  .svc__title { font-size: clamp(22px, 2.3vw, 26px); line-height: 1.05; letter-spacing: -0.035em; font-weight: 800; }
+  .svc__dl { margin: 0; display: grid; gap: 4px; font-size: 15px; line-height: 1.55; }
+  .svc__dl dt { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .svc__dl dt + dd + dt { margin-top: 10px; }
+  .svc__dl dd { margin: 0; color: rgb(var(--text-muted)); text-wrap: pretty; }
+  .svc__foot { margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
+  .svc__foot .ds-btn { white-space: normal; text-align: center; }
+</style>

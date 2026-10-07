@@ -1,0 +1,32 @@
+---
+/**
+ * Dated corrections, shown inline near the top of a post. Published
+ * numbers are never silently edited: each change gets a line here.
+ */
+import { fullDate } from '../../lib/sanity/v3';
+import type { Correction } from '../../lib/writing-post';
+
+interface Props {
+  corrections: Correction[];
+}
+
+const { corrections } = Astro.props;
+---
+
+{corrections.length > 0 && (
+  <aside class="corr ds-stripe" aria-label={corrections.length > 1 ? 'Corrections' : 'Correction'} id="corrections">
+    <ul class="corr__list">
+      {corrections.map((c) => (
+        <li>
+          <strong class="corr__lead">Correction{c.date && <> · <time datetime={c.date}>{fullDate(c.date)}</time></>}.</strong>{' '}{c.note}
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .corr { font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); }
+  .corr__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .corr__lead { color: rgb(var(--text)); }
+</style>

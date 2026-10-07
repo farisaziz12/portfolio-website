@@ -1,73 +1,69 @@
 ---
+/** 404 (V3): big number, a way back, and the four places people usually meant. */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Kicker from '../components/design/Kicker.astro';
-import GridTexture from '../components/design/GridTexture.astro';
-import HeroTerminal from '../components/islands/HeroTerminal';
+import Kicker from '../components/v3/Kicker.astro';
+import Illustration from '../components/v3/Illustration.astro';
+import Icon from '../components/v3/Icon.astro';
+
+const links = [
+  { label: 'Speaking', href: '/speaking', note: 'Talks, workshops, where I’ll be next' },
+  { label: 'Talks', href: '/talks', note: 'The catalogue, with recordings and slides' },
+  { label: 'Articles & podcasts', href: '/blog', note: 'Posts, guest articles, podcasts and video' },
+  { label: 'Contact', href: '/contact', note: 'Ask me directly; I reply within two working days' },
+];
 ---
 
-<BaseLayout title="Page not found · 404 | Faris Aziz" description="The page you're looking for doesn't exist.">
-  <section class="not-found">
-    <GridTexture />
-    <div class="container not-found__inner">
-      <div class="not-found__terminal">
-        <HeroTerminal client:load name="error.sh" mode="notfound" />
+<BaseLayout title="Page not found · 404 | Faris Aziz" description="This page doesn't exist or it moved. Find talks, writing, speaking and contact details from here." noindex>
+  <div class="ds-wrap nf">
+    <div class="nf__top">
+      <div class="nf__copy">
+        <Kicker parts={['Error', '404']} mutedFirst />
+        <p class="nf__num ds-num" aria-hidden="true">404</p>
+        <h1 class="ds-h1">Wrong turn.</h1>
+        <p class="ds-lede">This page doesn’t exist, or it moved. The places below are where most people were headed.</p>
+        <div class="nf__actions">
+          <a href="/" class="ds-btn ds-btn--yellow" data-track="404-home">Back home</a>
+          <a href="/talks" class="ds-link ds-link--sm" data-track="404-talks">Browse talks</a>
+        </div>
       </div>
-
-      <Kicker>Error · 404</Kicker>
-      <h1 class="not-found__title">
-        Wrong <span class="accent-word">turn</span>.
-      </h1>
-      <p class="not-found__lead">
-        This page doesn't exist, or it moved. The terminal above actually works, or take the boring way out below.
-      </p>
-      <div class="not-found__actions">
-        <a href="/" class="ds-btn ds-btn-primary ds-btn-lg">
-          Back home
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/talks" class="ds-btn ds-btn-secondary ds-btn-lg">Browse talks</a>
-      </div>
+      <Illustration name="duck-curious" width={180} class="nf__duck" loading="eager" />
     </div>
-  </section>
+
+    <nav aria-labelledby="nf-links">
+      <h2 id="nf-links" class="ds-label nf__label">Try one of these</h2>
+      <ul class="ds-rows">
+        {links.map((l) => (
+          <li>
+            <a href={l.href} class="ds-row nf__row" data-track={`404-${l.label.toLowerCase()}`}>
+              <span class="ds-row__title nf__title">{l.label}</span>
+              <span class="nf__note">{l.note}</span>
+              <Icon name="arrow" size={16} class="nf__arrow" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
 </BaseLayout>
 
 <style>
-  .not-found {
-    position: relative;
-    overflow: hidden;
-    min-height: 70vh;
-    display: flex;
-    align-items: center;
-    padding-block: clamp(4rem, 9vw, 7rem);
-  }
-  .not-found__inner {
-    position: relative;
-    max-width: 640px;
-  }
-  .not-found__terminal { max-width: 440px; margin-bottom: 1.8rem; }
-  .not-found__title {
-    font-family: var(--font-display, 'Space Grotesk', system-ui, sans-serif);
-    font-weight: 700;
-    line-height: 0.98;
-    letter-spacing: -0.025em;
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    color: rgb(var(--ink));
-    margin-top: 1.2rem;
-    text-wrap: balance;
-  }
-  .not-found__lead {
-    font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
-    color: rgb(var(--ink-muted));
-    max-width: 50ch;
-    margin-top: 1.4rem;
-  }
-  .not-found__actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
+  .nf { padding-block: clamp(36px, 6vw, 72px) clamp(48px, 7vw, 88px); }
+  .nf__top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; margin-bottom: clamp(40px, 6vw, 64px); }
+  .nf__copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .nf__num { margin: 0; font-size: clamp(96px, 20vw, 220px); line-height: 0.85; color: rgb(var(--accent-text)); }
+  .nf__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 6px; }
+  .nf :global(.nf__duck) { width: 180px; height: auto; }
+  .nf__label { margin-bottom: 14px; }
+  .nf__row { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 6px 24px; align-items: center; min-height: 44px; padding-block: 18px; }
+  .nf__title { font-size: clamp(20px, 2.2vw, 24px); font-weight: 800; letter-spacing: -0.03em; transition: color 0.15s; }
+  .nf__note { font-size: 14.5px; color: rgb(var(--text-muted)); }
+  .nf :global(.nf__arrow) { color: rgb(var(--text-faint)); }
+  .nf__row:hover :global(.nf__arrow) { color: rgb(var(--accent-text)); }
+  @media (max-width: 720px) {
+    .nf__top { grid-template-columns: 1fr; }
+    .nf :global(.nf__duck) { width: 120px; grid-row: 1; }
+    .nf__row { grid-template-columns: minmax(0, 1fr) auto; }
+    .nf__note { grid-column: 1; grid-row: 2; }
+    .nf :global(.nf__arrow) { grid-column: 2; grid-row: 1 / span 2; }
   }
 </style>

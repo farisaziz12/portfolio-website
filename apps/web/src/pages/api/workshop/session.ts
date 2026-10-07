@@ -2,7 +2,7 @@ export const prerender = false
 
 import type { APIRoute } from 'astro'
 import { sanityFetch } from '../../../lib/sanity/client'
-import { workshopInstanceByTokenQuery } from '../../../lib/sanity/queries'
+import { workshopInstanceByTokenQuery } from '../../../lib/sanity/workshop-queries'
 import { getAccessStatus, getCloseDate } from '../../../lib/workshop-access'
 import { subscribeContact } from '../../../lib/workshop-subscribe'
 import {

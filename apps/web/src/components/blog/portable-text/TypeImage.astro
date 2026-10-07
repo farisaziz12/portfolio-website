@@ -1,37 +1,21 @@
 ---
 import type { Props as BaseProps, TypedObject } from 'astro-portabletext/types';
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
-import { urlFor } from '../../../lib/sanity/client';
+import SanityImg from '../../v3/SanityImg.astro';
+import type { SanityImage } from '../../../lib/sanity/v3';
 
-interface ImageBlock extends TypedObject {
+interface ImageBlock extends TypedObject, Omit<SanityImage, '_type'> {
   _type: 'image';
-  asset?: SanityImageSource;
-  alt?: string;
   caption?: string;
 }
 
 type Props = BaseProps<ImageBlock>;
 
 const { node } = Astro.props;
-
-if (!node.asset) {
-  return null;
-}
-
-const imageUrl = urlFor(node.asset).width(1200).auto('format').url();
+const caption = [node.caption, node.credit ? `Photo: ${node.credit}` : ''].filter(Boolean).join(' · ');
 ---
 {node.asset && (
-  <figure class="my-10">
-    <img
-      src={imageUrl}
-      alt={node.alt ?? ''}
-      class="w-full rounded-xl shadow-lg"
-      loading="lazy"
-    />
-    {node.caption && (
-      <figcaption class="mt-3 text-center text-sm text-ink-faint">
-        {node.caption}
-      </figcaption>
-    )}
+  <figure class="pt-figure">
+    <SanityImg image={node} alt={node.alt ?? ''} widths={[480, 800, 1200, 1400]} sizes="(max-width: 760px) 100vw, 680px" class="pt-figure__img" />
+    {caption && <figcaption class="pt-caption">{caption}</figcaption>}
   </figure>
 )}

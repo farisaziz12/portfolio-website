@@ -47,75 +47,59 @@ export function GateView({
     }
   };
 
-  const fieldClass =
-    'w-full px-4 py-3 rounded-lg border border-[rgb(var(--edge))] bg-[rgb(var(--surface))] text-[rgb(var(--ink))] placeholder-[rgb(var(--ink-faint))] focus:outline-none focus:border-[rgb(var(--accent))] transition-colors';
-
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-5">
-      <div className="w-full max-w-md">
-        <div className="rounded-xl border border-[rgb(var(--edge))] bg-[rgb(var(--surface-raised))] p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-display font-bold text-[rgb(var(--ink))] mb-2">
-              Welcome to the workshop
-            </h2>
-            <p className="text-sm text-[rgb(var(--ink-muted))]">
-              Enter your details to access the materials for {event}.
-            </p>
+    <div className="wsa-gate">
+      <div className="ds-card wsa-gate__card">
+        <p className="ds-kicker">Workshop · {event}</p>
+        <h1 className="ds-h2">Welcome to the workshop</h1>
+        <p className="wsa-gate__lede">Tell me who you are and the materials open right away.</p>
+
+        <form onSubmit={handleSubmit} data-form="workshop-attend">
+          <div className="ds-field">
+            <label htmlFor="workshop-gate-name" className="ds-field__label">Name</label>
+            <input
+              id="workshop-gate-name"
+              name="name"
+              type="text"
+              autoComplete="name"
+              required
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="ds-input"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="workshop-gate-name" className="text-sm font-medium text-[rgb(var(--ink-muted))]">
-                Name
-              </label>
-              <input
-                id="workshop-gate-name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={fieldClass}
-              />
-            </div>
+          <div className="ds-field">
+            <label htmlFor="workshop-gate-email" className="ds-field__label">Email</label>
+            <input
+              id="workshop-gate-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="ds-input"
+            />
+          </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="workshop-gate-email" className="text-sm font-medium text-[rgb(var(--ink-muted))]">
-                Email
-              </label>
-              <input
-                id="workshop-gate-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={fieldClass}
-              />
-            </div>
+          <button
+            type="submit"
+            aria-disabled={!canSubmit}
+            onClick={(e) => {
+              if (!canSubmit) e.preventDefault();
+            }}
+            className="ds-btn ds-btn--yellow ds-btn--lg ds-btn--block"
+          >
+            {status === 'loading' ? 'Opening…' : 'Open the materials'}
+          </button>
 
-            <button
-              type="submit"
-              aria-disabled={!canSubmit}
-              onClick={(e) => {
-                if (!canSubmit) e.preventDefault();
-              }}
-              className={`w-full px-6 py-3 rounded-lg font-medium text-ink-on-accent bg-[rgb(var(--accent-deep))] hover:bg-[rgb(var(--accent-hover))] transition-colors ${
-                !canSubmit ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {status === 'loading' ? 'Loading...' : 'Access Workshop'}
-            </button>
-
-            {status === 'error' && (
-              <p className="text-sm text-danger text-center">Something went wrong. Try again.</p>
-            )}
-          </form>
-        </div>
+          {status === 'error' && (
+            <p className="wsa-error" role="alert">That didn't work. Try again in a moment.</p>
+          )}
+        </form>
       </div>
     </div>
   );

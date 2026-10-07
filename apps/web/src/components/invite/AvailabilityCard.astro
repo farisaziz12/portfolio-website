@@ -1,0 +1,100 @@
+---
+/**
+ * /invite aside: 12 month tiles with a 5px status bar (blue open, yellow some
+ * dates taken, strong hairline limited), legend, then "Already booked".
+ * Month statuses come from the Sanity `availability` doc (missing = open).
+ */
+import { dayMonth, type AvailabilityMonth, type EventEdition } from '../../lib/sanity/v3';
+import { AVAILABILITY_STATUSES } from 'shared';
+
+interface Props {
+  months: AvailabilityMonth[];
+  booked: EventEdition[];
+}
+
+const { months, booked } = Astro.props;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const statusLabel = (s: string) => AVAILABILITY_STATUSES.find((o) => o.value === s)?.title ?? 'Open';
+
+const tiles = months.map((m) => {
+  const [y, mo] = m.month.split('-').map(Number);
+  return {
+    key: m.month,
+    short: MONTHS[mo - 1],
+    yy: String(y).slice(-2),
+    long: `${LONG[mo - 1]} ${y}`,
+    status: m.status,
+    label: statusLabel(m.status),
+    note: m.note,
+  };
+});
+
+const place = (e: EventEdition) => (e.location.isOnline ? 'online' : e.location.city);
+---
+
+<section class="ds-card avail" aria-labelledby="avail-h">
+  <div class="avail__head">
+    <h2 id="avail-h" class="avail__label">Availability</h2>
+    <span class="ds-meta">next 12 months</span>
+  </div>
+  <ol class="avail__grid">
+    {tiles.map((t) => (
+      <li class="avail__tile" title={t.note ? `${t.label} · ${t.note}` : t.label}>
+        <span class="avail__month">
+          <span class="avail__m" aria-hidden="true">{t.short}</span>
+          <span class="avail__y" aria-hidden="true">{t.yy}</span>
+          <span class="sr-only">{t.long}: {t.label}{t.note ? `, ${t.note}` : ''}</span>
+        </span>
+        <span class:list={['avail__bar', `is-${t.status}`]} aria-hidden="true"></span>
+      </li>
+    ))}
+  </ol>
+  <ul class="avail__legend" aria-label="Legend">
+    {AVAILABILITY_STATUSES.map((s) => (
+      <li><span class:list={['avail__key', `is-${s.value}`]} aria-hidden="true"></span>{s.title}</li>
+    ))}
+  </ul>
+  {booked.length > 0 && (
+    <div class="avail__booked" data-until-group>
+      <h3 class="avail__sub">Already booked</h3>
+      <ul>
+        {booked.map((e) => (
+          <li data-until={e.endsAt}>
+            <a href={`/events/${e.slug}`} data-track="invite_booked_event">
+              <span class="avail__ev">{e.title}{place(e) && !e.title.includes(place(e)!) ? `, ${place(e)}` : ''}</span>
+              <span class="avail__date">{dayMonth(e.date)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</section>
+
+<style>
+  .avail { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .avail__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .avail__label { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); }
+  .avail__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .avail__tile { border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-btn); padding: 8px 8px 9px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .avail__month { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; }
+  .avail__m { font-size: 14px; font-weight: 800; }
+  .avail__y { font-size: 10.5px; color: rgb(var(--text-faint)); }
+  .avail__bar, .avail__key { display: block; height: 5px; border-radius: 3px; background: rgb(var(--blue)); }
+  .is-some { background: rgb(var(--yellow)); }
+  .is-limited { background: rgb(var(--hairline-strong)); }
+  .avail__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: rgb(var(--text-muted)); }
+  .avail__legend li { display: flex; align-items: center; gap: 6px; }
+  .avail__key { width: 14px; }
+  .avail__booked { border-top: 1px solid rgb(var(--hairline)); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .avail__sub { margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .avail__booked ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .avail__booked a { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; min-height: 24px; font-size: 13.5px; color: rgb(var(--text)); text-decoration: none; }
+  .avail__booked a:hover { color: rgb(var(--accent-text)); }
+  .avail__date { flex: none; color: rgb(var(--text-faint)); }
+
+  /* 4 × 3 on desktop, 3 columns on tablet, 2 on phone */
+  @media (max-width: 1000px) { .avail__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .avail__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

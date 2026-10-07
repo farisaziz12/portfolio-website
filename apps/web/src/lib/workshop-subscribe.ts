@@ -1,7 +1,7 @@
 import { WorkshopWelcomeEmail } from '../emails/WorkshopWelcomeEmail'
 import { GeneralSubscribeConfirmEmail } from '../emails/GeneralSubscribeConfirmEmail'
 import { sanityFetch } from './sanity/client'
-import { workshopInstanceByTokenQuery } from './sanity/queries'
+import { workshopInstanceByTokenQuery } from './sanity/workshop-queries'
 import { env, getFrom, resend, sendOrLog } from './email'
 
 const GLOBAL_AUDIENCE_ID = env('RESEND_AUDIENCE_ID')

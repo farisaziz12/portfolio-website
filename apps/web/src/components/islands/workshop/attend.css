@@ -1,0 +1,82 @@
+/*
+ * Workshop attendee pages (/workshops/attend/[token]) on DS v3: gate card,
+ * schedule as numbered rows with a yellow progress rule, section view with
+ * prev/next. Buttons, fields and type come from ds.css (ds-btn, ds-input,
+ * ds-h1, ds-kicker); this file is layout only.
+ */
+.wsa { max-width: 760px; margin: 0 auto; padding: 48px var(--gutter) 64px; }
+.wsa--wide { max-width: 880px; }
+
+/* Gate */
+.wsa-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 48px var(--gutter); }
+.wsa-gate__card { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; padding: 32px; }
+.wsa-gate__card .ds-h2 { margin: 0; }
+.wsa-gate__lede { margin: 0; font-size: 15px; line-height: 1.55; color: rgb(var(--text-muted)); }
+.wsa-gate form { display: flex; flex-direction: column; gap: 16px; }
+.wsa-error { margin: 0; font-size: 14px; color: rgb(var(--danger)); }
+
+/* Schedule */
+.wsa-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.wsa-head .ds-h1 { margin: 0; font-size: clamp(34px, 5.4vw, 48px); }
+.wsa-head__event { margin: 0; font-size: 14px; color: rgb(var(--text-faint)); }
+.wsa-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+.wsa-progress { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.wsa-progress__row { display: flex; justify-content: space-between; font-size: 13px; color: rgb(var(--text-muted)); }
+.wsa-progress__row strong { color: rgb(var(--text)); }
+.wsa-progress__track { height: 6px; border-radius: 999px; background: rgb(var(--hairline)); overflow: hidden; }
+.wsa-progress__fill { height: 100%; background: rgb(var(--yellow)); border-radius: 999px; transition: width 0.3s var(--ease-out-soft); }
+
+.wsa-list { list-style: none; margin: 16px 0 0; padding: 0; border-bottom: 1px solid rgb(var(--hairline)); }
+.wsa-list li { border-top: 1px solid rgb(var(--hairline)); }
+.wsa-row {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 16px; align-items: center; width: 100%;
+  min-height: 64px; padding: 14px 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; font: inherit;
+}
+.wsa-row__num {
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgb(var(--hairline-strong)); font-size: 14px; font-weight: 800; color: rgb(var(--text-muted)); font-variant-numeric: tabular-nums;
+}
+.wsa-row.is-done .wsa-row__num { background: rgb(var(--yellow)); border-color: rgb(var(--yellow)); color: rgb(var(--on-yellow)); }
+.wsa-row__title { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; transition: color 0.15s; }
+.wsa-row__go { font-size: 13px; font-weight: 700; color: rgb(var(--text-faint)); transition: color 0.15s, transform 0.15s; }
+.wsa-row:hover .wsa-row__title, .wsa-row:focus-visible .wsa-row__title { color: rgb(var(--accent-text)); }
+.wsa-row:hover .wsa-row__go { color: rgb(var(--text)); transform: translateX(3px); }
+.wsa-row:focus-visible { outline: 3px solid rgb(var(--yellow)); outline-offset: 2px; border-radius: 4px; }
+
+.wsa-done { margin-top: 40px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 24px; }
+.wsa-done h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+.wsa-done p { margin: 0; }
+.wsa-foot { margin: 32px 0 0; font-size: 13px; color: rgb(var(--text-faint)); }
+
+/* Section */
+.wsa-topnav { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; font-size: 14px; }
+.wsa-back { display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer; font: 700 14px/1 var(--font); color: rgb(var(--text-muted)); }
+.wsa-back:hover { color: rgb(var(--text)); }
+.wsa-count { color: rgb(var(--text-faint)); font-variant-numeric: tabular-nums; }
+.wsa-section-head { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; margin-bottom: 28px; border-bottom: 1px solid rgb(var(--hairline)); }
+.wsa-section-head h1 { margin: 0; font-size: clamp(28px, 4.4vw, 38px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+.wsa-status { margin: 0 0 32px; font-size: 15px; color: rgb(var(--text-muted)); }
+.wsa-status.is-error { color: rgb(var(--danger)); }
+.wsa-body { margin-bottom: 40px; }
+.wsa-feedback { margin-top: 8px; overflow: hidden; padding: 0; }
+.wsa-feedback__toggle {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 14px 20px;
+  border: 0; background: none; cursor: pointer; font: 700 14px/1.3 var(--font); color: rgb(var(--text)); text-align: left;
+}
+.wsa-feedback__toggle:hover { color: rgb(var(--accent-text)); }
+.wsa-feedback__frame { display: block; width: 100%; height: 420px; border: 0; border-top: 1px solid rgb(var(--hairline)); background: rgb(var(--c-cream)); }
+.wsa-bottomnav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgb(var(--hairline)); }
+.wsa-bottomnav .ds-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+
+/* Upcoming / closed states (Astro page) */
+.wsa-state { min-height: 70vh; display: flex; align-items: center; }
+.wsa-state__inner { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; max-width: 640px; }
+.wsa-state__inner .ds-h1 { margin: 0; }
+.wsa-state__inner .ds-lede { margin: 0; }
+
+@media (max-width: 560px) {
+  .wsa-gate__card { padding: 24px 20px; }
+  .wsa-row { grid-template-columns: 40px minmax(0, 1fr); }
+  .wsa-row__go { display: none; }
+  .wsa-bottomnav .ds-btn { flex: 1; justify-content: center; }
+}

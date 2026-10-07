@@ -1,0 +1,35 @@
+---
+/** Section heading: H2 (or small yellow label) with an optional right-hand link or note. */
+interface Props {
+  title: string;
+  kicker?: string;
+  /** `label` = the small 14px yellow uppercase heading. */
+  size?: 'h2' | 'sm' | 'label';
+  link?: { label: string; href: string };
+  note?: string;
+  id?: string;
+  as?: 'h2' | 'h3';
+  class?: string;
+}
+const { title, kicker, size = 'h2', link, note, id, as: Tag = 'h2', class: className } = Astro.props;
+const cls = size === 'label' ? 'ds-label' : size === 'sm' ? 'ds-h2 ds-h2--sm' : 'ds-h2';
+---
+
+<div class:list={['shead', className]}>
+  <div class="shead__main">
+    {kicker && <p class="ds-kicker">{kicker}</p>}
+    <Tag id={id} class={cls}>{title}</Tag>
+  </div>
+  {(link || note) && (
+    <div class="shead__side">
+      {note && <span class="ds-meta">{note}</span>}
+      {link && <a href={link.href} class="ds-link ds-link--sm">{link.label}</a>}
+    </div>
+  )}
+</div>
+
+<style>
+  .shead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 22px; }
+  .shead__main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .shead__side { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+</style>

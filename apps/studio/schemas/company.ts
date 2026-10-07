@@ -1,8 +1,12 @@
 import { defineType, defineField } from 'sanity';
 
+/**
+ * One entry on the career timeline (Track record). Kept as `company` for
+ * data compatibility; think of it as "role at an organisation".
+ */
 export default defineType({
   name: 'company',
-  title: 'Company',
+  title: 'Career entry',
   type: 'document',
   fields: [
     defineField({
@@ -51,6 +55,21 @@ export default defineType({
       description: 'e.g., "2022-2024" or "2022-Present"',
     }),
     defineField({
+      name: 'periodLabel',
+      title: 'Timeline label',
+      type: 'string',
+      description: 'Optional. Leave empty and the timeline shows the dates ("2024 →" while current, "2021–2023" once ended). Fill it only to override ("Now", "Before code").',
+    }),
+    defineField({ name: 'startDate', title: 'Start', type: 'date', description: 'Drives the timeline label and order.' }),
+    defineField({ name: 'endDate', title: 'End', type: 'date', description: 'Empty = current role.' }),
+    defineField({
+      name: 'isPublic',
+      title: 'Show publicly',
+      type: 'boolean',
+      initialValue: true,
+      description: 'Off keeps an unannounced role private until the reveal.',
+    }),
+    defineField({
       name: 'url',
       title: 'Company URL',
       type: 'url',
@@ -61,6 +80,24 @@ export default defineType({
       type: 'text',
       rows: 3,
       description: 'Main achievement or contribution',
+    }),
+    defineField({
+      name: 'clients',
+      title: 'Clients',
+      description: 'Agency or consulting roles: who you built for. One career entry, many clients (FX Digital → Discovery+, Eurosport, GCN).',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'careerClient',
+          fields: [
+            defineField({ name: 'name', title: 'Client', type: 'string', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'url', title: 'Link', type: 'url' }),
+            defineField({ name: 'note', title: 'What you worked on', type: 'string', description: 'A few words: "Connected TV apps".' }),
+          ],
+          preview: { select: { title: 'name', subtitle: 'note' } },
+        },
+      ],
     }),
     defineField({
       name: 'order',

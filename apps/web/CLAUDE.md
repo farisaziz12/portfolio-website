@@ -26,17 +26,21 @@ The email routes, each in `src/pages/api/`:
 
 | Route | Method | Sends | Critical-path? |
 |---|---|---|---|
-| `/api/invite` | POST | Admin notification (`InviteAdminEmail`) + submitter confirmation (`InviteConfirmationEmail`) | Admin = critical → 502 on failure. Confirmation = best-effort → logged only. |
-| `/api/mentorship` | POST | Admin notification (`MentorshipAdminEmail`) + submitter confirmation (`MentorshipConfirmationEmail`) | Same split. |
-| `/api/contact` | POST | Admin notification (`ContactAdminEmail`) + submitter confirmation (`ContactConfirmationEmail`). General contact incl. full-time-role inquiries (topic field). | Same split. |
+| `/api/invite` | POST | Admin notification (`InviteAdminEmail`) + submitter confirmation (`InviteConfirmationEmail`). Body: `kind` (`conference` · `podcast` · `workshop` · `panel` · `article` · `other`, see `lib/invite-kinds.ts`; legacy `format` accepted), `name`, `email`, `what` (required) + `when`, `audience`, `message`. | Admin = critical: 200 `{ ok, ref, confirmationSent }` only once Resend accepted it, else 502 `delivery-failed`. Missing email env → 503 `not-configured` (never a silent success). 400 `invalid` with `fields`. Confirmation = best-effort (`confirmationSent`). |
+| `/api/mentorship` | POST | Admin notification (`MentorshipAdminEmail`) + submitter confirmation (`MentorshipConfirmationEmail`). Body: `name`, `email`, `goals` (required) + `currency`, `budget`, `timeline`, `cadence`, `message`. | Admin = critical: 200 `{ ok, ref, confirmationSent }` only once Resend accepted it, else 502 `delivery-failed`. Missing email env → 503 `not-configured` (never a silent success). 400 `invalid` with `fields`. Confirmation = best-effort (`confirmationSent`). |
+| `/api/contact` | POST | Admin notification (`ContactAdminEmail`) + submitter confirmation (`ContactConfirmationEmail`). General contact incl. full-time-role inquiries. Body: `email`, `message` (required) + `name`, `topic` (`role` · `speaking` · `press` · `consulting` · `mentorship` · `other`), `company`. | Same contract as `/api/invite` (200 with `ref` only after Resend accepted the admin email; 503 / 502 / 400 otherwise). |
 | `/api/workshop/subscribe` | POST | `WorkshopWelcomeEmail` (source=`workshop-attend`) **or** `GeneralSubscribeConfirmEmail` (source=`website`); also writes to Resend audience(s) | All best-effort — `Promise.allSettled` so audience-write or email failures never block the response. Workshop-attend looks up the instance by **access token** (`instanceToken` / legacy `instanceSlug` value). |
 | `/api/workshop/session` | GET/POST | Sets signed `workshop_session` cookie on POST (gate); GET resumes session for a token | Cookie HMAC via `WORKSHOP_SESSION_SECRET` (falls back to `ADMIN_PASSWORD`). |
 | `/api/workshop/section` | GET | Lazy-load one section body (`token` + `sectionKey`) | Public CDN read; attend page ships schedule metadata only. |
 | `/api/workshop/follow-up` | POST | `WorkshopFollowUpEmail` to all contacts in a workshop instance's Resend audience | Admin-protected (`Authorization: Bearer $ADMIN_PASSWORD` **or** signed `admin_session` cookie from `/admin`). |
 
-**Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`):
-1. Send the admin notification first. If it fails, return 502 — the user needs to know their form didn't go through.
-2. Send the submitter confirmation. If that fails, just log it — the submission still made it to the admin inbox.
+**Two-stage send pattern** (used by `/api/invite`, `/api/mentorship`, and `/api/contact`; shared helpers in `src/lib/inquiry.ts`):
+0. If `isEmailConfigured()` is false, return **503 `{ error: 'not-configured' }`**. Nothing was stored, so the form must not say it was.
+1. Send the admin notification first. This is the "durable storage" step: the inquiry only counts as stored once Resend accepted it. If it fails, return **502 `{ error: 'delivery-failed' }`**.
+2. Send the submitter confirmation. If that fails, just log it and report `confirmationSent: false` — the submission still made it to the admin inbox.
+3. Return **200 `{ ok: true, ref, confirmationSent }`** where `ref` is `FA-<yymmdd>-<4 chars>` (`inquiryRef()`), also written into the admin email subject/body so Faris can match a reply to a reference.
+
+**Form contract** (`InviteForm`, `ContactForm`, `MentorshipInquiryForm`): show the success state ONLY on a 200 with `ok` and `ref`. Every other outcome (400, 502, 503, network error) shows the failed state ("nothing was stored") and keeps the entered text so the visitor can retry.
 
 **Audience writes** (subscribe route): contacts go to the global audience (`RESEND_AUDIENCE_ID`) *and* the per-workshop audience (`workshopInstance.resendAudienceId` in Sanity) when both are set. The Sanity lookup happens server-side — never trust a client-supplied audience ID.
 
@@ -48,7 +52,7 @@ All env reads go through `env(key)` in `src/lib/email.ts`. It checks `process.en
 
 | Var | Required? | Used by | Notes |
 |---|---|---|---|
-| `RESEND_API_KEY` | ✅ | all email routes | Format `re_*`. Without it, routes take the silent-success "email-disabled" branch (see Gotchas). |
+| `RESEND_API_KEY` | ✅ | all email routes | Format `re_*`. Without it, the inquiry routes return 503 `not-configured` and the forms show their failed state (see Gotchas). |
 | `RESEND_FROM_EMAIL` | ✅ | all email routes | A plain email address (no display name — the routes add their own label). Must be on a domain you've verified in Resend. |
 | `RESEND_AUDIENCE_ID` | ⬜ optional | `/api/workshop/subscribe` | Global audience that every workshop subscriber joins, regardless of instance. |
 | `INVITE_INBOX` | ⬜ optional | `/api/invite` | Override the destination inbox. Defaults to `faris@zurichjs.com`. |
@@ -65,9 +69,9 @@ All env reads go through `env(key)` in `src/lib/email.ts`. It checks `process.en
    RESEND_FROM_EMAIL=noreply@faziz-dev.com
    ```
 2. **Resend dashboard** — verify the sending domain (e.g. `faziz-dev.com`) at <https://resend.com/domains>. Add the SPF / DKIM / DMARC records they generate to your DNS provider. The FROM mailbox doesn't have to actually exist — Resend treats it as a sender identity.
-3. **Vercel** — set both vars on **Production** and **Preview** environments. Vercel build logs won't catch a missing var because the routes are designed to fail open. Verify after deploy by submitting a real form.
+3. **Vercel** — set both vars on **Production** and **Preview** environments. Vercel build logs won't catch a missing var; the forms will simply fail (503) at runtime. Verify after deploy by submitting a real form and checking you get a reference number.
 4. **Optional** — if you maintain multiple inboxes, set `INVITE_INBOX` / `MENTORSHIP_INBOX` on Preview deploys so test submissions don't pollute prod inbox.
-5. **Verify** — `isEmailConfigured()` (exported from `lib/email.ts`) returns `false` when either core var is missing. The routes still return HTTP 200 in that state with `{ warning: 'email-disabled' }` — watch for that string in logs.
+5. **Verify** — `isEmailConfigured()` (exported from `lib/email.ts`) returns `false` when either core var is missing. In that state the inquiry routes return HTTP 503 `{ error: 'not-configured' }` and log `not configured … NOT stored`. Watch for that string in logs.
 
 ---
 
@@ -78,44 +82,45 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 | File | Triggered from | Role |
 |---|---|---|
 | `InviteAdminEmail.tsx` | `/api/invite` | Notification to Faris with event details |
-| `InviteConfirmationEmail.tsx` | `/api/invite` | "Thanks, I'll reply in 2 days" to submitter |
+| `InviteConfirmationEmail.tsx` | `/api/invite` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `MentorshipAdminEmail.tsx` | `/api/mentorship` | Notification to Faris with inquiry details |
-| `MentorshipConfirmationEmail.tsx` | `/api/mentorship` | "Thanks, I'll reply in 2 days" to submitter |
+| `MentorshipConfirmationEmail.tsx` | `/api/mentorship` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `ContactAdminEmail.tsx` | `/api/contact` | Notification to Faris with topic/company/message (general contact + hiring) |
-| `ContactConfirmationEmail.tsx` | `/api/contact` | "Thanks, I'll reply in 2 days" to submitter |
+| `ContactConfirmationEmail.tsx` | `/api/contact` | "Thanks, I'll reply within <reply time>" to submitter (speaker profile → Reply time, passed by the route) |
 | `WorkshopWelcomeEmail.tsx` | `/api/workshop/subscribe` (workshop-attend) | "You're in — here are materials" |
 | `GeneralSubscribeConfirmEmail.tsx` | `/api/workshop/subscribe` (website) | "You're on the list" |
 | `WorkshopFollowUpEmail.tsx` | `/api/workshop/follow-up` | Post-workshop feedback request |
 
 ### Design tokens
 
-`src/emails/styles.ts` mirrors Design System v2 from `src/styles/global.css`. Email clients don't support CSS variables, so values are hex literals — keep both in sync when the palette changes.
+`src/emails/styles.ts` mirrors Design System v3 ("Panels & Bands") from `src/styles/tokens.css`. Email clients don't support CSS variables or gradients reliably, so values are hex literals and the brand band is two table cells. Keep both in sync when the palette changes.
 
 | Token | Hex | Used for |
 |---|---|---|
-| `--bg` | `#0A0C10` | Page/body background |
-| `--surface-1` | `#151A23` | Terminal header, raised cards |
-| `--ink` | `#F3F5F8` | Headings, bold body |
-| `--ink-muted` | `#A9B4C2` | Body text |
-| `--ink-faint` | `#6A7686` | Footer, labels, kickers |
-| `--edge` | `#232B36` | Borders, dividers |
-| `--edge-strong` | `#34404F` | Secondary button border |
-| `--accent` | `#3D7BFF` | Primary button background |
-| `--accent-bright` | `#6AA1FF` | Links, terminal command text |
+| `--c-ink` | `#0F0F10` | Page/body background |
+| `--c-surface` | `#191A1D` | Message card |
+| `--c-hairline` / `-strong` | `#2A2A2E` / `#44413C` | Rules, table rows |
+| `--c-cream` | `#F8F4EB` | Headings, strong text, secondary button |
+| `--c-muted` | `#C8C1B5` | Body text |
+| `--c-faint` | `#8A8378` | Labels, footer |
+| `--c-yellow` | `#F4C63A` | The one accent: primary button (ink text), links, kickers, band |
+| `--c-blue` | `#2E88B8` | Band edge only |
 
-**Fonts:** Space Grotesk (headings) → Hanken Grotesk (body) → IBM Plex Mono / JetBrains Mono (terminal/kicker). All declared with fallbacks because email clients won't load webfonts.
+**Font:** Figtree first, then system sans (email clients mostly won't load the webfont; the stack degrades cleanly).
 
-**Structure rhythm** every template follows:
-1. **Terminal header** — `● ● ●` dots + `$ ack <slug>` command + one-line status output. Sets the brand voice.
-2. **Content** — `Kicker` (mono uppercase eyebrow, admin emails only) → `Heading` → body paragraphs/tables/buttons.
-3. **Signature + footer** — `— Faris` line + faziz-dev.com link + footer disclaimer.
+**Structure rhythm** every template follows (shared parts in `src/emails/parts.tsx`):
+1. **`<EmailHeader label="…">`**: the blue/yellow band, the "Faris Aziz" wordmark and a short yellow label ("Invite received", "New invite").
+2. **Content**: `kicker` (admin emails) → `heading` → paragraphs / detail table / `longText` card / buttons (`primaryButton` yellow, `secondaryButton` outline).
+3. **`<EmailSignature />` + `<EmailFooter reason="…" unsubscribe?>`**: "– Faris", the site link, why they got it, and an unsubscribe link for audience emails.
+
+Copy follows `docs/voice.md` (the voice lint scans `src/emails`): no exclamation marks, sentence-case buttons.
 
 ---
 
 ## Adding a new email
 
 1. Create `src/emails/MyNewEmail.tsx`. Import `@react-email/components` primitives and styles via `import * as s from './styles'`.
-2. Mirror the terminal-header → content → signature → footer structure of an existing template (start by copying `InviteConfirmationEmail.tsx` for submitter-facing, or `InviteAdminEmail.tsx` for ops-facing).
+2. Mirror the `EmailHeader` → content → `EmailSignature` → `EmailFooter` structure of an existing template (start by copying `InviteConfirmationEmail.tsx` for submitter-facing, or `InviteAdminEmail.tsx` for ops-facing).
 3. Use only style objects from `styles.ts`. If you need a value that isn't there, add it to `styles.ts` first — never hard-code hex in templates.
 4. In your API route, import `sendOrLog` from `../../lib/email` (don't `new Resend(...)` directly). Pass `context` so log lines are scoped (e.g. `'invite:confirm'`).
 5. Decide explicitly: is this email critical? If yes, check `outcome.ok` and return 502 on failure. If best-effort, just `await` and move on.
@@ -125,7 +130,8 @@ All templates live in `src/emails/` and use `@react-email/components`. They shar
 ## Gotchas
 
 - **`process.env` first, `import.meta.env` second** (`lib/email.ts`). Vercel inlines `import.meta.env` at build time for non-public vars — they're `undefined` at runtime. The `env()` helper handles this; don't bypass it. See in-code comment in `lib/email.ts`.
-- **Silent "email-disabled" success.** When `RESEND_API_KEY` or `RESEND_FROM_EMAIL` is missing, `/api/invite` and `/api/mentorship` return HTTP 200 with `{ success: true, warning: 'email-disabled' }`. The form shows success but no mail is sent. This is intentional (better UX than form errors during config gaps) — but watch logs for the warning string. `/api/workshop/subscribe` is stricter and returns 500 when the API key is missing.
+- **Missing email config is a failure, not a success (V3).** When `RESEND_API_KEY` or `RESEND_FROM_EMAIL` is missing, `/api/invite`, `/api/contact` and `/api/mentorship` return HTTP 503 `{ error: 'not-configured' }` and the forms show "That didn't go through, and nothing was stored." with the text retained. The old silent `{ success: true, warning: 'email-disabled' }` 200 is gone: it showed visitors a success screen for inquiries that were never delivered. Locally (no `.env.local`) this means the forms always fail; to see the accepted state, add real Resend vars or intercept the route in a test (`page.route('**/api/invite', …)` fulfilling `{ ok: true, ref: 'FA-…' }`). `/api/workshop/subscribe` returns 500 when the API key is missing.
+- **Success = Resend accepted the admin notification.** There is no database; the admin email is the store. Never return 200/`ok` before `sendOrLog` for the admin email resolved `ok: true`, and never render a success state on a timer or optimistic update.
 - **Sanity audience lookups stay server-side.** `workshopInstanceByTokenQuery` (attend) / `workshopInstanceBySlugQuery` (follow-up) are the sanctioned lookups. Never accept an audience ID from the request body.
 - **React Email doesn't support CSS variables.** Keep hex literals in `styles.ts`. If you reference a token in a template via inline `style`, import the constant from styles (`s.inkStrong`), don't paste the hex.
 - **Resend domain verification is non-optional.** Until SPF/DKIM/DMARC all show "Verified" in the Resend dashboard, every send fails. Verify after any DNS change.

@@ -8,7 +8,8 @@ in the PostHog UI (they can't be created from code).
 
 - `apps/web/src/components/posthog.astro` — loader, init config, session-recording
   gate, and the sitewide auto-events (`cta_click`, `outbound_link_click`,
-  `scroll_depth`).
+  `scroll_depth`, `content_viewed`, `filter_applied`, `video_played`, `video_opened`,
+  `form_abandoned`).
 - `apps/web/src/lib/analytics.ts` — typed `track()` / `identify()` /
   `trackFormStarted()` wrappers used by React islands. The `AnalyticsEvent`
   union there is the canonical event list; keep it in sync with this doc.
@@ -48,7 +49,7 @@ converges across devices, forms, and visits.
 ## Session recording
 
 Recording is initialized **disabled** and started only when a pageview hits a
-conversion page: `/invite`, `/contact`, `/consulting`, `/mentorship` (path or
+conversion page: `/invite`, `/contact`, `/services`, `/mentorship` (path or
 sub-path). Once started it keeps recording for the rest of the session, so you
 see what happens *after* the conversion page too. All inputs are masked
 (`maskAllInputs: true`); mask any other sensitive element with a
@@ -75,7 +76,11 @@ project settings).
 | `form_submit_failed` | Server error or network failure on submit | `form`, `reason` (`server` / `network`), `status` |
 | `scroll_depth` | 25/50/75/100% scroll milestones, once per pageview | `depth`, `path` |
 | `outbound_link_click` | Click on an external link (cal.com excluded) | `href`, `domain`, `label`, `path` |
-| `terminal_command` | A command is executed in the hero/404 terminal | `command`, `known`, `mode` |
+| `content_viewed` | A talk, workshop, event or post page was opened (from `<meta name="analytics:content">`, BaseLayout `content` prop) | `type` (`talk` / `workshop` / `event` / `post`), `slug`, `title`, plus per type: `pillar`, `status`, `versions`, `has_recording` · `bookable` · `upcoming`, `roles`, `country` · `topic`; `path` |
+| `filter_applied` | A list filter pill or reset was used (`lib/client/filters.ts` → `filters:change`) | `filter` (`topic` / `role` / `area` / `company` / `format` / `platform` / `reset`), `value`, `shown`, `path` |
+| `video_played` | An inline `<video>` started, or a YouTube/Vimeo embed was clicked into | `kind` (`inline` / `embed`), `provider`, `title`, `path` |
+| `video_opened` | A link to a recording (YouTube, Vimeo, GitNation) was clicked | `href`, `label`, `path` |
+| `form_abandoned` | A form was typed into and left (pagehide or in-site navigation) without submitting. Field names only, never values; sent via sendBeacon | `form` (`invite` / `contact` / `mentorship`), `fields_touched`, `field_count`, `last_field`, `seconds`, `path` |
 | `command_palette_opened` | ⌘K palette opened | `path` |
 | `command_palette_action` | A palette command is run | `command`, `group`, `href` |
 | `$pageview`, `$pageleave`, `$autocapture`, `$exception`, … | PostHog defaults | — |
@@ -94,16 +99,18 @@ the session recordings for that page.
 
 ## Insights worth pinning
 
-- `cta_click` breakdown by `cta` — which surfaces actually drive action (mega-menu vs footer vs panels vs sticky bar vs terminal-adjacent CTAs).
+- `cta_click` breakdown by `cta` — which surfaces actually drive action (header vs footer vs panels vs posters).
 - `contact_form_submitted` by `topic` over time — is the full-time-role door pulling?
 - `form_validation_failed` by `fields` — a recurring field points at confusing copy or layout.
 - `email_entered` with no `*_submitted` in the same session — identified warm leads who bailed mid-form; the session recording shows why.
-- `scroll_depth` ≥75 on `/talks`, `/consulting`, `/mentorship` — is the long-form content read or skipped?
+- `scroll_depth` ≥75 on `/talks`, `/services`, `/mentorship` — is the long-form content read or skipped?
+- `content_viewed` by `slug` (type talk) → which talks organisers look at before `invite_form_submitted`.
+- `filter_applied` by `filter`/`value` — what people narrow to (topics, roles, engineering areas).
+- `form_abandoned` by `form` and `last_field` — the field where people give up.
 - `outbound_link_click` by `domain` — where the site leaks attention (GitHub, LinkedIn, YouTube…).
-- `terminal_command` where `known = false` — what people *try* to type is a feature wishlist.
 - `workshop_section_viewed` breakdown by `section_key` for a given `instance` — which sections attendees open.
 - Referrer breakdown filtered to AI surfaces (`chatgpt.com`, `perplexity.ai`, `claude.ai`, `copilot.microsoft.com`) — low volume, disproportionate intent; watch conversion rate per source.
-- Session recordings on `/invite`, `/contact`, `/consulting`, `/mentorship` (the gate only records these) — watch a handful weekly for friction.
+- Session recordings on `/invite`, `/contact`, `/services`, `/mentorship` (the gate only records these) — watch a handful weekly for friction.
 - Error tracking (`$exception`) — a spike after a deploy is a regression on a real visitor's browser.
 
 ## Cadence

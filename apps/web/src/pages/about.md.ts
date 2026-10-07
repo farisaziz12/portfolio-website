@@ -1,55 +1,69 @@
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '../lib/sanity/client';
-import { speakerProfileQuery, speakingStatsQuery } from '../lib/sanity/queries';
 import { mdResponse, portableTextToMarkdown } from '../lib/markdown';
-import { FALLBACK_SPEAKER_STATS } from '../lib/proof';
-
-interface SpeakerProfile {
-  bioShort?: string;
-  bioMedium?: string;
-  bioFull?: unknown;
-}
-
-interface SpeakingStats {
-  totalEvents: number;
-  countries: number;
-  cities: number;
-}
+import { getAboutPage, getCareer, getCommunities, getProfile, getSpeakingStats, currentMonthYear } from '../lib/sanity/v3';
+import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
-  const [profile, stats] = await Promise.all([
-    sanityFetch<SpeakerProfile | null>(speakerProfileQuery).catch(() => null),
-    sanityFetch<SpeakingStats>(speakingStatsQuery).catch(() => ({ ...FALLBACK_SPEAKER_STATS })),
+  const [about, profile, stats, career, communities] = await Promise.all([
+    getAboutPage(),
+    getProfile(),
+    getSpeakingStats(),
+    getCareer(),
+    getCommunities(),
   ]);
 
-  const fullBio = profile?.bioFull ? portableTextToMarkdown(profile.bioFull) : '';
+  const story = portableTextToMarkdown(about.content) || profile.bios.medium || '';
+  const links = [
+    ['LinkedIn', profile.links.linkedin],
+    ['Bluesky', profile.links.bluesky],
+    ['X', profile.links.twitter],
+    ['GitHub', profile.links.github],
+    ['YouTube', profile.links.youtube],
+  ].filter(([, href]) => href);
+  const awards = communities.flatMap((c) => c.recognition.map((r) => `${[r.title, r.issuer, r.year].filter(Boolean).join(', ')} (${c.name})`));
 
   const body = [
-    `# About Faris Aziz`,
+    `# ${about.title}`,
     ``,
-    `> Engineer first. Speaker because of it. Faris Aziz is a Staff Software Engineer, conference speaker, and award-winning community builder based in Geneva, Switzerland. He has spoken at ${stats.totalEvents}+ events across ${stats.countries} countries, cofounded the award-winning ZurichJS community, and is available for keynotes, talks, workshops, technical consulting, and 1:1 mentorship.`,
+    `> ${about.intro}`,
     ``,
-    `## Short bio (~50 words)`,
+    `Kicker: ${about.kicker}. This is the entity home for ${profile.name}${profile.pronunciation ? ` (pronounced ${profile.pronunciation})` : ''}, based in ${profile.travelBase}.`,
     ``,
-    profile?.bioShort || 'Staff Software Engineer and Conference Speaker specializing in React, Next.js, and payment systems. Based in Geneva.',
+    `## Story (first person)`,
     ``,
-    profile?.bioMedium ? `## Medium bio (~150 words)\n\n${profile.bioMedium}` : '',
-    fullBio ? `## Full bio\n\n${fullBio}` : '',
+    story,
+    ``,
+    `## In short`,
+    ``,
+    ...about.inShort.map((r) => `- ${r.label}: ${r.body}`),
     ``,
     `## Facts`,
     ``,
-    `- Role: Staff Software Engineer`,
-    `- Based in: Geneva, Switzerland`,
-    `- Speaking: ${stats.totalEvents}+ engagements, ${stats.countries} countries, ${stats.cities} cities`,
-    `- Community: cofounder of ZurichJS (https://zurichjs.com), built in under two years into an award-winning community and one of Europe's most in-demand conferences`,
-    `- Awards: JSNation Open Source Award, for building the ZurichJS community`,
-    `- Topics: React, Next.js, frontend architecture, payment systems, developer experience, engineering leadership`,
-    `- Speaker press kit (bios, headshots, practical details): https://faziz-dev.com/press-kit`,
-    `- Availability & speaking invitations: https://faziz-dev.com/invite`,
-    `- Open to full-time roles: tech lead, staff/senior frontend, full-stack (frontend-leaning), payments, product engineering, founding engineer: https://faziz-dev.com/contact?topic=role#message`,
+    `- Talks delivered: ${stats.talksDelivered} (delivered talk sessions from event records; hosting and attending excluded; as of ${currentMonthYear()})`,
+    `- Countries spoken in: ${stats.countries} · cities: ${stats.cities}`,
+    ...(career.length ? career.map((c) => `- ${c.periodLabel ?? ''}${c.periodLabel ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.clients?.length ? ` (clients: ${c.clients.map((cl) => cl.name).join(', ')})` : ''}`) : []),
+    ...awards.map((a) => `- Recognition: ${a}`),
+    ``,
+    `## Bios`,
+    ``,
+    profile.bios.short ? `### Short\n\n${profile.bios.short}\n` : '',
+    profile.bios.medium ? `### Medium\n\n${profile.bios.medium}\n` : '',
+    profile.bios.long ? `### Long\n\n${profile.bios.long}\n` : '',
+    `## Elsewhere`,
+    ``,
+    ...links.map(([label, href]) => `- ${label}: ${href}`),
+    ``,
+    `## Track record`,
+    ``,
+    `- Track record (dated, defined numbers; career timeline): ${SITE}/impact`,
+    `- What people say (quotes with sources): ${SITE}/appreciation`,
+    `- Projects: ${SITE}/projects`,
+    `- Gallery: ${SITE}/gallery`,
+    `- Press kit (bios, headshots): ${SITE}/press-kit`,
+    `- Invite to speak: ${SITE}/invite`,
   ]
-    .filter(Boolean)
-    .join('\n');
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 
   return mdResponse(body);
 };
