@@ -49,9 +49,9 @@ converges across devices, forms, and visits.
 ## Session recording
 
 Recording is initialized **disabled** and started only when a pageview hits a
-conversion page: `/invite`, `/contact`, `/services`, `/mentorship` (path or
-sub-path). Once started it keeps recording for the rest of the session, so you
-see what happens *after* the conversion page too. All inputs are masked
+conversion page: `/invite`, `/contact`, `/services`, `/mentorship`, `/connect`
+(path or sub-path). Once started it keeps recording for the rest of the session,
+so you see what happens *after* the conversion page too. All inputs are masked
 (`maskAllInputs: true`); mask any other sensitive element with a
 `data-ph-mask` attribute. To record site-wide, edit `RECORD_PATHS` in
 `posthog.astro` (and remember recording must also be enabled in the PostHog
