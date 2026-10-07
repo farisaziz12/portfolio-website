@@ -263,6 +263,17 @@
   "isOwn": false
  },
  {
+  "_id": "series-halfstack",
+  "_type": "eventSeries",
+  "name": "HalfStack",
+  "slug": {
+   "_type": "slug",
+   "current": "halfstack"
+  },
+  "kind": "conference",
+  "isOwn": false
+ },
+ {
   "_id": "talk-caching",
   "title": "Caching, Payloads, and Other Dark Arts: Optimizing UX in Suboptimal Conditions",
   "shortTitle": "the caching talk",
@@ -1261,6 +1272,62 @@
      "_type": "reference",
      "_ref": "talk-caching-v1"
     }
+   }
+  ]
+ },
+ {
+  "_id": "event-halfstack-vienna-2026",
+  "_type": "event",
+  "title": "HalfStack Vienna 2026",
+  "slug": {
+   "_type": "slug",
+   "current": "halfstack-vienna-2026"
+  },
+  "date": "2026-11-16",
+  "timezone": "Europe/Vienna",
+  "kind": "conference",
+  "location": {
+   "city": "Vienna",
+   "country": "Austria",
+   "venue": "Ankersaal"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "attendee"
+   }
+  ],
+  "series": {
+   "_type": "reference",
+   "_ref": "series-halfstack"
+  }
+ },
+ {
+  "_id": "event-cancelled-meetup-2026",
+  "_type": "event",
+  "title": "Cancelled meetup",
+  "slug": {
+   "_type": "slug",
+   "current": "cancelled-meetup-2026"
+  },
+  "date": "2026-11-05",
+  "timezone": "Europe/Zurich",
+  "kind": "meetup",
+  "location": {
+   "city": "Basel",
+   "country": "Switzerland"
+  },
+  "sessions": [
+   {
+    "_key": "a",
+    "_type": "session",
+    "role": "speaker",
+    "talk": {
+     "_type": "reference",
+     "_ref": "talk-resilient"
+    },
+    "status": "cancelled"
    }
   ]
  },

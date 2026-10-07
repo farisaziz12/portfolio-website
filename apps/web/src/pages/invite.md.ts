@@ -2,13 +2,13 @@ import type { APIRoute } from 'astro';
 import { mdResponse } from '../lib/markdown';
 import { INVITE_KINDS } from '../lib/invite-kinds';
 import { AVAILABILITY_STATUSES } from 'shared';
-import { dayMonth, eventPlace, getAvailability, getProfile, getUpcomingEvents, yearOf } from '../lib/sanity/v3';
+import { dayMonth, eventPlace, getAvailability, getProfile, getUpcomingEngagements, yearOf } from '../lib/sanity/v3';
 
 const SITE = 'https://faziz-dev.com';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export const GET: APIRoute = async () => {
-  const [profile, availability, upcoming] = await Promise.all([getProfile(), getAvailability(), getUpcomingEvents()]);
+  const [profile, availability, upcoming] = await Promise.all([getProfile(), getAvailability(), getUpcomingEngagements()]);
   const status = (s: string) => AVAILABILITY_STATUSES.find((o) => o.value === s)?.title ?? 'Open';
   const lead = availability.leadTime;
   const goodToKnow = profile.goodToKnow.map((r) => (lead && /lead time/i.test(r.label) ? { ...r, body: lead } : r));

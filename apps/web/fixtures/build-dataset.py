@@ -45,7 +45,7 @@ docs += [
 # ── series ──
 series = [("react-summit", "React Summit", "conference"), ("cityjs", "CityJS", "conference"), ("zurichjs", "ZurichJS", "meetup"),
           ("game-of-codes", "Game of Codes", "conference"), ("devs-ghent", "Devs.Ghent", "meetup"), ("whatthestack", "WhatTheStack", "conference"),
-          ("react-alicante", "React Alicante", "conference"), ("jsnation", "JSNation", "conference")]
+          ("react-alicante", "React Alicante", "conference"), ("jsnation", "JSNation", "conference"), ("halfstack", "HalfStack", "conference")]
 for s, n, k in series:
     docs.append({"_id": f"series-{s}", "_type": "eventSeries", "name": n, "slug": slug(s), "kind": k, "isOwn": s == "zurichjs"})
 
@@ -165,6 +165,10 @@ ev("cityjs-singapore-2025", "CityJS Singapore", "2025-07-18", "Singapore", "Sing
 ev("cityjs-athens-2025", "CityJS Athens", "2025-06-05", "Athens", "Greece", "cityjs", "conference", [sess("a", "speaker", "talk-caching")], tz="Europe/Athens")
 ev("react-day-berlin-2024", "React Day Berlin 2024", "2024-12-13", "Berlin", "Germany", None, "conference",
    [sess("a", "speaker", "talk-caching-v1")], tz="Europe/Berlin")
+ev("halfstack-vienna-2026", "HalfStack Vienna 2026", "2026-11-16", "Vienna", "Austria", "halfstack", "conference",
+   [sess("a", "attendee")], tz="Europe/Vienna", loc={"venue": "Ankersaal"})
+ev("cancelled-meetup-2026", "Cancelled meetup", "2026-11-05", "Basel", "Switzerland", None, "meetup",
+   [sess("a", "speaker", "talk-resilient", status="cancelled")])
 ev("jsnation-2025", "JSNation", "2025-06-12", "Amsterdam", "Netherlands", "jsnation", "conference", [sess("a", "attendee", detail="OSS Awards")], tz="Europe/Amsterdam")
 # legacy V2 events (no sessions[]; type + conference + talk + links)
 docs.append({"_id": "event-cityjs-london-2025", "_type": "event", "title": "CityJS London 2025", "slug": slug("cityjs-london-2025"), "type": "conference",

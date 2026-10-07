@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { ordinalDate } from '../../lib/ordinal';
 import { track } from '../../lib/analytics';
 import { GateView } from './workshop/GateView';
 import { ScheduleView } from './workshop/ScheduleView';
@@ -78,7 +79,7 @@ export default function WorkshopAttend({
 
   const closeDate = useMemo(
     () =>
-      new Date(closeDateISO).toLocaleDateString('en-US', {
+      ordinalDate(new Date(closeDateISO), {
         month: 'long',
         day: 'numeric',
         year: 'numeric',

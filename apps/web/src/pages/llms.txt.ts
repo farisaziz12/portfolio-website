@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { roleLabel } from '../lib/events-view';
 import { getCatalogueTalks, getPrimaryCommunity, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
 
 // llms.txt per https://llmstxt.org: a markdown index for LLMs and agents.
@@ -60,7 +61,7 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 - [Everything in one file](${SITE}/llms-full.txt)
 ${upcoming
   .slice(0, 6)
-  .map((e) => `- [Upcoming: ${e.title}, ${fullDate(e.date)}, ${eventPlace(e)}](${SITE}/events/${e.slug}.md)`)
+  .map((e) => `- [Upcoming (${roleLabel(e)}): ${e.title}, ${fullDate(e.date)}, ${eventPlace(e)}](${SITE}/events/${e.slug}.md)`)
   .join('\n')}
 ${talks.map((t) => `- [Talk: ${t.title}](${SITE}/talks/${t.slug}.md)`).join('\n')}
 ${workshops

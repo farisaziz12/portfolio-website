@@ -9,7 +9,8 @@
 import { PLATFORM_LABEL, shortQuote, monthYear, type Praise } from '../../lib/sanity/v3';
 
 const longDate = (iso?: string) =>
-  iso ? new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
+  iso ? ordinalDate(new Date(`${iso.slice(0, 10)}T12:00:00Z`), { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
+import { ordinalDate } from '../../lib/ordinal';
 import SanityImg from './SanityImg.astro';
 import Icon from './Icon.astro';
 

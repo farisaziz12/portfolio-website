@@ -24,6 +24,11 @@ export function bucketBadge(b?: RoleBucket, upcoming = false): string {
   return upcoming ? BUCKET_VERB[b] : ROLE_BUCKETS.find((r) => r.value === b)?.badge ?? '';
 }
 
+/** Every role at an edition, in the right tense: "Speaking + Workshop", "Attending". */
+export function roleLabel(e: Pick<EventEdition, 'buckets' | 'isUpcoming'>): string {
+  return e.buckets.map((b) => bucketBadge(b, e.isUpcoming)).join(' + ');
+}
+
 /**
  * Session format word for the session meta line ("Talk · 25 min · …"). Nouns
  * (Talk, Keynote, Panel) read the same either way; activities take the

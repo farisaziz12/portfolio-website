@@ -85,7 +85,7 @@ const filmAttrs = !filmLive
       {hasRow && (
         <div class:list={['hc__row', { 'hc__beside': beside === 'row' }]}>
           {photos.map((p) => (
-            <div class="hc__photo-wrap"><SanityImg image={p} ratio={1} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 30vw" class="hc__photo" /></div>
+            <div class="hc__photo-wrap" style={`flex-grow:${p.dimensions?.aspectRatio ?? 1.5}`}><SanityImg image={p} widths={[800, 1200, 1800, 2400]} sizes="(max-width: 960px) 100vw, 45vw" quality={90} class="hc__photo" /></div>
           ))}
           {award && (
             <div class="hc__award">
@@ -145,11 +145,10 @@ const filmAttrs = !filmLive
   .hc__date { display: block; color: rgb(var(--text-faint)); }
 
   .hc__row { display: flex; gap: 10px; align-items: stretch; }
+  /* Photos keep their full, uncropped frame; flex-grow follows each aspect ratio so heights match. */
   .hc__photo-wrap { flex: 1 1 0; min-width: 0; }
   .hc__row .hc__award { flex: 1.4 1 0; min-width: 0; }
-  .hc__row :global(.hc__photo) { width: 100%; height: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); display: block; }
-  /* Beside the copy the photos fill the column's height instead of a fixed ratio. */
-  .hc__grid > .hc__row.hc__beside :global(.hc__photo) { aspect-ratio: auto; min-height: 280px; }
+  .hc__row :global(.hc__photo) { width: 100%; height: auto; object-fit: contain; border-radius: var(--radius-card); display: block; }
   /* Beside the copy the film fills the column (its ratio would widen it past the column). */
   .hc__grid > .hc__film.hc__beside { aspect-ratio: auto; min-height: 360px; }
   /* Metrics alone beside the copy: a 2 × 2 block, centred on the copy. */

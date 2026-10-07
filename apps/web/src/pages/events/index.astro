@@ -62,7 +62,7 @@ const schema = [
     )}
 
     <section class="ev-up" aria-labelledby="ev-up-h">
-      <h2 id="ev-up-h" class="ev-label">Upcoming · {upcoming.length} confirmed</h2>
+      <h2 id="ev-up-h" class="ev-label">Upcoming · {upcoming.length} {upcoming.length === 1 ? 'event' : 'events'}</h2>
       {upcoming.length ? (
         <ul class="ds-grid-2 ev-up__grid" role="list" data-until-group>
           {upcoming.map((e) => <li data-until={e.endsAt}><UpcomingCard event={e} /></li>)}
@@ -77,7 +77,7 @@ const schema = [
     <section class="ev-arch" aria-labelledby="ev-arch-h" data-filter-root>
       <div class="ev-arch__head">
         <h2 id="ev-arch-h" class="ev-label">
-          Archive · <span data-filter-shown>{past.length}</span> shown · {stats.eventRecords} records total
+          Archive · <span data-filter-shown>{past.length}</span><span data-filter-total hidden> of {past.length}</span> past events
         </h2>
         <FilterPills name="role" options={roleOptions} />
       </div>

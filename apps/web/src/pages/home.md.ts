@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
+import { roleLabel } from '../lib/events-view';
 import {
   getHomePage,
   plainHeadline,
@@ -65,7 +66,7 @@ export const GET: APIRoute = async () => {
           ``,
           ...upcoming.slice(0, 5).map((e) => {
             const s = primarySession(e);
-            return `- ${fullDate(e.date)}: [${e.title}](${SITE}/events/${e.slug}), ${eventPlace(e)}${s ? `. ${sessionLine(s)}` : ''}`;
+            return `- ${fullDate(e.date)}: [${e.title}](${SITE}/events/${e.slug}), ${eventPlace(e)}. ${roleLabel(e)}${s && s.bucket !== 'attended' ? `: ${sessionLine(s)}` : ''}`;
           }),
           ``,
         ].join('\n')

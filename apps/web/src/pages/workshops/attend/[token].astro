@@ -13,6 +13,7 @@ import {
   WORKSHOP_SESSION_COOKIE,
   verifyWorkshopSessionCookie,
 } from '../../../lib/workshop-session';
+import { ordinalDate } from '../../../lib/ordinal';
 import WorkshopAttend from '../../../components/islands/WorkshopAttend';
 import '../../../components/islands/workshop/attend.css';
 
@@ -62,7 +63,7 @@ const initialUser = session
   : null;
 
 const formatDateLong = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return ordinalDate(new Date(dateStr), {
     month: 'long',
     day: 'numeric',
     year: 'numeric',

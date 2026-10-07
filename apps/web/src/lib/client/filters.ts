@@ -9,7 +9,7 @@
  *     <button data-filter="topic" data-value="engineering" aria-pressed="false">…</button>
  *     <section data-filter-group> <li data-filter-item data-topic="engineering payments">…</li> </section>
  *     <p data-filter-empty hidden>Nothing here yet. <button data-filter-reset>Show everything</button></p>
- *     <span data-filter-shown></span>
+ *     <span data-filter-shown></span><span data-filter-total hidden> of N</span>  (total shows only while filtered)
  *   </div>
  *
  * An item matches a key when its space-separated `data-<key>` list contains
@@ -43,6 +43,8 @@ function apply(root: HTMLElement, state: Record<string, string>, pushUrl: boolea
   });
   root.querySelectorAll<HTMLElement>('[data-filter-empty]').forEach((e) => (e.hidden = shown > 0));
   root.querySelectorAll<HTMLElement>('[data-filter-shown]').forEach((e) => (e.textContent = String(shown)));
+  const total = root.querySelectorAll('[data-filter-item]').length;
+  root.querySelectorAll<HTMLElement>('[data-filter-total]').forEach((e) => (e.hidden = shown === total));
 
   if (pushUrl) {
     const url = new URL(location.href);

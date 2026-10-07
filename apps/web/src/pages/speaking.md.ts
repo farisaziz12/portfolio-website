@@ -6,7 +6,7 @@ import {
   getCatalogueTalks,
   getProfile,
   getSpeakingStats,
-  getUpcomingEvents,
+  getUpcomingEngagements,
   getWorkshops,
   primarySession,
   sessionLine,
@@ -20,11 +20,11 @@ export const GET: APIRoute = async () => {
   const [profile, stats, upcomingAll, talks, workshops] = await Promise.all([
     getProfile(),
     getSpeakingStats(),
-    getUpcomingEvents(),
+    getUpcomingEngagements(),
     getCatalogueTalks(),
     getWorkshops(),
   ]);
-  const upcoming = upcomingAll.filter((e) => e.buckets.some((b) => b !== 'attended'));
+  const upcoming = upcomingAll;
   const bookable = workshops.filter((w) => w.isBookable);
 
   const pillars = profile.topicPillars.map((p) => {

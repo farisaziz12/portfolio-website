@@ -4,6 +4,10 @@
  * flip to "past" before the talk has happened).
  */
 
+import { ordinal } from '../../ordinal';
+
+export { ordinal };
+
 const DEFAULT_TZ = 'Europe/Zurich';
 
 function tzOffsetMs(ts: number, timeZone: string): number {
@@ -59,18 +63,18 @@ export function monthShort(date?: string): string {
   return MONTHS_SHORT[ymd(date).m];
 }
 
-/** "30 Sep" */
+/** "30th Sep" */
 export function dayMonth(date?: string): string {
   if (!date) return '';
   const { m, d } = ymd(date);
-  return `${d} ${MONTHS_SHORT[m]}`;
+  return `${ordinal(d)} ${MONTHS_SHORT[m]}`;
 }
 
-/** "9 Oct 2026" */
+/** "9th Oct 2026" */
 export function fullDate(date?: string): string {
   if (!date) return '';
   const { y, m, d } = ymd(date);
-  return `${d} ${MONTHS_SHORT[m]} ${y}`;
+  return `${ordinal(d)} ${MONTHS_SHORT[m]} ${y}`;
 }
 
 export function yearOf(date?: string): number {

@@ -259,6 +259,7 @@ export interface SpeakingStats {
   podcasts: number;
   catalogueTalks: number;
   catalogueWorkshops: number;
+  /** Upcoming events on the schedule, attending included (matches getUpcomingEvents). */
   upcoming: number;
   /** Total event records (for "N records total"). */
   eventRecords: number;

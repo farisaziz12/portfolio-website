@@ -243,7 +243,7 @@ const cta = onInvite ? { label: 'Press kit', href: '/press-kit' } : INVITE_CTA;
     // "Replay intro": home page only, for returning visitors (the intro already played).
     const replay = document.querySelector<HTMLAnchorElement>('[data-replay-intro]');
     let seen = false;
-    try { seen = sessionStorage.getItem('introSeen') === '1'; } catch { /* storage blocked */ }
+    try { seen = localStorage.getItem('introSeen') === '1'; } catch { /* storage blocked */ }
     if (replay && seen && location.pathname === '/') replay.hidden = false;
     replay?.addEventListener('click', (e) => {
       e.preventDefault();
