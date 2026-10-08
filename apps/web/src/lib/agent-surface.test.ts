@@ -35,6 +35,8 @@ describe('llms.txt', async () => {
     assert.match(body, /Accept: text\/markdown/);
     assert.match(body, /\/invite/);
     assert.match(body, /\/contact/);
+    assert.match(body, /faris@zurichjs\.com/);
+    assert.doesNotMatch(body, /no public email/i);
   });
 
   it('links only to .md mirrors that exist', () => {

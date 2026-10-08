@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { communityOrganization, personContactPoints } from './seo';
+import { PUBLIC_EMAIL, communityOrganization, personContactPoints } from './seo';
 
 describe('personContactPoints', () => {
   it('points at the invite and contact forms, with a contact type each', () => {
@@ -12,9 +12,12 @@ describe('personContactPoints', () => {
     }
   });
 
-  it('never publishes an email address or phone number', () => {
-    const json = JSON.stringify(personContactPoints());
-    assert.doesNotMatch(json, /email|telephone|mailto|@[a-z]+\./i);
+  it('gives the public email as a bare address (no link, no phone)', () => {
+    for (const p of personContactPoints()) {
+      assert.equal(p.email, PUBLIC_EMAIL);
+      assert.equal(p.telephone, undefined);
+    }
+    assert.match(PUBLIC_EMAIL, /^[^:\s]+@[^:\s]+\.[a-z]+$/);
   });
 });
 
@@ -23,13 +26,13 @@ describe('communityOrganization', () => {
     const org = communityOrganization({ name: 'ZurichJS', url: 'https://zurichjs.com', city: 'Zurich' }, 'Faris Aziz');
     assert.equal(org['@type'], 'Organization');
     assert.deepEqual(org.address, { '@type': 'PostalAddress', addressLocality: 'Zurich' });
-    assert.deepEqual(org.contactPoint, { '@type': 'ContactPoint', contactType: 'community enquiries', url: 'https://zurichjs.com' });
+    assert.deepEqual(org.contactPoint, { '@type': 'ContactPoint', contactType: 'community enquiries', email: 'faris@zurichjs.com', url: 'https://zurichjs.com' });
   });
 
   it('leaves out what the CMS does not know', () => {
     const org = communityOrganization({ name: 'Somewhere JS' }, 'Faris Aziz');
     assert.equal(org.address, undefined);
-    assert.equal(org.contactPoint, undefined);
+    assert.deepEqual(org.contactPoint, { '@type': 'ContactPoint', contactType: 'community enquiries', email: 'faris@zurichjs.com' });
     assert.equal(org.url, undefined);
   });
 });

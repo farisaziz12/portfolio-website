@@ -24,7 +24,7 @@ export function privacySections(replyTime: string): PrivacySection[] {
       id: 'who',
       heading: 'Who looks after your data',
       body: [
-        'Me, Faris Aziz, based in Geneva, Switzerland. I run this site on my own, so any question about your data comes straight to me through the contact form. There is no public email address.',
+        'Me, Faris Aziz, based in Geneva, Switzerland. I run this site on my own, so any question about your data comes straight to me through the contact form.',
       ],
     },
     {

@@ -9,13 +9,16 @@ export const SITE = 'https://faziz-dev.com';
 const PERSON = { '@id': `${SITE}/#person` };
 
 /**
- * How to reach the person. There is no public email or phone (forms only), so
- * each contact point is a form URL.
+ * The one public email address. Structured data and llms.txt only: the site UI
+ * never shows it or links it (no mailto:), the forms stay the way in.
  */
+export const PUBLIC_EMAIL = 'faris@zurichjs.com';
+
+/** How to reach the person: the two forms, each with the public email as a fallback. */
 export function personContactPoints(siteUrl = SITE): Record<string, unknown>[] {
   return [
-    { '@type': 'ContactPoint', contactType: 'speaking and workshop invitations', url: `${siteUrl}/invite`, availableLanguage: 'English' },
-    { '@type': 'ContactPoint', contactType: 'general enquiries', url: `${siteUrl}/contact`, availableLanguage: 'English' },
+    { '@type': 'ContactPoint', contactType: 'speaking and workshop invitations', url: `${siteUrl}/invite`, email: PUBLIC_EMAIL, availableLanguage: 'English' },
+    { '@type': 'ContactPoint', contactType: 'general enquiries', url: `${siteUrl}/contact`, email: PUBLIC_EMAIL, availableLanguage: 'English' },
   ];
 }
 
@@ -27,7 +30,7 @@ export function communityOrganization(community: { name: string; url?: string; c
     ...(community.url ? { url: community.url } : {}),
     description: `JavaScript community and conference, co-founded by ${founder}.`,
     ...(community.city ? { address: { '@type': 'PostalAddress', addressLocality: community.city } } : {}),
-    ...(community.url ? { contactPoint: { '@type': 'ContactPoint', contactType: 'community enquiries', url: community.url } } : {}),
+    contactPoint: { '@type': 'ContactPoint', contactType: 'community enquiries', email: PUBLIC_EMAIL, ...(community.url ? { url: community.url } : {}) },
   };
 }
 

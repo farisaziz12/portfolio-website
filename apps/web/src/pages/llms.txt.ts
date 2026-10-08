@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { roleLabel } from '../lib/events-view';
+import { PUBLIC_EMAIL } from '../lib/seo';
 import { getCatalogueTalks, getPrimaryCommunity, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
 
 // llms.txt per https://llmstxt.org: a markdown index for LLMs and agents.
@@ -27,7 +28,7 @@ export const GET: APIRoute = async () => {
 
 > ${summary}
 
-${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite (form; replies within ${profile.replyTime}). Everything else: ${SITE}/contact. There is no public email address; forms only.
+${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite (form; replies within ${profile.replyTime}). Everything else: ${SITE}/contact. Forms are the quickest way in; email ${PUBLIC_EMAIL} also works.
 
 How to read this site: every page has a Markdown version. Add \`.md\` to the path (${SITE}/talks.md), or request the normal URL with \`Accept: text/markdown\`. Everything is public, read-only and needs no key. There is no API for agents. Bookings and messages go through the forms on /invite and /contact, filled in by the person who wants to get in touch, never sent on their behalf without asking them.
 
