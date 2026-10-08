@@ -8,9 +8,9 @@
  * tokens and zero nav noise. Discovery: `<link rel="alternate"
  * type="text/markdown">` in each page head + /llms.txt index.
  *
- * Note on content negotiation: these pages are prerendered static files, so
- * runtime `Accept: text/markdown` rewriting is not possible on the CDN — the
- * `.md`-suffix URL convention is the supported path.
+ * Content negotiation: `Accept: text/markdown` on a page URL (including `/`)
+ * is rewritten to its mirror by Vercel routes, and unknown paths get the
+ * Markdown 404 (pages/404.md.ts). See lib/markdown-negotiation.ts.
  */
 import { ordinalDate } from './ordinal';
 

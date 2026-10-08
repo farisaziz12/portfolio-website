@@ -23,6 +23,7 @@ const MIRRORS = import.meta.glob<{ GET?: APIRoute }>(
     './mentorship.md.ts',
     './contact.md.ts',
     './connect.md.ts',
+    './privacy.md.ts',
   ],
   { eager: true }
 );

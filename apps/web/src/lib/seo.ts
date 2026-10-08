@@ -8,6 +8,29 @@ import { eventPlace, type EventEdition, type TalkWithHistory } from './sanity/v3
 export const SITE = 'https://faziz-dev.com';
 const PERSON = { '@id': `${SITE}/#person` };
 
+/**
+ * How to reach the person. There is no public email or phone (forms only), so
+ * each contact point is a form URL.
+ */
+export function personContactPoints(siteUrl = SITE): Record<string, unknown>[] {
+  return [
+    { '@type': 'ContactPoint', contactType: 'speaking and workshop invitations', url: `${siteUrl}/invite`, availableLanguage: 'English' },
+    { '@type': 'ContactPoint', contactType: 'general enquiries', url: `${siteUrl}/contact`, availableLanguage: 'English' },
+  ];
+}
+
+/** The co-founded community, as the Person's affiliation (Organization). */
+export function communityOrganization(community: { name: string; url?: string; city?: string }, founder: string): Record<string, unknown> {
+  return {
+    '@type': 'Organization',
+    name: community.name,
+    ...(community.url ? { url: community.url } : {}),
+    description: `JavaScript community and conference, co-founded by ${founder}.`,
+    ...(community.city ? { address: { '@type': 'PostalAddress', addressLocality: community.city } } : {}),
+    ...(community.url ? { contactPoint: { '@type': 'ContactPoint', contactType: 'community enquiries', url: community.url } } : {}),
+  };
+}
+
 export function breadcrumbs(items: { name: string; path: string }[]): Record<string, unknown> {
   return {
     '@type': 'BreadcrumbList',

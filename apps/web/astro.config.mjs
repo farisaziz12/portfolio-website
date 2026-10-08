@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
+import markdownNegotiation from './src/integrations/markdown-negotiation';
 
 // https://astro.build/config
 export default defineConfig({
@@ -25,6 +26,8 @@ export default defineConfig({
         !page.includes('/og/'),
     }),
     react(),
+    // Accept: text/markdown → .md mirrors and a Markdown 404 (Vercel routes).
+    markdownNegotiation(),
   ],
   vite: {
     ssr: {

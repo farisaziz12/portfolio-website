@@ -1,4 +1,6 @@
 ---
+import { communityOrganization, personContactPoints } from '../../lib/seo';
+
 interface SocialLinks {
   twitterUrl?: string;
   linkedin?: string;
@@ -30,7 +32,7 @@ interface Props {
   /** Profile URLs for sameAs (speaker profile → Links). */
   socialLinks?: SocialLinks;
   /** The community the person co-founded, for affiliation. */
-  community?: { name: string; url?: string };
+  community?: { name: string; url?: string; city?: string };
   /** Optional extra schema.org nodes appended to the @graph (Event, Service, BreadcrumbList…). */
   extraSchema?: Record<string, unknown>[];
   /** Optional markdown mirror of this page, exposed for AI agents. */
@@ -59,7 +61,7 @@ const {
   personImage,
   basedIn = { city: 'Geneva', country: 'Switzerland' },
   socialLinks = {},
-  community = { name: 'ZurichJS', url: 'https://zurichjs.com' },
+  community = { name: 'ZurichJS', url: 'https://zurichjs.com', city: 'Zurich' },
   extraSchema = [],
   markdownAlternate,
   personDescription,
@@ -100,12 +102,8 @@ const person: Record<string, unknown> = {
     personDescription ||
     `Software engineer and conference speaker based in ${basedIn.city}. Works on frontend and payment systems at scale, co-founded ${community.name}, and chairs ${community.name} Conf.`,
   ...(awards.length ? { award: awards.length === 1 ? awards[0] : awards } : {}),
-  affiliation: {
-    '@type': 'Organization',
-    name: community.name,
-    ...(community.url ? { url: community.url } : {}),
-    description: `JavaScript community and conference, co-founded by ${personName}.`,
-  },
+  contactPoint: personContactPoints(siteUrl),
+  affiliation: communityOrganization(community, personName),
   knowsAbout: [
     'React',
     'Next.js',
