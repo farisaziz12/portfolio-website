@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { negotiablePages, withMarkdownNegotiation, type VercelRoute } from './markdown-negotiation';
+import { MAX_SRC, alternations, negotiablePages, withMarkdownNegotiation, type VercelRoute } from './markdown-negotiation';
 
 /** Trimmed copy of the routes @astrojs/vercel writes for this site. */
 const ADAPTER_ROUTES: VercelRoute[] = [
@@ -124,4 +124,28 @@ describe('withMarkdownNegotiation', () => {
     assert.throws(() => withMarkdownNegotiation([{ src: '^/.*$', dest: '/404.html', status: 404 }], []), /filesystem/);
     assert.throws(() => withMarkdownNegotiation([{ handle: 'filesystem' }], []), /catch-all/);
   });
+
+  it('splits a large site across routes that stay under Vercel\'s src limit', () => {
+    const pages = Array.from({ length: 600 }, (_, i) => `events/some-long-conference-name-${i}-edition`);
+    const files = [...STATIC_FILES, ...pages.flatMap((p) => [`${p}.md`, `${p}/index.html`])];
+    const big = withMarkdownNegotiation(ADAPTER_ROUTES, negotiablePages(files));
+    for (const r of big) assert.ok((r.src ?? '').length <= MAX_SRC, `src is ${r.src?.length} chars`);
+    assert.ok(alternations(negotiablePages(files)).length > 1);
+    for (const p of [pages[0], pages[299], pages[599]]) {
+      const md = route(big, `/${p}`, MD, files);
+      assert.deepEqual([md.dest, md.headers.Vary], [`/${p}.md`, 'Accept']);
+      assert.equal(route(big, `/${p}`, HTML, files).headers.Vary, 'Accept');
+    }
+    assert.equal(route(big, '/', MD, files).dest, '/home.md');
+  });
 });
+
+describe('alternations', () => {
+  it('packs paths into groups under the budget, never splitting a path', () => {
+    assert.deepEqual(alternations(['a', 'b', 'c'], 3), ['a|b', 'c']);
+    assert.deepEqual(alternations(['abcdef'], 3), ['abcdef']);
+    assert.deepEqual(alternations([]), []);
+    assert.deepEqual(alternations(['a.b']), ['a\\.b']);
+  });
+});
+

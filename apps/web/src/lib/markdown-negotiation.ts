@@ -58,23 +58,42 @@ export function negotiablePages(files: string[]): string[] {
     .sort();
 }
 
+/** Vercel rejects a route whose `src` is longer than this (Build Output API schema). */
+export const MAX_SRC = 4096;
+/** Room for the `^/(?:…)?/?$` wrapper around each alternation. */
+const ALTERNATION_BUDGET = MAX_SRC - 64;
+
+/** Escaped page paths joined with `|`, split so no group passes the budget. */
+export function alternations(pages: string[], budget = ALTERNATION_BUDGET): string[] {
+  const groups: string[] = [];
+  let current = '';
+  for (const page of pages.map(escapeRegex)) {
+    const next = current ? `${current}|${page}` : page;
+    if (current && next.length > budget) {
+      groups.push(current);
+      current = page;
+    } else {
+      current = next;
+    }
+  }
+  if (current) groups.push(current);
+  return groups;
+}
+
 /** Routes that go before `{ handle: 'filesystem' }`. */
 export function beforeFilesystemRoutes(pages: string[]): VercelRoute[] {
-  const alternation = pages.map(escapeRegex).join('|');
+  const groups = alternations(pages);
   const routes: VercelRoute[] = [
     // Vary on both variants, so shared caches keep HTML and Markdown apart.
-    { src: pages.length ? `^/(?:${alternation})?/?$` : '^/$', headers: { Vary: 'Accept' }, continue: true },
+    { src: '^/$', headers: { Vary: 'Accept' }, continue: true },
+    ...groups.map((g): VercelRoute => ({ src: `^/(?:${g})/?$`, headers: { Vary: 'Accept' }, continue: true })),
     { src: '^/$', has: [ACCEPTS_MARKDOWN], dest: HOME_MD, headers: MARKDOWN_HEADERS },
-  ];
-  if (pages.length) {
-    routes.push({ src: `^/(${alternation})/?$`, has: [ACCEPTS_MARKDOWN], dest: '/$1.md', headers: MARKDOWN_HEADERS });
-  }
-  routes.push(
+    ...groups.map((g): VercelRoute => ({ src: `^/(${g})/?$`, has: [ACCEPTS_MARKDOWN], dest: '/$1.md', headers: MARKDOWN_HEADERS })),
     // Short-path misses redirect to /404; keep that a Markdown 404 too.
     { src: '^/404/?$', has: [ACCEPTS_MARKDOWN], dest: NOT_FOUND_MD, status: 404, headers: MARKDOWN_HEADERS },
     // The 404 body is never a 200, even when fetched by name.
     { src: `^${escapeRegex(NOT_FOUND_MD)}$`, dest: NOT_FOUND_MD, status: 404, headers: MARKDOWN_HEADERS },
-  );
+  ];
   return routes;
 }
 
@@ -98,5 +117,8 @@ export function withMarkdownNegotiation(routes: VercelRoute[], pages: string[]):
   const catchAll = out.findLastIndex((r) => r.src === '^/.*$' && r.status === 404 && !r.has);
   if (catchAll === -1) throw new Error('markdown-negotiation: no 404 catch-all route in config.json');
   out.splice(catchAll, 0, notFoundRoute());
+  // Vercel fails the deployment (after a green build) on an over-long src; fail the build instead.
+  const tooLong = out.find((r) => (r.src?.length ?? 0) > MAX_SRC);
+  if (tooLong) throw new Error(`markdown-negotiation: route src is ${tooLong.src!.length} chars (Vercel max ${MAX_SRC})`);
   return out;
 }
