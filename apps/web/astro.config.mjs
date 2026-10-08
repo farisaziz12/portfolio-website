@@ -3,21 +3,13 @@ import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import markdownNegotiation from './src/integrations/markdown-negotiation';
+import { REDIRECTS } from './src/lib/redirects';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://faziz-dev.com',
-  // V3 IA. /services is the "How I can help" overview again; /consulting folds
-  // into it. /media folds into the press kit. CMS-driven /services/[slug]
-  // landing pages still live under /services/.
-  redirects: {
-    '/services/speaking': '/speaking',
-    '/consulting': '/services',
-    '/media': '/press-kit',
-    '/schedule': '/events',
-    '/writing': '/blog',
-    '/track-record': '/impact',
-  },
+  // Retired URLs; the list lives in src/lib/redirects.ts (loaders read it too).
+  redirects: REDIRECTS,
   integrations: [
     sitemap({
       filter: (page) =>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { highlight } from './highlight';
 import type {
   CalloutBlock,
   CalloutType,
@@ -269,8 +270,6 @@ function ImageRenderer({ block, projectId, dataset }: { block: ImageBlock; proje
   );
 }
 
-const shikiImport = typeof window !== 'undefined' ? import('shiki') : null;
-
 function CodeBlockRenderer({ block }: { block: CodeBlock }) {
   const [copied, setCopied] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
@@ -279,18 +278,9 @@ function CodeBlockRenderer({ block }: { block: CodeBlock }) {
 
   useEffect(() => {
     let cancelled = false;
-    shikiImport?.then(async ({ codeToHtml }) => {
-      try {
-        const html = await codeToHtml(code, {
-          lang: block.language || 'text',
-          theme: 'github-dark',
-        });
-        if (!cancelled) setHighlightedHtml(html);
-      } catch {
-        const html = await codeToHtml(code, { lang: 'text', theme: 'github-dark' });
-        if (!cancelled) setHighlightedHtml(html);
-      }
-    }).catch(() => {});
+    highlight(code, block.language)
+      .then((html) => { if (!cancelled) setHighlightedHtml(html); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [code, block.language]);
 

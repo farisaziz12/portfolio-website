@@ -249,7 +249,7 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
 
   function play(el: HTMLElement) {
     stop?.();
-    (window as unknown as { __opPlaying?: boolean }).__opPlaying = true;
+    window.__opPlaying = true;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try { localStorage.setItem(KEY, '1'); } catch { /* storage blocked */ }
     // Start below the header so the nav stays visible and clickable.
@@ -289,9 +289,9 @@ const [given = 'Faris', family = 'Aziz'] = name.split(/\s+/);
     });
 
   /** The cuts are all type: start once Figtree is in (min 300ms of pre-roll, max 700ms). */
-  function ready(): Promise<void> {
+  async function ready(): Promise<void> {
     const fonts = document.fonts?.ready.then(() => undefined) ?? Promise.resolve();
-    return Promise.all([wait(300), Promise.race([fonts, wait(700)])]).then(() => undefined);
+    await Promise.all([wait(300), Promise.race([fonts, wait(700)])]);
   }
 
   /** Not eligible: the overlay never shows; clear the mode once the hero has risen in. */
