@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import FilterPills from '../../components/v3/FilterPills.astro';
 import UpcomingCard from '../../components/events/UpcomingCard.astro';
 import ArchiveRow from '../../components/events/ArchiveRow.astro';
-import { ROLE_BUCKETS } from 'shared';
+import ArchiveFilters from '../../components/events/ArchiveFilters.astro';
 import { getPastEvents, getSpeakingStats, getUpcomingEvents, yearOf, type EventEdition } from '../../lib/sanity/v3';
 import { breadcrumbs, itemList } from '../../lib/seo';
 import { countryCode, getCountryFlag } from '../../lib/flags';
@@ -23,7 +22,6 @@ for (const e of past) {
   if (g) g.events.push(e);
   else years.push({ year: y, events: [e] });
 }
-const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title, bucket: b.value }));
 
 const schema = [
   breadcrumbs([
@@ -36,7 +34,7 @@ const schema = [
 
 <BaseLayout
   title="Schedule: upcoming and past events | Faris Aziz"
-  description="Upcoming talks and workshops by Faris Aziz, plus the full archive of events with my role at each: spoke, ran a workshop, hosted or attended."
+  description="Upcoming talks and workshops by Faris Aziz, plus the full archive of conferences and meetups with my role at each: spoke, ran a workshop, hosted or attended."
   image="/og/events.png"
   markdownAlternate="/events.md"
   extraSchema={schema}
@@ -79,8 +77,9 @@ const schema = [
         <h2 id="ev-arch-h" class="ev-label">
           Archive · <span data-filter-shown>{past.length}</span><span data-filter-total hidden> of {past.length}</span> past events
         </h2>
-        <FilterPills name="role" options={roleOptions} />
+        <button type="button" class="ev-clear" data-filter-reset data-filter-clear hidden>Clear filters</button>
       </div>
+      {past.length > 1 && <ArchiveFilters events={past} />}
 
       {years.map((g) => (
         <section class="ev-year" data-filter-group aria-label={String(g.year)}>
@@ -118,7 +117,13 @@ const schema = [
   .ev-up__empty { margin: 0; font-size: 15px; color: rgb(var(--text-muted)); }
 
   .ev-arch { display: flex; flex-direction: column; gap: 16px; padding-bottom: 64px; }
-  .ev-arch__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 20px; }
+  .ev-arch__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0 20px; min-height: 44px; }
+  .ev-clear {
+    min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer; font: 700 13px/1 var(--font); color: rgb(var(--text-muted));
+    text-decoration: underline; text-decoration-color: rgb(var(--yellow)); text-underline-offset: 0.22em; text-decoration-thickness: 1.5px;
+  }
+  .ev-clear:hover { color: rgb(var(--accent-text)); }
+  .ev-clear[hidden] { display: none; }
   .ev-year__label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: rgb(var(--text-faint)); padding: 10px 0 8px; }
   .ev-year + .ev-year { margin-top: 8px; }
   .ev-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; border-top: 1px solid rgb(var(--hairline)); }

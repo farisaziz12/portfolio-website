@@ -1,0 +1,57 @@
+---
+/**
+ * Role / Type / Year filters for the /events archive, in one panel. Counts
+ * are live: each pill says how many events it would leave given the other
+ * filters, and pills that would leave none are disabled (lib/client/filters.ts).
+ * Rows match ArchiveRow's `data-role`, `data-kind` and `data-year`.
+ */
+import FilterPills from '../v3/FilterPills.astro';
+import { EVENT_KINDS, ROLE_BUCKETS } from 'shared';
+import { yearOf, type EventEdition } from '../../lib/sanity/v3';
+import { kindLabel } from '../../lib/events-view';
+
+interface Props {
+  events: EventEdition[];
+}
+const { events } = Astro.props;
+
+const roles = ROLE_BUCKETS.map((b) => ({
+  value: b.value,
+  label: b.title,
+  bucket: b.value,
+  count: events.filter((e) => e.buckets.includes(b.value)).length,
+})).filter((o) => o.count > 0);
+
+const kinds = EVENT_KINDS.map((k) => ({
+  value: k.value,
+  label: kindLabel({ kind: k.value }),
+  count: events.filter((e) => e.kind === k.value).length,
+})).filter((o) => o.count > 0);
+
+const years = [...new Set(events.map((e) => yearOf(e.date)))]
+  .sort((a, b) => b - a)
+  .map((y) => ({ value: String(y), label: String(y), count: events.filter((e) => yearOf(e.date) === y).length }));
+---
+
+<div class="evf">
+  {roles.length > 1 && <FilterPills name="role" label="Role" options={roles} live />}
+  {kinds.length > 1 && <FilterPills name="kind" label="Type" options={kinds} live />}
+  {years.length > 1 && <FilterPills name="year" label="Year" options={years} live />}
+</div>
+
+<style>
+  .evf { display: flex; flex-direction: column; padding: 4px 20px; background: rgb(var(--surface)); border: 1px solid rgb(var(--hairline)); border-radius: 6px; }
+  .evf > :global(.fpills) { flex-wrap: nowrap; padding: 10px 0; }
+  .evf > :global(.fpills ~ .fpills) { border-top: 1px solid rgb(var(--hairline)); }
+  .evf :global(.fpills__label) { flex: none; width: 48px; }
+  .evf :global(.ds-pills) { flex: 1; min-width: 0; }
+
+  /* Phones: label on top, each row scrolls sideways instead of stacking into a wall of pills. */
+  @media (max-width: 640px) {
+    .evf { padding: 0; }
+    .evf > :global(.fpills) { flex-direction: column; align-items: stretch; gap: 10px; }
+    .evf :global(.fpills__label) { width: auto; padding: 0 16px; }
+    .evf :global(.ds-pills) { flex-wrap: nowrap; overflow-x: auto; padding: 0 16px; scroll-padding: 0 16px; scrollbar-width: none; }
+    .evf :global(.ds-pills::-webkit-scrollbar) { display: none; }
+  }
+</style>

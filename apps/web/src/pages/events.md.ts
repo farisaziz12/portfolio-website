@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { ROLE_BUCKETS } from 'shared';
+import { EVENT_KINDS, ROLE_BUCKETS } from 'shared';
 import { eventPlace, fullDate, getPastEvents, getSpeakingStats, getUpcomingEvents, localTime, monthYear, primarySession, yearOf } from '../lib/sanity/v3';
 import { bucketBadge, kindLabel, liveSessions, roleLabel, sessionShort, sessionTiming } from '../lib/events-view';
 import { mdResponse } from '../lib/markdown';
@@ -22,7 +22,8 @@ export const GET: APIRoute = async () => {
       .map((e) => {
         const role = e.buckets.map((b) => bucketBadge(b, e.isUpcoming)).join(' + ') || bucketBadge(primarySession(e)?.bucket, e.isUpcoming);
         const what = liveSessions(e).map(sessionShort).join(' · ');
-        return `- ${monthYear(e.date)}: **${e.title}** (${eventPlace(e)}) · ${role}${what ? ` · ${what}` : ''} · ${SITE}/events/${e.slug}`;
+        const kind = e.kind ? `${kindLabel(e)} · ` : '';
+        return `- ${monthYear(e.date)}: **${e.title}** (${eventPlace(e)}) · ${kind}${role}${what ? ` · ${what}` : ''} · ${SITE}/events/${e.slug}`;
       });
     return `### ${y}\n\n${rows.join('\n')}`;
   });
@@ -31,6 +32,11 @@ export const GET: APIRoute = async () => {
     const n = past.filter((e) => e.buckets.includes(b.value)).length;
     return `- ${b.title}: ${n} past edition${n === 1 ? '' : 's'}`;
   }).join('\n');
+
+  const byKind = EVENT_KINDS.map((k) => ({ title: kindLabel({ kind: k.value }), n: past.filter((e) => e.kind === k.value).length }))
+    .filter((k) => k.n > 0)
+    .map((k) => `- ${k.title}: ${k.n}`)
+    .join('\n');
 
   const body = [
     `# Schedule: upcoming and past events · Faris Aziz`,
@@ -49,6 +55,7 @@ export const GET: APIRoute = async () => {
     `By role (an edition can count under more than one):`,
     ``,
     byRole,
+    ...(byKind ? [``, `By type:`, ``, byKind] : []),
     ``,
     archive.join('\n\n'),
   ].join('\n');

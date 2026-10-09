@@ -1,11 +1,12 @@
 ---
 /**
- * One past edition in the archive: Mon YYYY · title · what I did · flag +
- * place · role badge. `data-role` carries every bucket, so an edition where
- * I spoke AND ran a workshop shows under both filters.
+ * One past edition in the archive: Mon YYYY + kind · title · what I did ·
+ * flag + place · role badge. `data-role` carries every bucket, so an edition
+ * where I spoke AND ran a workshop shows under both filters; `data-kind` (event
+ * type) and `data-year` feed the other two (ArchiveFilters).
  */
-import { monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
-import { bucketBadge, flagFor, placeShort, sessionSummary } from '../../lib/events-view';
+import { monthYear, primarySession, yearOf, type EventEdition } from '../../lib/sanity/v3';
+import { bucketBadge, flagFor, kindLabel, placeShort, sessionSummary } from '../../lib/events-view';
 
 interface Props {
   event: EventEdition;
@@ -15,9 +16,9 @@ const bucket = primarySession(e)?.bucket;
 const flag = flagFor(e);
 ---
 
-<li data-filter-item data-role={e.buckets.join(' ')}>
+<li data-filter-item data-role={e.buckets.join(' ')} data-kind={e.kind} data-year={yearOf(e.date)}>
   <a href={`/events/${e.slug}`} class="ds-row arow">
-    <span class="arow__date">{monthYear(e.date)}</span>
+    <span class="arow__date">{monthYear(e.date)}{e.kind && <span class="arow__kind">{kindLabel(e)}</span>}</span>
     <span class="ds-row__title arow__title">{e.title}</span>
     <span class="arow__what">{sessionSummary(e)}</span>
     <span class="arow__place">{flag && <span class="arow__flag" aria-hidden="true">{flag}</span>}{placeShort(e)}</span>
@@ -30,7 +31,8 @@ const flag = flagFor(e);
     display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr) 130px 100px; gap: 20px; align-items: center;
     padding: 16px 0; font-size: 14.5px; min-height: 44px;
   }
-  .arow__date { color: rgb(var(--text-muted)); font-size: 13px; }
+  .arow__date { display: flex; flex-direction: column; gap: 3px; color: rgb(var(--text-muted)); font-size: 13px; }
+  .arow__kind { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--text-faint)); }
   .arow__title { font-weight: 700; transition: color 0.15s; overflow-wrap: anywhere; }
   .arow__what { color: rgb(var(--text-muted)); overflow-wrap: anywhere; }
   .arow__place { color: rgb(var(--text-faint)); font-size: 13px; }
@@ -46,7 +48,7 @@ const flag = flagFor(e);
   }
   @media (max-width: 420px) {
     .arow { grid-template-columns: minmax(0, 1fr) auto; }
-    .arow__date { grid-row: auto; grid-column: 1; }
+    .arow__date { grid-row: auto; grid-column: 1; flex-direction: row; gap: 8px; align-items: baseline; }
     .arow__title, .arow__what, .arow__place { grid-column: 1 / -1; }
     .arow__badge { grid-column: 2; grid-row: 1; }
   }

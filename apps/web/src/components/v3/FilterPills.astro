@@ -16,9 +16,11 @@ interface Props {
   options: Option[];
   allLabel?: string;
   allCount?: number;
+  /** Counts update live as other filters change (lib/client/filters.ts). */
+  live?: boolean;
   class?: string;
 }
-const { name, label, options, allLabel = 'All', allCount, class: className } = Astro.props;
+const { name, label, options, allLabel = 'All', allCount, live = false, class: className } = Astro.props;
 const all: Option = { value: 'all', label: allLabel, count: allCount };
 ---
 
@@ -27,7 +29,7 @@ const all: Option = { value: 'all', label: allLabel, count: allCount };
   <div class="ds-pills">
     {[all, ...options].map((o, i) => (
       <button type="button" class="ds-pill" data-filter={name} data-value={o.value} data-bucket={o.bucket} aria-pressed={i === 0 ? 'true' : 'false'}>
-        {o.label}{typeof o.count === 'number' && <span class="ds-pill__count">· {o.count}</span>}
+        {o.label}{typeof o.count === 'number' && <span class="ds-pill__count">· <span data-filter-count={live ? '' : undefined}>{o.count}</span></span>}
       </button>
     ))}
   </div>
