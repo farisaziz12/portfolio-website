@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Invite Faris Aziz`,
     ``,
-    `> Conferences and meetups, podcasts and livestreams, workshops and team training, panels, articles and interviews, or something else. Send the form at ${SITE}/invite; Faris replies within ${profile.replyTime}. The inquiry goes to him only and adds nobody to any list. There is no public email address.`,
+    `> Conferences and meetups, podcasts and livestreams, workshops and team training, panels, articles and interviews, or something else. Send the form at ${SITE}/invite; Faris replies within ${profile.replyTime}. The inquiry goes to him only and adds nobody to any list.`,
     ``,
     `## What to send`,
     ``,

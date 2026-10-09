@@ -78,6 +78,7 @@ export const FOOTER_SECONDARY: NavLink[] = [
   { label: 'Gallery', href: '/gallery' },
   { label: 'RSS', href: '/rss.xml' },
   { label: 'For agents: llms.txt', href: '/llms.txt' },
+  { label: 'Privacy', href: '/privacy' },
 ];
 
 function matches(pathname: string, prefix: string): boolean {

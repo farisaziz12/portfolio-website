@@ -8,6 +8,32 @@ import { eventPlace, type EventEdition, type TalkWithHistory } from './sanity/v3
 export const SITE = 'https://faziz-dev.com';
 const PERSON = { '@id': `${SITE}/#person` };
 
+/**
+ * The one public email address. Structured data and llms.txt only: the site UI
+ * never shows it or links it (no mailto:), the forms stay the way in.
+ */
+export const PUBLIC_EMAIL = 'faris@zurichjs.com';
+
+/** How to reach the person: the two forms, each with the public email as a fallback. */
+export function personContactPoints(siteUrl = SITE): Record<string, unknown>[] {
+  return [
+    { '@type': 'ContactPoint', contactType: 'speaking and workshop invitations', url: `${siteUrl}/invite`, email: PUBLIC_EMAIL, availableLanguage: 'English' },
+    { '@type': 'ContactPoint', contactType: 'general enquiries', url: `${siteUrl}/contact`, email: PUBLIC_EMAIL, availableLanguage: 'English' },
+  ];
+}
+
+/** The co-founded community, as the Person's affiliation (Organization). */
+export function communityOrganization(community: { name: string; url?: string; city?: string }, founder: string): Record<string, unknown> {
+  return {
+    '@type': 'Organization',
+    name: community.name,
+    ...(community.url ? { url: community.url } : {}),
+    description: `JavaScript community and conference, co-founded by ${founder}.`,
+    ...(community.city ? { address: { '@type': 'PostalAddress', addressLocality: community.city } } : {}),
+    contactPoint: { '@type': 'ContactPoint', contactType: 'community enquiries', email: PUBLIC_EMAIL, ...(community.url ? { url: community.url } : {}) },
+  };
+}
+
 export function breadcrumbs(items: { name: string; path: string }[]): Record<string, unknown> {
   return {
     '@type': 'BreadcrumbList',

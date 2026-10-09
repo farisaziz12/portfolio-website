@@ -6,6 +6,7 @@
  */
 import groq from 'groq';
 import { load, memo, IMAGE } from './sanity/v3/fetch';
+import { withoutRedirected } from './redirects';
 import { getAllEvents, getPhotos, type Photo, type EventEdition, type SanityImage } from './sanity/v3';
 
 // ─── Projects ──────────────────────────────────────────────────────────────
@@ -153,8 +154,12 @@ export const landingPageBySlugQuery = groq`*[_type == "serviceLandingPage" && sl
   ctaHeadline, ctaSubheadline, ctaButtonText, ctaButtonUrl, ctaSecondaryText
 }`;
 
-export function getServiceLandingPages(): Promise<Pick<ServiceLandingPage, '_id' | 'title' | 'slug' | 'heroHeadline' | 'heroSubheadline' | 'seoDescription'>[]> {
-  return memo('secondary:landing', () => load(landingPagesQuery, []));
+type LandingSummary = Pick<ServiceLandingPage, '_id' | 'title' | 'slug' | 'heroHeadline' | 'heroSubheadline' | 'seoDescription'>;
+
+/** Landing pages that get their own /services/<slug> page. A slug whose URL redirects away is skipped. */
+export async function getServiceLandingPages(): Promise<LandingSummary[]> {
+  const pages = await memo('secondary:landing', () => load<LandingSummary[]>(landingPagesQuery, []));
+  return withoutRedirected(pages, '/services');
 }
 
 export async function getServiceLandingPage(slug: string): Promise<ServiceLandingPage | null> {
