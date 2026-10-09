@@ -2,10 +2,10 @@
 /**
  * One past edition in the archive: Mon YYYY + kind · title · what I did ·
  * flag + place · role badge. `data-role` carries every bucket, so an edition
- * where I spoke AND ran a workshop shows under both filters; `data-kind` is
- * the event type (conference, meetup, …) for the type filter.
+ * where I spoke AND ran a workshop shows under both filters; `data-kind` (event
+ * type) and `data-year` feed the other two (ArchiveFilters).
  */
-import { monthYear, primarySession, type EventEdition } from '../../lib/sanity/v3';
+import { monthYear, primarySession, yearOf, type EventEdition } from '../../lib/sanity/v3';
 import { bucketBadge, flagFor, kindLabel, placeShort, sessionSummary } from '../../lib/events-view';
 
 interface Props {
@@ -16,7 +16,7 @@ const bucket = primarySession(e)?.bucket;
 const flag = flagFor(e);
 ---
 
-<li data-filter-item data-role={e.buckets.join(' ')} data-kind={e.kind}>
+<li data-filter-item data-role={e.buckets.join(' ')} data-kind={e.kind} data-year={yearOf(e.date)}>
   <a href={`/events/${e.slug}`} class="ds-row arow">
     <span class="arow__date">{monthYear(e.date)}{e.kind && <span class="arow__kind">{kindLabel(e)}</span>}</span>
     <span class="ds-row__title arow__title">{e.title}</span>
