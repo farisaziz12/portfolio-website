@@ -77,7 +77,7 @@ project settings).
 | `scroll_depth` | 25/50/75/100% scroll milestones, once per pageview | `depth`, `path` |
 | `outbound_link_click` | Click on an external link (cal.com excluded) | `href`, `domain`, `label`, `path` |
 | `content_viewed` | A talk, workshop, event or post page was opened (from `<meta name="analytics:content">`, BaseLayout `content` prop) | `type` (`talk` / `workshop` / `event` / `post`), `slug`, `title`, plus per type: `pillar`, `status`, `versions`, `has_recording` · `bookable` · `upcoming`, `roles`, `country` · `topic`; `path` |
-| `filter_applied` | A list filter pill or reset was used (`lib/client/filters.ts` → `filters:change`) | `filter` (`topic` / `role` / `area` / `company` / `format` / `platform` / `reset`), `value`, `shown`, `path` |
+| `filter_applied` | A list filter pill or reset was used (`lib/client/filters.ts` → `filters:change`) | `filter` (`topic` / `role` / `kind` / `area` / `company` / `format` / `platform` / `reset`), `value`, `shown`, `path` |
 | `video_played` | An inline `<video>` started, or a YouTube/Vimeo embed was clicked into | `kind` (`inline` / `embed`), `provider`, `title`, `path` |
 | `video_opened` | A link to a recording (YouTube, Vimeo, GitNation) was clicked | `href`, `label`, `path` |
 | `form_abandoned` | A form was typed into and left (pagehide or in-site navigation) without submitting. Field names only, never values; sent via sendBeacon | `form` (`invite` / `contact` / `mentorship`), `fields_touched`, `field_count`, `last_field`, `seconds`, `path` |

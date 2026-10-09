@@ -3,10 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import FilterPills from '../../components/v3/FilterPills.astro';
 import UpcomingCard from '../../components/events/UpcomingCard.astro';
 import ArchiveRow from '../../components/events/ArchiveRow.astro';
-import { ROLE_BUCKETS } from 'shared';
+import { EVENT_KINDS, ROLE_BUCKETS } from 'shared';
 import { getPastEvents, getSpeakingStats, getUpcomingEvents, yearOf, type EventEdition } from '../../lib/sanity/v3';
 import { breadcrumbs, itemList } from '../../lib/seo';
 import { countryCode, getCountryFlag } from '../../lib/flags';
+import { kindLabel } from '../../lib/events-view';
 
 const [upcoming, past, stats] = await Promise.all([getUpcomingEvents(), getPastEvents(), getSpeakingStats()]);
 
@@ -24,6 +25,11 @@ for (const e of past) {
   else years.push({ year: y, events: [e] });
 }
 const roleOptions = ROLE_BUCKETS.map((b) => ({ value: b.value, label: b.title, bucket: b.value }));
+// Only kinds the archive actually has, in vocabulary order.
+const kindOptions = EVENT_KINDS.filter((k) => past.some((e) => e.kind === k.value)).map((k) => ({
+  value: k.value,
+  label: kindLabel({ kind: k.value }),
+}));
 
 const schema = [
   breadcrumbs([
@@ -36,7 +42,7 @@ const schema = [
 
 <BaseLayout
   title="Schedule: upcoming and past events | Faris Aziz"
-  description="Upcoming talks and workshops by Faris Aziz, plus the full archive of events with my role at each: spoke, ran a workshop, hosted or attended."
+  description="Upcoming talks and workshops by Faris Aziz, plus the full archive of conferences and meetups with my role at each: spoke, ran a workshop, hosted or attended."
   image="/og/events.png"
   markdownAlternate="/events.md"
   extraSchema={schema}
@@ -79,7 +85,10 @@ const schema = [
         <h2 id="ev-arch-h" class="ev-label">
           Archive · <span data-filter-shown>{past.length}</span><span data-filter-total hidden> of {past.length}</span> past events
         </h2>
-        <FilterPills name="role" options={roleOptions} />
+        <div class="ev-arch__filters">
+          <FilterPills name="role" label="Role" options={roleOptions} />
+          {kindOptions.length > 1 && <FilterPills name="kind" label="Type" options={kindOptions} />}
+        </div>
       </div>
 
       {years.map((g) => (
@@ -118,7 +127,9 @@ const schema = [
   .ev-up__empty { margin: 0; font-size: 15px; color: rgb(var(--text-muted)); }
 
   .ev-arch { display: flex; flex-direction: column; gap: 16px; padding-bottom: 64px; }
-  .ev-arch__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 20px; }
+  .ev-arch__head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px 20px; }
+  .ev-arch__filters { display: flex; flex-direction: column; gap: 10px; }
+  .ev-arch__filters :global(.fpills__label) { min-width: 40px; }
   .ev-year__label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: rgb(var(--text-faint)); padding: 10px 0 8px; }
   .ev-year + .ev-year { margin-top: 8px; }
   .ev-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; border-top: 1px solid rgb(var(--hairline)); }
