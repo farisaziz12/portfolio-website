@@ -1,0 +1,23 @@
+---
+/**
+ * Chrome WebMCP progressive enhancement.
+ * Registers in-page tools when document.modelContext is available; no UI chrome.
+ * Origin-trial meta is set in BaseLayout when PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN is set.
+ */
+interface Props {
+  shortBio: string;
+  discoveryCallUrl: string;
+}
+const { shortBio, discoveryCallUrl } = Astro.props;
+---
+
+<div
+  id="webmcp-ctx"
+  hidden
+  data-bio={shortBio}
+  data-discovery={discoveryCallUrl}
+></div>
+<script>
+  import { initWebMcp } from '../lib/client/webmcp';
+  initWebMcp();
+</script>
