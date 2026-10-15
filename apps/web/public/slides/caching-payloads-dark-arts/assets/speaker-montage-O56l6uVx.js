@@ -1,0 +1,1 @@
+var e=`/slides/caching-payloads-dark-arts/media/speaker-montage.jpg`;export{e as t};
