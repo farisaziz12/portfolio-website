@@ -15,6 +15,8 @@ export default tseslint.config(
       // Leftover Next.js tree at the repo root — not part of the build.
       'src/**',
       'apps/web/content/**',
+      // Built Slidev decks copied from faris-slides; regenerate there, don't edit here.
+      'apps/web/public/slides/**',
       'scripts/**',
     ],
   },

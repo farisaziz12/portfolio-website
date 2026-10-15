@@ -8,7 +8,7 @@ Every page is resilient: an empty query renders an empty state or approved defau
 (`lib/sanity/v3/defaults.ts`), so publishing content only ever *adds*.
 
 Migrating from V2, or cleaning up content: see [`sanity-mcp-prompts.md`](./sanity-mcp-prompts.md)
-(`pnpm migrate:v3` + copy-paste prompts for the Sanity MCP).
+(`scripts/migrate-v3` + copy-paste prompts for the Sanity MCP).
 
 ---
 

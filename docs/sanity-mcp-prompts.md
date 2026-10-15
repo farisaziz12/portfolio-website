@@ -15,8 +15,8 @@ definition, every quote links to its source. These prompts get it there.
 2. **Deploy the V3 Studio** (merge to `main`, or `pnpm --filter studio deploy`), so the new types and fields exist.
 3. **Run the mechanical migration.** It's deterministic, idempotent and dry-run by default:
    ```sh
-   SANITY_STUDIO_PROJECT_ID=94fb4yui SANITY_API_TOKEN=sk_… pnpm migrate:v3            # prints the plan
-   SANITY_STUDIO_PROJECT_ID=94fb4yui SANITY_API_TOKEN=sk_… pnpm migrate:v3 --apply    # writes it
+   SANITY_STUDIO_PROJECT_ID=94fb4yui SANITY_API_TOKEN=sk_… pnpm exec tsx scripts/migrate-v3/run.ts            # prints the plan
+   SANITY_STUDIO_PROJECT_ID=94fb4yui SANITY_API_TOKEN=sk_… pnpm exec tsx scripts/migrate-v3/run.ts --apply    # writes it
    ```
    It converts V2 events into editions with `sessions[]`, creates `eventSeries`, turns `socialPost` + `testimonial`
    into `praise`, `impactMetricV2` into hidden `metric`s, `externalPost.type` into `format`, legacy workshop agendas
@@ -25,7 +25,7 @@ definition, every quote links to its source. These prompts get it there.
 4. **Run the prompts below in order**, one session per prompt (0 → 12). Prompts 13 (voice) and 14 (visual
    consistency) can run any time after that, and again whenever content is added. Each prompt proposes changes as a table and
    waits for your OK before writing. It writes to **drafts**; you publish in Studio (or tell the agent to publish).
-5. When Prompt 12 reports zero gaps: `pnpm migrate:v3 --apply --delete-legacy` removes the migrated V2 documents
+5. When Prompt 12 reports zero gaps: `pnpm exec tsx scripts/migrate-v3/run.ts --apply --delete-legacy` removes the migrated V2 documents
    and the unused legacy types. Then the `Legacy` section of the Studio is empty.
 6. Check **Studio → Needs attention**: every list there should be empty (or deliberately so).
 
@@ -408,7 +408,7 @@ Final pass across the whole dataset. Read-only first, then propose fixes as a ta
 4. Every upcoming event (date ≥ today) has at least one non-attendee session; every past talk session
    has either a recording or a note in the report.
 5. Re-run the Prompt 0 audit and show the before/after counts. When the "Legacy leftovers" section is
-   all zero, tell me to run `pnpm migrate:v3 --apply --delete-legacy`.
+   all zero, tell me to run `pnpm exec tsx scripts/migrate-v3/run.ts --apply --delete-legacy`.
 6. List "Questions for Faris" (facts only he can confirm): award wording/year, engineering figures for
    public use, career dates, aftermovie URL, availability month statuses, unannounced roles.
 ```

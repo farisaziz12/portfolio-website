@@ -28,7 +28,6 @@ pnpm --filter web lint:ui
 pnpm --filter web lint:conventions
 pnpm --filter web typecheck     # astro check
 pnpm test         # loader contract tests + migration tests
-pnpm migrate:v3   # V2 → V3 content migration (dry-run by default)
 pnpm voice:cms    # AI-tell report for Sanity content (SANITY_FIXTURES=1 offline, --json for agents)
 ```
 
