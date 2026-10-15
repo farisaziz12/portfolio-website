@@ -1,0 +1,170 @@
+.faris-cover {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(320px, 3fr);
+  gap: var(--faris-space-8);
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.faris-cover__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  padding-bottom: var(--faris-space-3);
+}
+
+.faris-cover__body h1 {
+  max-width: 810px;
+  font-size: var(--faris-font-display);
+}
+
+.faris-cover__body > p {
+  max-width: 680px;
+  margin-top: var(--faris-space-4);
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.faris-cover__body h1::after {
+  display: block;
+  width: 96px;
+  height: 8px;
+  margin-top: var(--faris-space-4);
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--faris-brand-blue) 0 68%, var(--faris-brand-yellow) 68% 100%);
+  content: "";
+}
+
+.faris-cover__meta {
+  margin-top: var(--faris-space-10);
+  color: var(--faris-muted);
+  font-size: var(--faris-font-meta);
+  font-weight: 680;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.faris-cover__visual {
+  position: relative;
+  z-index: 2;
+  align-self: end;
+  width: 330px;
+  justify-self: end;
+  transform: translateY(52px);
+}
+
+.faris-statement {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  height: 100%;
+  padding: var(--faris-space-3) 0 86px;
+}
+
+.faris-statement__body {
+  align-self: center;
+  max-width: 1040px;
+}
+
+.faris-statement__body h1 {
+  font-size: 78px;
+  line-height: 1.02;
+}
+
+.faris-statement__body > p,
+.faris-statement__body > div > p {
+  max-width: 850px;
+  margin-top: var(--faris-space-5);
+  font-size: var(--faris-font-body);
+  line-height: 1.35;
+}
+
+.faris-statement > .faris-annotation {
+  align-self: end;
+  justify-self: start;
+  margin-left: 4px;
+}
+
+.faris-code {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: var(--faris-space-4) var(--faris-space-8);
+  width: 100%;
+  height: 100%;
+  padding: var(--faris-space-2) 0 84px;
+}
+
+.faris-code__header {
+  align-self: center;
+}
+
+.faris-code__title h1,
+.faris-code__title h2 {
+  margin-top: var(--faris-space-3);
+  font-size: var(--faris-font-title);
+  line-height: 1.02;
+}
+
+.faris-code__sample {
+  align-self: center;
+  min-width: 0;
+}
+
+.faris-code__annotation {
+  align-self: end;
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+/* Opt-in cover compositions. The P1 badge composition stays unchanged. */
+.faris-slide[data-faris-cover="editorial"] .faris-cover {
+  grid-template-columns: minmax(0, 1fr) 210px;
+}
+
+.faris-slide[data-faris-cover="editorial"] .faris-cover__visual {
+  width: 210px;
+  transform: none;
+}
+
+.faris-slide[data-faris-cover="speaker"] .faris-cover {
+  grid-template-columns: minmax(0, 1fr) 480px;
+  gap: 24px;
+}
+
+.faris-slide[data-faris-cover="speaker"] .faris-cover__body h1 {
+  font-size: 76px;
+}
+
+.faris-slide[data-faris-cover="speaker"] .faris-cover__visual {
+  width: 480px;
+  align-self: center;
+  transform: none;
+}
+
+.faris-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  gap: 48px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 60px;
+}
+
+.faris-section__body h1 {
+  margin-top: 32px;
+  font-size: 84px;
+}
+
+.faris-section__body p {
+  margin-top: 32px;
+  max-width: 610px;
+  font-size: 30px;
+}
+
+.faris-section__visual { min-width: 0; }
