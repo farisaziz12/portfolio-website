@@ -6,14 +6,19 @@ on:
     paths:
       - 'apps/studio/**'
       - 'apps/web/**'
+      - 'apps/slides/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
       - 'package.json'
+      - 'pnpm-workspace.yaml'
       - 'eslint.config.js'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      # Slides' browser review runs locally; CI only needs its unit tests.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +34,7 @@ jobs:
       - name: Lint (ESLint + UI guardrails + conventions)
         run: pnpm lint
 
-      - name: Unit tests (loaders, migration, view helpers)
+      - name: Unit tests (loaders, migration, view helpers, slides)
         run: pnpm test
 
       - name: Build Sanity Studio (validates schema)
@@ -37,6 +42,9 @@ jobs:
         env:
           SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_STUDIO_PROJECT_ID }}
           SANITY_STUDIO_DATASET: production
+
+      - name: Typecheck slides
+        run: pnpm --filter slides typecheck
 
       - name: Typecheck web app
         run: pnpm --filter web typecheck

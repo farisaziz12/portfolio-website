@@ -1,0 +1,27 @@
+{
+  "source": "/Users/farisaziz/Library/Mobile Documents/com~apple~Keynote/Documents/caching-payloads-and-other-dark-arts short.key",
+  "sourceSha256": "d1ea77abb1dffd43143826adbb05da502cfdfcd080e79f781d8b67020cf308ce",
+  "videos": [
+    {
+      "archiveEntry": "Data/demo1-9822.mp4",
+      "path": "public/media/demo-1.mp4",
+      "sourceSlide": 50,
+      "bytes": 204036395,
+      "sha256": "8321c27a42913f3b8e267fdeec1735fdf6235de88adefa95afb36c3105f89505"
+    },
+    {
+      "archiveEntry": "Data/demo2-9886.mp4",
+      "path": "public/media/demo-2.mp4",
+      "sourceSlide": 82,
+      "bytes": 43037160,
+      "sha256": "36caab60e8c9bfee3b979e2b0b709661f4c7d2d6e6cb879107d74f549dd88286"
+    },
+    {
+      "archiveEntry": "Data/demo-3-4-9901.mp4",
+      "path": "public/media/demo-3.mp4",
+      "sourceSlide": 114,
+      "bytes": 112125813,
+      "sha256": "c79e78fc828e46dce81cabad8aa0c31ef8152029db10e3e37cb6489bf2cb6b5a"
+    }
+  ]
+}

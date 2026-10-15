@@ -1,0 +1,13 @@
+{
+  "status": "approved likeness source intermediates; final prepared assets live in packages/slidev-theme-faris/assets/illustrations",
+  "sourceReference": "references/avatar-approved.png",
+  "generation": "built-in image_gen, exact prompts in PROMPTS.md",
+  "format": "PNG raster with alpha; static poses, not an animated atlas",
+  "avatarUsage": "Unbranded drawing intermediates: do not render directly in decks. Use FarisIllustration with the prepared branded assets. See media/sprites/PREPARATION.md.",
+  "sprites": [
+    {"id":"faris-speaking","file":"faris-speaking.png","width":1374,"height":1145,"alpha":true,"sha256":"0cd6c3dea7c1849c0ee94e013ee6654d9c822ec2ca09d49f71101368ed4df296","status":"approved likeness, unbranded source with edge flecks; use prepared derivative"},
+    {"id":"faris-thinking","file":"faris-thinking.png","width":1306,"height":1205,"alpha":true,"sha256":"d227f40e94e50d325bfdb2e0b946636e8df2a1afc119a8f88c417b86f64cbdd9","status":"approved likeness, unbranded source; prepared derivative reflects pose and adds unmirrored mark"},
+    {"id":"duck-curious","file":"duck-curious.png","width":1199,"height":1312,"alpha":true,"sha256":"9f4a866e42e2a49f2d9139103a3357b82f42113d15737aeb429b07b4bdccdcf8","status":"approved likeness; use alpha-cleaned derivative"},
+    {"id":"duck-celebrating","file":"duck-celebrating.png","width":1284,"height":1225,"alpha":true,"sha256":"f9b5b8316aa892afbc5bb90a20ffee103f8f6f846e4b40a78651bd7ab7c9f3e9","status":"approved likeness; use alpha-cleaned derivative"}
+  ]
+}

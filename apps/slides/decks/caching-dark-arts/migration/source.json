@@ -1,0 +1,982 @@
+{
+  "source": "caching-payloads-and-other-dark-arts short.pdf",
+  "sha256": "b02b515be1789f27ecc046b99f3ea11c41ab7a53122a24c8eacb51406a294174",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Caching, Payloads, and Other\nDark Arts: Optimizing UX in\nSuboptimal Conditions\nA Pragmatic Case Study\n\n\n\n\nFaris Aziz - Sta Software Engineer @ Smallpdf\n\n\n        ff",
+      "images": []
+    },
+    {
+      "number": 2,
+      "text": "Who am I?\n     Sta Frontend Engineer @ Smallpdf\n\n\n     • 🌐 Previous Experience - Connected TV, Monetization/\n       Growth, FinTech, Fitness Tech\n\n     • 📚 Interests - Web Performance & Engineering\n       Leadership\n\n     • 💻 Open Source - Raycast\n\n     • 💛 Co-Founder of ZurichJS\n\n     • 💸 Stripe Community Builder\n\n\n\nff",
+      "images": [
+        {
+          "object": 18,
+          "file": "page-002-object-18.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "3f94be5ccde743bc7d5550927ca7290f4ab66a2c159fe74f3d326f98684725bc"
+        },
+        {
+          "object": 21,
+          "file": "page-002-object-21.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "a9a7f890300be5d9b07e474c21a38b4f99dbf04f2ef434ca675f7046792086f5"
+        },
+        {
+          "object": 22,
+          "file": "page-002-object-22.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "2ab81ad05900087492eace73eda02320daccedaaf530df380d0e99b8870865ba"
+        },
+        {
+          "object": 23,
+          "file": "page-002-object-23.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "75dcbd1abf56fbdd2c8b0f8a2599b24097e4dc9ebfab477f5681a9eefcf909b2"
+        },
+        {
+          "object": 24,
+          "file": "page-002-object-24.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "2b5d90de7202390edaea43db3b9473b56f88bbf867fbd9f23451fb9db54d903d"
+        },
+        {
+          "object": 25,
+          "file": "page-002-object-25.png",
+          "width": 1333,
+          "height": 2000,
+          "sha256": "befd03ac6ae4f5aebf0ef73facc44389eccee11f453c9ff7392afa9de7764916"
+        },
+        {
+          "object": 26,
+          "file": "page-002-object-26.png",
+          "width": 400,
+          "height": 400,
+          "sha256": "42f64f500443880c6c9824109869f88023fe925d4427d43d08b8b002051cfd3d"
+        },
+        {
+          "object": 27,
+          "file": "page-002-object-27.png",
+          "width": 1024,
+          "height": 1024,
+          "sha256": "044e882a8c68077109cbf1db676b15efd471e1413e40354df7a152329032a60c"
+        },
+        {
+          "object": 28,
+          "file": "page-002-object-28.png",
+          "width": 750,
+          "height": 749,
+          "sha256": "624f04e70fb267911e9d73fbabae02feb90633e9e080826bc86040401cd0ad7f"
+        },
+        {
+          "object": 29,
+          "file": "page-002-object-29.png",
+          "width": 225,
+          "height": 225,
+          "sha256": "e4251812796b7352c4817d842913cb14281cd3251a2be6ef3545a7a711ca2918"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "text": "Setting the Stage",
+      "images": []
+    },
+    {
+      "number": 4,
+      "text": "",
+      "images": [
+        {
+          "object": 48,
+          "file": "page-004-object-48.png",
+          "width": 860,
+          "height": 484,
+          "sha256": "360c18bdcd54d0877720153f409955262f5cff709743cb4d3c3676e0f9ca15d1"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "text": "620,0000 miles",
+      "images": []
+    },
+    {
+      "number": 6,
+      "text": "Localhost vs Real World",
+      "images": []
+    },
+    {
+      "number": 7,
+      "text": "Localhost",
+      "images": []
+    },
+    {
+      "number": 8,
+      "text": "Stable network, great bandwidth",
+      "images": []
+    },
+    {
+      "number": 9,
+      "text": "Single user, ideal environment",
+      "images": []
+    },
+    {
+      "number": 10,
+      "text": "Real World",
+      "images": []
+    },
+    {
+      "number": 11,
+      "text": "High latency, unreliable networks",
+      "images": []
+    },
+    {
+      "number": 12,
+      "text": "Mixed devices, throttled CPUs",
+      "images": []
+    },
+    {
+      "number": 13,
+      "text": "Partial caches, stale data, aky\n             APIs\n\n\n                       fl",
+      "images": []
+    },
+    {
+      "number": 14,
+      "text": "Problem Statement",
+      "images": []
+    },
+    {
+      "number": 15,
+      "text": "“What challenges do developers face in\n creating a seamless user experience due to\n complex data fetching and management?”",
+      "images": []
+    },
+    {
+      "number": 16,
+      "text": "How Can We Build Optimal Solutions In\n Suboptimal Conditions?",
+      "images": []
+    },
+    {
+      "number": 17,
+      "text": "Why Bother?",
+      "images": []
+    },
+    {
+      "number": 18,
+      "text": "0-2 Seconds\n“Golden Window”",
+      "images": []
+    },
+    {
+      "number": 19,
+      "text": "Response Times: The 3 Important Limits\n\n\n Jakob Nielsen - Excerpt from Chapter 5 - Usability Engineering",
+      "images": []
+    },
+    {
+      "number": 20,
+      "text": "0.1 Seconds\n“user feel that the system is reacting instantaneously”",
+      "images": []
+    },
+    {
+      "number": 21,
+      "text": "1 Second\n     “limit for the user's ow of thought”\n\n\n\n\nfl",
+      "images": []
+    },
+    {
+      "number": 22,
+      "text": "10 Seconds\n“limit for keeping the user's attention”",
+      "images": []
+    },
+    {
+      "number": 23,
+      "text": "32%\nBounce rate increase probability as page load goes from 1-3 seconds",
+      "images": []
+    },
+    {
+      "number": 24,
+      "text": "123%\nBounce rate increase probability as page load goes from 1-10 seconds",
+      "images": []
+    },
+    {
+      "number": 25,
+      "text": "Technologies",
+      "images": []
+    },
+    {
+      "number": 26,
+      "text": "NextJS - The React Framework",
+      "images": []
+    },
+    {
+      "number": 27,
+      "text": "TanStack Query - Powerful\nAsynchronous State Management",
+      "images": []
+    },
+    {
+      "number": 28,
+      "text": "API Types",
+      "images": []
+    },
+    {
+      "number": 29,
+      "text": "Public APIs\n E.g. Star Wars API",
+      "images": []
+    },
+    {
+      "number": 30,
+      "text": "Black Box",
+      "images": []
+    },
+    {
+      "number": 31,
+      "text": "No Control",
+      "images": []
+    },
+    {
+      "number": 32,
+      "text": "Subject to Breaking Changes",
+      "images": []
+    },
+    {
+      "number": 33,
+      "text": "Hoping they abide to Semantic Versioning",
+      "images": []
+    },
+    {
+      "number": 34,
+      "text": "Internal APIs\nDesigner for internal consumers",
+      "images": []
+    },
+    {
+      "number": 35,
+      "text": "Freestyle",
+      "images": []
+    },
+    {
+      "number": 36,
+      "text": "Limited adherence to REST\n     design principles",
+      "images": []
+    },
+    {
+      "number": 37,
+      "text": "Maybe even lacking\n  authentication",
+      "images": []
+    },
+    {
+      "number": 38,
+      "text": "Partner/Product APIs\nSold as a product/designed for 3rd party consumers",
+      "images": []
+    },
+    {
+      "number": 39,
+      "text": "Deprecation Policies",
+      "images": []
+    },
+    {
+      "number": 40,
+      "text": "Semantic Versioning",
+      "images": []
+    },
+    {
+      "number": 41,
+      "text": "Widespread Compatibility > Internal Optimization",
+      "images": []
+    },
+    {
+      "number": 42,
+      "text": "Now let’s put our tech lead hat on 🧢",
+      "images": [
+        {
+          "object": 208,
+          "file": "page-042-object-208.png",
+          "width": 160,
+          "height": 160,
+          "sha256": "d68248e1a41a9acb59187f91c03eda08113ccd9516576795949bc55e4c069b75"
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "text": "We got a JIRA ticket!",
+      "images": []
+    },
+    {
+      "number": 44,
+      "text": "Scenario\n\n\n Our frontend team needs to design a dashboard\n      chart that displays the distribution of\n birthdays for the top 5000 users in the system.",
+      "images": []
+    },
+    {
+      "number": 45,
+      "text": "Data Source\n\n\n   The data is available via an API which\n  returns a list of users with all their data.",
+      "images": []
+    },
+    {
+      "number": 46,
+      "text": "Limitation\n\n   The backend team is unable to provide a new\n    endpoint or data warehouse that returns the\n  required data format and there is a limit of 1000\n          users returned for each request.",
+      "images": []
+    },
+    {
+      "number": 47,
+      "text": "",
+      "images": [
+        {
+          "object": 230,
+          "file": "page-047-object-230.png",
+          "width": 1920,
+          "height": 1080,
+          "sha256": "258e5df1286de177ccf8f4aa0f7fdffd42ef1ef4c503e3a25b2bc4ed5436a225"
+        }
+      ]
+    },
+    {
+      "number": 48,
+      "text": "",
+      "images": [
+        {
+          "object": 235,
+          "file": "page-048-object-235.png",
+          "width": 3384,
+          "height": 1820,
+          "sha256": "1f95128676442d5a6b8e2050a479b6a026e3c1a655683df945ab1db1d30c7c41"
+        }
+      ]
+    },
+    {
+      "number": 49,
+      "text": "Demo 1",
+      "images": []
+    },
+    {
+      "number": 50,
+      "text": "",
+      "images": [
+        {
+          "object": 245,
+          "file": "page-050-object-245.png",
+          "width": 3734,
+          "height": 2160,
+          "sha256": "75ab9ba39ffd9880b8cad59ce6f87b7106d35c131fdcb734203339c381f36d2d"
+        }
+      ]
+    },
+    {
+      "number": 51,
+      "text": "~1.58 MB Payload\n     ~80% of unused data",
+      "images": []
+    },
+    {
+      "number": 52,
+      "text": "Key Factors\n\nCustom Retry:\n- Needs testing\n- Needs maintenance\n- Subject to bugs",
+      "images": []
+    },
+    {
+      "number": 53,
+      "text": "Key Factors\n\n\n\n        Caching: None by default",
+      "images": []
+    },
+    {
+      "number": 54,
+      "text": "Key Factors\n\n\n\n  State: Complex to manage globally and\n          handle data staleness",
+      "images": []
+    },
+    {
+      "number": 55,
+      "text": "Key Factors\n\n\n\nData Mapping: E ort on the client (potential\n         need for memoization)\n\n\n\n\n               ff",
+      "images": []
+    },
+    {
+      "number": 56,
+      "text": "Key Factors\n\n\n\n   Payload: Not optimized for state and\n                caching",
+      "images": []
+    },
+    {
+      "number": 57,
+      "text": "14KB\nFits within a single initial congestion window, minimizing round trips",
+      "images": []
+    },
+    {
+      "number": 58,
+      "text": "Source: https://angusjf.com/14kb/",
+      "images": [
+        {
+          "object": 281,
+          "file": "page-058-object-281.png",
+          "width": 2048,
+          "height": 723,
+          "sha256": "80150cd48381d6acdb1c5ef968a79526d63739f91df965685eabf942f9d627fe"
+        }
+      ]
+    },
+    {
+      "number": 59,
+      "text": "Source: https://angusjf.com/14kb/",
+      "images": [
+        {
+          "object": 286,
+          "file": "page-059-object-286.png",
+          "width": 2048,
+          "height": 1234,
+          "sha256": "5dd9c7f4308b3002e508d646acd2dd5f468f6b443bb957e2e7cce15f1ff8fdc0"
+        }
+      ]
+    },
+    {
+      "number": 60,
+      "text": "14KB\nObsolete wording, but the principle applies",
+      "images": []
+    },
+    {
+      "number": 61,
+      "text": "46KB\nFits within a single initial congestion window on modern CDNs",
+      "images": []
+    },
+    {
+      "number": 62,
+      "text": "The Stall",
+      "images": []
+    },
+    {
+      "number": 63,
+      "text": "Stall cost = 1 Round Trip Time (RTT)",
+      "images": []
+    },
+    {
+      "number": 64,
+      "text": "RTT depends on user",
+      "images": []
+    },
+    {
+      "number": 65,
+      "text": "LAN: 1-5ms\n Barely noticeable",
+      "images": []
+    },
+    {
+      "number": 66,
+      "text": "Typical Broadband: 30-70ms",
+      "images": []
+    },
+    {
+      "number": 67,
+      "text": "4G/5G: 80-200ms\n   Might be noticeable",
+      "images": []
+    },
+    {
+      "number": 68,
+      "text": "“Get your critical rendering payload under\n the initial congestion window”",
+      "images": []
+    },
+    {
+      "number": 69,
+      "text": "Backend For Frontend (BFF)\n   Transformation Bridge / Aggregation Proxy",
+      "images": []
+    },
+    {
+      "number": 70,
+      "text": "Adaptability to Platform Requirements",
+      "images": []
+    },
+    {
+      "number": 71,
+      "text": "Decoupling of Concerns",
+      "images": []
+    },
+    {
+      "number": 72,
+      "text": "Optimized Perfomance",
+      "images": []
+    },
+    {
+      "number": 73,
+      "text": "",
+      "images": [
+        {
+          "object": 345,
+          "file": "page-073-object-345.png",
+          "width": 3384,
+          "height": 1884,
+          "sha256": "02fddff69b9f9e60966e1f5da873b1c657d6bf7cd7ebc7e85ecd457b6beb8b41"
+        }
+      ]
+    },
+    {
+      "number": 74,
+      "text": "",
+      "images": [
+        {
+          "object": 350,
+          "file": "page-074-object-350.png",
+          "width": 1920,
+          "height": 1080,
+          "sha256": "4eb03b9fe2e8d3421170ab7053e2cec2bdd147a05171d33782d872161c99664e"
+        }
+      ]
+    },
+    {
+      "number": 75,
+      "text": "",
+      "images": [
+        {
+          "object": 355,
+          "file": "page-075-object-355.png",
+          "width": 3680,
+          "height": 1820,
+          "sha256": "e02cdccd8931f3264507d2c59c369c3db35e35c7a2d1f1ac833d5dd63f875abf"
+        }
+      ]
+    },
+    {
+      "number": 76,
+      "text": "",
+      "images": [
+        {
+          "object": 360,
+          "file": "page-076-object-360.png",
+          "width": 3680,
+          "height": 1548,
+          "sha256": "e19bec6c49f4a0f4ee7aae5946eb2baa759ef2d53f89e4a584f93e465731e3c7"
+        }
+      ]
+    },
+    {
+      "number": 77,
+      "text": "Key Factors\n\n\n\nFailure Isolation: Isolate failures to a single\nclient request rather than managing multiple",
+      "images": []
+    },
+    {
+      "number": 78,
+      "text": "Key Factors\n\n\n\n     Codebase Management: Clearer\n         separation of concerns",
+      "images": []
+    },
+    {
+      "number": 79,
+      "text": "Key Factors\n\n\n\n Data Mapping: Mapped at the proxy level",
+      "images": []
+    },
+    {
+      "number": 80,
+      "text": "Key Factors\n\n\n\n  Payload: Can be optimized to minimum\n              viable values",
+      "images": []
+    },
+    {
+      "number": 81,
+      "text": "Demo 2",
+      "images": []
+    },
+    {
+      "number": 82,
+      "text": "",
+      "images": [
+        {
+          "object": 386,
+          "file": "page-082-object-386.png",
+          "width": 3734,
+          "height": 2160,
+          "sha256": "b46330fd807e37de986a2d7c39e34bbd7a10f99f3b656284e4e2cd6a490dc23a"
+        }
+      ]
+    },
+    {
+      "number": 83,
+      "text": "~300 Bytes",
+      "images": []
+    },
+    {
+      "number": 84,
+      "text": "Network Bandwidth\n    Payload: 1.58 MB",
+      "images": []
+    },
+    {
+      "number": 85,
+      "text": "Wi-Fi (~90 Mbps)\n  Download time: ~340 ms",
+      "images": []
+    },
+    {
+      "number": 86,
+      "text": "4G (~25 Mbps)\n Download time: ~700ms",
+      "images": []
+    },
+    {
+      "number": 87,
+      "text": "3G (~2 Mbps)\nDownload time: ~6’500ms",
+      "images": []
+    },
+    {
+      "number": 88,
+      "text": "Network Bandwidth\n    Payload: 300 Bytes",
+      "images": []
+    },
+    {
+      "number": 89,
+      "text": "Wi-Fi (~90 Mbps)\n Download time: ~200-210ms",
+      "images": []
+    },
+    {
+      "number": 90,
+      "text": "4G (~25 Mbps)\nDownload time: ~200-210ms",
+      "images": []
+    },
+    {
+      "number": 91,
+      "text": "3G (~2 Mbps)\nDownload time: ~200-210ms",
+      "images": []
+    },
+    {
+      "number": 92,
+      "text": "Ingress vs Egress",
+      "images": []
+    },
+    {
+      "number": 93,
+      "text": "Ingress\nData coming into a system or network",
+      "images": []
+    },
+    {
+      "number": 94,
+      "text": "Egress\nData coming out of a system or network",
+      "images": []
+    },
+    {
+      "number": 95,
+      "text": "FaaS vs IaaS",
+      "images": []
+    },
+    {
+      "number": 96,
+      "text": "Function as a Service\n\nAverage Ingress Bandwidth: 1-5 Gbps\n\nExamples: AWS Lamba, Vercel Edge Functions, Cloud are Workers\n\nNote: Cold start times (100ms-2s) may impact performance; functions\ntypically stay \"hot\" for 5-60 minutes depending on provider and tra c\npatterns\n\n\n\n                                                               ffi\n                                                   fl",
+      "images": []
+    },
+    {
+      "number": 97,
+      "text": "Infrastructure as a Service\n\nAverage Ingress Bandwidth: 2-25 Gbps\n\nExamples: AWS EC2, GCP Compute Engine, Azure VMs\n\nNote: Always running, no cold start penalty; bandwidth scales with\ninstance size",
+      "images": []
+    },
+    {
+      "number": 98,
+      "text": "",
+      "images": [
+        {
+          "object": 453,
+          "file": "page-098-object-453.png",
+          "width": 4220,
+          "height": 2174,
+          "sha256": "393c0fcd6d1deeca058d405eadc31d2464d741b731160757dc2fb63c886cd955"
+        }
+      ]
+    },
+    {
+      "number": 99,
+      "text": "",
+      "images": [
+        {
+          "object": 458,
+          "file": "page-099-object-458.png",
+          "width": 4220,
+          "height": 2180,
+          "sha256": "f1fb661ca2b632fb7b4c2b222574e50f412ff9f7d56134d925e6d9d2f1ffe1cb"
+        }
+      ]
+    },
+    {
+      "number": 100,
+      "text": "",
+      "images": [
+        {
+          "object": 463,
+          "file": "page-100-object-463.png",
+          "width": 1920,
+          "height": 1080,
+          "sha256": "15fd773bbf5c562e9328aed3d470b9848e7b232d44fcb9d526ef5c4edb9cc520"
+        }
+      ]
+    },
+    {
+      "number": 101,
+      "text": "",
+      "images": [
+        {
+          "object": 468,
+          "file": "page-101-object-468.png",
+          "width": 3680,
+          "height": 1640,
+          "sha256": "163419e597b5c22ba384d327150366351b481d028cad863269df12bd6404eacc"
+        }
+      ]
+    },
+    {
+      "number": 102,
+      "text": "Key Factors\n\n\nLibrary: 3rd party library (TanStack Query)\n   controls loading, error and deriving\n              response states",
+      "images": []
+    },
+    {
+      "number": 103,
+      "text": "Key Factors\n\n\n\n   Caching: Optimized payload can be\n    cached with multiple strategies",
+      "images": []
+    },
+    {
+      "number": 104,
+      "text": "Key Factors\n\n\n\n  Re-Renders: Limit refetches with re-\n  renders and manage data staleness",
+      "images": []
+    },
+    {
+      "number": 105,
+      "text": "Key Factors\n\n\n    Resilience: Out of box con gurable\n  resilience patterns (automatic retries /\n            exponential backo )\n\n\n\n                          fi\n                 ff",
+      "images": []
+    },
+    {
+      "number": 106,
+      "text": "But we can go one step further…",
+      "images": []
+    },
+    {
+      "number": 107,
+      "text": "Let’s start the journey on the\n             server",
+      "images": []
+    },
+    {
+      "number": 108,
+      "text": "",
+      "images": [
+        {
+          "object": 498,
+          "file": "page-108-object-498.png",
+          "width": 1920,
+          "height": 1080,
+          "sha256": "629fdf069e8f2fee3d0dd6219c8dd8aa45404fa544b93e5d092a1c6b2be35a06"
+        }
+      ]
+    },
+    {
+      "number": 109,
+      "text": "",
+      "images": [
+        {
+          "object": 503,
+          "file": "page-109-object-503.png",
+          "width": 3680,
+          "height": 1884,
+          "sha256": "0d1d8328d0fda932030bec93dc3acb8d3d666a3b0c3ab07a673ed57abb1552b0"
+        }
+      ]
+    },
+    {
+      "number": 110,
+      "text": "Key Factors\n\n\n\n Prefetch data (reduce UI delay/loading)",
+      "images": []
+    },
+    {
+      "number": 111,
+      "text": "Key Factors\n\n\nLoad Balancing: Reduce client data load/\n  network requests with server cache\n              hydration",
+      "images": []
+    },
+    {
+      "number": 112,
+      "text": "Key Factors\n\n\nData Recovery: Recover query w/ retries\non client if server fails prefetch or times\n                     out",
+      "images": []
+    },
+    {
+      "number": 113,
+      "text": "Demo 3",
+      "images": []
+    },
+    {
+      "number": 114,
+      "text": "",
+      "images": [
+        {
+          "object": 525,
+          "file": "page-114-object-525.png",
+          "width": 3124,
+          "height": 2160,
+          "sha256": "817382b4149a54bcac786327d86fd9f7c60730ee3a04217fb24bb046cd7fb055"
+        }
+      ]
+    },
+    {
+      "number": 115,
+      "text": "What about real world results?",
+      "images": []
+    },
+    {
+      "number": 116,
+      "text": "",
+      "images": [
+        {
+          "object": 534,
+          "file": "page-116-object-534.png",
+          "width": 4896,
+          "height": 3672,
+          "sha256": "8cdb950946c55a99881e77babc86b2a0e8cd7cb62b2c8d3d3798062b6965539d"
+        }
+      ]
+    },
+    {
+      "number": 117,
+      "text": "",
+      "images": [
+        {
+          "object": 539,
+          "file": "page-117-object-539.png",
+          "width": 4032,
+          "height": 3024,
+          "sha256": "0d8c67f59cc3ab4f77fc809bcc5f883925d02d2559e186e3170b2f05f534f429"
+        }
+      ]
+    },
+    {
+      "number": 118,
+      "text": "",
+      "images": [
+        {
+          "object": 544,
+          "file": "page-118-object-544.png",
+          "width": 4220,
+          "height": 2260,
+          "sha256": "114bb93ef49ce2d9be5fc4cdbb002ac99580bf30921d2010cc61ff98020a0567"
+        }
+      ]
+    },
+    {
+      "number": 119,
+      "text": "“Now Faris, instead of jumping through all of\n  those engineering hoops… couldn’t the\n  backend just have made that endpoint?”",
+      "images": []
+    },
+    {
+      "number": 120,
+      "text": "Well… that’s not the point",
+      "images": []
+    },
+    {
+      "number": 121,
+      "text": "Be pragmatic",
+      "images": []
+    },
+    {
+      "number": 122,
+      "text": "But also…",
+      "images": []
+    },
+    {
+      "number": 123,
+      "text": "Be curious",
+      "images": []
+    },
+    {
+      "number": 124,
+      "text": "Be creative",
+      "images": []
+    },
+    {
+      "number": 125,
+      "text": "Thank You!",
+      "images": [
+        {
+          "object": 25,
+          "file": "page-125-object-25.png",
+          "width": 1333,
+          "height": 2000,
+          "sha256": "befd03ac6ae4f5aebf0ef73facc44389eccee11f453c9ff7392afa9de7764916"
+        },
+        {
+          "object": 574,
+          "file": "page-125-object-574.png",
+          "width": 300,
+          "height": 373,
+          "sha256": "a7783bd0c2042d809c9c7e98244ceb1735c469fc6176f65f6ef90b02550085a0"
+        },
+        {
+          "object": 575,
+          "file": "page-125-object-575.png",
+          "width": 1260,
+          "height": 1356,
+          "sha256": "04b36f1dc0b5549ad2053d0517273b514328ad1f49e634eaef11aef5f3201ec3"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "sourceSlide": 2,
+      "object": 25,
+      "path": "public/media/speaker-montage.png",
+      "sha256": "befd03ac6ae4f5aebf0ef73facc44389eccee11f453c9ff7392afa9de7764916",
+      "bytes": 3819501,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 4,
+      "object": 48,
+      "path": "public/media/traffic.png",
+      "sha256": "360c18bdcd54d0877720153f409955262f5cff709743cb4d3c3676e0f9ca15d1",
+      "bytes": 760379,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 58,
+      "object": 281,
+      "path": "public/media/congestion-14kb.png",
+      "sha256": "80150cd48381d6acdb1c5ef968a79526d63739f91df965685eabf942f9d627fe",
+      "bytes": 194128,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 59,
+      "object": 286,
+      "path": "public/media/congestion-15kb.png",
+      "sha256": "5dd9c7f4308b3002e508d646acd2dd5f468f6b443bb957e2e7cce15f1ff8fdc0",
+      "bytes": 302689,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 98,
+      "object": 453,
+      "path": "public/media/tanstack-query.png",
+      "sha256": "393c0fcd6d1deeca058d405eadc31d2464d741b731160757dc2fb63c886cd955",
+      "bytes": 1709831,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 99,
+      "object": 458,
+      "path": "public/media/tanstack-features.png",
+      "sha256": "f1fb661ca2b632fb7b4c2b222574e50f412ff9f7d56134d925e6d9d2f1ffe1cb",
+      "bytes": 1869065,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 116,
+      "object": 534,
+      "path": "public/media/in-flight-demo.png",
+      "sha256": "8cdb950946c55a99881e77babc86b2a0e8cd7cb62b2c8d3d3798062b6965539d",
+      "bytes": 18926235,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 117,
+      "object": 539,
+      "path": "public/media/flight-map.png",
+      "sha256": "0d8c67f59cc3ab4f77fc809bcc5f883925d02d2559e186e3170b2f05f534f429",
+      "bytes": 6519300,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 118,
+      "object": 544,
+      "path": "public/media/flight-speedtest.png",
+      "sha256": "114bb93ef49ce2d9be5fc4cdbb002ac99580bf30921d2010cc61ff98020a0567",
+      "bytes": 248126,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    },
+    {
+      "sourceSlide": 125,
+      "object": 574,
+      "path": "public/media/contact-qr.png",
+      "sha256": "a7783bd0c2042d809c9c7e98244ceb1735c469fc6176f65f6ef90b02550085a0",
+      "bytes": 11240,
+      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
+    }
+  ]
+}

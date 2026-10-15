@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+
+# Review runs, exports and screenshots (gigabytes). Regenerate with `pnpm slides review`.
+artifacts/
+# Raw recordings are too big for git; the prepare scripts write web-sized copies into each deck's public/.
+media/source-video/

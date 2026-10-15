@@ -35,6 +35,8 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Deploy Studio (build + upload)
         # Explicit `run` — a bare `pnpm --filter studio deploy` hits pnpm's

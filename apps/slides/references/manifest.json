@@ -1,0 +1,46 @@
+[
+  {
+    "path": "avatar-approved.png",
+    "source_filename": "wide_banner_infographic_illustration_sheet_in_flat.png",
+    "role": "Approved avatar drawing and facial proportions; small off-center upper-left-chest logo; established duck appearance.",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "format": "PNG",
+    "sha256": "80859db7394851b10388660ee382b739b8e493edc04a43257bb504e15f4d8e94",
+    "modified": false
+  },
+  {
+    "path": "deck-direction.png",
+    "source_filename": "wide_clean_slide_deck_design_mockup_in_a_flat_car.png",
+    "role": "Latest technical deck composition reference; inspiration, not implementation or verified technical content.",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "format": "PNG",
+    "sha256": "16e0772df404d5524c24dfc7b17dea46d23d437c055e5b3ea0e5fee894c7798e",
+    "modified": false
+  },
+  {
+    "path": "original-badge.png",
+    "source_filename": "19337954_proof.png",
+    "role": "Original full badge asset and illustration heritage. Keep intact; newer logo placement and official geometry override its old shirt treatment in new artwork.",
+    "width": 1260,
+    "height": 1356,
+    "mode": "RGBA",
+    "format": "PNG",
+    "sha256": "b43da684d859537438313bff7d29e045371365addae2c16f16876472d5a5ada3",
+    "modified": false
+  },
+  {
+    "path": "zurichjs-official.png",
+    "source_filename": "square (1).png",
+    "role": "User-supplied official square ZurichJS logo; geometric and letterform source of truth.",
+    "width": 625,
+    "height": 625,
+    "mode": "RGBA",
+    "format": "PNG",
+    "sha256": "2a24859175e8689b078716a9c49f44fe5b0ee1e30df255e4b8e274a7c17250e6",
+    "modified": false
+  }
+]
