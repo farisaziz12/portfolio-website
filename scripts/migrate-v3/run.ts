@@ -1,11 +1,11 @@
 /**
  * V2 → V3 content migration CLI. DRY-RUN BY DEFAULT.
  *
- *   pnpm migrate:v3                          # fetch live dataset, print the plan, write plan JSON
- *   pnpm migrate:v3 --apply                  # apply it (needs SANITY_API_TOKEN with write access)
- *   pnpm migrate:v3 --apply --delete-legacy  # also delete migrated/unused legacy documents
- *   pnpm migrate:v3 --from export.ndjson     # plan against a `sanity dataset export` file, offline
- *   pnpm migrate:v3 --from x.json --simulate out.json   # write the migrated dataset to a file
+ *   pnpm exec tsx scripts/migrate-v3/run.ts                                    # fetch live dataset, print the plan, write plan JSON
+ *   pnpm exec tsx scripts/migrate-v3/run.ts --apply                            # apply it (needs SANITY_API_TOKEN with write access)
+ *   pnpm exec tsx scripts/migrate-v3/run.ts --apply --delete-legacy            # also delete migrated/unused legacy documents
+ *   pnpm exec tsx scripts/migrate-v3/run.ts --from export.ndjson               # plan against a `sanity dataset export` file, offline
+ *   pnpm exec tsx scripts/migrate-v3/run.ts --from x.json --simulate out.json  # write the migrated dataset to a file
  *
  * Env: SANITY_STUDIO_PROJECT_ID, SANITY_STUDIO_DATASET (default production), SANITY_API_TOKEN.
  * Take a backup first: `pnpm --filter studio exec sanity dataset export production backup.tar.gz`.
