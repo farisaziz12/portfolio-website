@@ -1,0 +1,46 @@
+---
+/** /privacy: what the site collects and who sees it. Copy lives in lib/privacy.ts (shared with privacy.md). */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getProfile, fullDate } from '../lib/sanity/v3';
+import { breadcrumbs } from '../lib/seo';
+import { PRIVACY_LEDE, PRIVACY_UPDATED, privacySections } from '../lib/privacy';
+
+const profile = await getProfile();
+const sections = privacySections(profile.replyTime);
+---
+
+<BaseLayout
+  title="Privacy · Faris Aziz"
+  description="What faziz-dev.com collects when you visit: PostHog analytics, form emails through Resend, and the services each page loads."
+  image="/og/privacy.png"
+  markdownAlternate="/privacy.md"
+  extraSchema={[breadcrumbs([{ name: 'Privacy', path: '/privacy' }])]}
+>
+  <div class="ds-wrap privacy">
+    <header class="privacy__intro">
+      <p class="ds-kicker">Privacy</p>
+      <h1 class="ds-h1">What this site collects</h1>
+      <p class="ds-lede">{PRIVACY_LEDE}</p>
+      <p class="ds-meta">Last updated <time datetime={PRIVACY_UPDATED}>{fullDate(PRIVACY_UPDATED)}</time></p>
+    </header>
+
+    {sections.map((s) => (
+      <section class="privacy__section" aria-labelledby={`privacy-${s.id}`}>
+        <h2 id={`privacy-${s.id}`} class="ds-h3">{s.heading}</h2>
+        {s.body.map((p) => <p class="ds-body privacy__p">{p}</p>)}
+      </section>
+    ))}
+
+    <p class="privacy__cta">
+      <a href="/contact#message" class="ds-btn ds-btn--yellow" data-track="privacy_contact">Ask about your data</a>
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .privacy { max-width: calc(72ch + 2 * var(--gutter)); padding-block: clamp(36px, 6vw, 64px) clamp(48px, 7vw, 88px); }
+  .privacy__intro { display: flex; flex-direction: column; gap: 16px; margin-bottom: clamp(28px, 4vw, 44px); }
+  .privacy__section { padding-block: 22px; border-top: 1px solid rgb(var(--hairline)); }
+  .privacy__p { margin: 12px 0 0; max-width: 68ch; }
+  .privacy__cta { margin: 28px 0 0; }
+</style>

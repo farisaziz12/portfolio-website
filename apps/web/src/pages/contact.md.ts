@@ -15,7 +15,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Contact Faris Aziz`,
     ``,
-    `> Want Faris to speak or run a workshop? Use the invite form. For anything else (a podcast, press, a question, or just saying hi), send a quick message. He replies within ${profile.replyTime}. There is no public email address.`,
+    `> Want Faris to speak or run a workshop? Use the invite form. For anything else (a podcast, press, a question, or just saying hi), send a quick message. He replies within ${profile.replyTime}.`,
     ``,
     `## 1. Speaking and workshops`,
     ``,
