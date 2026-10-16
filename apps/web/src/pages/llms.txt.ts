@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
 
 > ${summary}
 
-${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite (form; replies within ${profile.replyTime}). Everything else: ${SITE}/contact. There is no public email address; forms only.
+${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite (form; replies within ${profile.replyTime}). Everything else: ${SITE}/contact. There is no public email address; forms only. Chrome agents with WebMCP can use in-page tools (route intent, prefill/submit forms, filters, discovery call); headless agents should use the .md mirrors below.
 
 ## Speaking
 

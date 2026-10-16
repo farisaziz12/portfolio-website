@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { identify, track, trackFormStarted } from '../../lib/analytics';
+import { WEBMCP_PREFILL, type WebmcpPrefillDetail } from '../../lib/webmcp-prefill';
 
 /**
  * Mentorship "Apply for a seat" form (V3). Styles live in
@@ -80,8 +81,38 @@ export default function MentorshipInquiryForm({ fallbackHref, replyTime = 'two w
   // Until hydrated, submitting would be a native GET (answers in the URL), so the button waits.
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
+  const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLHeadingElement>(null);
   const errRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (sent) return;
+    const form = formRef.current;
+    if (!form) return;
+    const onPrefill = (e: Event) => {
+      const d = (e as CustomEvent<WebmcpPrefillDetail>).detail || {};
+      setFields((f) => {
+        const next = { ...f };
+        if (typeof d.name === 'string') next.name = d.name;
+        if (typeof d.email === 'string') next.email = d.email;
+        if (typeof d.goals === 'string') next.goals = d.goals;
+        if (d.currency === 'chf' || d.currency === 'eur' || d.currency === 'usd') next.currency = d.currency;
+        if (d.budget === 's' || d.budget === 'm' || d.budget === 'l' || d.budget === 'xl' || d.budget === 'flex') {
+          next.budget = d.budget;
+        }
+        if (d.timeline === 'asap' || d.timeline === 'soon' || d.timeline === 'exploring') next.timeline = d.timeline;
+        if (d.cadence === 'weekly' || d.cadence === 'biweekly' || d.cadence === 'monthly' || d.cadence === 'open') {
+          next.cadence = d.cadence;
+        }
+        if (typeof d.message === 'string') next.message = d.message;
+        return next;
+      });
+      setErrors({});
+      trackFormStarted('mentorship');
+    };
+    form.addEventListener(WEBMCP_PREFILL, onPrefill);
+    return () => form.removeEventListener(WEBMCP_PREFILL, onPrefill);
+  }, [sent]);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     trackFormStarted('mentorship');
@@ -169,7 +200,7 @@ export default function MentorshipInquiryForm({ fallbackHref, replyTime = 'two w
   const errId = (k: ErrKey) => (errors[k] ? `m-${k}-err` : undefined);
 
   return (
-    <form data-form="mentorship" className="mform" method="post" onSubmit={onSubmit} noValidate aria-busy={submitting}>
+    <form ref={formRef} data-form="mentorship" className="mform" method="post" onSubmit={onSubmit} noValidate aria-busy={submitting}>
       <div className="mform__row">
         <Field id="m-name" label="Your name" required error={errors.name && ERR_TEXT.name}>
           <input id="m-name" className="ds-input" value={fields.name} onChange={(e) => set('name', e.target.value)} autoComplete="name" required aria-invalid={errors.name ? 'true' : undefined} aria-describedby={errId('name')} />

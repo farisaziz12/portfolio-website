@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { identify, track, trackFormStarted } from '../../lib/analytics';
+import { WEBMCP_PREFILL, type WebmcpPrefillDetail } from '../../lib/webmcp-prefill';
 import './inquiry-form.css';
 
 /**
@@ -26,6 +27,7 @@ export default function ContactForm({ replyTime, linkedin }: Props) {
   const [errors, setErrors] = useState<{ email?: string; message?: string }>({});
   const [status, setStatus] = useState<Status>('form');
   const [ref, setRef] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -34,6 +36,22 @@ export default function ContactForm({ replyTime, linkedin }: Props) {
     const t = new URLSearchParams(window.location.search).get('topic');
     if (t && TOPICS.includes(t)) setTopic(t);
   }, []);
+
+  useEffect(() => {
+    if (status === 'sent') return;
+    const form = formRef.current;
+    if (!form) return;
+    const onPrefill = (e: Event) => {
+      const d = (e as CustomEvent<WebmcpPrefillDetail>).detail || {};
+      if (typeof d.email === 'string') setEmail(d.email);
+      if (typeof d.message === 'string') setMessage(d.message);
+      if (typeof d.topic === 'string' && TOPICS.includes(d.topic)) setTopic(d.topic);
+      setErrors({});
+      trackFormStarted('contact');
+    };
+    form.addEventListener(WEBMCP_PREFILL, onPrefill);
+    return () => form.removeEventListener(WEBMCP_PREFILL, onPrefill);
+  }, [status]);
 
   useEffect(() => {
     if (status === 'sent' || status === 'failed') panelRef.current?.focus();
@@ -101,7 +119,7 @@ export default function ContactForm({ replyTime, linkedin }: Props) {
   const mId = `${uid}-message`;
 
   return (
-    <form data-form="contact" className="inq-form contact-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
+    <form ref={formRef} data-form="contact" className="inq-form contact-form" onSubmit={onSubmit} noValidate aria-busy={sending}>
       {status === 'failed' && (
         <div className="inq-failed contact-failed" ref={panelRef} tabIndex={-1} role="alert">
           <p className="inq-failed__title">That didn’t go through, and nothing was stored.</p>

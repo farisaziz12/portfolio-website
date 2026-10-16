@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_POSTHOG_KEY?: string;
   /** PostHog ingestion host; defaults to https://eu.i.posthog.com. */
   readonly PUBLIC_POSTHOG_HOST?: string;
+  /** Optional Chrome WebMCP origin-trial token (progressive enhancement). */
+  readonly PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN?: string;
   /** HMAC secret for workshop + admin session cookies (falls back to ADMIN_PASSWORD). */
   readonly WORKSHOP_SESSION_SECRET?: string;
   readonly ADMIN_PASSWORD?: string;
