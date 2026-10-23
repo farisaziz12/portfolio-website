@@ -1,0 +1,1 @@
+var e=`/slides/built-for-turbulence/media/speaker-montage.jpg`;export{e as t};
