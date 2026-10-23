@@ -79,7 +79,7 @@ faris:
 sourceSlide: 15
 faris:
   mode: dark
-`,note:``,title:`What challenges do developers face in creating a seamless user experience due to **complex data fetching** and **management**?`,level:1,index:14,noteHTML:``,images:[],raw:``,frontmatter:j,filepath:``,start:241,sourceIndex:14,id:14,no:15},__clicksContext:null,__preloaded:!1}),M=p({layout:`statement`,class:`caching-question`,faris:{mode:`dark`},sourceSlide:16}),tt=f({get layout(){return M.layout},get transition(){return M.transition},get class(){return M.class},get clicks(){return M.clicks},get name(){return M.name},get preload(){return M.preload},slide:{content:``,revision:`eg4tdl`,frontmatterRaw:`layout: statement
+`,note:``,title:`Why is a **smooth UX** so hard when **data fetching** gets complicated?`,level:1,index:14,noteHTML:``,images:[],raw:``,frontmatter:j,filepath:``,start:241,sourceIndex:14,id:14,no:15},__clicksContext:null,__preloaded:!1}),M=p({layout:`statement`,class:`caching-question`,faris:{mode:`dark`},sourceSlide:16}),tt=f({get layout(){return M.layout},get transition(){return M.transition},get class(){return M.class},get clicks(){return M.clicks},get name(){return M.name},get preload(){return M.preload},slide:{content:``,revision:`eg4tdl`,frontmatterRaw:`layout: statement
 class: caching-question
 faris:
   mode: dark
