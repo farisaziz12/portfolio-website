@@ -75,6 +75,7 @@ export async function getStaticPaths() {
     connect: { kicker: 'After the talk', title: 'Thanks for coming.', meta: 'Socials, a quick call, or invite me to speak.' },
     projects: { kicker: 'About · Projects', title: 'Things I built.', meta: 'Open source and production systems.' },
     gallery: { kicker: 'About · Gallery', title: 'Stages, hallways, and the bits in between.', meta: 'Photos from events, credited.' },
+    privacy: { kicker: 'Privacy', title: 'What this site collects.', meta: 'Analytics, forms, and the services each page loads.' },
   };
 
   const cards: { params: { slug: string }; props: { card: OgCard } }[] = Object.entries(statics).map(([slug, card]) => ({

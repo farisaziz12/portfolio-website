@@ -17,3 +17,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Window {
+  /** Set by the home Opener once its intro runs; the inline head guard drops the curtain if it never does. */
+  __opPlaying?: boolean;
+}

@@ -24,6 +24,7 @@ export const WORKSHOP_SHORT_PATH_RESERVED = [
   'mentorship',
   'og',
   'press-kit',
+  'privacy',
   'projects',
   'rss.xml',
   'schedule',
