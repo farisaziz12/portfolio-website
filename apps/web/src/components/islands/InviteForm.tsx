@@ -1,6 +1,7 @@
 import { cloneElement, useEffect, useId, useRef, useState, type FormEvent, type ReactElement } from 'react';
 import { identify, track, trackFormStarted } from '../../lib/analytics';
 import { INVITE_KINDS, kindDef, toKind, type InviteKind } from '../../lib/invite-kinds';
+import { WEBMCP_PREFILL, type WebmcpPrefillDetail } from '../../lib/webmcp-prefill';
 import './inquiry-form.css';
 
 /**
@@ -66,6 +67,32 @@ export default function InviteForm({ replyTime, art, pressKitHref = '/press-kit'
     const line = workshop ? `I'd like to book the workshop "${workshop}".` : talk ? `I'd like to book the talk "${talk}".` : '';
     if (line) setFields((f) => ({ ...f, message: f.message || `${line}\n\n` }));
   }, []);
+
+  // Chrome WebMCP / agents: prefill without touching native .value (React state).
+  // Re-bind whenever the form is mounted (not on the accepted panel).
+  useEffect(() => {
+    if (status === 'accepted') return;
+    const form = formRef.current;
+    if (!form) return;
+    const onPrefill = (e: Event) => {
+      const d = (e as CustomEvent<WebmcpPrefillDetail>).detail || {};
+      const k = toKind(d.kind);
+      if (k) setKind(k);
+      setFields((f) => ({
+        ...f,
+        ...(typeof d.name === 'string' ? { name: d.name } : {}),
+        ...(typeof d.email === 'string' ? { email: d.email } : {}),
+        ...(typeof d.what === 'string' ? { what: d.what } : {}),
+        ...(typeof d.when === 'string' ? { when: d.when } : {}),
+        ...(typeof d.audience === 'string' ? { audience: d.audience } : {}),
+        ...(typeof d.message === 'string' ? { message: d.message } : {}),
+      }));
+      setErrors({});
+      trackFormStarted('invite');
+    };
+    form.addEventListener(WEBMCP_PREFILL, onPrefill);
+    return () => form.removeEventListener(WEBMCP_PREFILL, onPrefill);
+  }, [status]);
 
   useEffect(() => {
     if (status === 'accepted' || status === 'failed') panelRef.current?.focus();
