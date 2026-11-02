@@ -18,7 +18,7 @@ import { speakingLine } from '../lib/sanity/v3';
 const d = await impactData();
 
 const stats: Stat[] = [
-  { value: d.stats.talksGiven, label: 'talks delivered', meta: 'from session records' },
+  { value: d.stats.sessionsDelivered, label: 'sessions', meta: 'talks, panels, podcasts and workshops' },
   ...(d.stats.podcasts > 0 ? [{ value: d.stats.podcasts, label: 'podcast appearances', meta: d.podcastPeriod }] : []),
   ...d.communityMetrics.map((m) => ({ value: m.value, label: m.label, meta: [d.community?.name, m.dateLabel].filter(Boolean).join(' · ') })),
 ];

@@ -39,7 +39,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## Facts`,
     ``,
-    `- Talks delivered: ${stats.talksGiven} (${COUNTING_RULE}; as of ${asOfLabel(stats)})`,
+    `- Sessions: ${stats.sessionsDelivered} (${COUNTING_RULE}; as of ${asOfLabel(stats)})`,
     `- Countries spoken in: ${stats.countries} · cities: ${stats.cities}`,
     ...(career.length ? career.map((c) => `- ${c.periodLabel ?? ''}${c.periodLabel ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.clients?.length ? ` (clients: ${c.clients.map((cl) => cl.name).join(', ')})` : ''}`) : []),
     ...awards.map((a) => `- Recognition: ${a}`),

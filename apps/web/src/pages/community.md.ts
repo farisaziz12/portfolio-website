@@ -31,7 +31,7 @@ export const GET: APIRoute = async () => {
             c.founded ? `- Founded: ${c.founded}` : '',
             c.city ? `- City: ${c.city}` : '',
             c.url ? `- Website: ${c.url}` : '',
-            stats.hosted > 0 ? `- Evenings hosted by Faris: ${stats.hosted} (as of ${monthYear(stats.asOf)}; not included in talks delivered)` : '',
+            stats.hosted > 0 ? `- Evenings hosted by Faris: ${stats.hosted} (as of ${monthYear(stats.asOf)}; not included in sessions)` : '',
           ].filter(Boolean),
           '',
           c.caseStudyHeadline ?? '',

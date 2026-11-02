@@ -1,5 +1,5 @@
 /**
- * Derived, role-specific counts. The headline number (`talksGiven`) and the
+ * Derived, role-specific counts. The headline number (`sessionsDelivered`) and the
  * countries/cities follow ONE rule, HEADLINE_BUCKETS in shared/content-model:
  * past, not-cancelled sessions where I spoke or ran a workshop. Hosting and
  * attending are counted apart and never inflate it. `upcoming` counts
@@ -15,7 +15,7 @@ import type { EventEdition, SpeakingStats } from './types';
 
 /** Pure: the counts for a list of events. Exported for tests and scripts. */
 export function countSpeaking(events: EventEdition[]) {
-  let talksGiven = 0;
+  let sessionsDelivered = 0;
   let conferenceTalks = 0;
   let workshopsDelivered = 0;
   let panels = 0;
@@ -29,7 +29,7 @@ export function countSpeaking(events: EventEdition[]) {
     for (const s of e.sessions) {
       if (s.status !== 'delivered') continue;
       if (HEADLINE_BUCKETS.includes(s.bucket)) {
-        talksGiven++;
+        sessionsDelivered++;
         countsForPlace = true;
       }
       if (TALK_DELIVERY_ROLES.includes(s.role)) conferenceTalks++;
@@ -45,7 +45,7 @@ export function countSpeaking(events: EventEdition[]) {
     }
   }
   return {
-    talksGiven,
+    sessionsDelivered,
     conferenceTalks,
     workshopsDelivered,
     panels,
@@ -71,7 +71,7 @@ export function getSpeakingStats(): Promise<SpeakingStats> {
     };
     if (!events.length) {
       return {
-        talksGiven: FALLBACK_SPEAKER_STATS.talksGiven,
+        sessionsDelivered: FALLBACK_SPEAKER_STATS.sessionsDelivered,
         conferenceTalks: 0,
         workshopsDelivered: 0,
         panels: 0,

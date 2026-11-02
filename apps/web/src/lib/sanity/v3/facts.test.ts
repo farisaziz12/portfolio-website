@@ -11,15 +11,16 @@ const facts = await import('./facts');
 const { checkStats } = await import('../../../../scripts/check-stats');
 
 const ctx = {
-  stats: { talksGiven: 61, countries: 19, cities: 27, asOf: '2026-11-02' },
+  stats: { sessionsDelivered: 61, countries: 19, cities: 27, asOf: '2026-11-02' },
   metrics: [{ _id: 'metric-sjg', value: '4,500', label: 'Swiss JavaScript Group members', dateLabel: 'Jul 2026' }],
 };
 
 test('facts: placeholders fill from stats and metric documents', () => {
   assert.equal(
-    facts.fillFacts('{talks} talks across {countries} countries, as of {asOf}.', ctx),
-    '61 talks across 19 countries, as of 2nd Nov 2026.'
+    facts.fillFacts('{sessions} sessions across {countries} countries, as of {asOf}.', ctx),
+    '61 sessions across 19 countries, as of 2nd Nov 2026.'
   );
+  assert.equal(facts.fillFacts('{talks}', ctx), '61', '{talks} stays as an alias');
   assert.equal(facts.fillFacts('{metric:metric-sjg}', ctx), '4,500 Swiss JavaScript Group members (Jul 2026)');
   assert.equal(facts.fillFacts('{metricValue:metric-sjg}', ctx), '4,500');
   // Unknown ids stay visible so check:stats can flag them.
@@ -36,7 +37,7 @@ test('facts: fillFactsDeep fills Portable Text spans and leaves _keys alone', ()
 });
 
 test('facts: the live inconsistencies are all detected as claims', () => {
-  const stats = { talksGiven: 61, countries: 19 };
+  const stats = { sessionsDelivered: 61, countries: 19 };
   const live = [
     '80+ talks across 21 countries', // homepage meta / OG / Twitter
     '92+ speaking engagements across 22 countries', // /about meta
@@ -44,9 +45,13 @@ test('facts: the live inconsistencies are all detected as claims', () => {
     'Talks delivered: 92',
     'Countries spoken in: 22',
     '**22** countries spoken in',
+    '92 sessions',
+    'Sessions: 92',
+    '92 sessions across 22 countries',
   ];
   for (const text of live) assert.ok(facts.divergentClaims(text, stats).length > 0, `missed: ${text}`);
   assert.deepEqual(facts.divergentClaims('61 talks delivered in 19 countries (as of 25th Oct 2026)', stats), []);
+  assert.deepEqual(facts.divergentClaims('61 sessions in 19 countries', stats), []);
   assert.deepEqual(facts.divergentClaims(facts.speakingLine(stats), stats), []);
 });
 
@@ -63,8 +68,8 @@ test('facts: other counts are not mistaken for the headline', () => {
 });
 
 test('facts: speakingLine pluralises', () => {
-  assert.equal(facts.speakingLine({ talksGiven: 1, countries: 1 }), '1 talk in 1 country');
-  assert.equal(facts.speakingLine({ talksGiven: 61, countries: 19 }), '61 talks in 19 countries');
+  assert.equal(facts.speakingLine({ sessionsDelivered: 1, countries: 1 }), '1 session in 1 country');
+  assert.equal(facts.speakingLine({ sessionsDelivered: 61, countries: 19 }), '61 sessions in 19 countries');
 });
 
 test('check:stats: llms.txt, the .md mirrors and CMS copy agree on the fixture dataset', async () => {
@@ -72,5 +77,5 @@ test('check:stats: llms.txt, the .md mirrors and CMS copy agree on the fixture d
   assert.deepEqual(report.errors, []);
   assert.equal(report.stats.fallback, false);
   const b = report.stats.breakdown;
-  assert.equal(report.stats.talksGiven, b.conferenceTalks + b.workshops + b.panels + b.guestSpots);
+  assert.equal(report.stats.sessionsDelivered, b.conferenceTalks + b.workshops + b.panels + b.guestSpots);
 });

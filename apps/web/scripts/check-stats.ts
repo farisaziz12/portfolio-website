@@ -1,5 +1,5 @@
 /**
- * check:stats: fails when the headline speaking stats ("N talks in M
+ * check:stats: fails when the headline speaking stats ("N sessions in M
  * countries") disagree anywhere a visitor or an agent can read them.
  *
  *   pnpm --filter web check:stats                 # live Sanity
@@ -10,8 +10,8 @@
  *   1. llms.txt and every .md mirror that llms-full.txt concatenates.
  *   2. CMS copy as the site renders it: site meta description (home meta / OG /
  *      Twitter), Home page, About page (story, In short, SEO), bios, community.
- *   3. Raw CMS copy: a count typed as a number ("80+ talks") instead of a
- *      {talks} / {countries} placeholder is an error, because it will drift.
+ *   3. Raw CMS copy: a count typed as a number ("80+ talks", "61 sessions") instead of a
+ *      {sessions} / {countries} placeholder is an error, because it will drift.
  *   4. Placeholders that did not resolve ({metric:typo}), and "based in Zurich"
  *      (Faris is based in Geneva; ZurichJS and Zurich venues are fine).
  *   5. With --dist: every prerendered .html / .txt / .md in the build output
@@ -23,7 +23,7 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface StatsReport {
-  stats: { talksGiven: number; countries: number; cities: number; asOf: string; breakdown: Record<string, number>; fallback: boolean };
+  stats: { sessionsDelivered: number; countries: number; cities: number; asOf: string; breakdown: Record<string, number>; fallback: boolean };
   errors: string[];
   warnings: string[];
 }
@@ -141,16 +141,16 @@ export async function checkStats({ dist }: { dist?: string } = {}): Promise<Stat
     }
   }
 
-  if (!stats.fallback && (FALLBACK_SPEAKER_STATS.talksGiven !== stats.talksGiven || FALLBACK_SPEAKER_STATS.countries !== stats.countries || FALLBACK_SPEAKER_STATS.cities !== stats.cities)) {
+  if (!stats.fallback && (FALLBACK_SPEAKER_STATS.sessionsDelivered !== stats.sessionsDelivered || FALLBACK_SPEAKER_STATS.countries !== stats.countries || FALLBACK_SPEAKER_STATS.cities !== stats.cities)) {
     warnings.push(
-      `lib/proof.ts fallback (${FALLBACK_SPEAKER_STATS.talksGiven} talks / ${FALLBACK_SPEAKER_STATS.countries} countries / ${FALLBACK_SPEAKER_STATS.cities} cities, ${FALLBACK_SPEAKER_STATS.asOf}) differs from live (${stats.talksGiven} / ${stats.countries} / ${stats.cities}, ${stats.asOf}). Only shown during a CMS outage; refresh it when this run used live data.`
+      `lib/proof.ts fallback (${FALLBACK_SPEAKER_STATS.sessionsDelivered} sessions / ${FALLBACK_SPEAKER_STATS.countries} countries / ${FALLBACK_SPEAKER_STATS.cities} cities, ${FALLBACK_SPEAKER_STATS.asOf}) differs from live (${stats.sessionsDelivered} / ${stats.countries} / ${stats.cities}, ${stats.asOf}). Only shown during a CMS outage; refresh it when this run used live data.`
     );
   }
   if (stats.fallback) warnings.push('No events loaded, so the counts are the lib/proof.ts fallback. Is Sanity reachable?');
 
   return {
     stats: {
-      talksGiven: stats.talksGiven,
+      sessionsDelivered: stats.sessionsDelivered,
       countries: stats.countries,
       cities: stats.cities,
       asOf: stats.asOf,
@@ -167,7 +167,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const i = process.argv.indexOf('--dist');
   const dist = i > -1 ? resolve(process.argv[i + 1] ?? 'dist') : undefined;
   const { stats, errors, warnings } = await checkStats({ dist });
-  console.log(`Computed: ${stats.talksGiven} talks in ${stats.countries} countries, ${stats.cities} cities, as of ${stats.asOf}${stats.fallback ? ' (FALLBACK)' : ''}`);
+  console.log(`Computed: ${stats.sessionsDelivered} sessions in ${stats.countries} countries, ${stats.cities} cities, as of ${stats.asOf}${stats.fallback ? ' (FALLBACK)' : ''}`);
   console.log(`Breakdown: ${Object.entries(stats.breakdown).map(([k, v]) => `${k} ${v}`).join(', ')}`);
   for (const w of warnings) console.warn(`warn  ${w}`);
   for (const e of errors) console.error(`error ${e}`);

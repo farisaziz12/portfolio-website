@@ -30,8 +30,8 @@ export const SESSION_ROLES = [
 export type SessionRole = (typeof SESSION_ROLES)[number]['value'];
 
 /**
- * The four public filter buckets on /events. "Talks delivered" counts only
- * the `spoke` bucket; hosting and attending never inflate it.
+ * The four public filter buckets on /events. The headline "sessions" count
+ * is `spoke` + `workshop` (HEADLINE_BUCKETS); hosting and attending never inflate it.
  */
 export type RoleBucket = 'spoke' | 'workshop' | 'hosted' | 'attended';
 
@@ -63,7 +63,7 @@ export const ROLE_BUCKETS: { value: RoleBucket; title: string; badge: string }[]
 export const TALK_DELIVERY_ROLES: SessionRole[] = ['speaker', 'keynote', 'lightning'];
 
 /**
- * THE counting rule for the headline "N talks in M countries" number shown
+ * THE counting rule for the headline "N sessions in M countries" number shown
  * everywhere (meta tags, OG cards, llms.txt, page copy): past, not-cancelled
  * sessions in these buckets. Countries and cities count in-person events with
  * at least one such session. Hosting and attending never count.

@@ -10,8 +10,8 @@
  * while this snapshot differs.
  */
 export const FALLBACK_SPEAKER_STATS = {
-  /** Snapshot of `talksGiven` (HEADLINE_BUCKETS: spoke + workshop). */
-  talksGiven: 44,
+  /** Snapshot of `sessionsDelivered` (HEADLINE_BUCKETS: spoke + workshop). */
+  sessionsDelivered: 44,
   countries: 22,
   cities: 31,
   /** When the snapshot was taken (shown as the "as of" date while in use). */

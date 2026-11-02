@@ -45,7 +45,7 @@ const bookableWorkshops = workshops.filter((w) => w.isBookable);
 const reply = /\btwo\b/i.test(profile.replyTime) ? '2 days' : profile.replyTime;
 
 const stats4 = [
-  { value: stats.talksGiven, label: 'talks delivered', meta: `from session records, ${monthYear(stats.asOf)}` },
+  { value: stats.sessionsDelivered, label: 'sessions', meta: `talks, panels, podcasts and workshops, ${monthYear(stats.asOf)}` },
   { value: stats.countries, label: 'countries', meta: 'in person, talks and workshops' },
   { value: bookableWorkshops.length || stats.catalogueWorkshops, label: 'workshops', meta: lengthRange(bookableWorkshops) || undefined },
   { value: reply, label: 'to reply to an invitation' },

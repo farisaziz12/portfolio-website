@@ -23,7 +23,7 @@ export const GET: APIRoute = async () => {
 
   const blurb = about.intro || profile.bios.short;
   const proof =
-    !stats.fallback && stats.talksGiven > 0
+    !stats.fallback && stats.sessionsDelivered > 0
       ? `${speakingLine(stats)}, as of ${asOfLabel(stats)}.`
       : null;
 

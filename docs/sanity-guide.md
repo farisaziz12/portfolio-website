@@ -38,7 +38,7 @@ happened there is a list of sessions with roles. **Attach recordings and slides 
 that one edit.
 
 **Counts are derived** (`lib/sanity/v3/stats.ts`, rule `HEADLINE_BUCKETS` in `packages/shared/src/content-model.ts`):
-the headline "N talks in M countries" = past, not-cancelled sessions in the **spoke** bucket (talk, keynote, lightning,
+the headline "N sessions in M countries" = past, not-cancelled sessions in the **spoke** bucket (talk, keynote, lightning,
 panel, podcast/livestream guest) or the **workshop** bucket. Countries and cities count in-person events with at least
 one such session. Hosting, judging and attending are counted separately and never inflate either number. Upcoming vs
 past is computed in the **event's own timezone**.
@@ -48,10 +48,13 @@ bios and community text, write placeholders and the loaders fill them (`lib/sani
 
 | Placeholder | Becomes |
 |---|---|
-| `{talks}` / `{countries}` / `{cities}` | the derived counts |
+| `{sessions}` / `{countries}` / `{cities}` | the derived counts (`{talks}` still works as an alias for `{sessions}`) |
 | `{asOf}` | the date they were computed ("2nd Nov 2026") |
-| `{metric:<metric _id>}` | a dated metric document: "4,500 Swiss JavaScript Group members (Jul 2026)" |
+| `{metric:<metric _id>}` | a dated metric document: "425 ZurichJS members (Nov 2026)" |
 | `{metricValue:<metric _id>}` | just its value |
+
+**Community numbers are two metrics, never merged:** ZurichJS members (its own count) and Swiss JavaScript
+Group members (across all the groups). Each `metric` names its group in the label and has an As-of date.
 
 `pnpm --filter web check:stats` fails when any surface disagrees (llms.txt, .md mirrors, meta tags, CMS copy; add
 `--dist .vercel/output/static` after a build to cover every prerendered page), when a count is typed into CMS copy,

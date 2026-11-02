@@ -20,7 +20,7 @@ const { stats, talks, upcoming, quotes, flagLimit = 16 } = Astro.props;
 const topics = new Set(talks.flatMap((t) => t.tags.map((x) => x.toLowerCase()))).size;
 const most = [...talks].sort((a, b) => b.deliveredCount - a.deliveredCount)[0];
 const numbers = [
-  { value: stats.talksGiven, label: `talks delivered · ${monthYear(stats.asOf)}` },
+  { value: stats.sessionsDelivered, label: `sessions · ${monthYear(stats.asOf)}` },
   { value: stats.countries, label: stats.cities ? `countries, ${stats.cities} cities` : 'countries' },
   { value: talks.length, label: `talks in the catalogue${topics ? ` · ${topics} topics` : ''}` },
   ...(most && most.deliveredCount > 1 ? [{ value: `${most.deliveredCount}×`, label: most.shortTitle || most.title }] : []),

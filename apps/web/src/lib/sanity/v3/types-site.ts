@@ -251,14 +251,14 @@ export interface SpeakingStats {
    * sessions in HEADLINE_BUCKETS (spoke + workshop). Talks, keynotes,
    * lightning talks, panels, podcast/livestream guest spots and workshops.
    */
-  talksGiven: number;
-  /** Breakdown of talksGiven. Speaker/keynote/lightning sessions only. */
+  sessionsDelivered: number;
+  /** Breakdown of sessionsDelivered. Speaker/keynote/lightning sessions only. */
   conferenceTalks: number;
   workshopsDelivered: number;
   panels: number;
   /** Podcast / livestream guest spots. */
   guestSpots: number;
-  /** Not part of talksGiven. */
+  /** Not part of sessionsDelivered. */
   hosted: number;
   attended: number;
   /** In-person countries with at least one headline session. */

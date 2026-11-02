@@ -48,8 +48,8 @@ test('stats: headline counts spoke + workshop sessions; hosting and attending ne
   assert.equal(s.fallback, false);
   const events = await v3.getAllEvents();
   const delivered = events.flatMap((e) => e.sessions).filter((x) => x.status === 'delivered');
-  assert.equal(s.talksGiven, delivered.filter((x) => x.bucket === 'spoke' || x.bucket === 'workshop').length);
-  assert.equal(s.talksGiven, s.conferenceTalks + s.workshopsDelivered + s.panels + s.guestSpots, 'breakdown adds up to the headline');
+  assert.equal(s.sessionsDelivered, delivered.filter((x) => x.bucket === 'spoke' || x.bucket === 'workshop').length);
+  assert.equal(s.sessionsDelivered, s.conferenceTalks + s.workshopsDelivered + s.panels + s.guestSpots, 'breakdown adds up to the headline');
   assert.ok(!s.countryList.includes('Netherlands'), 'JSNation was attend-only');
   assert.ok(!s.countryList.includes('France'), 'React Paris was host-only');
   assert.ok(s.countryList.includes('Switzerland'), 'a workshop counts for countries');

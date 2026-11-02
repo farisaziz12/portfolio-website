@@ -42,7 +42,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## Counts (as of ${asOfLabel(stats)}; hosting and attending not included)`,
     ``,
-    `- Talks delivered: ${stats.talksGiven} (${COUNTING_RULE})`,
+    `- Sessions: ${stats.sessionsDelivered} (${COUNTING_RULE})`,
     `- Of which: ${stats.conferenceTalks} conference talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.guestSpots} podcast or livestream guest spot${stats.guestSpots === 1 ? '' : 's'}`,
     `- Countries: ${stats.countries} (in person, talks and workshops), cities: ${stats.cities}`,
     `- Workshops in the catalogue: ${bookable.length}${lengthRange(bookable) ? ` (${lengthRange(bookable)})` : ''}; workshop sessions delivered: ${stats.workshopsDelivered}`,

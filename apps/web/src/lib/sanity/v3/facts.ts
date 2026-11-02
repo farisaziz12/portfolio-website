@@ -4,7 +4,7 @@
  * dated numbers instead of hardcoding them.
  *
  * Placeholders (in any Sanity text the loaders run through `fillFacts`):
- *   {talks}        → stats.talksGiven            ("61")
+ *   {sessions}     → stats.sessionsDelivered     ("61"; {talks} is an alias)
  *   {countries}    → stats.countries             ("19")
  *   {cities}       → stats.cities
  *   {asOf}         → fullDate(stats.asOf)        ("2nd Nov 2026")
@@ -16,7 +16,7 @@
 import { fullDate } from './dates';
 import type { Metric, SpeakingStats } from './types';
 
-export type FactStats = Pick<SpeakingStats, 'talksGiven' | 'countries' | 'cities' | 'asOf'>;
+export type FactStats = Pick<SpeakingStats, 'sessionsDelivered' | 'countries' | 'cities' | 'asOf'>;
 
 export interface FactContext {
   stats: FactStats;
@@ -30,9 +30,9 @@ export const COUNTING_RULE =
 /** "2nd Nov 2026": the "as of" label for the derived counts. */
 export const asOfLabel = (stats: Pick<SpeakingStats, 'asOf'>) => fullDate(stats.asOf);
 
-/** "61 talks in 19 countries". The one phrasing of the headline number. */
-export function speakingLine(stats: Pick<SpeakingStats, 'talksGiven' | 'countries'>): string {
-  return `${stats.talksGiven} ${stats.talksGiven === 1 ? 'talk' : 'talks'} in ${stats.countries} ${stats.countries === 1 ? 'country' : 'countries'}`;
+/** "61 sessions in 19 countries". The one phrasing of the headline number. */
+export function speakingLine(stats: Pick<SpeakingStats, 'sessionsDelivered' | 'countries'>): string {
+  return `${stats.sessionsDelivered} ${stats.sessionsDelivered === 1 ? 'session' : 'sessions'} in ${stats.countries} ${stats.countries === 1 ? 'country' : 'countries'}`;
 }
 
 /** A metric as one self-describing phrase: value, name, and when it was true. */
@@ -40,7 +40,7 @@ export function metricPhrase(m: Pick<Metric, 'value' | 'label' | 'dateLabel'>): 
   return `${m.value} ${m.label}${m.dateLabel ? ` (${m.dateLabel})` : ''}`;
 }
 
-const TOKEN = /\{(talks|countries|cities|asOf|metric|metricValue)(?::([\w.-]+))?\}/g;
+const TOKEN = /\{(sessions|talks|countries|cities|asOf|metric|metricValue)(?::([\w.-]+))?\}/g;
 
 /**
  * Replace placeholders with live values. An unknown metric id is left as-is
@@ -50,7 +50,8 @@ export function fillFacts<T extends string | undefined>(text: T, ctx: FactContex
   if (!text || !text.includes('{')) return text;
   return text.replace(TOKEN, (whole, key: string, id?: string) => {
     switch (key) {
-      case 'talks': return String(ctx.stats.talksGiven);
+      case 'sessions':
+      case 'talks': return String(ctx.stats.sessionsDelivered);
       case 'countries': return String(ctx.stats.countries);
       case 'cities': return String(ctx.stats.cities);
       case 'asOf': return asOfLabel(ctx.stats);
@@ -74,7 +75,7 @@ export function fillFactsDeep<T>(value: T, ctx: FactContext): T {
 }
 
 export interface StatClaim {
-  kind: 'talks' | 'countries';
+  kind: 'sessions' | 'countries';
   value: number;
   /** The matched text, for error messages. */
   match: string;
@@ -82,19 +83,23 @@ export interface StatClaim {
 
 const NUM = String.raw`(\d[\d,]*)(\+)?`;
 const CLAIM_PATTERNS: { kind: StatClaim['kind']; re: RegExp }[] = [
-  // Headline phrasings only, so "5 talks you can book" (catalogue size) is not a claim:
-  // "61 talks delivered", "92 talks given", "80+ talks across", "61 talks in 19 countries",
-  // "92+ speaking engagements"
-  { kind: 'talks', re: new RegExp(String.raw`\b${NUM}\s+(?:talks?\s+(?:delivered|given|across|in\s+(?=\d))|(?:speaking\s+)?engagements\b|talk sessions\b)`, 'gi') },
+  // "61 sessions", "61 sessions in 19 countries"
+  { kind: 'sessions', re: new RegExp(String.raw`\b${NUM}\s+(?:speaking\s+|talk\s+)?sessions\b`, 'gi') },
+  // "Sessions: 61"
+  { kind: 'sessions', re: new RegExp(String.raw`\bsessions\s*:\s*${NUM}`, 'gi') },
+  // Older "talks" wording still in CMS copy. Headline phrasings only, so "5 talks you can
+  // book" (catalogue size) is not a claim: "61 talks delivered", "92 talks given",
+  // "80+ talks across", "61 talks in 19 countries", "92+ speaking engagements"
+  { kind: 'sessions', re: new RegExp(String.raw`\b${NUM}\s+(?:talks?\s+(?:delivered|given|across|in\s+(?=\d))|(?:speaking\s+)?engagements\b)`, 'gi') },
   // "Talks delivered: 61": labels with the number after
-  { kind: 'talks', re: new RegExp(String.raw`\btalks (?:delivered|given)\s*:\s*${NUM}`, 'gi') },
+  { kind: 'sessions', re: new RegExp(String.raw`\btalks (?:delivered|given)\s*:\s*${NUM}`, 'gi') },
   // "19 countries"
   { kind: 'countries', re: new RegExp(String.raw`\b${NUM}\s+countries\b`, 'gi') },
   // "Countries: 19", "Countries spoken in: 19"
   { kind: 'countries', re: new RegExp(String.raw`\bcountries(?: spoken in)?\s*:\s*${NUM}`, 'gi') },
 ];
 
-/** Every headline-stat claim in a piece of text ("80+ talks", "21 countries"). */
+/** Every headline-stat claim in a piece of text ("61 sessions", "80+ talks across", "21 countries"). */
 export function findStatClaims(text: string): StatClaim[] {
   const plain = text.replace(/\*\*/g, '');
   const out: StatClaim[] = [];
@@ -108,8 +113,8 @@ export function findStatClaims(text: string): StatClaim[] {
 }
 
 /** Claims that disagree with the computed stats. */
-export function divergentClaims(text: string, stats: Pick<SpeakingStats, 'talksGiven' | 'countries'>): StatClaim[] {
-  return findStatClaims(text).filter((c) => c.value !== (c.kind === 'talks' ? stats.talksGiven : stats.countries));
+export function divergentClaims(text: string, stats: Pick<SpeakingStats, 'sessionsDelivered' | 'countries'>): StatClaim[] {
+  return findStatClaims(text).filter((c) => c.value !== (c.kind === 'sessions' ? stats.sessionsDelivered : stats.countries));
 }
 
 /** Placeholders that survived filling (typo, unknown metric id, unfilled field). */

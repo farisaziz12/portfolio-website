@@ -51,7 +51,7 @@ export interface OgCard {
   meta?: string;
   /** Mark on the yellow band: a short numeral ("44", "22") or defaults to "F.". */
   mark?: string;
-  /** Small label under the mark ("talks delivered"). */
+  /** Small label under the mark ("sessions"). */
   markLabel?: string;
   /** Bottom-left identity line, defaults to the "Now" line. */
   byline?: string;
