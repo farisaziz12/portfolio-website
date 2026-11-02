@@ -14,13 +14,14 @@ import InvitePanel from '../components/v3/InvitePanel.astro';
 import PillarCards from '../components/speaking/PillarCards.astro';
 import WorkshopsFormats from '../components/speaking/WorkshopsFormats.astro';
 import {
-  currentMonthYear,
   getAllPraise,
   getCatalogueTalks,
   getProfile,
   getSpeakingStats,
   getUpcomingEngagements,
   getWorkshops,
+  monthYear,
+  speakingLine,
 } from '../lib/sanity/v3';
 import { bookingYears } from '../lib/availability';
 import { lengthRange } from '../lib/workshops-view';
@@ -44,8 +45,8 @@ const bookableWorkshops = workshops.filter((w) => w.isBookable);
 const reply = /\btwo\b/i.test(profile.replyTime) ? '2 days' : profile.replyTime;
 
 const stats4 = [
-  { value: stats.talksDelivered, label: 'talks delivered', meta: `from session records, ${currentMonthYear()}` },
-  { value: stats.countries, label: 'countries', meta: 'speaking and hosting' },
+  { value: stats.talksGiven, label: 'talks delivered', meta: `from session records, ${monthYear(stats.asOf)}` },
+  { value: stats.countries, label: 'countries', meta: 'in person, talks and workshops' },
   { value: bookableWorkshops.length || stats.catalogueWorkshops, label: 'workshops', meta: lengthRange(bookableWorkshops) || undefined },
   { value: reply, label: 'to reply to an invitation' },
 ];
@@ -57,7 +58,7 @@ const quotes = [onTalk, onStage, ...praise.filter((p) => p.topic === 'stage' || 
   .filter((p, i, a): p is NonNullable<typeof p> => Boolean(p) && a.indexOf(p) === i)
   .slice(0, 2);
 
-const description = `Talks and workshops on production engineering, payments at scale and leadership. ${stats.talksDelivered} talks delivered in ${stats.countries} countries.`;
+const description = `Talks and workshops on production engineering, payments at scale and leadership. ${speakingLine(stats)}.`;
 ---
 
 <BaseLayout

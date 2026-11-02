@@ -7,7 +7,9 @@ import type { AvailabilityStatus, ServiceType } from 'shared';
 import { yearOf } from './dates';
 import { DEFAULT_ABOUT } from './defaults';
 import { getAllEvents } from './events';
+import { fillFacts, fillFactsDeep } from './facts';
 import { load, memo, IMAGE } from './fetch';
+import { getFactContext } from './site';
 import type { AvailabilityMonth, CareerEntry, LabelledText, SanityImage, ServiceOffer } from './types';
 
 const nonEmpty = <T>(v: T[] | null | undefined, fallback: T[]): T[] => (v && v.length ? v : fallback);
@@ -122,16 +124,20 @@ export interface AboutPage {
 
 export function getAboutPage(): Promise<AboutPage> {
   return memo('site:about', async () => {
-    const p = await load<(Partial<AboutPage> & { subtitle?: string; legacyBio?: string }) | null>(aboutPageQuery, null);
+    const [p, facts] = await Promise.all([
+      load<(Partial<AboutPage> & { subtitle?: string; legacyBio?: string }) | null>(aboutPageQuery, null),
+      getFactContext(),
+    ]);
     const d = DEFAULT_ABOUT;
+    // Story, "In short" facts and SEO may quote {talks} / {countries} / {metric:<id>} (facts.ts).
     return {
-      kicker: str(p?.kicker, d.kicker),
-      title: str(p?.title, d.title),
-      intro: str(p?.subtitle, d.intro),
-      content: p?.content ?? [],
+      kicker: fillFacts(str(p?.kicker, d.kicker), facts),
+      title: fillFacts(str(p?.title, d.title), facts),
+      intro: fillFacts(str(p?.subtitle, d.intro), facts),
+      content: fillFactsDeep(p?.content ?? [], facts),
       heroImage: p?.heroImage,
-      inShort: nonEmpty(p?.inShort?.filter((i) => i.label && i.body), d.inShort),
-      seo: p?.seo,
+      inShort: fillFactsDeep(nonEmpty(p?.inShort?.filter((i) => i.label && i.body), d.inShort), facts),
+      seo: p?.seo && fillFactsDeep(p.seo, facts),
     };
   });
 }

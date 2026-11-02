@@ -39,7 +39,7 @@ export const GET: APIRoute = async () => {
   const latest = writing.slice(0, 4);
 
   const statLine = [
-    `${stats.talksDelivered} talks delivered`,
+    `${stats.talksGiven} talks delivered`,
     stats.workshopsDelivered ? `${stats.workshopsDelivered} workshops delivered` : null,
     stats.hosted ? `${stats.hosted} events hosted (not included in talks)` : null,
     `${stats.countries} countries`,

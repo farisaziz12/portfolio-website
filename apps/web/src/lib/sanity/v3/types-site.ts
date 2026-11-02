@@ -246,13 +246,22 @@ export interface CareerEntry {
 }
 
 export interface SpeakingStats {
-  /** Delivered talk sessions (speaker/keynote/lightning), past, not cancelled. */
-  talksDelivered: number;
+  /**
+   * THE headline count ("N talks in M countries"): past, not-cancelled
+   * sessions in HEADLINE_BUCKETS (spoke + workshop). Talks, keynotes,
+   * lightning talks, panels, podcast/livestream guest spots and workshops.
+   */
+  talksGiven: number;
+  /** Breakdown of talksGiven. Speaker/keynote/lightning sessions only. */
+  conferenceTalks: number;
   workshopsDelivered: number;
   panels: number;
+  /** Podcast / livestream guest spots. */
+  guestSpots: number;
+  /** Not part of talksGiven. */
   hosted: number;
   attended: number;
-  /** Countries where I spoke, ran a workshop or hosted (attending excluded). */
+  /** In-person countries with at least one headline session. */
   countries: number;
   cities: number;
   countryList: string[];

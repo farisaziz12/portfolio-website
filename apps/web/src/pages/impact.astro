@@ -13,11 +13,12 @@ import CareerTimeline from '../components/impact/CareerTimeline.astro';
 import RecognitionStages from '../components/impact/RecognitionStages.astro';
 import { impactData } from '../lib/impact';
 import { breadcrumbs } from '../lib/seo';
+import { speakingLine } from '../lib/sanity/v3';
 
 const d = await impactData();
 
 const stats: Stat[] = [
-  { value: d.stats.talksDelivered, label: 'talks delivered', meta: 'from session records' },
+  { value: d.stats.talksGiven, label: 'talks delivered', meta: 'from session records' },
   ...(d.stats.podcasts > 0 ? [{ value: d.stats.podcasts, label: 'podcast appearances', meta: d.podcastPeriod }] : []),
   ...d.communityMetrics.map((m) => ({ value: m.value, label: m.label, meta: [d.community?.name, m.dateLabel].filter(Boolean).join(' · ') })),
 ];
@@ -25,7 +26,7 @@ const stats: Stat[] = [
 
 <BaseLayout
   title="Track record | Faris Aziz"
-  description={`Dated, defined numbers: ${d.stats.talksDelivered} talks delivered in ${d.stats.countries} countries, engineering wins, the career timeline and recognition.`.slice(0, 160)}
+  description={`Dated, defined numbers: ${speakingLine(d.stats)}, engineering wins, the career timeline and recognition.`.slice(0, 160)}
   image="/og/impact.png"
   markdownAlternate="/impact.md"
   band={false}

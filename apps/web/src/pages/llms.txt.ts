@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { roleLabel } from '../lib/events-view';
-import { getCatalogueTalks, getPrimaryCommunity, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace } from '../lib/sanity/v3';
+import { getCatalogueTalks, getPrimaryCommunity, getProfile, getSiteSettings, getSpeakingStats, getUpcomingEvents, getWorkshops, fullDate, eventPlace, asOfLabel, speakingLine } from '../lib/sanity/v3';
 
 // llms.txt per https://llmstxt.org: a markdown index for LLMs and agents.
 // Links point at the .md mirrors, which carry the same Sanity content as the
@@ -21,7 +21,7 @@ export const GET: APIRoute = async () => {
 
   const summary = stats.fallback
     ? profile.bios.short
-    : `${profile.bios.short} ${stats.talksDelivered} talks delivered in ${stats.countries} countries (as of ${fullDate(stats.asOf)}).`;
+    : `${profile.bios.short} ${speakingLine(stats)} (as of ${asOfLabel(stats)}).`;
 
   const body = `# ${profile.name}
 

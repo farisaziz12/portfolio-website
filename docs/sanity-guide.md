@@ -37,9 +37,25 @@ happened there is a list of sessions with roles. **Attach recordings and slides 
 ("Where it's been delivered" + the Watch button), the event page (resources) and the home poster all update from
 that one edit.
 
-**Counts are derived** (`lib/sanity/v3/stats.ts`): "talks delivered" = past, not-cancelled sessions with role
-speaker/keynote/lightning. Hosting, judging and attending are counted separately and never inflate it. Countries
-count where Faris spoke, ran a workshop or hosted. Upcoming vs past is computed in the **event's own timezone**.
+**Counts are derived** (`lib/sanity/v3/stats.ts`, rule `HEADLINE_BUCKETS` in `packages/shared/src/content-model.ts`):
+the headline "N talks in M countries" = past, not-cancelled sessions in the **spoke** bucket (talk, keynote, lightning,
+panel, podcast/livestream guest) or the **workshop** bucket. Countries and cities count in-person events with at least
+one such session. Hosting, judging and attending are counted separately and never inflate either number. Upcoming vs
+past is computed in the **event's own timezone**.
+
+**Quoting a count in copy.** Never type one. In the site meta description, Home, About (story, In short, SEO),
+bios and community text, write placeholders and the loaders fill them (`lib/sanity/v3/facts.ts`):
+
+| Placeholder | Becomes |
+|---|---|
+| `{talks}` / `{countries}` / `{cities}` | the derived counts |
+| `{asOf}` | the date they were computed ("2nd Nov 2026") |
+| `{metric:<metric _id>}` | a dated metric document: "4,500 Swiss JavaScript Group members (Jul 2026)" |
+| `{metricValue:<metric _id>}` | just its value |
+
+`pnpm --filter web check:stats` fails when any surface disagrees (llms.txt, .md mirrors, meta tags, CMS copy; add
+`--dist .vercel/output/static` after a build to cover every prerendered page), when a count is typed into CMS copy,
+or when CMS copy says Faris is based in Zurich (he's in Geneva).
 
 Shared vocabulary (roles, topics, platforms, statuses) lives in `packages/shared/src/content-model.ts` and is used
 by both the Studio option lists and the site.

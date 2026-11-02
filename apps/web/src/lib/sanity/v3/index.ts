@@ -15,6 +15,7 @@ export * from './praise';
 export * from './site';
 export * from './pages';
 export * from './stats';
+export * from './facts';
 export { DEFAULT_NOW_LINE, DEFAULT_SERVICES_INTRO } from './defaults';
 export * from './home';
 export * from './image';

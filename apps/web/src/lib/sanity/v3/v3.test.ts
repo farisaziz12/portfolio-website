@@ -43,14 +43,16 @@ test('talks: delivery history rolls up sessions; recording prefers the featured 
   assert.ok(!catalogue.some((t) => t.slug === 'nextjs-at-the-edge'), 'retired talks are not in the catalogue');
 });
 
-test('stats: talks delivered excludes hosting, attending and panels; countries exclude attend-only', async () => {
+test('stats: headline counts spoke + workshop sessions; hosting and attending never count', async () => {
   const s = await v3.getSpeakingStats();
   assert.equal(s.fallback, false);
   const events = await v3.getAllEvents();
-  const expected = events.flatMap((e) => e.sessions).filter((x) => x.status === 'delivered' && ['speaker', 'keynote', 'lightning'].includes(x.role)).length;
-  assert.equal(s.talksDelivered, expected);
+  const delivered = events.flatMap((e) => e.sessions).filter((x) => x.status === 'delivered');
+  assert.equal(s.talksGiven, delivered.filter((x) => x.bucket === 'spoke' || x.bucket === 'workshop').length);
+  assert.equal(s.talksGiven, s.conferenceTalks + s.workshopsDelivered + s.panels + s.guestSpots, 'breakdown adds up to the headline');
   assert.ok(!s.countryList.includes('Netherlands'), 'JSNation was attend-only');
-  assert.ok(s.countryList.includes('France'), 'hosting counts for countries');
+  assert.ok(!s.countryList.includes('France'), 'React Paris was host-only');
+  assert.ok(s.countryList.includes('Switzerland'), 'a workshop counts for countries');
 });
 
 test('praise: legacy socialPost/testimonial map into praise with platform + topic', async () => {

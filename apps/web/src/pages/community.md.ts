@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getPrimaryCommunity, getMetricsByDomain, getWriting, getSpeakingStats, getHomePage, getCommunityPraise, shortQuote, praiseAttribution, fullDate, currentMonthYear } from '../lib/sanity/v3';
+import { getPrimaryCommunity, getMetricsByDomain, getWriting, getSpeakingStats, getHomePage, getCommunityPraise, shortQuote, praiseAttribution, fullDate, monthYear } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
 
@@ -31,7 +31,7 @@ export const GET: APIRoute = async () => {
             c.founded ? `- Founded: ${c.founded}` : '',
             c.city ? `- City: ${c.city}` : '',
             c.url ? `- Website: ${c.url}` : '',
-            stats.hosted > 0 ? `- Evenings hosted by Faris: ${stats.hosted} (as of ${currentMonthYear()}; not included in talks delivered)` : '',
+            stats.hosted > 0 ? `- Evenings hosted by Faris: ${stats.hosted} (as of ${monthYear(stats.asOf)}; not included in talks delivered)` : '',
           ].filter(Boolean),
           '',
           c.caseStudyHeadline ?? '',

@@ -56,8 +56,19 @@ export const ROLE_BUCKETS: { value: RoleBucket; title: string; badge: string }[]
   { value: 'attended', title: 'Attended', badge: 'Attended' },
 ];
 
-/** Roles that count as a delivered talk (the "44 talks delivered" number). */
+/**
+ * Roles that are a stage talk (speaker / keynote / lightning). Used for a
+ * talk's delivery history and the "conference talks" line in breakdowns.
+ */
 export const TALK_DELIVERY_ROLES: SessionRole[] = ['speaker', 'keynote', 'lightning'];
+
+/**
+ * THE counting rule for the headline "N talks in M countries" number shown
+ * everywhere (meta tags, OG cards, llms.txt, page copy): past, not-cancelled
+ * sessions in these buckets. Countries and cities count in-person events with
+ * at least one such session. Hosting and attending never count.
+ */
+export const HEADLINE_BUCKETS: RoleBucket[] = ['spoke', 'workshop'];
 
 export const SESSION_STATUSES = [
   { value: 'confirmed', title: 'Confirmed' },

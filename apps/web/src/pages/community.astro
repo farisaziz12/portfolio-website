@@ -11,7 +11,7 @@ import PraiseCard from '../components/v3/PraiseCard.astro';
 import InvitePanel from '../components/v3/InvitePanel.astro';
 import CommunityPillars from '../components/community/CommunityPillars.astro';
 import CaseStudy from '../components/community/CaseStudy.astro';
-import { getPrimaryCommunity, getProfile, getCommunityPraise, getWriting, getSpeakingStats, getHomePage, getMetricsByDomain, getPhotos, currentMonthYear, type SanityImage } from '../lib/sanity/v3';
+import { getPrimaryCommunity, getProfile, getCommunityPraise, getWriting, getSpeakingStats, getHomePage, getMetricsByDomain, getPhotos, monthYear, type SanityImage } from '../lib/sanity/v3';
 import { breadcrumbs, SITE } from '../lib/seo';
 
 const home = await getHomePage();
@@ -43,7 +43,7 @@ const poster = community?.aftermovie?.poster?.asset ? community.aftermovie.poste
 const storyPost = writing.find((w) => w.isInternal && (/why-its-called-/.test(w.href) || /why it.?s called/i.test(w.title)));
 const story = storyPost ? { label: storyPost.title, href: storyPost.href } : { label: 'Community articles & podcasts', href: '/blog?topic=community' };
 const buildHref = community?.platformProject?.slug ? `/projects/${community.platformProject.slug}` : undefined;
-const hostLine = stats.hosted > 0 ? `${stats.hosted} ${stats.hosted === 1 ? 'evening' : 'evenings'} hosted, as of ${currentMonthYear()}` : undefined;
+const hostLine = stats.hosted > 0 ? `${stats.hosted} ${stats.hosted === 1 ? 'evening' : 'evenings'} hosted, as of ${monthYear(stats.asOf)}` : undefined;
 
 
 const description = `How Faris Aziz hosts meetups, teaches at them and builds the systems behind them, with ${name} as the case study: dated metrics and the conference platform.`.slice(0, 160);

@@ -29,6 +29,7 @@ pnpm --filter web lint:conventions
 pnpm --filter web typecheck     # astro check
 pnpm test         # loader contract tests + migration tests
 pnpm voice:cms    # AI-tell report for Sanity content (SANITY_FIXTURES=1 offline, --json for agents)
+pnpm --filter web check:stats   # talks/countries agree everywhere (live Sanity; --dist .vercel/output/static after a build)
 ```
 
 The site must still render without Sanity/Resend/PostHog credentials (empty states / hardcoded proof fallbacks). Missing env is not a crash.
@@ -56,7 +57,7 @@ Nested `AGENTS.md` files in `apps/web` and `apps/studio` apply when you work in 
 4. **No emojis in the UI** (country flags excepted). Decorative emoji counts are ratcheted — they can only shrink.
 5. **File-size ratchet.** New files stay under the cap in `apps/web/scripts/conventions.mjs`. Existing giants cannot grow; split instead of raising a baseline. Explicit `any` and missing `.md` mirrors are ratcheted the same way.
 6. **Sanity fetches are failure-tolerant.** Pages read through `lib/sanity/v3` loaders (they never throw). Any direct `sanityFetch(...)` must `.catch(...)`. A CMS outage must never 500 a page.
-7. **Numbers come from data**, not copy: derived counts (`getSpeakingStats()`, role-specific), dated metrics (`metric`, approved only).
+7. **Numbers come from data**, not copy: derived counts (`getSpeakingStats()`, rule `HEADLINE_BUCKETS`), phrased with `speakingLine()` (`lib/sanity/v3/facts.ts`); dated metrics (`metric`, approved only). CMS copy quotes them as `{talks}` / `{countries}` / `{metric:<id>}`, never typed numbers. `pnpm --filter web check:stats` fails on divergence.
 8. **Talk ≠ event.** A talk is bookable and timeless. An event is a dated edition; what Faris did there is `sessions[]` with an explicit role. Recordings/slides go on the session.
 9. **Agent surface stays in sync.** New/renamed public pages need a `.md` mirror, an `llms.txt.ts` entry, and an OG card in `pages/og/[...slug].png.ts`.
 10. **Do not reimplement** theme, scroll-reveal, `data-track` analytics, or cal.com modal — they live in `BaseLayout.astro`.

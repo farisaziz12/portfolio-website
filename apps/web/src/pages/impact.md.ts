@@ -3,7 +3,7 @@ import { mdResponse } from '../lib/markdown';
 import { impactData } from '../lib/impact';
 import { SITE } from '../lib/seo';
 import { METRIC_AREAS } from 'shared';
-import { fullDate, monthYear, type Metric } from '../lib/sanity/v3';
+import { fullDate, monthYear, COUNTING_RULE, type Metric } from '../lib/sanity/v3';
 
 function metricLine(m: Metric): string {
   const when = m.dateLabel || m.company ? ` (${[m.company, m.dateLabel].filter(Boolean).join(', ')})` : '';
@@ -32,11 +32,10 @@ export const GET: APIRoute = async () => {
     ``,
     `## Speaking (derived from event session records, ${d.asOf})`,
     ``,
-    `- **${s.talksDelivered}** talks delivered: past, not-cancelled sessions where Faris was speaker, keynote or lightning speaker.`,
-    `- **${s.workshopsDelivered}** workshops delivered.`,
-    s.panels ? `- **${s.panels}** panel${s.panels === 1 ? '' : 's'}.` : '',
+    `- **${s.talksGiven}** talks delivered: ${COUNTING_RULE}.`,
+    `  - of which ${s.conferenceTalks} conference talks, ${s.workshopsDelivered} workshops, ${s.panels} panel${s.panels === 1 ? '' : 's'}, ${s.guestSpots} podcast or livestream guest spot${s.guestSpots === 1 ? '' : 's'}.`,
     s.hosted ? `- **${s.hosted}** sessions hosted or MC'd (counted apart from talks).` : '',
-    `- **${s.countries}** countries spoken in, **${s.cities}** cities: where he spoke, ran a workshop or hosted, in person; attending excluded.${s.countryList.length ? ` Countries: ${s.countryList.join(', ')}.` : ''}`,
+    `- **${s.countries}** countries spoken in, **${s.cities}** cities: in person, where he spoke or ran a workshop; hosting and attending excluded.${s.countryList.length ? ` Countries: ${s.countryList.join(', ')}.` : ''}`,
     `- **${s.podcasts}** podcast appearances${d.podcastPeriod ? ` (${d.podcastPeriod})` : ''}: podcast episodes in the writing and media list.${d.podcastSources.length ? ` Shows: ${d.podcastSources.join(', ')}.` : ''}`,
     ``,
     d.communityMetrics.length ? `## Community${d.community ? ` (${d.community.name})` : ''}\n\n${d.communityMetrics.map(metricLine).join('\n')}\n` : '',

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getCatalogueTalks, getProfile, getSpeakingStats, numberWord } from '../lib/sanity/v3';
+import { getCatalogueTalks, getProfile, getSpeakingStats, numberWord, asOfLabel, speakingLine } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
 import { byPopularity, deliveredLine, inviteHref, isNewTalk, lengthLabel, newTalkLine, nextLine, pillarTitle } from '../lib/talks';
@@ -31,7 +31,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# ${talks.length ? `${numberWord(talks.length)} talks you can book.` : 'Talk catalogue'}`,
     ``,
-    `> Conference talks by Faris Aziz: short premise, audience, length and a recording where one exists. Every talk adapts to your slot and audience. ${stats.talksDelivered} talks delivered in ${stats.countries} countries (${stats.cities} cities) as of ${stats.asOf}. Book: ${SITE}/invite`,
+    `> Conference talks by Faris Aziz: short premise, audience, length and a recording where one exists. Every talk adapts to your slot and audience. ${speakingLine(stats)} (${stats.cities} cities) as of ${asOfLabel(stats)}. Book: ${SITE}/invite`,
     ``,
     ...entries.flatMap((e) => [e, '']),
     `Need something built for your theme? Tell me what you'd like your audience to leave with and I'll propose a talk within ${profile.replyTime}: ${SITE}/invite`,

@@ -39,7 +39,7 @@ export default defineType({
       title: 'Meta Description',
       type: 'text',
       rows: 3,
-      description: 'Primary meta description for the site',
+      description: 'Home meta / OG / Twitter description. Never type a speaking count: write {talks} and {countries} (filled from event records), {metric:<metric id>} for a dated metric.',
       validation: (Rule) => Rule.max(160).warning('Descriptions over 160 characters may be truncated'),
     }),
     defineField({

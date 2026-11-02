@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { mdResponse, portableTextToMarkdown } from '../lib/markdown';
-import { getAboutPage, getCareer, getCommunities, getProfile, getSpeakingStats, currentMonthYear } from '../lib/sanity/v3';
+import { getAboutPage, getCareer, getCommunities, getProfile, getSpeakingStats, asOfLabel, COUNTING_RULE } from '../lib/sanity/v3';
 import { SITE } from '../lib/seo';
 
 export const GET: APIRoute = async () => {
@@ -39,7 +39,7 @@ export const GET: APIRoute = async () => {
     ``,
     `## Facts`,
     ``,
-    `- Talks delivered: ${stats.talksDelivered} (delivered talk sessions from event records; hosting and attending excluded; as of ${currentMonthYear()})`,
+    `- Talks delivered: ${stats.talksGiven} (${COUNTING_RULE}; as of ${asOfLabel(stats)})`,
     `- Countries spoken in: ${stats.countries} · cities: ${stats.cities}`,
     ...(career.length ? career.map((c) => `- ${c.periodLabel ?? ''}${c.periodLabel ? ': ' : ''}${[c.role, c.name].filter(Boolean).join(', ')}${c.clients?.length ? ` (clients: ${c.clients.map((cl) => cl.name).join(', ')})` : ''}`) : []),
     ...awards.map((a) => `- Recognition: ${a}`),
