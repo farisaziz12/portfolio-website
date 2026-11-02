@@ -297,9 +297,9 @@ async function migrate() {
       _type: 'speakerProfile',
       tagline: 'Engaging talks on React, payments, and engineering excellence',
       bioShort:
-        'Faris Aziz is a Staff Software Engineer and conference speaker specializing in React, Next.js, and payment systems. Based in Zurich, Switzerland.',
+        'Faris Aziz is a Staff Software Engineer and conference speaker specializing in React, Next.js, and payment systems. Based in Geneva, Switzerland.',
       bioMedium:
-        'Faris Aziz is a Staff Software Engineer and international conference speaker based in Zurich, Switzerland. With expertise in React, Next.js, and payment systems, he brings real-world fintech experience to the stage. As the founder of ZurichJS, he is passionate about building developer communities and sharing knowledge through engaging talks and hands-on workshops.',
+        'Faris Aziz is a Staff Software Engineer and international conference speaker based in Geneva, Switzerland. With expertise in React, Next.js, and payment systems, he brings real-world fintech experience to the stage. As the founder of ZurichJS, he is passionate about building developer communities and sharing knowledge through engaging talks and hands-on workshops.',
       topicClusters: [
         {
           _key: 'react',

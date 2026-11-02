@@ -43,14 +43,16 @@ test('talks: delivery history rolls up sessions; recording prefers the featured 
   assert.ok(!catalogue.some((t) => t.slug === 'nextjs-at-the-edge'), 'retired talks are not in the catalogue');
 });
 
-test('stats: talks delivered excludes hosting, attending and panels; countries exclude attend-only', async () => {
+test('stats: headline counts spoke + workshop sessions; hosting and attending never count', async () => {
   const s = await v3.getSpeakingStats();
   assert.equal(s.fallback, false);
   const events = await v3.getAllEvents();
-  const expected = events.flatMap((e) => e.sessions).filter((x) => x.status === 'delivered' && ['speaker', 'keynote', 'lightning'].includes(x.role)).length;
-  assert.equal(s.talksDelivered, expected);
+  const delivered = events.flatMap((e) => e.sessions).filter((x) => x.status === 'delivered');
+  assert.equal(s.sessionsDelivered, delivered.filter((x) => x.bucket === 'spoke' || x.bucket === 'workshop').length);
+  assert.equal(s.sessionsDelivered, s.conferenceTalks + s.workshopsDelivered + s.panels + s.guestSpots, 'breakdown adds up to the headline');
   assert.ok(!s.countryList.includes('Netherlands'), 'JSNation was attend-only');
-  assert.ok(s.countryList.includes('France'), 'hosting counts for countries');
+  assert.ok(!s.countryList.includes('France'), 'React Paris was host-only');
+  assert.ok(s.countryList.includes('Switzerland'), 'a workshop counts for countries');
 });
 
 test('praise: legacy socialPost/testimonial map into praise with platform + topic', async () => {
@@ -70,6 +72,17 @@ test('writing: one timeline, legacy externalPost.type maps to format', async () 
   assert.equal(w.find((i) => i._id === 'ext-legacy-spotify')?.format, 'podcast');
   assert.equal(w.find((i) => i._id === 'post-2025-review')?.hasCorrections, true);
   assert.ok(w[0].date >= w[w.length - 1].date, 'newest first');
+});
+
+test('community: ZurichJS and Swiss JavaScript Group are separate, named, dated metrics; About quotes one by id', async () => {
+  const c = await v3.getPrimaryCommunity();
+  const labels = c?.metrics.map((m) => m.label) ?? [];
+  assert.ok(labels.includes('ZurichJS members'));
+  assert.ok(labels.includes('Swiss JavaScript Group members'));
+  assert.ok(c?.metrics.every((m) => m.dateLabel), 'every community number carries its as-of date');
+  const about = await v3.getAboutPage();
+  assert.equal(about.inShort.find((r) => r.label === 'Community')?.body, '1,090 ZurichJS members (Nov 2026)');
+  assert.ok(!about.inShort.some((r) => r.body.includes('{')), 'no unfilled placeholders');
 });
 
 test('metrics: only approved metrics, each dated', async () => {
@@ -106,7 +119,7 @@ test('singletons merge over defaults; home featured resolves refs', async () => 
 test('community: metric references resolve, approved only, dated', async () => {
   const c = await v3.getPrimaryCommunity();
   assert.equal(c?.name, 'ZurichJS');
-  assert.equal(c?.metrics.length, 4);
+  assert.equal(c?.metrics.length, 5);
   assert.ok(c?.metrics.every((m) => m.dateLabel));
   assert.equal(c?.recognition.length, 1);
   assert.equal(c?.aftermovie?.published, false);

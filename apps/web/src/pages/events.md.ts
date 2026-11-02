@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { EVENT_KINDS, ROLE_BUCKETS } from 'shared';
-import { eventPlace, fullDate, getPastEvents, getSpeakingStats, getUpcomingEvents, localTime, monthYear, primarySession, yearOf } from '../lib/sanity/v3';
+import { eventPlace, fullDate, getPastEvents, getSpeakingStats, getUpcomingEvents, localTime, monthYear, primarySession, yearOf, asOfLabel, speakingLine } from '../lib/sanity/v3';
 import { bucketBadge, kindLabel, liveSessions, roleLabel, sessionShort, sessionTiming } from '../lib/events-view';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
@@ -43,7 +43,7 @@ export const GET: APIRoute = async () => {
     ``,
     `> Upcoming events first (with my role at each: speaking, workshop, hosting or attending), then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
     ``,
-    `So far: ${stats.talksDelivered} talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.hosted} hosted, ${stats.attended} attended. ${stats.countries} countries, ${stats.cities} cities. ${stats.upcoming} upcoming and ${past.length} past events. As of ${stats.asOf}.`,
+    `So far: ${speakingLine(stats)} and ${stats.cities} cities (${stats.conferenceTalks} conference talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.guestSpots} podcast or livestream guest spot${stats.guestSpots === 1 ? '' : 's'}). Not counted: ${stats.hosted} hosted, ${stats.attended} attended. ${stats.upcoming} upcoming and ${past.length} past events. As of ${asOfLabel(stats)}.`,
     stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
     ``,
     `## Upcoming (${upcoming.length} event${upcoming.length === 1 ? '' : 's'}, including ones I'm only attending)`,

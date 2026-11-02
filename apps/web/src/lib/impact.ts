@@ -3,7 +3,6 @@
  * markdown mirror read exactly the same numbers.
  */
 import {
-  currentMonthYear,
   getAllPraise,
   getCareer,
   getCommunities,
@@ -64,7 +63,7 @@ export async function impactData() {
 
   return {
     stats,
-    asOf: currentMonthYear(),
+    asOf: monthYear(stats.asOf),
     podcasts,
     podcastPeriod,
     podcastSources,

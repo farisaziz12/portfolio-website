@@ -1571,15 +1571,26 @@
   "source": "https://mentorcruise.com/mentor/farisaziz/"
  },
  {
+  "_id": "metric-zurichjs-members",
+  "_type": "metric",
+  "value": "1,090",
+  "label": "ZurichJS members",
+  "domain": "community",
+  "asOf": "2026-11-01",
+  "definition": "Members of the ZurichJS meetup group (425 at the end of 2025).",
+  "status": "approved",
+  "order": 1
+ },
+ {
   "_id": "metric-members",
   "_type": "metric",
   "value": "4,500",
-  "label": "members across our groups",
+  "label": "Swiss JavaScript Group members",
   "domain": "community",
   "asOf": "2026-07-01",
-  "definition": "Unique members across ZurichJS meetup groups.",
+  "definition": "Unique members across all Swiss JavaScript Group meetup groups, ZurichJS included.",
   "status": "approved",
-  "order": 1
+  "order": 2
  },
  {
   "_id": "metric-cfp",
@@ -1590,7 +1601,7 @@
   "asOf": "2026-05-01",
   "definition": "CFP submissions received for ZurichJS Conf 2026.",
   "status": "approved",
-  "order": 2,
+  "order": 3,
   "period": "2026"
  },
  {
@@ -1602,7 +1613,7 @@
   "asOf": "2026-07-01",
   "definition": "Distinct speakers at ZurichJS meetups.",
   "status": "approved",
-  "order": 3,
+  "order": 4,
   "period": "2024–26"
  },
  {
@@ -1614,7 +1625,7 @@
   "asOf": "2026-07-01",
   "definition": "Organisations sponsoring or partnering since 2024.",
   "status": "approved",
-  "order": 4
+  "order": 5
  },
  {
   "_id": "metric-china",
@@ -1848,6 +1859,11 @@
   "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
   "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first ZurichJS Conf happened.",
   "metrics": [
+   {
+    "_type": "reference",
+    "_ref": "metric-zurichjs-members",
+    "_key": "zurichjs-members"
+   },
    {
     "_type": "reference",
     "_ref": "metric-members",
@@ -2393,6 +2409,23 @@
    "alt": "Faris on a conference stage, wide",
    "credit": "Event photographer"
   },
+  "inShort": [
+   {
+    "_key": "w",
+    "label": "Work",
+    "body": "Frontend and payment systems at scale"
+   },
+   {
+    "_key": "s",
+    "label": "Speak",
+    "body": "{sessions} sessions in {countries} countries"
+   },
+   {
+    "_key": "c",
+    "label": "Community",
+    "body": "{metric:metric-zurichjs-members}"
+   }
+  ],
   "content": [
    {
     "_type": "block",

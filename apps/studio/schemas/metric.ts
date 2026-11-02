@@ -3,8 +3,9 @@ import { METRIC_AREAS, METRIC_DOMAINS, METRIC_STATUSES, titleFor } from 'shared'
 import { options, orderField } from './_fields';
 
 /**
- * A dated, defined number (4,500 ZurichJS members · Jul 2026). Replaces V2
- * `impactMetric` / `impactMetricV2`. Speaking counts (talks delivered,
+ * A dated, defined number ("1,090 ZurichJS members · Nov 2026"). Name the group in
+ * the label: ZurichJS and the wider Swiss JavaScript Group are separate metrics.
+ * Replaces V2 `impactMetric` / `impactMetricV2`. Speaking counts (sessions,
  * countries) are NOT metrics: the site derives them from event sessions.
  */
 export default defineType({

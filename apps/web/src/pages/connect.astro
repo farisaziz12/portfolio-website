@@ -9,7 +9,7 @@ import SanityImg from '../components/v3/SanityImg.astro';
 import Illustration from '../components/v3/Illustration.astro';
 import Icon from '../components/v3/Icon.astro';
 import InvitePanel from '../components/v3/InvitePanel.astro';
-import { getAboutPage, getProfile, getSiteSettings, getSpeakingStats, basedIn, fullDate } from '../lib/sanity/v3';
+import { getAboutPage, getProfile, getSiteSettings, getSpeakingStats, basedIn, asOfLabel, speakingLine } from '../lib/sanity/v3';
 import { breadcrumbs } from '../lib/seo';
 
 const [profile, settings, about, stats] = await Promise.all([
@@ -42,8 +42,8 @@ const explore = [
 
 const blurb = about.intro || profile.bios.short;
 const proof =
-  !stats.fallback && stats.talksDelivered > 0
-    ? `${stats.talksDelivered} talks delivered in ${stats.countries} countries, as of ${fullDate(stats.asOf)}.`
+  !stats.fallback && stats.sessionsDelivered > 0
+    ? `${speakingLine(stats)}, as of ${asOfLabel(stats)}.`
     : null;
 
 const description =

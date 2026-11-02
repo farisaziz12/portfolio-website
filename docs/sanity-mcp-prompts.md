@@ -44,8 +44,9 @@ The content model (V3):
   each with an explicit role: speaker | keynote | lightning | workshop | panel | host | organizer | judge |
   mentor | guest | attendee. A session references the talk or workshop. Recordings and slides belong on
   the SESSION (recording.url, slidesUrl), never on the talk or in text.
-- Counts are derived by the site from sessions: "talks delivered" counts only speaker/keynote/lightning
-  sessions in the past; hosting and attending never inflate it. Never type a count into copy.
+- Counts are derived by the site from sessions: "sessions" counts past, not-cancelled talks, keynotes,
+  lightning talks, panels, podcast/livestream guest spots and workshops; hosting and attending never
+  inflate it. Never type a count into copy: write {sessions} / {countries} (see docs/sanity-guide.md).
 - praise = one quote from one person, verbatim, with platform, url (link to the original), date, author,
   topic (talk|workshop|stage|mentoring|community|work) and refs to the talk/workshop/event it is about.
 - metric = one dated, defined number: value (display string), label, asOf (date), definition (how it's

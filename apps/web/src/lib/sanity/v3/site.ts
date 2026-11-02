@@ -7,7 +7,9 @@ import groq from 'groq';
 import { formatLegacyMetric, LEGACY_METRIC_AREA, type MetricDomain } from 'shared';
 import { monthYear } from './dates';
 import { DEFAULT_COMMUNITY, DEFAULT_HOME, DEFAULT_PROFILE, DEFAULT_SITE } from './defaults';
+import { fillFacts, fillFactsDeep, type FactContext } from './facts';
 import { load, memo, IMAGE, TALK_REF } from './fetch';
+import { getSpeakingStats } from './stats';
 import type {
   Community,
   HomePage,
@@ -59,13 +61,14 @@ interface RawSettings {
 
 export function getSiteSettings(): Promise<SiteSettings> {
   return memo('site:settings', async () => {
-    const s = await load<RawSettings | null>(siteSettingsQuery, null);
+    const [s, facts] = await Promise.all([load<RawSettings | null>(siteSettingsQuery, null), getFactContext()]);
     const d = DEFAULT_SITE;
     return {
       siteTitle: str(s?.siteTitle, d.siteTitle),
       siteUrl: str(s?.siteUrl, d.siteUrl).replace(/\/$/, ''),
-      nowLine: str(s?.nowLine, d.nowLine),
-      metaDescription: str(s?.metaDescription ?? s?.defaultMetaDescription, d.metaDescription),
+      nowLine: fillFacts(str(s?.nowLine, d.nowLine), facts),
+      // Meta / OG / Twitter description. Quote counts as {talks} / {countries}, never as typed numbers.
+      metaDescription: fillFacts(str(s?.metaDescription ?? s?.defaultMetaDescription, d.metaDescription), facts),
       keywords: s?.keywords ?? [],
       ogImage: s?.ogImage,
       twitterHandle: str(s?.twitterHandle, d.twitterHandle),
@@ -95,9 +98,9 @@ export const homePageQuery = groq`*[_type == "homePage"] | order(_updatedAt desc
 
 export function getHomePage(): Promise<HomePage> {
   return memo('site:home', async () => {
-    const h = await load<Partial<HomePage> | null>(homePageQuery, null);
+    const [h, facts] = await Promise.all([load<Partial<HomePage> | null>(homePageQuery, null), getFactContext()]);
     const d = DEFAULT_HOME;
-    return {
+    return fillFactsDeep<HomePage>({
       heroVariant: h?.heroVariant === 'fullbleed' ? 'fullbleed' : 'band',
       kicker: h?.kicker || undefined,
       headline: str(h?.headline, d.headline),
@@ -113,7 +116,7 @@ export function getHomePage(): Promise<HomePage> {
         headline: str(h?.invitePanel?.headline, d.invitePanel.headline),
         body: str(h?.invitePanel?.body, d.invitePanel.body),
       },
-    };
+    }, facts);
   });
 }
 
@@ -170,7 +173,7 @@ interface RawProfile {
 
 export function getProfile(): Promise<Profile> {
   return memo('site:profile', async () => {
-    const [p, settings] = await Promise.all([load<RawProfile | null>(profileQuery, null), getSiteSettings()]);
+    const [p, settings, facts] = await Promise.all([load<RawProfile | null>(profileQuery, null), getSiteSettings(), getFactContext()]);
     const d = DEFAULT_PROFILE;
     const legacyLong = p?.bioFull?.length ? toPlainText(p.bioFull) : undefined;
     const legacyRider = p?.technicalRequirements
@@ -195,9 +198,9 @@ export function getProfile(): Promise<Profile> {
         mentorcruise: p?.socialLinks?.mentorcruise || d.links.mentorcruise,
       },
       bios: {
-        short: str(p?.bioShort, d.bios.short),
-        medium: str(p?.bioMedium, d.bios.medium),
-        long: str(p?.bioLong ?? legacyLong, d.bios.long),
+        short: fillFacts(str(p?.bioShort, d.bios.short), facts),
+        medium: fillFacts(str(p?.bioMedium, d.bios.medium), facts),
+        long: fillFacts(str(p?.bioLong ?? legacyLong, d.bios.long), facts),
         updatedAt: p?.bioUpdatedAt,
       },
       photos: (p?.photos ?? []).filter((ph) => ph?.asset),
@@ -290,11 +293,14 @@ export const communitiesQuery = groq`*[_type == "community"] | order(coalesce(fo
 
 export function getCommunities(): Promise<Community[]> {
   return memo('site:communities', async () => {
-    const list = await load<Community[]>(communitiesQuery, []);
+    const [list, facts] = await Promise.all([load<Community[]>(communitiesQuery, []), getFactContext()]);
     // No community document yet (not created by the migration): ZurichJS from the bios.
     if (!list.length) return [DEFAULT_COMMUNITY];
     return list.map((c) => ({
       ...c,
+      headline: fillFacts(c.headline, facts),
+      summary: fillFacts(c.summary, facts),
+      pillars: fillFactsDeep(c.pillars ?? [], facts),
       metrics: ((c.metrics ?? []) as (Omit<Metric, 'dateLabel'> & { status?: string })[])
         .filter((m) => m && m.status === 'approved')
         .map(({ status: _status, ...m }) => finishMetric(m)),
@@ -308,3 +314,17 @@ export async function getPrimaryCommunity(id?: string): Promise<Community | unde
   return list.find((c) => c._id === id) ?? list[0];
 }
 
+
+// ─── Facts for CMS copy ────────────────────────────────────────────────────
+
+/**
+ * Live values for the {talks} / {countries} / {metric:<id>} placeholders in
+ * CMS copy (see facts.ts). Every loader that returns free text runs it
+ * through fillFacts with this, so Sanity copy never hardcodes a count.
+ */
+export function getFactContext(): Promise<FactContext> {
+  return memo('site:facts', async () => {
+    const [stats, metrics] = await Promise.all([getSpeakingStats(), getMetrics()]);
+    return { stats, metrics };
+  });
+}

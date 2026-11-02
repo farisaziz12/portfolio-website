@@ -67,7 +67,7 @@ export default defineType({
       name: 'inShort',
       title: 'In short',
       type: 'array',
-      description: 'Side box: Work / Speak / Build.',
+      description: 'Side box: Work / Speak / Build. Never type a speaking count: write {sessions} and {countries} (filled from event records), {metric:<metric id>} for a dated metric.',
       of: [
         {
           type: 'object',
@@ -253,7 +253,7 @@ export default defineType({
       type: 'object',
       fields: [
         { name: 'metaTitle', title: 'Meta Title', type: 'string' },
-        { name: 'metaDescription', title: 'Meta Description', type: 'text', rows: 2 },
+        { name: 'metaDescription', title: 'Meta Description', type: 'text', rows: 2, description: 'Never type a speaking count: write {sessions} and {countries} (filled from event records), {metric:<metric id>} for a dated metric.' },
         { name: 'ogImage', title: 'OG Image', type: 'image' },
       ],
     }),

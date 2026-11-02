@@ -17,6 +17,7 @@ import {
   monthYear,
   primarySession,
   sessionLine,
+  speakingLine,
 } from '../../lib/sanity/v3';
 
 /**
@@ -45,15 +46,15 @@ export async function getStaticPaths() {
     home: {
       kicker: byline,
       title: 'Product engineering, monetization and technical leadership.',
-      mark: String(stats.talksDelivered),
-      markLabel: 'talks delivered',
+      mark: String(stats.sessionsDelivered),
+      markLabel: 'sessions',
     },
     speaking: {
       kicker: 'Speaking',
       title: 'Production stories, told from the inside.',
-      meta: `${stats.talksDelivered} talks delivered in ${stats.countries} countries. Booking now.`,
-      mark: String(stats.talksDelivered),
-      markLabel: 'talks delivered',
+      meta: `${speakingLine(stats)}. Booking now.`,
+      mark: String(stats.sessionsDelivered),
+      markLabel: 'sessions',
     },
     talks: { kicker: 'Speaking · Talk catalogue', title: `${stats.catalogueTalks} talks you can book.`, meta: 'Premise, audience, length and a recording where one exists.', mark: String(stats.catalogueTalks) },
     events: { kicker: 'Speaking · Schedule', title: 'My upcoming events, and all the past ones.', meta: `${stats.upcoming} upcoming · ${stats.countries} countries`, mark: String(stats.countries), markLabel: 'countries' },

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { mdResponse } from '../lib/markdown';
-import { getAboutPage, getProfile, getSiteSettings, getSpeakingStats, basedIn, fullDate } from '../lib/sanity/v3';
+import { getAboutPage, getProfile, getSiteSettings, getSpeakingStats, basedIn, asOfLabel, speakingLine } from '../lib/sanity/v3';
 
 const SITE = 'https://faziz-dev.com';
 
@@ -23,8 +23,8 @@ export const GET: APIRoute = async () => {
 
   const blurb = about.intro || profile.bios.short;
   const proof =
-    !stats.fallback && stats.talksDelivered > 0
-      ? `${stats.talksDelivered} talks delivered in ${stats.countries} countries, as of ${fullDate(stats.asOf)}.`
+    !stats.fallback && stats.sessionsDelivered > 0
+      ? `${speakingLine(stats)}, as of ${asOfLabel(stats)}.`
       : null;
 
   const body = [
