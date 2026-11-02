@@ -50,11 +50,12 @@ bios and community text, write placeholders and the loaders fill them (`lib/sani
 |---|---|
 | `{sessions}` / `{countries}` / `{cities}` | the derived counts (`{talks}` still works as an alias for `{sessions}`) |
 | `{asOf}` | the date they were computed ("2nd Nov 2026") |
-| `{metric:<metric _id>}` | a dated metric document: "425 ZurichJS members (Nov 2026)" |
+| `{metric:<metric _id>}` | a dated metric document: "1,090 ZurichJS members (Nov 2026)" |
 | `{metricValue:<metric _id>}` | just its value |
 
-**Community numbers are two metrics, never merged:** ZurichJS members (its own count) and Swiss JavaScript
-Group members (across all the groups). Each `metric` names its group in the label and has an As-of date.
+**Community numbers are two metrics, never merged:** ZurichJS members (its own count: 425 at the end of
+2025, 1,090 in Nov 2026) and Swiss JavaScript Group members (across all the groups, ZurichJS included: 4.5K,
+Jul 2026). Update a metric's value and As-of together. Each `metric` names its group in the label and has an As-of date.
 
 `pnpm --filter web check:stats` fails when any surface disagrees (llms.txt, .md mirrors, meta tags, CMS copy; add
 `--dist .vercel/output/static` after a build to cover every prerendered page), when a count is typed into CMS copy,

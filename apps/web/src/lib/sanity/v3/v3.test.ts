@@ -74,6 +74,17 @@ test('writing: one timeline, legacy externalPost.type maps to format', async () 
   assert.ok(w[0].date >= w[w.length - 1].date, 'newest first');
 });
 
+test('community: ZurichJS and Swiss JavaScript Group are separate, named, dated metrics; About quotes one by id', async () => {
+  const c = await v3.getPrimaryCommunity();
+  const labels = c?.metrics.map((m) => m.label) ?? [];
+  assert.ok(labels.includes('ZurichJS members'));
+  assert.ok(labels.includes('Swiss JavaScript Group members'));
+  assert.ok(c?.metrics.every((m) => m.dateLabel), 'every community number carries its as-of date');
+  const about = await v3.getAboutPage();
+  assert.equal(about.inShort.find((r) => r.label === 'Community')?.body, '1,090 ZurichJS members (Nov 2026)');
+  assert.ok(!about.inShort.some((r) => r.body.includes('{')), 'no unfilled placeholders');
+});
+
 test('metrics: only approved metrics, each dated', async () => {
   const m = await v3.getMetrics();
   assert.ok(!m.some((x) => x._id === 'metric-pending'));
@@ -108,7 +119,7 @@ test('singletons merge over defaults; home featured resolves refs', async () => 
 test('community: metric references resolve, approved only, dated', async () => {
   const c = await v3.getPrimaryCommunity();
   assert.equal(c?.name, 'ZurichJS');
-  assert.equal(c?.metrics.length, 4);
+  assert.equal(c?.metrics.length, 5);
   assert.ok(c?.metrics.every((m) => m.dateLabel));
   assert.equal(c?.recognition.length, 1);
   assert.equal(c?.aftermovie?.published, false);

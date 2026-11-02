@@ -4,7 +4,7 @@
 (public interviews/launch posts), not audited figures.*
 
 The asset base: Staff-level payments + React credibility, 86+ talks in 20
-countries, ZurichJS (425 new members in a year), MentorCruise presence, and —
+countries, ZurichJS (425 members at the end of 2025, 1,090 by Nov 2026), MentorCruise presence, and —
 as of this branch — a site with four conversion doors, measurement, and an
 agent-first surface that AI assistants can quote.
 

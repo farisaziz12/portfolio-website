@@ -205,10 +205,12 @@ docs.append({"_id": "testimonial-legacy-1", "_type": "testimonial", "type": "men
 def m(i, value, label, domain, as_of, definition, **kw):
     d = {"_id": f"metric-{i}", "_type": "metric", "value": value, "label": label, "domain": domain, "asOf": as_of, "definition": definition, "status": "approved"}
     d.update(kw); docs.append(d)
-m("members", "4,500", "members across our groups", "community", "2026-07-01", "Unique members across ZurichJS meetup groups.", order=1)
-m("cfp", "436", "talk proposals, first Conf", "community", "2026-05-01", "CFP submissions received for ZurichJS Conf 2026.", order=2, period="2026")
-m("speakers", "40+", "speakers hosted at meetups", "community", "2026-07-01", "Distinct speakers at ZurichJS meetups.", order=3, period="2024–26")
-m("sponsors", "30+", "sponsors and partners", "community", "2026-07-01", "Organisations sponsoring or partnering since 2024.", order=4)
+# Two different groups, never merged: ZurichJS's own members, and the wider Swiss JavaScript Group across all its groups.
+m("zurichjs-members", "1,090", "ZurichJS members", "community", "2026-11-01", "Members of the ZurichJS meetup group (425 at the end of 2025).", order=1)
+m("members", "4,500", "Swiss JavaScript Group members", "community", "2026-07-01", "Unique members across all Swiss JavaScript Group meetup groups, ZurichJS included.", order=2)
+m("cfp", "436", "talk proposals, first Conf", "community", "2026-05-01", "CFP submissions received for ZurichJS Conf 2026.", order=3, period="2026")
+m("speakers", "40+", "speakers hosted at meetups", "community", "2026-07-01", "Distinct speakers at ZurichJS meetups.", order=4, period="2024–26")
+m("sponsors", "30+", "sponsors and partners", "community", "2026-07-01", "Organisations sponsoring or partnering since 2024.", order=5)
 # Engineering sample figures (offline fixture only; real ones live in Sanity). company-0 = Smallpdf, company-2 = Navro.
 SPDF = {"_type": "reference", "_ref": "company-0"}
 NAVRO = {"_type": "reference", "_ref": "company-2"}
@@ -230,7 +232,7 @@ docs.append({"_id": "community-zurichjs", "_type": "community", "name": "ZurichJ
   "city": "Zurich", "url": "https://zurichjs.com", "series": ref("series-zurichjs"), "headline": "I co-founded and lead ZurichJS.",
   "caseStudyHeadline": "Co-founded in 2024. A conference by 2026.",
   "summary": "I started it because Zurich didn't have the JavaScript community I wanted. I chair it, host most evenings, and wrote the platform that sells the tickets, runs the call for papers and onboards sponsors. In September 2026 the first ZurichJS Conf happened.",
-  "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["members", "cfp", "speakers", "sponsors"]],
+  "metrics": [dict(ref(f"metric-{k}"), _key=k) for k in ["zurichjs-members", "members", "cfp", "speakers", "sponsors"]],
   "recognition": [{"_key": "g", "_type": "award", "title": "Open Source Award: Global Community with the Highest Impact", "issuer": "Open Source Awards", "year": 2026, "confirmed": True}],
   "pillars": [
     {"_key": "h", "_type": "communityPillar", "kicker": "Host", "title": "Most ZurichJS evenings since 2024", "body": "I open most evenings, introduce the speakers and keep the Q&A moving."},
@@ -299,7 +301,14 @@ for i, (t, typ, aud, reach, get, cta) in enumerate([
 docs.append({"_id": "offer-mentor-monthly", "_type": "serviceOffer", "title": "Monthly mentorship", "slug": slug("monthly-mentorship"), "serviceType": "mentorship",
   "shortDescription": "Two calls a month and async feedback in between.", "bestFor": "Engineers aiming for senior or lead", "outcomes": ["A written growth plan", "Feedback on real work", "Speaking prep"],
   "bookingUrl": "https://mentorcruise.com/mentor/farisaziz/", "bookingLabel": "Apply on MentorCruise", "order": 5})
-docs.append({"_id": "page-about", "_type": "page", "identifier": "about", "heroImage": P["stage"], "content": [
+docs.append({"_id": "page-about", "_type": "page", "identifier": "about", "heroImage": P["stage"],
+  # Counts are placeholders, filled from event records and metric documents (lib/sanity/v3/facts.ts).
+  "inShort": [
+    {"_key": "w", "label": "Work", "body": "Frontend and payment systems at scale"},
+    {"_key": "s", "label": "Speak", "body": "{sessions} sessions in {countries} countries"},
+    {"_key": "c", "label": "Community", "body": "{metric:metric-zurichjs-members}"},
+  ],
+  "content": [
   block("Today I work as a software engineer on frontend and payment systems at scale: the checkout that has to work in every currency, the data layer that has to stay fast on a bad connection, the architecture decisions that only look obvious afterwards. Earlier I helped found and lead engineering at Navro, and before that I shipped at Fiit and FX Digital.", "a1"),
   block("Speaking started as a way to explain that work to other engineers. It's now a second job I don't want to give up: talks and workshops across Europe, the US and Asia on production engineering, payments, and getting into leadership earlier than you feel ready for.", "a2"),
   block("In 2024 I co-founded ZurichJS because Zurich didn't have the JavaScript community I wanted. I lead it today. It grew faster than I expected and, in September 2026, ran its first conference.", "a3")]})
