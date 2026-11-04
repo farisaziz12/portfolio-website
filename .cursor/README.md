@@ -25,6 +25,8 @@ After clone, open **Customize → MCP** and authenticate each server (OAuth). To
 
 If PostHog OAuth lands in the US cloud by mistake, switch the URL in `mcp.json` to `https://mcp-eu.posthog.com/mcp` (this project is `eu.posthog.com`).
 
+**Chrome WebMCP (in-page, not project MCP):** the site registers Imperative API tools via `apps/web/src/lib/client/webmcp.ts` when `document.modelContext` exists. Enable `chrome://flags/#enable-webmcp-testing` locally; set `PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN` for the Chrome origin trial. This is separate from Sanity/PostHog/Vercel/GitHub in `mcp.json`.
+
 **Cloud Agent env:** a committed `environment.json` takes precedence over a personal or team dashboard environment for new runs. This one only runs `pnpm install --frozen-lockfile` and starts `pnpm web` on port 4321 so agents can screenshot the site. Delete the file if you need the dashboard snapshot to win.
 
 ## Adding guidance later

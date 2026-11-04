@@ -25,8 +25,13 @@ Without Sanity network access the site still renders — that is resilience, not
 - Theme (dark default, `light` only if stored; `.dark` + `data-theme`)
 - Scroll reveal (`.ds-reveal`)
 - `data-track` → `cta_click`
-- cal.com links → embedded modal + `discovery_call_opened`
+- cal.com links → embedded modal + `discovery_call_opened` (`lib/client/cal.ts`)
+- Chrome WebMCP tools (`components/webmcp.astro` + `lib/client/webmcp.ts`) — progressive enhancement; no UI chrome
 - SEO/JSON-LD via `shared/SEO.astro`
+
+### Chrome WebMCP
+
+In-page tools for browser agents (`document.modelContext`). No-op when unsupported. Local test: enable `chrome://flags/#enable-webmcp-testing`, reload, then inspect tools via Chrome’s Model Context Tool Inspector or `document.modelContext.getTools()`. Optional `PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN` for the origin trial. Headless agents still use `/llms.txt` and `.md` mirrors.
 
 ## File map
 
@@ -37,6 +42,8 @@ src/emails/                React Email — see CLAUDE.md
 src/lib/sanity/            client (fixture mode: SANITY_FIXTURES=1)
 src/lib/email.ts           Resend env() + sendOrLog — never new Resend() in a route
 src/lib/analytics.ts       typed track() — keep in sync with docs/measurement.md
+src/lib/client/webmcp.ts   Chrome WebMCP tool registration (ViewTransitions-safe)
+src/lib/client/cal.ts      Cal.com modal open (shared with WebMCP)
 src/pages/*.md.ts          agent markdown mirrors
 src/pages/llms.txt.ts      llmstxt.org index
 src/styles/tokens.css      Design System v3 tokens (the only hex)

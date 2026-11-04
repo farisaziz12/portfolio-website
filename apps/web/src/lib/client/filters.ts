@@ -83,6 +83,36 @@ function announce(root: HTMLElement, key: string, value: string) {
   document.dispatchEvent(new CustomEvent('filters:change', { detail: { key, value, shown } }));
 }
 
+/**
+ * Programmatic filter update for WebMCP / agents. Merges into current pressed
+ * state unless `replace` is true (or the update is a full reset to all).
+ */
+export function setFilterState(
+  root: HTMLElement,
+  update: Record<string, string>,
+  replace = false,
+): { shown: number; total: number } {
+  const keys = new Set([...root.querySelectorAll<HTMLElement>('[data-filter]')].map((b) => b.dataset.filter!));
+  const state = replace ? ({} as Record<string, string>) : readState(root);
+  if (replace || Object.keys(update).length === 0) {
+    for (const key of keys) state[key] = 'all';
+  }
+  for (const [key, value] of Object.entries(update)) {
+    if (!keys.has(key)) continue;
+    if (value && value !== 'all' && !root.querySelector(`[data-filter="${key}"][data-value="${CSS.escape(value)}"]`)) {
+      continue;
+    }
+    state[key] = value || 'all';
+  }
+  apply(root, state, true);
+  const entries = Object.entries(state);
+  const announced = entries.find(([, v]) => v && v !== 'all') ?? ['reset', 'all'];
+  announce(root, announced[0], announced[1]);
+  const shown = root.querySelectorAll('[data-filter-item]:not([hidden])').length;
+  const total = root.querySelectorAll('[data-filter-item]').length;
+  return { shown, total };
+}
+
 export function initFilters() {
   document.querySelectorAll<HTMLElement>('[data-filter-root]').forEach((root) => {
     if (root.dataset.filterReady) return;
