@@ -1,13 +1,13 @@
 ---
 /**
  * "Resources from this session", same slot before and after the event.
- * Before (or while nothing is published): a dashed note + curious duck.
- * After: Recording / Slides / Photos, each only when it actually exists.
+ * Recording / Slides / Code / Photos, each only when it actually exists,
+ * whatever the date. Nothing published yet: a dashed note + curious duck.
  */
 import Icon from '../v3/Icon.astro';
 import Illustration from '../v3/Illustration.astro';
-import { recordingHost, type EventEdition } from '../../lib/sanity/v3';
-import { hasResources, sessionTitle, shortTalk } from '../../lib/events-view';
+import type { EventEdition } from '../../lib/sanity/v3';
+import { eventResources } from '../../lib/events-view';
 
 interface Props {
   event: EventEdition;
@@ -16,53 +16,15 @@ interface Props {
 }
 const { event: e, photoCount, photosCredited } = Astro.props;
 
-function host(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return '';
-  }
-}
-
-const after = !e.isUpcoming && hasResources(e, photoCount);
-const cells: { label: string; icon?: 'play'; title: string; meta: string; href: string; external: boolean; track: string }[] = [];
-if (after) {
-  for (const s of e.sessions) {
-    if (s.recordingUrl) {
-      const minutes = s.recordingMinutes ?? s.durationMinutes;
-      cells.push({
-        label: 'Recording',
-        icon: 'play',
-        title: s.talk ? shortTalk(s.talk) : sessionTitle(s),
-        meta: [recordingHost(s.recordingUrl), minutes ? `${minutes} min` : ''].filter(Boolean).join(' · '),
-        href: s.recordingUrl,
-        external: true,
-        track: 'event_recording',
-      });
-    }
-  }
-  for (const s of e.sessions) {
-    if (s.slidesUrl) {
-      cells.push({ label: 'Slides', title: s.slidesNote || 'Slide deck', meta: host(s.slidesUrl), href: s.slidesUrl, external: true, track: 'event_slides' });
-    }
-  }
-  if (photoCount > 0) {
-    cells.push({
-      label: 'Photos',
-      title: `${photoCount} from the day`,
-      meta: photosCredited ? 'Credits attached' : 'Gallery',
-      href: '/gallery',
-      external: false,
-      track: 'event_photos',
-    });
-  }
-}
+// Shown whenever something is set in the CMS, before or after the event.
+const cells = eventResources(e, photoCount, photosCredited);
+const hasAny = cells.length > 0;
 const spoke = e.sessions.some((s) => s.bucket === 'spoke' || s.bucket === 'workshop');
 ---
 
 <section class="res" aria-labelledby="res-h">
   <h2 id="res-h" class="ds-label">Resources from this {e.sessions.length > 1 ? 'edition' : 'session'}</h2>
-  {after ? (
+  {hasAny ? (
     <ul class="ds-card res__grid" role="list">
       {cells.map((c) => (
         <li>
