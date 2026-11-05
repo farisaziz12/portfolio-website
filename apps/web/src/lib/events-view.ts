@@ -4,7 +4,7 @@
  * describe an edition and its sessions with the same words.
  */
 import { EVENT_KINDS, ROLE_BUCKETS, titleFor, type RoleBucket, type SessionRole } from 'shared';
-import { eventPlace, primarySession, sessionClock, type EventEdition, type Session } from './sanity/v3';
+import { eventPlace, primarySession, recordingHost, sessionClock, type EventEdition, type Session } from './sanity/v3';
 import { countryCode, getCountryFlag } from './flags';
 
 /** "Conference", "Meetup", "Workshop day" (short, for kickers). */
@@ -159,6 +159,53 @@ export function sessionTitle(s: Session): string {
   return s.title || s.talk?.title || s.workshop?.title || sessionFormat(s);
 }
 
-export function hasResources(e: EventEdition, photoCount = 0): boolean {
-  return photoCount > 0 || e.sessions.some((s) => s.recordingUrl || s.slidesUrl);
+export interface ResourceCell {
+  label: 'Recording' | 'Slides' | 'Code' | 'Photos';
+  icon?: 'play';
+  title: string;
+  meta: string;
+  href: string;
+  external: boolean;
+  track: string;
 }
+
+function urlHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * The "Resources from this session" cells: one per link actually set in the
+ * CMS, recordings first, then slides, code and photos. Not gated on the event
+ * date: slides published before the talk show up before the talk.
+ */
+export function eventResources(e: EventEdition, photoCount = 0, photosCredited = false): ResourceCell[] {
+  const cells: ResourceCell[] = [];
+  for (const s of e.sessions) {
+    if (!s.recordingUrl) continue;
+    const minutes = s.recordingMinutes ?? s.durationMinutes;
+    cells.push({
+      label: 'Recording',
+      icon: 'play',
+      title: s.talk ? shortTalk(s.talk) : sessionTitle(s),
+      meta: [recordingHost(s.recordingUrl), minutes ? `${minutes} min` : ''].filter(Boolean).join(' · '),
+      href: s.recordingUrl,
+      external: true,
+      track: 'event_recording',
+    });
+  }
+  for (const s of e.sessions) {
+    if (s.slidesUrl) cells.push({ label: 'Slides', title: s.slidesNote || 'Slide deck', meta: urlHost(s.slidesUrl), href: s.slidesUrl, external: true, track: 'event_slides' });
+  }
+  for (const s of e.sessions) {
+    if (s.repoUrl) cells.push({ label: 'Code', title: s.talk ? shortTalk(s.talk) : 'Repository', meta: urlHost(s.repoUrl), href: s.repoUrl, external: true, track: 'event_repo' });
+  }
+  if (photoCount > 0) {
+    cells.push({ label: 'Photos', title: `${photoCount} from the day`, meta: photosCredited ? 'Credits attached' : 'Gallery', href: '/gallery', external: false, track: 'event_photos' });
+  }
+  return cells;
+}
+
