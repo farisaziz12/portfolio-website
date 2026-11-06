@@ -42,7 +42,7 @@ From architecture decisions to performance bottlenecks, I help engineering teams
 
 **heroPrimaryCta**:
 - text: Book a Discovery Call
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: View Consulting Packages
@@ -238,7 +238,7 @@ Book a free 30-minute discovery call. We'll discuss your challenges, and I'll sh
 Book Discovery Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Or email me at hello@farisaziz.com to start the conversation.

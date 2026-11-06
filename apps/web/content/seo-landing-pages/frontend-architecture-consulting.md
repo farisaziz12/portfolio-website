@@ -42,7 +42,7 @@ Good architecture is invisible when it works. Bad architecture creates merge con
 
 **heroPrimaryCta**:
 - text: Book Architecture Review
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: View Consulting Options
@@ -239,7 +239,7 @@ Book a free 30-minute discovery call. We'll discuss your architectural challenge
 Book Discovery Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Have an urgent architecture question? Email me directly at hello@farisaziz.com

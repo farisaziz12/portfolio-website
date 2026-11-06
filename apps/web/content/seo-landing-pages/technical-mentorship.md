@@ -42,7 +42,7 @@ Whether you're aiming for senior, navigating a career transition, or wanting to 
 
 **heroPrimaryCta**:
 - text: Book Intro Call
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: See What We Work On
@@ -237,7 +237,7 @@ Book a free 30-minute intro call. We'll discuss your goals, see if we're a good 
 Book Intro Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Already have a specific question? Email me and I'll respond within 48 hours.

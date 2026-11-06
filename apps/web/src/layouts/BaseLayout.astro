@@ -177,6 +177,8 @@ const {
             layout: "month_view",
           });
         }
+        // Pages that embed the calendar inline (/pay-it-forward) reuse this loader.
+        window.__ensureCal = ensureCal;
         function calAnchor(target) {
           return target && target.closest ? target.closest('a[href^="https://cal.com/"]') : null;
         }
@@ -190,8 +192,12 @@ const {
           ensureCal();
           if (typeof window.Cal !== "function") return; // very defensive: navigate normally
           e.preventDefault();
-          var calLink = new URL(a.href).pathname.replace(/^\//, "");
-          window.Cal("modal", { calLink: calLink });
+          var url = new URL(a.href);
+          var calLink = url.pathname.replace(/^\//, "");
+          // Query params prefill booking fields (e.g. ?topic=… on /pay-it-forward).
+          var config = {};
+          url.searchParams.forEach(function (v, k) { config[k] = v; });
+          window.Cal("modal", { calLink: calLink, config: config });
           try { window.posthog && window.posthog.capture("discovery_call_opened", { path: location.pathname }); } catch (_) {}
           // If the embed never materializes (blocked script, offline), fall back to the real page.
           setTimeout(function () {
