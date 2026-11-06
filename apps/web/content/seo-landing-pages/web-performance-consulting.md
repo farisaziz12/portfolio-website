@@ -42,7 +42,7 @@ Slow websites lose users and revenue. Google penalizes poor Core Web Vitals. But
 
 **heroPrimaryCta**:
 - text: Book Performance Audit
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: View Case Studies
@@ -242,7 +242,7 @@ Book a free 30-minute discovery call. We'll review your current performance metr
 Book Discovery Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Have a performance emergency? Email me with "URGENT" in the subject line.

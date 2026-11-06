@@ -129,7 +129,7 @@ Generate a JSON array of metrics. Here's the exact structure:
       {
         "type": "booking",
         "label": "Book me for your meetup",
-        "url": "https://cal.com/farisaziz12/discovery-call"
+        "url": "https://cal.com/faris-aziz-zurichjs/discovery-call"
       }
     ],
     "featured": true,

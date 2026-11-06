@@ -42,7 +42,7 @@ Payment code is unforgiving. A bug means lost revenue, angry customers, and comp
 
 **heroPrimaryCta**:
 - text: Book a Discovery Call
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: View Payment Packages
@@ -238,7 +238,7 @@ Book a free 30-minute discovery call. I'll ask about your payment challenges and
 Book Discovery Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Processing over $10M annually? Mention it when booking. I prioritize high-volume payment consultations.

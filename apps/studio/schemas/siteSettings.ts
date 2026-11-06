@@ -79,7 +79,7 @@ export default defineType({
       title: 'Intro call link',
       type: 'url',
       description: 'cal.com link. Opens as an on-site modal.',
-      initialValue: 'https://cal.com/farisaziz12/discovery-call',
+      initialValue: 'https://cal.com/faris-aziz-zurichjs/discovery-call',
     }),
     defineField({
       name: 'introEnabled',

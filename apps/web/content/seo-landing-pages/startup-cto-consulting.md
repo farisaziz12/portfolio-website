@@ -41,7 +41,7 @@ You're moving fast, making bets, and building with a lean team. You need technic
 
 **heroPrimaryCta**:
 - text: Book Discovery Call
-- url: https://cal.com/farisaziz12/discovery-call
+- url: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **heroSecondaryCta**:
 - text: See How I Help
@@ -237,7 +237,7 @@ Book a free 30-minute call. I'll learn about your startup, give you initial thou
 Book Discovery Call
 
 **ctaButtonUrl**:
-https://cal.com/farisaziz12/discovery-call
+https://cal.com/faris-aziz-zurichjs/discovery-call
 
 **ctaSecondaryText**:
 Prefer async? Email me your biggest technical challenge and I'll respond with initial thoughts.

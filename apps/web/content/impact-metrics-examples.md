@@ -35,7 +35,7 @@ This document contains example content for 12 impact metrics across 4 domains. U
 
 **Action Links**:
 - Type: talk, Label: Watch community talk, URL: /talks/building-developer-communities
-- Type: booking, Label: Book me for your meetup, URL: https://cal.com/farisaziz12/discovery-call
+- Type: booking, Label: Book me for your meetup, URL: https://cal.com/faris-aziz-zurichjs/discovery-call
 
 ---
 

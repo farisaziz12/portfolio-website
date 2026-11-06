@@ -1,0 +1,244 @@
+---
+/**
+ * /pay-it-forward: one-off 15-minute chats (advice, a bit of mentoring).
+ * Topic cards open the Cal.com modal with the "What would help most?" field
+ * prefilled; desktop also embeds the calendar inline once it scrolls into
+ * view. After booking, Cal.com redirects to ?booked=1 (set on the event type),
+ * which shows the "See you soon." panel. Not in primary nav.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/v3/Icon.astro';
+import { PAY_IT_FORWARD_CAL, PAY_IT_FORWARD_CAL_LINK, PAY_IT_FORWARD_COPY as C, STARTERS, starterHref } from '../lib/pay-it-forward';
+import { breadcrumbs } from '../lib/seo';
+
+const description = `${C.lede} Careers, getting visible, public speaking, meetups and community.`;
+---
+
+<BaseLayout
+  title="Pay it forward: 15 minutes with Faris Aziz"
+  description={description}
+  image="/og/pay-it-forward.png"
+  markdownAlternate="/pay-it-forward.md"
+  extraSchema={[breadcrumbs([{ name: 'Pay it forward', path: '/pay-it-forward' }])]}
+>
+  <div class="ds-wrap pif">
+    <section class="pif-booked" data-pif-booked hidden aria-labelledby="pif-booked-title">
+      <div>
+        <p class="pif-booked__kicker">Booked</p>
+        <h2 id="pif-booked-title" class="pif-booked__title">See you soon.</h2>
+      </div>
+      <div class="pif-booked__bring">
+        <p class="pif-booked__label">What to bring</p>
+        <ol class="pif-booked__list">
+          <li><span>01</span>Three things you've tried that haven't worked</li>
+          <li><span>02</span>One question you want answered</li>
+        </ol>
+        <p class="pif-booked__longer">{C.longerTitle} <a href="/mentorship" class="pif-booked__link">Mentorship</a></p>
+      </div>
+    </section>
+
+    <header class="pif-hero">
+      <div class="pif-hero__main">
+        <p class="ds-kicker">{C.kicker}</p>
+        <h1 class="ds-h1 pif-hero__title">{C.title}</h1>
+        <p class="ds-lede pif-hero__lede">{C.lede}</p>
+        <div class="pif-hero__actions">
+          <a href={PAY_IT_FORWARD_CAL} class="ds-btn ds-btn--yellow ds-btn--lg" data-track="pif-hero-book">Grab 15 minutes</a>
+          <a href="#topics" class="ds-link pif-hero__link">See what we can talk about</a>
+        </div>
+      </div>
+      <div class="pif-ticket" aria-label="The call">
+        <span class="pif-ticket__band" aria-hidden="true"></span>
+        <div class="pif-ticket__card">
+          <p class="pif-ticket__kicker">The call</p>
+          <p class="pif-ticket__len"><span class="pif-ticket__num">15</span>min</p>
+          <p class="pif-ticket__row"><span>Video call</span><span>Free</span></p>
+          <p class="pif-ticket__note">One-off chat</p>
+        </div>
+      </div>
+    </header>
+
+    <section id="topics" class="pif-topics" aria-labelledby="pif-topics-h">
+      <h2 id="pif-topics-h" class="ds-kicker pif-topics__kicker">What we can talk about</h2>
+      <ol class="pif-cards">
+        {STARTERS.map((s, i) => (
+          <li>
+            <a href={starterHref(s)} class="pif-card" data-track="pif-topic">
+              <span class="pif-card__num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="pif-card__title">{s.title}</span>
+              <span class="pif-card__line">{s.line}</span>
+              {s.bring && <span class="pif-card__bring"><strong>Bring:</strong> {s.bring}</span>}
+              <span class="pif-card__cta">Book this <Icon name="arrow" size={12} /></span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="pif-split" aria-label="Before you book">
+      <div class="pif-split__side">
+        <div class="pif-isnt">
+          <h2 class="pif-isnt__title">{C.isntTitle}</h2>
+          <p class="pif-isnt__body">{C.isntBody}</p>
+        </div>
+        <div class="pif-longer">
+          <p class="pif-longer__title">{C.longerTitle}</p>
+          <p class="pif-longer__body">{C.longerBody}</p>
+          <a href="/mentorship" class="ds-link ds-link--sm" data-track="pif-mentorship">Mentorship</a>
+        </div>
+      </div>
+      <div class="pif-cal" id="pif-cal" data-cal-link={PAY_IT_FORWARD_CAL_LINK}>
+        <div class="pif-cal__fallback" data-cal-fallback>
+          <p class="pif-cal__event">Pay it forward: 15-minute chat</p>
+          <p class="pif-cal__meta">15 min · Video · Europe/Zurich</p>
+          <a href={PAY_IT_FORWARD_CAL} class="ds-btn ds-btn--yellow" data-track="pif-calendar-book">Grab 15 minutes</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="pif-close" aria-labelledby="pif-close-h">
+      <h2 id="pif-close-h" class="pif-close__title">{C.close}</h2>
+      <a href={PAY_IT_FORWARD_CAL} class="ds-btn ds-btn--ink ds-btn--lg" data-track="pif-close-book">Grab 15 minutes</a>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  type CalFn = (...args: unknown[]) => void;
+  const w = window as unknown as { Cal?: CalFn; __ensureCal?: () => void };
+
+  // ?booked=1 (Cal.com's redirect after booking) shows the "See you soon." panel.
+  function showBooked() {
+    const panel = document.querySelector<HTMLElement>('[data-pif-booked]');
+    if (panel && new URL(location.href).searchParams.get('booked') === '1') panel.hidden = false;
+  }
+
+  // Desktop: embed the calendar inline once it's near the viewport. Phones keep the button (modal).
+  function initInlineCal() {
+    const box = document.querySelector<HTMLElement>('#pif-cal');
+    if (!box || box.dataset.ready || !window.matchMedia('(min-width: 900px)').matches) return;
+    box.dataset.ready = '1';
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        w.__ensureCal?.();
+        if (typeof w.Cal !== 'function') return;
+        box.querySelector<HTMLElement>('[data-cal-fallback]')?.setAttribute('hidden', '');
+        w.Cal('inline', { elementOrSelector: '#pif-cal', calLink: box.dataset.calLink, config: { layout: 'month_view' } });
+      },
+      { rootMargin: '300px' },
+    );
+    io.observe(box);
+  }
+
+  function init() {
+    showBooked();
+    initInlineCal();
+  }
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  .pif { padding-bottom: 64px; }
+
+  .pif-booked {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px 48px; margin-top: 40px; padding: 32px 40px;
+    border-radius: var(--radius-card); background: rgb(var(--panel)); color: rgb(var(--panel-text));
+  }
+  .pif-booked[hidden] { display: none; }
+  .pif-booked__kicker, .pif-booked__label { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .pif-booked__kicker { color: rgb(var(--panel-kicker)); }
+  .pif-booked__title { margin-top: 10px; font-size: clamp(34px, 4vw, 48px); font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+  .pif-booked__bring { flex: 0 1 440px; display: flex; flex-direction: column; gap: 10px; }
+  .pif-booked__list { list-style: none; margin: 0; padding: 0; }
+  .pif-booked__list li { display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid rgb(var(--panel-text) / 0.16); font-size: 15px; font-weight: 600; }
+  .pif-booked__list li:last-child { border-bottom: 1px solid rgb(var(--panel-text) / 0.16); }
+  .pif-booked__list span { color: rgb(var(--panel-muted)); font-weight: 700; }
+  .pif-booked__longer { margin: 4px 0 0; font-size: 13px; color: rgb(var(--panel-muted)); }
+  .pif-booked__link { color: rgb(var(--panel-text)); font-weight: 800; }
+
+  .pif-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 40px 64px; align-items: center; padding: 72px 0 64px; border-bottom: 1px solid rgb(var(--hairline)); }
+  .pif-hero__main { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+  .pif-hero__title { font-size: clamp(42px, 6vw, 68px); }
+  .pif-hero__lede { max-width: 56ch; }
+  .pif-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 8px; }
+  .pif-hero__link { font-size: 15px; }
+
+  .pif-ticket { position: relative; padding-left: 64px; }
+  .pif-ticket__band {
+    position: absolute; left: 14px; top: 0; bottom: 0; width: 60px; background: rgb(var(--yellow));
+    border-left: 6px solid rgb(var(--blue)); transform: skewX(var(--skew)); transform-origin: bottom;
+  }
+  .pif-ticket__card { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 28px; border-radius: var(--radius-card); background: rgb(var(--panel)); color: rgb(var(--panel-text)); }
+  .pif-ticket__card p { margin: 0; }
+  .pif-ticket__kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--panel-kicker)); }
+  .pif-ticket__len { font-size: 22px; font-weight: 800; padding-bottom: 18px; border-bottom: 1px dashed rgb(var(--panel-text) / 0.2); }
+  .pif-ticket__num { font-size: 88px; font-weight: 900; letter-spacing: -0.06em; line-height: 0.95; margin-right: 4px; }
+  .pif-ticket__row { display: flex; justify-content: space-between; padding-top: 14px; font-size: 16px; font-weight: 800; }
+  .pif-ticket__note { font-size: 14px; color: rgb(var(--panel-muted)); }
+
+  .pif-topics { padding: 56px 0; scroll-margin-top: var(--scroll-offset); }
+  .pif-topics__kicker { margin-bottom: 20px; }
+  .pif-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .pif-card {
+    height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 22px;
+    border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); background: rgb(var(--surface));
+    color: rgb(var(--text)); text-decoration: none; transition: border-color 0.15s;
+  }
+  .pif-card:hover { border-color: rgb(var(--yellow)); }
+  .pif-card__num { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: rgb(var(--text-faint)); }
+  .pif-card:hover .pif-card__num, .pif-card:hover .pif-card__cta { color: rgb(var(--accent-text)); }
+  .pif-card__title { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; text-wrap: balance; }
+  .pif-card__line { font-size: 14px; line-height: 1.45; color: rgb(var(--text-muted)); }
+  .pif-card__bring { margin-top: auto; padding-top: 14px; border-top: 1px solid rgb(var(--hairline)); font-size: 13px; line-height: 1.45; color: rgb(var(--text-faint)); }
+  .pif-card__bring strong { color: rgb(var(--text-muted)); font-weight: 700; }
+  .pif-card__cta { display: inline-flex; align-items: center; gap: 6px; padding-top: 8px; font-size: 13.5px; font-weight: 800; transition: color 0.15s; }
+
+  .pif-split { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 32px 56px; align-items: center; padding: 24px 0 64px; }
+  .pif-split__side { display: flex; flex-direction: column; gap: 28px; }
+  .pif-isnt { padding: 28px; border-radius: var(--radius-card); background: rgb(var(--panel)); color: rgb(var(--panel-text)); }
+  .pif-isnt__title { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+  .pif-isnt__body { margin: 12px 0 0; font-size: 16px; line-height: 1.55; color: rgb(var(--panel-muted)); }
+  .pif-longer { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .pif-longer p { margin: 0; }
+  .pif-longer__title { font-size: 16px; font-weight: 800; }
+  .pif-longer__body { font-size: 14px; color: rgb(var(--text-muted)); padding-bottom: 6px; }
+
+  .pif-cal { min-height: 420px; border: 1px solid rgb(var(--hairline)); border-left: 4px solid rgb(var(--blue)); border-radius: var(--radius-card); background: rgb(var(--surface)); overflow: hidden; }
+  .pif-cal__fallback { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 10px; min-height: 420px; padding: 32px; box-sizing: border-box; }
+  .pif-cal__fallback[hidden] { display: none; }
+  .pif-cal__fallback p { margin: 0; }
+  .pif-cal__event { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+  .pif-cal__meta { font-size: 13.5px; color: rgb(var(--text-faint)); padding-bottom: 8px; }
+
+  .pif-close {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px 32px; padding: 44px 52px;
+    border-radius: var(--radius-card); background: rgb(var(--yellow)); color: rgb(var(--c-ink));
+  }
+  .pif-close__title { font-size: clamp(30px, 4.6vw, 56px); font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+  /* On yellow, the ink button swaps to cream (the default hover is yellow). */
+  .pif-close .ds-btn--ink:hover { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); }
+
+  @media (max-width: 1100px) {
+    .pif-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 900px) {
+    .pif-hero { grid-template-columns: 1fr; padding: 40px 0 48px; }
+    .pif-ticket { max-width: 420px; }
+    .pif-split { grid-template-columns: 1fr; }
+    .pif-cal, .pif-cal__fallback { min-height: 0; }
+  }
+  @media (max-width: 720px) {
+    .pif-booked { padding: 24px 20px; margin-top: 24px; }
+    .pif-cards { grid-template-columns: 1fr; gap: 10px; }
+    .pif-card { padding: 18px; }
+    .pif-card__bring { margin-top: 0; }
+    .pif-ticket { padding-left: 44px; }
+    .pif-ticket__band { width: 40px; left: 8px; }
+    .pif-ticket__num { font-size: 64px; }
+    .pif-close { padding: 32px 24px; }
+    .pif-close .ds-btn { width: 100%; }
+  }
+</style>

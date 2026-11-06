@@ -15,7 +15,7 @@ export const DEFAULT_SITE: SiteSettings = {
     'Faris Aziz: software engineer, conference speaker and ZurichJS co-founder in Geneva. Talks and workshops on production engineering, payments at scale and technical leadership.',
   keywords: [],
   twitterHandle: 'farisaziz12',
-  discoveryCallUrl: 'https://cal.com/farisaziz12/discovery-call',
+  discoveryCallUrl: 'https://cal.com/faris-aziz-zurichjs/discovery-call',
   introEnabled: true,
   links: {
     linkedin: 'https://linkedin.com/in/farisaziz12',

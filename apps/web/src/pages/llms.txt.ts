@@ -55,6 +55,7 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 - [Mentorship](${SITE}/mentorship.md)
 - [Contact](${SITE}/contact.md)
 - [Connect](${SITE}/connect.md): post-talk QR landing: socials, book a call, invite me
+- [Pay it forward](${SITE}/pay-it-forward.md): book a free one-off 15-minute chat
 
 ## Optional
 
