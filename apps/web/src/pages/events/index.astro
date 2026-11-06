@@ -1,27 +1,24 @@
 ---
+/**
+ * Schedule: the next stage appearance on the skewed band, the rest of the
+ * calendar as a tour list, then the archive as one city block per year.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import UpcomingCard from '../../components/events/UpcomingCard.astro';
-import ArchiveRow from '../../components/events/ArchiveRow.astro';
-import ArchiveFilters from '../../components/events/ArchiveFilters.astro';
-import { getPastEvents, getSpeakingStats, getUpcomingEvents, yearOf, type EventEdition } from '../../lib/sanity/v3';
+import NextOnStage from '../../components/events/NextOnStage.astro';
+import ThenList from '../../components/events/ThenList.astro';
+import ArchiveTour from '../../components/events/ArchiveTour.astro';
+import { getPastEvents, getSpeakingStats, getUpcomingEvents, speakingLine } from '../../lib/sanity/v3';
+import { isOnStage } from '../../lib/events-view';
 import { breadcrumbs, itemList } from '../../lib/seo';
-import { countryCode, getCountryFlag } from '../../lib/flags';
 
 const [upcoming, past, stats] = await Promise.all([getUpcomingEvents(), getPastEvents(), getSpeakingStats()]);
 
-const FLAG_LIMIT = 18;
-const flagged = stats.countryList.filter((c) => countryCode(c));
-const flags = flagged.slice(0, FLAG_LIMIT).map((c) => ({ country: c, flag: getCountryFlag(c) }));
-const moreFlags = flagged.length - flags.length;
+// Upcoming is soonest first: the hero is the next talk or workshop, everything else follows.
+const lead = upcoming.find(isOnStage);
+const then = upcoming.filter((e) => e !== lead);
 
-// Archive: past only, grouped by year (newest first; loaders return date-desc).
-const years: { year: number; events: EventEdition[] }[] = [];
-for (const e of past) {
-  const y = yearOf(e.date);
-  const g = years.find((x) => x.year === y);
-  if (g) g.events.push(e);
-  else years.push({ year: y, events: [e] });
-}
+const line = speakingLine(stats);
+const archiveTitle = `${line.charAt(0).toUpperCase()}${line.slice(1)}${stats.hosted ? `, plus ${stats.hosted} hosted` : ''}.`;
 
 const schema = [
   breadcrumbs([
@@ -41,92 +38,53 @@ const schema = [
 >
   <div class="ds-wrap">
     <header class="ev-hero">
-      <p class="ds-kicker"><a href="/speaking" class="is-muted ev-crumb">Speaking</a><span aria-hidden="true"> · </span>Schedule</p>
-      <h1 class="ds-h1">My upcoming events, and all the past ones.</h1>
-      <p class="ds-lede">
+      <div class="ev-hero__main">
+        <p class="ds-kicker"><a href="/speaking" class="is-muted ev-crumb">Speaking</a><span aria-hidden="true"> · </span>Schedule</p>
+        <h1 class="ds-h1">My upcoming events, and all the past ones.</h1>
+      </div>
+      <p class="ds-lede ev-hero__lede">
         The next few are at the top. Below that is every event I've been part of, whether I gave a talk, ran a
         workshop, hosted, or just went to listen.
       </p>
     </header>
 
-    {stats.countries > 0 && (
-      <div class="ev-flags">
-        <span class="ds-kicker">{stats.countries} {stats.countries === 1 ? 'country' : 'countries'}</span>
-        <span class="ev-flags__row" role="img" aria-label={`Countries: ${flagged.join(', ')}`}>
-          {flags.map((f) => <span title={f.country}>{f.flag}</span>)}
-        </span>
-        {moreFlags > 0 && <span class="ev-flags__more" aria-hidden="true">+{moreFlags}</span>}
-      </div>
+    {lead && <NextOnStage event={lead} />}
+
+    {then.length > 0 && <ThenList events={then} heading={lead ? 'Then' : 'Upcoming'} />}
+
+    {!upcoming.length && (
+      <p class="ds-card ds-card--dashed ev-up__empty">
+        No public dates confirmed right now. <a href="/invite" class="ds-textlink" data-track="events_empty_invite">Invite me to yours</a>.
+      </p>
     )}
 
-    <section class="ev-up" aria-labelledby="ev-up-h">
-      <h2 id="ev-up-h" class="ev-label">Upcoming · {upcoming.length} {upcoming.length === 1 ? 'event' : 'events'}</h2>
-      {upcoming.length ? (
-        <ul class="ds-grid-2 ev-up__grid" role="list" data-until-group>
-          {upcoming.map((e) => <li data-until={e.endsAt}><UpcomingCard event={e} /></li>)}
-        </ul>
-      ) : (
-        <p class="ds-card ds-card--dashed ev-up__empty">
-          No public dates confirmed right now. <a href="/invite" class="ds-textlink" data-track="events_empty_invite">Invite me to yours</a>.
-        </p>
-      )}
-    </section>
-
-    <section class="ev-arch" aria-labelledby="ev-arch-h" data-filter-root>
+    <section class="ev-arch" aria-labelledby="ev-arch-h">
       <div class="ev-arch__head">
-        <h2 id="ev-arch-h" class="ev-label">
-          Archive · <span data-filter-shown>{past.length}</span><span data-filter-total hidden> of {past.length}</span> past events
-        </h2>
-        <button type="button" class="ev-clear" data-filter-reset data-filter-clear hidden>Clear filters</button>
+        <p class="ds-kicker">Archive</p>
+        <h2 id="ev-arch-h" class="ev-arch__title">{archiveTitle}</h2>
       </div>
-      {past.length > 1 && <ArchiveFilters events={past} />}
-
-      {years.map((g) => (
-        <section class="ev-year" data-filter-group aria-label={String(g.year)}>
-          <h3 class="ev-year__label">{g.year}</h3>
-          <ol class="ds-rows">
-            {g.events.map((e) => <ArchiveRow event={e} />)}
-          </ol>
-        </section>
-      ))}
-
-      <div class="ev-empty" data-filter-empty hidden>
-        <p>Nothing here yet.</p>
-        <button type="button" class="ds-btn ds-btn--outline ds-btn--sm" data-filter-reset>Show everything</button>
-      </div>
-      {!past.length && <p class="ev-empty">Nothing here yet.</p>}
+      {past.length ? <ArchiveTour events={past} /> : <p class="ev-empty">Nothing here yet.</p>}
     </section>
   </div>
 </BaseLayout>
 
 <style>
-  .ev-hero { display: flex; flex-direction: column; gap: 14px; max-width: 700px; padding: 48px 0 28px; }
+  .ev-hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px 48px; padding: 48px 0 36px; }
+  .ev-hero__main { display: flex; flex-direction: column; gap: 14px; max-width: 700px; }
   .ev-crumb { text-decoration: none; }
   .ev-crumb:hover { color: rgb(var(--text)); }
   .ev-hero .ds-h1 { font-size: clamp(38px, 6vw, 52px); }
-  .ev-hero .ds-lede { font-size: 17px; }
+  .ev-hero__lede { font-size: 15px; max-width: 34ch; margin: 0; color: rgb(var(--text-muted)); }
 
-  .ev-flags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 32px; }
-  .ev-flags .ds-kicker { margin-right: 8px; }
-  .ev-flags__row { display: inline-flex; flex-wrap: wrap; gap: 0 4px; font-size: 20px; line-height: 1.3; }
-  .ev-flags__more { font-size: 13px; color: rgb(var(--text-faint)); }
+  .ev-up__empty { margin: 0 0 48px; font-size: 15px; color: rgb(var(--text-muted)); }
 
-  .ev-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--accent-text)); margin: 0; }
-  .ev-up { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 40px; }
-  .ev-up__grid { list-style: none; margin: 0; padding: 0; }
-  .ev-up__empty { margin: 0; font-size: 15px; color: rgb(var(--text-muted)); }
+  .ev-arch { display: flex; flex-direction: column; gap: 20px; padding: 16px 0 64px; }
+  .ev-arch__head { display: flex; flex-direction: column; gap: 10px; }
+  .ev-arch__title { font-size: clamp(26px, 3.2vw, 34px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.08; max-width: 26ch; text-wrap: balance; }
+  .ev-empty { margin: 0; padding: 24px 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; border-top: 1px solid rgb(var(--hairline)); }
 
-  .ev-arch { display: flex; flex-direction: column; gap: 16px; padding-bottom: 64px; }
-  .ev-arch__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0 20px; min-height: 44px; }
-  .ev-clear {
-    min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer; font: 700 13px/1 var(--font); color: rgb(var(--text-muted));
-    text-decoration: underline; text-decoration-color: rgb(var(--yellow)); text-underline-offset: 0.22em; text-decoration-thickness: 1.5px;
+  @media (max-width: 860px) {
+    .ev-hero { flex-direction: column; align-items: flex-start; }
+    .ev-hero__lede { max-width: 60ch; }
   }
-  .ev-clear:hover { color: rgb(var(--accent-text)); }
-  .ev-clear[hidden] { display: none; }
-  .ev-year__label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: rgb(var(--text-faint)); padding: 10px 0 8px; }
-  .ev-year + .ev-year { margin-top: 8px; }
-  .ev-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; border-top: 1px solid rgb(var(--hairline)); }
-  .ev-empty p, p.ev-empty { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
-  .ev-empty[hidden] { display: none; }
 </style>

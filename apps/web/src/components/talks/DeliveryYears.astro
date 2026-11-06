@@ -1,0 +1,74 @@
+---
+/**
+ * Where a talk has been given, grouped by year: aligned date · city · event
+ * columns, so long and short event names still scan. Talks catalogue rows
+ * (stacked years) and the flagship poster (`layout="cols"`, ink on yellow).
+ */
+import { dayMonth, type TalkWithHistory } from '../../lib/sanity/v3';
+import { deliveryCity, deliveryYears, eventShortName } from '../../lib/talks';
+
+interface Props {
+  talk: TalkWithHistory;
+  limit?: number;
+  layout?: 'stack' | 'cols';
+  tone?: 'ground' | 'lead';
+  class?: string;
+}
+const { talk, limit, layout = 'stack', tone = 'ground', class: className } = Astro.props;
+const { years, earlier } = deliveryYears(talk, limit);
+---
+
+{years.length > 0 && (
+  <div class:list={['dyears', `dyears--${layout}`, `dyears--${tone}`, className]}>
+    {years.map((g) => (
+      <section class="dyears__year" aria-label={`Given in ${g.year}`}>
+        <p class="dyears__label">{g.year}</p>
+        <ol class="dyears__list">
+          {g.items.map((d) => (
+            <li class="dyears__row">
+              <span class="dyears__date">{dayMonth(d.event.date)}</span>
+              <span class="dyears__city">{deliveryCity(d)}</span>
+              <a href={`/events/${d.event.slug}`} class="dyears__event">{eventShortName(d.event)}</a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+    {earlier > 0 && <a href={`/talks/${talk.slug}`} class="dyears__more">+{earlier} earlier</a>}
+  </div>
+)}
+
+<style>
+  .dyears { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; font-size: 13px; line-height: 1.35; }
+  .dyears--cols { flex-direction: row; flex-wrap: wrap; gap: 16px 40px; }
+  .dyears--cols .dyears__year { flex: 1 1 300px; flex-direction: column; gap: 6px; }
+  .dyears__year { display: flex; gap: 14px; min-width: 0; }
+  .dyears__label { flex: none; width: 40px; margin: 0; padding-top: 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: rgb(var(--text-faint)); }
+  .dyears__list { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; }
+  .dyears__row {
+    display: grid; grid-template-columns: 66px 120px minmax(0, 1fr); gap: 12px; align-items: baseline;
+    padding: 5px 0; border-top: 1px solid rgb(var(--hairline));
+  }
+  .dyears__row:last-child { border-bottom: 1px solid rgb(var(--hairline)); }
+  .dyears__date { color: rgb(var(--text-faint)); white-space: nowrap; }
+  .dyears__city { font-weight: 700; color: rgb(var(--text)); overflow-wrap: anywhere; }
+  .dyears__event { color: rgb(var(--text-muted)); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dyears__event:hover { color: rgb(var(--accent-text)); }
+  .dyears__more { align-self: flex-start; margin-left: 54px; font-size: 12.5px; color: rgb(var(--text-faint)); text-decoration: none; }
+  .dyears--cols .dyears__more { margin-left: 0; flex-basis: 100%; }
+  .dyears__more:hover { color: rgb(var(--accent-text)); }
+
+  /* Ink on the yellow flagship poster, in both themes. */
+  .dyears--lead .dyears__label, .dyears--lead .dyears__date, .dyears--lead .dyears__more { color: rgb(var(--c-ink) / 0.7); }
+  .dyears--lead .dyears__city { color: rgb(var(--c-ink)); }
+  .dyears--lead .dyears__event { color: rgb(var(--c-ink) / 0.82); }
+  .dyears--lead .dyears__event:hover, .dyears--lead .dyears__more:hover { color: rgb(var(--c-ink)); text-decoration: underline; }
+  .dyears--lead .dyears__row { border-color: rgb(var(--c-ink) / 0.16); }
+
+  @media (max-width: 720px) {
+    .dyears__year { flex-direction: column; gap: 4px; }
+    .dyears__label { width: auto; padding-top: 0; }
+    .dyears__row { grid-template-columns: 62px 96px minmax(0, 1fr); gap: 10px; }
+    .dyears__more { margin-left: 0; }
+  }
+</style>

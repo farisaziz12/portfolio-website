@@ -1,7 +1,7 @@
 /** Catalogue order and "new" detection (lib/talks.ts). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { byPopularity, isNewTalk, talkSortKeys } from './talks';
+import { byPopularity, deliveryYears, isNewTalk, talkSortKeys } from './talks';
 import type { TalkWithHistory } from './sanity/v3';
 
 const past = (date: string) => ({ event: { date, isUpcoming: false } });
@@ -36,4 +36,17 @@ test('talkSortKeys: newest falls back to the first delivery when _createdAt is m
   const t = talk('z', 1, '2025-06-01', { versions: [{ firstDelivered: '2024-12-13' }] as TalkWithHistory['versions'] });
   assert.equal(talkSortKeys(t).newest, '2024-12-13');
   assert.equal(talkSortKeys({ ...t, _createdAt: '2026-01-02T00:00:00Z' } as TalkWithHistory).newest, '2026-01-02T00:00:00Z');
+});
+
+test('deliveryYears: past only, newest first, one per event, grouped by year, capped with an earlier count', () => {
+  const d = (id: string, date: string, isUpcoming = false) => ({ event: { _id: id, date, isUpcoming } });
+  const t = {
+    deliveries: [d('a', '2025-03-01'), d('b', '2026-05-12'), d('b', '2026-05-12'), d('c', '2026-01-20'), d('next', '2027-03-19', true), d('e', '2024-11-02')],
+  } as unknown as TalkWithHistory;
+  const all = deliveryYears(t);
+  assert.deepEqual(all.years.map((g) => [g.year, g.items.map((i) => i.event._id)]), [[2026, ['b', 'c']], [2025, ['a']], [2024, ['e']]]);
+  assert.equal(all.earlier, 0);
+  const capped = deliveryYears(t, 2);
+  assert.deepEqual(capped.years.map((g) => g.year), [2026]);
+  assert.equal(capped.earlier, 2);
 });

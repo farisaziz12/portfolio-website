@@ -58,12 +58,50 @@ export function newTalkLine(t: TalkWithHistory): string {
   return n ? `new · premiere: ${eventShortName(n.event)}, ${fullDate(n.event.date)}` : 'new';
 }
 
-/** Catalogue row meta: "30 min · recording · delivered 6× incl. React Summit US 2025". */
-export function talkMeta(t: TalkWithHistory): string {
-  if (isNewTalk(t)) return [t.duration ? `${t.duration} min` : null, newTalkLine(t)].filter(Boolean).join(' · ');
-  return [t.duration ? `${t.duration} min` : null, t.recording ? 'recording' : null, nextLine(t) ?? deliveredLine(t)]
-    .filter(Boolean)
-    .join(' · ');
+/** "Premieres at JSworld Conference, 19th Mar 2027" for a new talk · "Next: Devs.Ghent, 30th Sep 2026" · null. */
+export function upcomingLine(t: TalkWithHistory): string | null {
+  const n = t.nextDelivery;
+  if (!n) return null;
+  const where = `${eventShortName(n.event)}, ${fullDate(n.event.date)}`;
+  return isNewTalk(t) ? `Premieres at ${where}` : `Next: ${where}`;
+}
+
+/** The audience's first sentence, for rows and posters; the talk page has the rest. */
+export function audienceLine(t: Pick<TalkWithHistory, 'audience'>): string {
+  return t.audience?.match(/^[^.!?]+[.!?]?/)?.[0].replace(/\.$/, '') ?? '';
+}
+
+/** Where a delivery happened, short: "Zurich", "Online". */
+export function deliveryCity(d: TalkDelivery): string {
+  const l = d.event.location;
+  if (l.isOnline) return 'Online';
+  return l.city || l.country || '';
+}
+
+export interface DeliveryYear {
+  year: number;
+  items: TalkDelivery[];
+}
+
+/**
+ * Past deliveries, newest first, one entry per event, grouped by year.
+ * `limit` caps how many are listed; the rest is counted in `earlier`.
+ */
+export function deliveryYears(t: Pick<TalkWithHistory, 'deliveries'>, limit = Infinity): { years: DeliveryYear[]; earlier: number } {
+  const seen = new Set<string>();
+  const past = t.deliveries
+    .filter((d) => !d.event.isUpcoming)
+    .sort((a, b) => b.event.date.localeCompare(a.event.date))
+    .filter((d) => (seen.has(d.event._id) ? false : (seen.add(d.event._id), true)));
+  const shown = past.slice(0, limit);
+  const years: DeliveryYear[] = [];
+  for (const d of shown) {
+    const y = yearOf(d.event.date);
+    const g = years.find((x) => x.year === y);
+    if (g) g.items.push(d);
+    else years.push({ year: y, items: [d] });
+  }
+  return { years, earlier: past.length - shown.length };
 }
 
 /** Bookable, current version = in the catalogue. Everything else is retired. */
@@ -98,16 +136,7 @@ export function inviteHref(t: Pick<TalkWithHistory, 'title'>): string {
   return `/invite?kind=conference&talk=${encodeURIComponent(t.title)}`;
 }
 
-/** Catalogue sort orders: "Most popular" (default), "Recently given", "Newest". */
-export const TALK_SORTS = [
-  { value: 'popular', label: 'Most popular' },
-  { value: 'recent', label: 'Recently given' },
-  { value: 'newest', label: 'Newest' },
-] as const;
-
-export type TalkSort = (typeof TALK_SORTS)[number]['value'];
-
-/** Sort keys carried on each catalogue row (data attributes) so the client can re-order. */
+/** Popularity / recency / newness keys for a talk (server order below). */
 export function talkSortKeys(t: TalkWithHistory) {
   return {
     popular: t.deliveredCount,
