@@ -1,0 +1,86 @@
+---
+/**
+ * Upcoming editions after the hero, as a tour list: big day, city, then the
+ * talk or workshop title for stage appearances, or one quiet line for
+ * hosting and attending. Rows expire client-side (data-until).
+ */
+import { monthYear, ordinal, primarySession, eventPlace, type EventEdition } from '../../lib/sanity/v3';
+import { bucketVerb, eventCity, flagFor, isOnStage, sessionTitle } from '../../lib/events-view';
+
+interface Props {
+  events: EventEdition[];
+  /** "Then" under the hero, "Upcoming" when there is no hero. */
+  heading: string;
+}
+const { events, heading } = Astro.props;
+const rows = events.map((e) => {
+  const s = primarySession(e);
+  const day = Number(e.date.slice(8, 10));
+  const stage = isOnStage(e) ? s : undefined;
+  return {
+    e,
+    day,
+    suffix: ordinal(day).slice(String(day).length),
+    stage: Boolean(stage),
+    title: stage ? sessionTitle(stage) : '',
+    meta: stage
+      ? [bucketVerb(stage.bucket), e.title, eventPlace(e, { venue: true }), stage.durationMinutes ? `${stage.durationMinutes} min` : ''].filter(Boolean).join(' · ')
+      : [bucketVerb(s?.bucket), e.title].filter(Boolean).join(' · '),
+  };
+});
+---
+
+<section class="then" aria-labelledby="then-h" data-until-group>
+  <h2 id="then-h" class="then__h">{heading}</h2>
+  <ol class="then__list">
+    {rows.map((r) => (
+      <li data-until={r.e.endsAt}>
+        <a href={`/events/${r.e.slug}`} class:list={['then__row', { 'then__row--quiet': !r.stage }]} data-track="events_upcoming_row">
+          <span class="then__date">
+            <span class="then__day">{r.day}<span class="then__ord">{r.suffix}</span></span>
+            <span class="then__month">{monthYear(r.e.date)}</span>
+          </span>
+          <span class="then__city">{flagFor(r.e) && <span class="then__flag" aria-hidden="true">{flagFor(r.e)}</span>}{eventCity(r.e)}</span>
+          <span class="then__what">
+            {r.stage && <span class="then__title">{r.title}</span>}
+            <span class="then__meta">{r.meta}</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .then { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 16px 40px; padding: 8px 0 56px; }
+  .then[hidden] { display: none; }
+  .then__h { font-size: clamp(26px, 3vw, 34px); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .then__list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid rgb(var(--hairline)); }
+  .then__list > li { border-top: 1px solid rgb(var(--hairline)); }
+  .then__list > li[hidden] { display: none; }
+  .then__row {
+    display: grid; grid-template-columns: 84px 150px minmax(0, 1fr); gap: 20px; align-items: center;
+    min-height: 44px; padding: 18px 0; color: rgb(var(--text)); text-decoration: none;
+  }
+  .then__date { display: flex; flex-direction: column; gap: 2px; }
+  .then__day { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+  .then__ord { font-size: 0.4em; letter-spacing: 0; margin-left: 1px; vertical-align: 0.9em; }
+  .then__month { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
+  .then__city { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; overflow-wrap: anywhere; }
+  .then__flag { margin-right: 8px; font-size: 16px; letter-spacing: 0; }
+  .then__what { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .then__title { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; transition: color 0.15s; }
+  .then__meta { font-size: 13.5px; color: rgb(var(--text-muted)); }
+  .then__row:hover .then__title, .then__row--quiet:hover .then__meta { color: rgb(var(--accent-text)); }
+  .then__row--quiet .then__day, .then__row--quiet .then__city { color: rgb(var(--text-muted)); }
+  .then__row--quiet .then__meta { font-size: 14.5px; }
+
+  @media (max-width: 860px) {
+    .then { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .then__row { grid-template-columns: 64px minmax(0, 1fr); gap: 6px 16px; align-items: start; }
+    .then__date { grid-row: 1 / span 2; }
+    .then__day { font-size: 30px; }
+  }
+</style>

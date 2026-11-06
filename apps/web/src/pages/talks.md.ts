@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getCatalogueTalks, getProfile, getSpeakingStats, numberWord, asOfLabel, speakingLine } from '../lib/sanity/v3';
+import { getCatalogueTalks, getProfile, getSpeakingStats, asOfLabel, speakingLine } from '../lib/sanity/v3';
 import { mdResponse } from '../lib/markdown';
 import { SITE } from '../lib/seo';
 import { byPopularity, deliveredLine, inviteHref, isNewTalk, lengthLabel, newTalkLine, nextLine, pillarTitle } from '../lib/talks';
@@ -29,9 +29,9 @@ export const GET: APIRoute = async () => {
   );
 
   const body = [
-    `# ${talks.length ? `${numberWord(talks.length)} talks you can book.` : 'Talk catalogue'}`,
+    `# My talks`,
     ``,
-    `> Conference talks by Faris Aziz: short premise, audience, length and a recording where one exists. Every talk adapts to your slot and audience. ${speakingLine(stats)} (${stats.cities} cities) as of ${asOfLabel(stats)}. Book: ${SITE}/invite`,
+    `> Every talk is designed as what I call an accordion talk: it expands in time, breadth and depth based on what your audience needs. Let me know how to fit it best, and treat each one as dynamic. Conference talks by Faris Aziz: ${speakingLine(stats)} (${stats.cities} cities) as of ${asOfLabel(stats)}. Book: ${SITE}/invite`,
     ``,
     ...entries.flatMap((e) => [e, '']),
     `Need something built for your theme? Tell me what you'd like your audience to leave with and I'll propose a talk within ${profile.replyTime}: ${SITE}/invite`,

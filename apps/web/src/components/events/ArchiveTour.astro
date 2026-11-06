@@ -1,0 +1,119 @@
+---
+/**
+ * The /events archive as the back of a tour shirt: one block per year, every
+ * edition as CITY + event name + date. Stage appearances (talk or workshop)
+ * are bright; hosting and attending are dim. "On stage / Everything"
+ * narrows it client-side (?show=stage keeps it shareable).
+ */
+import { bucketBadge, eventCity, flagFor, isOnStage } from '../../lib/events-view';
+import { dayMonth, primarySession, yearOf, type EventEdition } from '../../lib/sanity/v3';
+
+interface Props {
+  events: EventEdition[];
+}
+const { events } = Astro.props;
+
+const years: { year: number; events: EventEdition[] }[] = [];
+for (const e of events) {
+  const y = yearOf(e.date);
+  const g = years.find((x) => x.year === y);
+  if (g) g.events.push(e);
+  else years.push({ year: y, events: [e] });
+}
+const line = (e: EventEdition) => {
+  const stage = isOnStage(e);
+  const role = stage ? '' : bucketBadge(primarySession(e)?.bucket);
+  return [role, e.title, dayMonth(e.date)].filter(Boolean).join(' · ');
+};
+---
+
+<div class="tour" data-tour data-show="all">
+  <div class="tour__bar">
+    {years.length > 1 && (
+      <nav class="tour__jump" aria-label="Jump to a year">
+        {years.map((g) => <a href={`#y${g.year}`} class="tour__jumplink">{g.year}</a>)}
+      </nav>
+    )}
+    <div class="ds-seg tour__toggle" role="group" aria-label="Show" data-tour-toggle hidden>
+      <button type="button" data-show="stage" aria-pressed="false">On stage</button>
+      <button type="button" data-show="all" aria-pressed="true">Everything</button>
+    </div>
+  </div>
+
+  {years.map((g) => (
+    <section id={`y${g.year}`} class="tour__year" aria-labelledby={`y${g.year}-h`}>
+      <h3 id={`y${g.year}-h`} class="tour__num">{g.year}</h3>
+      <ol class="tour__grid">
+        {g.events.map((e) => (
+          <li data-stage={isOnStage(e) ? '1' : '0'}>
+            <a href={`/events/${e.slug}`} class:list={['tour__item', { 'tour__item--dim': !isOnStage(e) }]}>
+              <span class="tour__city">{flagFor(e) && <span class="tour__flag" aria-hidden="true">{flagFor(e)}</span>}{eventCity(e)}</span>
+              <span class="tour__line">{line(e)}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  ))}
+</div>
+
+<script>
+  function initTour() {
+    const root = document.querySelector<HTMLElement>('[data-tour]');
+    const toggle = root?.querySelector<HTMLElement>('[data-tour-toggle]');
+    if (!root || !toggle || toggle.dataset.ready) return;
+    toggle.dataset.ready = '1';
+    toggle.hidden = false;
+    const apply = (show: string, push: boolean) => {
+      const value = show === 'stage' ? 'stage' : 'all';
+      root.dataset.show = value;
+      toggle.querySelectorAll<HTMLButtonElement>('[data-show]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.show === value)));
+      if (push) {
+        const url = new URL(location.href);
+        if (value === 'all') url.searchParams.delete('show');
+        else url.searchParams.set('show', value);
+        history.replaceState(history.state, '', url);
+      }
+    };
+    toggle.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-show]');
+      if (btn) apply(btn.dataset.show ?? 'all', true);
+    });
+    apply(new URL(location.href).searchParams.get('show') ?? 'all', false);
+  }
+  initTour();
+  document.addEventListener('astro:page-load', initTour);
+</script>
+
+<style>
+  .tour__bar {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px;
+    padding: 12px 0; border-top: 1px solid rgb(var(--hairline)); border-bottom: 1px solid rgb(var(--hairline));
+  }
+  .tour__jump { display: flex; gap: 4px 18px; }
+  .tour__jumplink {
+    min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 700; color: rgb(var(--text));
+    text-decoration: underline; text-decoration-color: rgb(var(--hairline-strong)); text-underline-offset: 0.25em;
+  }
+  .tour__jumplink:hover { color: rgb(var(--accent-text)); text-decoration-color: rgb(var(--yellow)); }
+  .tour__toggle[hidden] { display: none; }
+  .tour__toggle > button { min-height: 40px; }
+
+  .tour__year { padding-top: 48px; scroll-margin-top: var(--scroll-offset); }
+  .tour__num { font-size: clamp(72px, 12vw, 150px); font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; color: rgb(var(--text-faint)); padding-bottom: 28px; }
+  .tour__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 24px; }
+  .tour[data-show='stage'] li[data-stage='0'] { display: none; }
+  .tour__item { display: flex; flex-direction: column; gap: 4px; min-height: 44px; color: rgb(var(--text)); text-decoration: none; }
+  .tour__city { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; overflow-wrap: anywhere; transition: color 0.15s; }
+  .tour__flag { margin-right: 6px; font-size: 15px; letter-spacing: 0; }
+  .tour__item--dim .tour__flag { opacity: 0.6; }
+  .tour__line { font-size: 12.5px; line-height: 1.35; color: rgb(var(--text-faint)); }
+  .tour__item--dim .tour__city { color: rgb(var(--text-faint)); }
+  .tour__item:hover .tour__city { color: rgb(var(--accent-text)); }
+
+  @media (max-width: 720px) {
+    .tour__year { padding-top: 36px; }
+    .tour__num { padding-bottom: 18px; }
+    .tour__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
+  }
+</style>

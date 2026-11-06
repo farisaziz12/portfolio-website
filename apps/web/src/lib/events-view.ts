@@ -3,9 +3,9 @@
  * the .ics endpoint, so the HTML, the markdown and the calendar file all
  * describe an edition and its sessions with the same words.
  */
-import { EVENT_KINDS, ROLE_BUCKETS, titleFor, type RoleBucket, type SessionRole } from 'shared';
-import { eventPlace, primarySession, recordingHost, sessionClock, type EventEdition, type Session } from './sanity/v3';
+import { EVENT_KINDS, HEADLINE_BUCKETS, ROLE_BUCKETS, titleFor, type RoleBucket, type SessionRole } from 'shared';
 import { countryCode, getCountryFlag } from './flags';
+import { eventPlace, primarySession, recordingHost, sessionClock, type EventEdition, type Session } from './sanity/v3';
 
 /** "Conference", "Meetup", "Workshop day" (short, for kickers). */
 export function kindLabel(e: Pick<EventEdition, 'kind'>): string {
@@ -94,22 +94,6 @@ export function liveSessions(e: EventEdition): Session[] {
 /** Every live session of an edition in one line (archive rows, md). */
 export function sessionSummary(e: EventEdition): string {
   return liveSessions(e).map(sessionShort).join(' · ');
-}
-
-/** Flag emoji for the edition's country, or '' (online / unknown: no globe glyph). */
-export function flagFor(e: Pick<EventEdition, 'location'>): string {
-  if (e.location.isOnline || !countryCode(e.location.country)) return '';
-  return getCountryFlag(e.location.country);
-}
-
-/** "Zurich, CH", "Singapore", "Online". */
-export function placeShort(e: Pick<EventEdition, 'location'>): string {
-  const l = e.location;
-  if (l.isOnline) return 'Online';
-  const cc = countryCode(l.country) || l.country;
-  if (!l.city) return l.country ?? '';
-  if (l.city === l.country) return l.city;
-  return [l.city, cc].filter(Boolean).join(', ');
 }
 
 /** Upcoming card meta: "Ghent, Belgium · Talk: Orchestrating… · 19:00 CEST". */
@@ -209,3 +193,27 @@ export function eventResources(e: EventEdition, photoCount = 0, photosCredited =
   return cells;
 }
 
+
+/** Flag emoji for the edition's country, or '' (online / unknown: no globe glyph). */
+export function flagFor(e: Pick<EventEdition, 'location'>): string {
+  if (e.location.isOnline || !countryCode(e.location.country)) return '';
+  return getCountryFlag(e.location.country);
+}
+
+/** "Zurich", "Online": the one-word place for dense lists (/events Then list and archive). */
+export function eventCity(e: Pick<EventEdition, 'location'>): string {
+  const l = e.location;
+  if (l.isOnline) return 'Online';
+  return l.city || l.country || '';
+}
+
+/** On stage = I gave a talk or ran a workshop there (HEADLINE_BUCKETS), not only hosted or attended. */
+export function isOnStage(e: Pick<EventEdition, 'buckets'>): boolean {
+  return e.buckets.some((b) => HEADLINE_BUCKETS.includes(b));
+}
+
+/** "Friday" for a YYYY-MM-DD date (the date as written, no timezone shift). */
+export function weekday(date: string): string {
+  const [y, m, d] = date.slice(0, 10).split('-').map(Number);
+  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, (m || 1) - 1, d || 1)));
+}

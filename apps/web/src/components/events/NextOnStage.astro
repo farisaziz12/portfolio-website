@@ -1,0 +1,83 @@
+---
+/**
+ * /events hero: the next edition where I'm on stage (a talk or a workshop),
+ * on the skewed yellow band with the blue edge. The talk is the headline;
+ * the event and place sit under it. Hidden client-side once it has ended
+ * (data-until, lib/client/expire.ts), so a stale build never shows it.
+ */
+import { eventPlace, monthYear, ordinal, primarySession, type EventEdition } from '../../lib/sanity/v3';
+import { bucketVerb, flagFor, sessionTitle, weekday } from '../../lib/events-view';
+
+interface Props {
+  event: EventEdition;
+}
+const { event: e } = Astro.props;
+const s = primarySession(e);
+const day = Number(e.date.slice(8, 10));
+const suffix = ordinal(day).slice(String(day).length);
+const kicker = ['Next on stage', bucketVerb(s?.bucket), s?.durationMinutes ? `${s.durationMinutes} min` : ''].filter(Boolean).join(' · ');
+const title = s && (s.talk || s.workshop || s.title) ? sessionTitle(s) : e.title;
+const where = [e.title, eventPlace(e, { venue: true })].filter(Boolean).join(' · ');
+---
+
+<section class="nos" aria-labelledby="nos-title" data-until-group>
+  <div class="nos__inner" data-until={e.endsAt}>
+    <span class="nos__band" aria-hidden="true"></span>
+    <div class="nos__date">
+      <span class="nos__day">{day}<span class="nos__ord">{suffix}</span></span>
+      <span class="nos__month">{monthYear(e.date)} · {weekday(e.date)}</span>
+    </div>
+    <div class="nos__main">
+      <p class="nos__kicker">{kicker}</p>
+      <h2 id="nos-title" class="nos__title">{title}</h2>
+      <p class="nos__where">{flagFor(e) && <span class="nos__flag" aria-hidden="true">{flagFor(e)}</span>}{where}</p>
+      <div class="nos__actions">
+        <a href={`/events/${e.slug}`} class="ds-btn ds-btn--ink" data-track="events_next_details">Event details</a>
+        <a href={`/events/${e.slug}.ics`} class="nos__ics" download data-track="events_next_ics">Add to calendar</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .nos { padding: 8px 0 48px; }
+  .nos__inner {
+    position: relative; display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 24px 40px; align-items: center;
+    padding: 44px 12% 44px 9%; color: rgb(var(--c-ink));
+  }
+  .nos__inner[hidden] { display: none; }
+  /* The band is drawn behind the content and skewed; the text stays upright. */
+  .nos__band {
+    position: absolute; inset: 0 3%; background: rgb(var(--yellow)); border-left: 8px solid rgb(var(--blue));
+    transform: skewX(var(--skew)); border-radius: 2px;
+  }
+  .nos__date, .nos__main { position: relative; }
+  .nos__date { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .nos__day { font-size: clamp(110px, 14vw, 180px); font-weight: 900; letter-spacing: -0.06em; line-height: 0.82; }
+  .nos__ord { font-size: 0.28em; letter-spacing: 0; margin-left: 2px; vertical-align: 1.9em; }
+  .nos__month { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .nos__main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .nos__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .nos__title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; text-wrap: balance; }
+  .nos__flag { margin-right: 8px; }
+  .nos__where { margin: 0; font-size: 15px; color: rgb(var(--c-ink) / 0.8); }
+  /* On yellow, the ink button swaps to cream (the default hover is yellow). */
+  .ds-btn--ink:hover { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); }
+  .nos__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-top: 8px; }
+  .nos__ics {
+    min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 800; color: rgb(var(--c-ink));
+    text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.22em;
+  }
+
+  @media (max-width: 860px) {
+    .nos__inner { grid-template-columns: 1fr; padding: 32px 10% 36px 12%; }
+    .nos__date { flex-direction: row; align-items: baseline; gap: 14px; }
+    .nos__day { font-size: 96px; }
+  }
+  @media (max-width: 520px) {
+    /* A shallower lean on phones so the text keeps its width. */
+    .nos__band { inset: 0 -2%; transform: skewX(-6deg); }
+    .nos__inner { padding: 28px 24px 30px 30px; }
+    .nos__day { font-size: 72px; }
+  }
+</style>

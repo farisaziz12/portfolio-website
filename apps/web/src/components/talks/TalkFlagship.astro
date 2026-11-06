@@ -1,0 +1,71 @@
+---
+/**
+ * The flagship talk at the top of /talks: a yellow numbered poster with the
+ * pitch, both actions and every delivery by year. Which talk leads is the
+ * Home page's 01 pick in Sanity (Home → Featured), else the most given.
+ */
+import Icon from '../v3/Icon.astro';
+import DeliveryYears from './DeliveryYears.astro';
+import type { TalkWithHistory } from '../../lib/sanity/v3';
+import { audienceLine, inviteHref, lengthLabel, pillarTitle, upcomingLine } from '../../lib/talks';
+
+interface Props {
+  talk: TalkWithHistory;
+}
+const { talk: t } = Astro.props;
+const href = `/talks/${t.slug}`;
+const kicker = [pillarTitle(t.pillar), lengthLabel(t)].filter(Boolean).join(' · ');
+const audience = audienceLine(t);
+const next = upcomingLine(t);
+---
+
+<article class="tflag" aria-labelledby="tflag-title">
+  <span class="tflag__num" aria-hidden="true" data-num="01"></span>
+  <div class="tflag__main">
+    {kicker && <p class="tflag__kicker">{kicker}</p>}
+    <h2 id="tflag-title" class="tflag__title"><a href={href} class="tflag__link">{t.title}</a></h2>
+    {t.summary && <p class="tflag__summary">{t.summary}</p>}
+    {audience && <p class="tflag__aud">{audience}</p>}
+    {next && <p class="tflag__next">{next}</p>}
+    <div class="tflag__actions">
+      {t.recording ? (
+        <a href={`${href}#recording`} class="ds-btn ds-btn--ink" data-track="talks-flagship-watch"><Icon name="play" size={12} />Watch the recording</a>
+      ) : (
+        <a href={href} class="ds-btn ds-btn--ink" data-track="talks-flagship-details">Details</a>
+      )}
+      <a href={inviteHref(t)} class="tflag__invite" data-track="talks-flagship-invite">Invite me to give this talk</a>
+    </div>
+  </div>
+  <DeliveryYears talk={t} limit={12} layout="cols" tone="lead" class="tflag__deliveries" />
+</article>
+
+<style>
+  .tflag {
+    position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 28px;
+    padding: 32px; border-radius: var(--radius-card); background: rgb(var(--yellow)); color: rgb(var(--c-ink));
+  }
+  /* Decorative numeral, drawn from data-num so it isn't read out (as PosterCard). */
+  .tflag__num { position: absolute; right: -40px; top: -70px; font-size: 300px; font-weight: 900; line-height: 1; letter-spacing: -0.08em; color: rgb(var(--c-ink)); opacity: 0.07; pointer-events: none; }
+  .tflag__num::before { content: attr(data-num); }
+  .tflag__main { position: relative; display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
+  .tflag__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .tflag__title { font-size: clamp(28px, 3.6vw, 44px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; text-wrap: balance; }
+  .tflag__link { color: inherit; text-decoration: none; }
+  .tflag__link:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 0.12em; }
+  .tflag__summary { margin: 0; font-size: 16px; line-height: 1.5; max-width: 60ch; }
+  .tflag__aud { margin: 0; font-size: 13px; color: rgb(var(--c-ink) / 0.75); }
+  .tflag__next { margin: 0; font-size: 14px; font-weight: 800; }
+  .tflag__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 8px; }
+  /* On yellow, the ink button swaps to cream (the default hover is yellow). */
+  .ds-btn--ink:hover { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); }
+  .tflag__actions .ds-btn { gap: 8px; }
+  .tflag__invite {
+    min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 800; color: rgb(var(--c-ink));
+    text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.22em;
+  }
+  .tflag__deliveries { padding-top: 20px; border-top: 1px solid rgb(var(--c-ink) / 0.16); }
+  @media (max-width: 720px) {
+    .tflag { padding: 22px 20px; gap: 22px; }
+    .tflag__num { font-size: 200px; right: -24px; top: -44px; }
+  }
+</style>
