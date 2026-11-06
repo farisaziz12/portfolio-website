@@ -4,6 +4,7 @@
  * describe an edition and its sessions with the same words.
  */
 import { EVENT_KINDS, HEADLINE_BUCKETS, ROLE_BUCKETS, titleFor, type RoleBucket, type SessionRole } from 'shared';
+import { countryCode, getCountryFlag } from './flags';
 import { eventPlace, primarySession, recordingHost, sessionClock, type EventEdition, type Session } from './sanity/v3';
 
 /** "Conference", "Meetup", "Workshop day" (short, for kickers). */
@@ -192,6 +193,12 @@ export function eventResources(e: EventEdition, photoCount = 0, photosCredited =
   return cells;
 }
 
+
+/** Flag emoji for the edition's country, or '' (online / unknown: no globe glyph). */
+export function flagFor(e: Pick<EventEdition, 'location'>): string {
+  if (e.location.isOnline || !countryCode(e.location.country)) return '';
+  return getCountryFlag(e.location.country);
+}
 
 /** "Zurich", "Online": the one-word place for dense lists (/events Then list and archive). */
 export function eventCity(e: Pick<EventEdition, 'location'>): string {

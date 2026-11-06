@@ -5,7 +5,7 @@
  * are bright; hosting and attending are dim. "On stage / Everything"
  * narrows it client-side (?show=stage keeps it shareable).
  */
-import { bucketBadge, eventCity, isOnStage } from '../../lib/events-view';
+import { bucketBadge, eventCity, flagFor, isOnStage } from '../../lib/events-view';
 import { dayMonth, primarySession, yearOf, type EventEdition } from '../../lib/sanity/v3';
 
 interface Props {
@@ -47,7 +47,7 @@ const line = (e: EventEdition) => {
         {g.events.map((e) => (
           <li data-stage={isOnStage(e) ? '1' : '0'}>
             <a href={`/events/${e.slug}`} class:list={['tour__item', { 'tour__item--dim': !isOnStage(e) }]}>
-              <span class="tour__city">{eventCity(e)}</span>
+              <span class="tour__city">{flagFor(e) && <span class="tour__flag" aria-hidden="true">{flagFor(e)}</span>}{eventCity(e)}</span>
               <span class="tour__line">{line(e)}</span>
             </a>
           </li>
@@ -105,6 +105,8 @@ const line = (e: EventEdition) => {
   .tour[data-show='stage'] li[data-stage='0'] { display: none; }
   .tour__item { display: flex; flex-direction: column; gap: 4px; min-height: 44px; color: rgb(var(--text)); text-decoration: none; }
   .tour__city { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; overflow-wrap: anywhere; transition: color 0.15s; }
+  .tour__flag { margin-right: 6px; font-size: 15px; letter-spacing: 0; }
+  .tour__item--dim .tour__flag { opacity: 0.6; }
   .tour__line { font-size: 12.5px; line-height: 1.35; color: rgb(var(--text-faint)); }
   .tour__item--dim .tour__city { color: rgb(var(--text-faint)); }
   .tour__item:hover .tour__city { color: rgb(var(--accent-text)); }

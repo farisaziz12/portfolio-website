@@ -5,7 +5,7 @@
  * hosting and attending. Rows expire client-side (data-until).
  */
 import { monthYear, ordinal, primarySession, eventPlace, type EventEdition } from '../../lib/sanity/v3';
-import { bucketVerb, eventCity, isOnStage, sessionTitle } from '../../lib/events-view';
+import { bucketVerb, eventCity, flagFor, isOnStage, sessionTitle } from '../../lib/events-view';
 
 interface Props {
   events: EventEdition[];
@@ -40,7 +40,7 @@ const rows = events.map((e) => {
             <span class="then__day">{r.day}<span class="then__ord">{r.suffix}</span></span>
             <span class="then__month">{monthYear(r.e.date)}</span>
           </span>
-          <span class="then__city">{eventCity(r.e)}</span>
+          <span class="then__city">{flagFor(r.e) && <span class="then__flag" aria-hidden="true">{flagFor(r.e)}</span>}{eventCity(r.e)}</span>
           <span class="then__what">
             {r.stage && <span class="then__title">{r.title}</span>}
             <span class="then__meta">{r.meta}</span>
@@ -67,6 +67,7 @@ const rows = events.map((e) => {
   .then__ord { font-size: 0.4em; letter-spacing: 0; margin-left: 1px; vertical-align: 0.9em; }
   .then__month { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--text-faint)); }
   .then__city { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; overflow-wrap: anywhere; }
+  .then__flag { margin-right: 8px; font-size: 16px; letter-spacing: 0; }
   .then__what { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .then__title { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; transition: color 0.15s; }
   .then__meta { font-size: 13.5px; color: rgb(var(--text-muted)); }

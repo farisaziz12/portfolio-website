@@ -6,7 +6,7 @@
  * (data-until, lib/client/expire.ts), so a stale build never shows it.
  */
 import { eventPlace, monthYear, ordinal, primarySession, type EventEdition } from '../../lib/sanity/v3';
-import { bucketVerb, sessionTitle, weekday } from '../../lib/events-view';
+import { bucketVerb, flagFor, sessionTitle, weekday } from '../../lib/events-view';
 
 interface Props {
   event: EventEdition;
@@ -30,7 +30,7 @@ const where = [e.title, eventPlace(e, { venue: true })].filter(Boolean).join(' Â
     <div class="nos__main">
       <p class="nos__kicker">{kicker}</p>
       <h2 id="nos-title" class="nos__title">{title}</h2>
-      <p class="nos__where">{where}</p>
+      <p class="nos__where">{flagFor(e) && <span class="nos__flag" aria-hidden="true">{flagFor(e)}</span>}{where}</p>
       <div class="nos__actions">
         <a href={`/events/${e.slug}`} class="ds-btn ds-btn--ink" data-track="events_next_details">Event details</a>
         <a href={`/events/${e.slug}.ics`} class="nos__ics" download data-track="events_next_ics">Add to calendar</a>
@@ -59,6 +59,7 @@ const where = [e.title, eventPlace(e, { venue: true })].filter(Boolean).join(' Â
   .nos__main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .nos__kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
   .nos__title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; text-wrap: balance; }
+  .nos__flag { margin-right: 8px; }
   .nos__where { margin: 0; font-size: 15px; color: rgb(var(--c-ink) / 0.8); }
   /* On yellow, the ink button swaps to cream (the default hover is yellow). */
   .ds-btn--ink:hover { background: rgb(var(--c-cream)); color: rgb(var(--c-ink)); }
