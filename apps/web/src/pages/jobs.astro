@@ -1,0 +1,136 @@
+---
+/**
+ * Hiring radar: individual openings, each one verified recently and each one
+ * with explicit evidence that a Switzerland-based applicant is eligible.
+ *
+ * Rendered per request (not prerendered, and excluded from ISR in
+ * astro.config.mjs) so a role that expires or closes leaves the page within
+ * minutes, whether or not a scheduled run has touched it. Rules and the
+ * expiry model: docs/hiring-radar.md.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FilterPills from '../components/v3/FilterPills.astro';
+import { JOB_GEO_KINDS, JOB_ROLE_FAMILIES, JOB_TECH_TAGS } from 'shared/jobs';
+import { getPublicJobs } from '../lib/sanity/v3/jobs';
+import { breadcrumbs } from '../lib/seo';
+
+export const prerender = false;
+
+// Edge-cache for five minutes at most. Expiry also runs in the query, in the
+// loader and in the browser (see the script below).
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=0');
+
+const jobs = await getPublicJobs();
+
+const count = (pick: (j: (typeof jobs)[number]) => string[], value: string) => jobs.filter((j) => pick(j).includes(value)).length;
+const families = JOB_ROLE_FAMILIES.map((f) => ({ value: f.value, label: f.title, count: count((j) => j.families, f.value) })).filter((o) => o.count > 0);
+const tech = JOB_TECH_TAGS.map((t) => ({ value: t.value, label: t.title, count: count((j) => j.tech, t.value) })).filter((o) => o.count > 0);
+const geo = JOB_GEO_KINDS.map((g) => ({ value: g.value, label: g.title, count: count((j) => [j.geoKind], g.value) })).filter((o) => o.count > 0);
+
+const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Zurich' });
+const where = (j: (typeof jobs)[number]) => {
+  if (j.geoKind === 'hybrid-ch') return [j.locationText, j.attendance].filter(Boolean).join(' · ');
+  const countries = j.eligibleCountries.length ? `Eligible countries: ${j.eligibleCountries.join(', ')}` : '';
+  return [j.locationText, countries].filter(Boolean).join(' · ');
+};
+---
+
+<BaseLayout
+  title="Jobs worth a look | Faris Aziz"
+  description="Engineering, platform and IT roles I have checked recently, each with a direct application link and written evidence that someone in Switzerland can apply."
+  image="/og/jobs.png"
+  markdownAlternate="/jobs.md"
+  extraSchema={[breadcrumbs([{ name: 'Jobs', path: '/jobs' }])]}
+>
+  <div class="ds-wrap jobs">
+    <header class="jobs__head">
+      <p class="ds-kicker">Jobs</p>
+      <h1 class="ds-h1">Open roles I would send a friend.</h1>
+      <p class="ds-lede">
+        Engineering, platform and IT roles with a direct application link. Every role was checked as open within the
+        last few days and states in writing that someone in Switzerland can apply. It is a hand-picked list, not
+        every opening out there.
+      </p>
+    </header>
+
+    <div data-filter-root>
+      {jobs.length > 0 && (
+        <div class="jobs__filters">
+          {geo.length > 1 && <FilterPills name="geo" label="Where" options={geo} allCount={jobs.length} live />}
+          {families.length > 1 && <FilterPills name="family" label="Type" options={families} allCount={jobs.length} live />}
+          {tech.length > 1 && <FilterPills name="tech" label="Tech" options={tech} allCount={jobs.length} live />}
+        </div>
+      )}
+
+      {jobs.length > 0 ? (
+        <ul class="jobs__list" role="list">
+          {jobs.map((j) => (
+            <li
+              class="ds-card jobs__item"
+              data-filter-item
+              data-geo={j.geoKind}
+              data-family={j.families.join(' ')}
+              data-tech={j.tech.join(' ')}
+              data-expires={j.expiresAt}
+            >
+              <div class="jobs__row">
+                <div class="jobs__main">
+                  <p class="ds-kicker ds-kicker--muted">{j.companyName}{j.team ? ` · ${j.team}` : ''}</p>
+                  <h2 class="ds-h3">{j.title}</h2>
+                  {j.summary && <p class="jobs__summary">{j.summary}</p>}
+                  <p class="ds-meta">{where(j)}</p>
+                  <p class="ds-meta">{j.age} · Last checked {day.format(new Date(j.lastVerifiedAt))}</p>
+                </div>
+                <a class="ds-btn ds-btn--yellow ds-btn--sm" href={j.applyUrl} rel="noopener noreferrer" data-track="jobs_apply_click">
+                  Apply on their site
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="ds-card ds-card--dashed jobs__empty">
+          Nothing to show right now. This page only lists roles that were checked recently, so it can be empty
+          between refreshes.
+        </p>
+      )}
+
+      <p class="jobs__empty" data-filter-empty hidden>
+        No roles match those filters. <button type="button" class="ds-textlink" data-filter-reset>Show everything</button>
+      </p>
+    </div>
+
+    <p class="ds-meta jobs__foot">
+      Roles leave this page when they close or when I have not been able to confirm them for a few days. A listing
+      here is not an endorsement of the employer.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  // Cached HTML can outlive a role. Drop any row past its expiry.
+  function dropExpired() {
+    const now = Date.now();
+    document.querySelectorAll<HTMLElement>('[data-expires]').forEach((el) => {
+      if (Date.parse(el.dataset.expires ?? '') <= now) el.remove();
+    });
+  }
+  dropExpired();
+  document.addEventListener('astro:page-load', dropExpired);
+</script>
+
+<style>
+  .jobs { padding-block: 48px 72px; }
+  .jobs__head { display: grid; gap: 12px; max-width: 46rem; margin-bottom: 32px; }
+  .jobs__filters { display: grid; gap: 12px; margin-bottom: 24px; }
+  .jobs__list { display: grid; gap: 16px; list-style: none; padding: 0; margin: 0; }
+  .jobs__row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .jobs__main { display: grid; gap: 6px; min-width: 0; flex: 1 1 18rem; }
+  .jobs__summary { margin: 0; color: rgb(var(--text-muted)); }
+  .jobs__empty { padding: 24px; }
+  .jobs__foot { margin-top: 32px; max-width: 46rem; }
+  @media (max-width: 640px) {
+    .jobs { padding-block: 32px 56px; }
+    .jobs__row > .ds-btn { width: 100%; justify-content: center; }
+  }
+</style>

@@ -3,3 +3,4 @@ export * from './utils';
 export * from './workshop-short-path';
 export * from './content-model';
 export * from './voice';
+export * from './jobs';

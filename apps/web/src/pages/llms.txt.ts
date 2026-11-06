@@ -49,6 +49,10 @@ ${settings.nowLine}. Based in ${profile.travelBase}. Invitations: ${SITE}/invite
 - [Track record](${SITE}/impact.md): dated and defined numbers, career timeline
 - [What people say](${SITE}/appreciation.md): quotes with sources
 
+## Jobs
+
+- [Jobs](${SITE}/jobs.md): open engineering, platform and IT roles checked recently, each with a direct application link and written evidence of Swiss eligibility
+
 ## Work together
 
 - [Services](${SITE}/services.md): events, advisory, mentorship

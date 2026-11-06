@@ -46,6 +46,8 @@ export default defineConfig({
         /^\/api\/.+/,
         /^\/admin(\/.*)?$/,
         /^\/workshops\/attend\/.+/,
+        // Hiring radar: must expire within minutes, never sit in a 12-hour ISR cache.
+        /^\/jobs(\.md)?\/?$/,
       ],
     },
   }),

@@ -91,6 +91,28 @@ export const deskStructure = (S: StructureBuilder) =>
         ),
 
       S.listItem()
+        .title('Hiring radar')
+        .child(
+          S.list()
+            .title('Hiring radar')
+            .items([
+              singleton(S, 'jobSettings', 'Settings and pause switch'),
+              S.divider(),
+              filtered(S, 'Needs review (possible duplicates)', '_type == "jobRole" && matchUncertain == true', [{ field: 'firstSeenAt', direction: 'desc' }]),
+              filtered(S, 'Live on the site', '_type == "jobRole" && status == "verified-open" && overrides.hidden != true', [{ field: 'lastVerifiedAt', direction: 'asc' }]),
+              filtered(S, 'Pending or overdue', '_type == "jobRole" && status in ["pending","overdue"]', [{ field: 'firstSeenAt', direction: 'desc' }]),
+              filtered(S, 'Closed and archived', '_type == "jobRole" && status in ["closed","archived"]', [{ field: 'firstSeenAt', direction: 'desc' }]),
+              typeList(S, 'jobRole', 'All roles', [{ field: 'firstSeenAt', direction: 'desc' }]),
+              S.divider(),
+              typeList(S, 'jobEdition', 'Weekly editions', [{ field: 'weekId', direction: 'desc' }]),
+              filtered(S, 'Submitted leads to process', '_type == "jobLead" && state == "new"'),
+              typeList(S, 'jobLead', 'All leads'),
+              typeList(S, 'jobCompany', 'Watchlist companies', [{ field: 'name', direction: 'asc' }]),
+              typeList(S, 'jobRun', 'Run summaries', [{ field: 'startedAt', direction: 'desc' }]),
+            ])
+        ),
+
+      S.listItem()
         .title('Pages & settings')
         .child(
           S.list()

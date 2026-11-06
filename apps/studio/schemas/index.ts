@@ -30,6 +30,9 @@ import availability from './availability';
 import siteSettings from './siteSettings';
 import page from './page';
 
+// ─── Hiring radar (public-safe data only; dataset is public) ─
+import { jobTypes } from './jobs';
+
 // ─── Legacy V2 (read-only fallbacks until migrated, see docs/sanity-mcp-prompts.md)
 import socialPost from './legacy/socialPost';
 import testimonial from './legacy/testimonial';
@@ -40,7 +43,7 @@ import impactPage from './legacy/impactPage';
 import servicePage from './legacy/servicePage';
 import siteNavigation from './legacy/siteNavigation';
 
-export const SINGLETON_TYPES = ['homePage', 'speakerProfile', 'availability', 'siteSettings'] as const;
+export const SINGLETON_TYPES = ['homePage', 'speakerProfile', 'availability', 'siteSettings', 'jobSettings'] as const;
 
 export const LEGACY_TYPES = [
   'socialPost',
@@ -79,6 +82,8 @@ export const schemaTypes = [
   withVoiceCheck(availability),
   withVoiceCheck(siteSettings),
   withVoiceCheck(page),
+
+  ...jobTypes,
 
   socialPost,
   testimonial,

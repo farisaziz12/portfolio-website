@@ -13,7 +13,8 @@
     "migrate": "node --env-file=.env --import tsx scripts/migrate-content.ts",
     "remove-duplicates": "tsx --env-file=.env scripts/remove-duplicates.ts",
     "test:migrate": "tsx --test scripts/migrate-v3/transform.test.ts",
-    "test": "pnpm --filter web test && pnpm test:migrate",
+    "test:jobs": "tsx --test scripts/jobs/plan.test.ts",
+    "test": "pnpm --filter web test && pnpm test:migrate && pnpm test:jobs",
     "voice:cms": "pnpm --filter web voice:cms",
     "knip": "knip"
   },

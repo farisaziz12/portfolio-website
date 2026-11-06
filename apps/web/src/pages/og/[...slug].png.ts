@@ -70,6 +70,7 @@ export async function getStaticPaths() {
     about: { kicker: `About · ${basedIn(profile.travelBase).city}`, title: 'A builder at heart. Products, payments and a JavaScript community.', meta: byline },
     impact: { kicker: 'Track record', title: 'The work, the stages, the community.', meta: 'Everything dated and defined.', mark: String(stats.countries), markLabel: 'countries spoken in' },
     appreciation: { kicker: 'What people say', title: 'What people have said about Faris.', meta: 'Every card links to the original post.' },
+    jobs: { kicker: 'Jobs', title: 'Open roles I would send a friend.', meta: 'Checked recently, with a direct application link.' },
     services: { kicker: 'Services', title: 'How I can help.', meta: 'Events: speaking and workshops · Advisory · Mentorship. A sentence is enough to start.' },
     mentorship: { kicker: 'Mentorship', title: 'Help with getting to senior, leading a team, or giving your first talk.', meta: 'One-to-one, every two to four weeks.' },
     contact: { kicker: 'Contact', title: "Hey, what's on your mind?", meta: 'Invite me to speak, or just drop me a message.' },
