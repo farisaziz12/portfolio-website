@@ -68,7 +68,9 @@ browser/export evidence. These paths are relative to `skills/`. This routing
 does not claim automatic skill discovery in the app.
 
 This workspace lives in the faziz-dev.com monorepo at `apps/slides`. Use
-`pnpm slides new|dev|review|export|publish <talk>` from the repo root. `new` creates only
+`pnpm slides new|dev|review|export|publish <talk>` from the repo root, plus
+`--edition <name>` for a conference cut in `decks/<talk>/slides.<name>.md`
+(see `decks/caching-dark-arts/EDITIONS.md`). `new` creates only
 planning files and a placeholder. `publish` runs the checked static build and
 writes it to `apps/web/public/slides/<slug>/`; it never commits or deploys.
 Raw recordings in `media/source-video/` and everything in `artifacts/` are

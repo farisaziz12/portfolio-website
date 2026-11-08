@@ -5,6 +5,8 @@ export type Command = {
   clicks: 'all' | 'final'
   base?: string
   slug?: string
+  /** Alternate entry `decks/<deck>/slides.<edition>.md`; it shares the deck's components and media. */
+  edition?: string
 }
 
 export function validateName(name: string): string {
@@ -25,9 +27,13 @@ export function parseCommand(args: string[]): Command | undefined {
   for (let i = 0; i < options.length; i += 2) {
     const flag = options[i]!
     const value = options[i + 1]
-    if (!['export', 'build', 'publish'].includes(action!) || seen.has(flag)) throw new Error(`Unexpected or repeated option: ${flag}`)
+    if (action === 'new' || seen.has(flag) || (flag !== '--edition' && !['export', 'build', 'publish'].includes(action!))) throw new Error(`Unexpected or repeated option: ${flag}`)
     seen.add(flag)
-    if (action === 'build') {
+    if (flag === '--edition') {
+      if (!value) throw new Error('Invalid option: --edition')
+      result.edition = validateName(value)
+    }
+    else if (action === 'build') {
       // A site path such as /talks/my-talk/: no host, query or parent segments.
       if (flag !== '--base' || !value || !/^\/(?:[a-z0-9._-]+\/)*$/i.test(value) || value.includes('/../')) throw new Error(`Invalid option: ${flag} ${value ?? ''}`)
       result.base = value
@@ -41,6 +47,12 @@ export function parseCommand(args: string[]): Command | undefined {
     else if (flag === '--format' && (value === 'pdf' || value === 'png')) result.format = value
     else if (flag === '--clicks' && (value === 'all' || value === 'final')) result.clicks = value
     else throw new Error(`Invalid option: ${flag} ${value ?? ''}`)
+  }
+  // An edition gets its own default URL so it never replaces the main deck's.
+  if (result.edition) {
+    const name = `${result.deck}-${result.edition}`
+    if (action === 'build' && !seen.has('--base')) result.base = `/talks/${name}/`
+    if (action === 'publish' && !seen.has('--slug')) { result.slug = validateName(name); result.base = `/slides/${name}/` }
   }
   return result
 }

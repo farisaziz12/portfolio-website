@@ -13,6 +13,10 @@ pnpm slides build <talk>     Static website folder, no speaker notes, checked
 pnpm slides publish <talk>   Same checked build, written into the portfolio site
                              at apps/web/public/slides/<slug>/. Never deploys.
 
+Editions: --edition <name> on any command but new uses decks/<talk>/slides.<name>.md,
+a variant that imports slides from slides.md. Defaults become /talks/<talk>-<name>/
+and /slides/<talk>-<name>/.
+
 Build options: --base /path/ (/talks/<talk>/), the folder's URL path on your site
 Publish options: --slug <name> (<talk>), served at /slides/<name>/
 
@@ -28,18 +32,19 @@ try {
     console.log(`Created ${await newDeck(root, command.deck)}\nNext: fill brief.md and propose outline.md. Wait for approval before drafting.`)
   }
   else {
-    const entry = await deckPath(root, command.deck)
+    const entry = await deckPath(root, command.deck, false, command.edition)
+    const label = command.edition ? `${command.deck} (${command.edition})` : command.deck
     const { runNode, startDeck, slidevCli, typecheckCli } = await import('./slidev.mjs')
     if (command.action === 'dev') {
       const server = await startDeck(entry)
-      console.log(`\n${command.deck}: ${server.url}\nPress Ctrl+C to stop.`)
+      console.log(`\n${label}: ${server.url}\nPress Ctrl+C to stop.`)
       const stop = async () => { await server.close(); process.exit(0) }
       process.once('SIGINT', stop)
       process.once('SIGTERM', stop)
     }
     else {
-      const directory = await artifactDirectory(root, command.deck)
-      const report = { deck: command.deck, action: command.action, status: 'running', startedAt: new Date().toISOString(), node: process.version, slidev: '53.0.0', sourceSha256: await sourceHash(entry), stages: [] }
+      const directory = await artifactDirectory(root, command.deck, command.edition)
+      const report = { deck: command.deck, ...(command.edition && { edition: command.edition }), action: command.action, status: 'running', startedAt: new Date().toISOString(), node: process.version, slidev: '53.0.0', sourceSha256: await sourceHash(entry), stages: [] }
       console.log(`Artifacts: ${directory}`)
       try {
         if (command.action === 'review') {
@@ -70,11 +75,11 @@ try {
         else {
           report.format = command.format
           report.clickPolicy = command.clicks
-          report.output = command.format === 'pdf' ? `${command.deck}.pdf` : 'png'
+          report.output = command.format === 'pdf' ? `${command.edition ? `${command.deck}-${command.edition}` : command.deck}.pdf` : 'png'
           await runNode(root, slidevCli, ['export', entry, '--format', command.format, '--output', path.join(directory, report.output), '--with-clicks', String(command.clicks === 'all')], path.join(directory, 'export.log'))
           report.stages.push('native export completed; visual inspection pending')
         }
-        if (await sourceHash(entry) !== report.sourceSha256) throw new Error('slides.md changed during this run. Rerun against a stable draft.')
+        if (await sourceHash(entry) !== report.sourceSha256) throw new Error('Deck markdown changed during this run. Rerun against a stable draft.')
         report.status = 'passed'
       }
       catch (error) { report.status = 'failed'; report.failure = error.message; throw error }

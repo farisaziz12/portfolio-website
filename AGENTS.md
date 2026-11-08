@@ -27,6 +27,7 @@ pnpm studio       # Sanity Studio
 pnpm slides dev <talk>       # edit a deck (apps/slides/decks/<talk>/slides.md)
 pnpm slides review <talk>    # typecheck, build, screenshot every slide/click state
 pnpm slides publish <talk> [--slug <url-slug>]   # checked build → apps/web/public/slides/<slug>/
+                             # add --edition <name> for decks/<talk>/slides.<name>.md (conference cuts)
 pnpm lint         # ESLint + UI guardrails + file-size/convention ratchet
 pnpm --filter web lint:ui
 pnpm --filter web lint:conventions
