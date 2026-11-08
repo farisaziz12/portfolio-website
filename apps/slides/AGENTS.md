@@ -58,6 +58,23 @@ the source documents named above. Resume from the next incomplete item in
 The current stop condition is authoritative. At a visual checkpoint, hand the
 rendered artifacts to the user and wait for approval before expanding scope.
 
+## Deck pull requests
+
+Faris's rule for every PR that adds or changes a deck:
+
+- Embed screenshots of every new or changed slide in the PR description, taken
+  from `pnpm slides review <talk>` (final click state). For a changed slide,
+  show before and after.
+- Put the full preview link of the deck in the description: the branch's Vercel
+  preview URL plus the published path, for example
+  `https://portfolio-website-git-<branch-with-slashes-as-dashes>-farisaziz12.vercel.app/slides/<url>/`.
+  If Vercel shortens the branch alias, copy the URL from the Vercel bot comment.
+- Run `pnpm slides publish <talk>` in the PR so the preview path exists.
+- Host screenshots on an orphan branch named `pr-assets/<PR number>` (files at
+  its root) and link them as
+  `https://github.com/farisaziz12/portfolio-website/blob/pr-assets/<n>/<file>.png?raw=true`,
+  so the images never land in `main`.
+
 ## Agent-first authoring
 
 The repository's authoring skills are in `skills/`, not installed in the
