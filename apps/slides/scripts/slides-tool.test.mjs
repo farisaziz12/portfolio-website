@@ -4,7 +4,7 @@ import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { mkdtemp, mkdir, readFile, readdir, symlink, writeFile, rm } from 'node:fs/promises'
 import { parseCommand } from './slides/contracts.ts'
-import { newDeck, deckPath, artifactDirectory } from './slides/workspace.mjs'
+import { newDeck, deckPath, artifactDirectory, sourceHash } from './slides/workspace.mjs'
 
 async function fixture(t) {
   const root = await mkdtemp(path.join(tmpdir(), 'faris-slides-test-'))
@@ -25,6 +25,30 @@ test('command interface validates export policy and rejects unsafe names/options
     assert.throws(() => parseCommand(args))
   for (const args of [['review'], ['publish', 'talk', '--base', '/x/'], ['publish', 'talk', '--slug', '../x'], ['publish', 'talk', '--slug'], ['new', '../escape'], ['new', '/tmp/x'], ['new', 'foo/bar'], ['new', '--help'], ['dev', 'talk', '--format', 'pdf'], ['export', 'talk', '--format', 'pptx'], ['export', 'talk', '--clicks'], ['export', 'talk', '--clicks', 'all', '--clicks', 'final']])
     assert.throws(() => parseCommand(args))
+})
+
+test('editions select a sibling entry and get their own default URL', () => {
+  assert.deepEqual(parseCommand(['dev', 'my-talk', '--edition', 'conf']), { action: 'dev', deck: 'my-talk', format: 'pdf', clicks: 'all', edition: 'conf' })
+  assert.deepEqual(parseCommand(['publish', 'my-talk', '--edition', 'conf']), { action: 'publish', deck: 'my-talk', format: 'pdf', clicks: 'all', slug: 'my-talk-conf', base: '/slides/my-talk-conf/', edition: 'conf' })
+  assert.equal(parseCommand(['publish', 'my-talk', '--slug', 'conf-2026', '--edition', 'conf']).base, '/slides/conf-2026/')
+  assert.equal(parseCommand(['build', 'my-talk', '--edition', 'conf']).base, '/talks/my-talk-conf/')
+  assert.equal(parseCommand(['build', 'my-talk', '--edition', 'conf', '--base', '/x/']).base, '/x/')
+  for (const args of [['new', 'talk', '--edition', 'conf'], ['dev', 'talk', '--edition'], ['dev', 'talk', '--edition', '../x'], ['dev', 'talk', '--edition', 'a.b'], ['review', 'talk', '--edition', 'a', '--edition', 'b']])
+    assert.throws(() => parseCommand(args))
+})
+
+test('edition lookup and source hash cover sibling entries', async (t) => {
+  const root = await fixture(t)
+  const directory = await newDeck(root, 'my-talk')
+  await assert.rejects(deckPath(root, 'my-talk', false, 'conf'), { code: 'ENOENT' })
+  await writeFile(path.join(directory, 'slides.conf.md'), '---\nsrc: ./slides.md\n---\n')
+  const edition = await deckPath(root, 'my-talk', false, 'conf')
+  assert.equal(edition, path.join(directory, 'slides.conf.md'))
+  const before = await sourceHash(edition)
+  await writeFile(path.join(directory, 'slides.md'), 'imported slides changed')
+  assert.notEqual(await sourceHash(edition), before)
+  const run = await artifactDirectory(root, 'my-talk', 'conf')
+  assert.equal(path.basename(path.dirname(run)), 'conf')
 })
 
 test('new creates a planning starter and refuses to overwrite a deck', async (t) => {

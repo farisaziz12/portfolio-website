@@ -5,11 +5,16 @@ faziz-dev.com monorepo; run everything from the repo root:
 
 ```bash
 pnpm install
+pnpm slides                     # interactive menu: every step below, explained
 pnpm slides new <talk>          # planning files + placeholder slide
 pnpm slides dev <talk>          # live editing
 pnpm slides review <talk>       # typecheck, build, screenshot every state
 pnpm slides publish <talk> --slug <url-slug>   # → apps/web/public/slides/<url-slug>/
 ```
+
+Conference cuts of one talk are editions: `decks/<talk>/slides.<edition>.md` imports
+slides from `slides.md` and overrides the few that differ. Add `--edition <edition>` to
+`dev`, `review`, `export`, `build` or `publish`. Example: `decks/caching-dark-arts/EDITIONS.md`.
 
 Commit the published folder with the site; Vercel serves it at `/slides/<url-slug>/`.
 Raw recordings (`media/source-video/`) and review runs (`artifacts/`) are local only.

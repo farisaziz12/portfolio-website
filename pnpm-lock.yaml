@@ -60,6 +60,9 @@ importers:
 
   apps/slides:
     devDependencies:
+      '@clack/prompts':
+        specifier: 1.8.1
+        version: 1.8.1
       '@slidev/cli':
         specifier: 53.0.0
         version: 53.0.0(@nuxt/kit@3.21.11(magicast@0.5.5))(@oxc-project/types@0.153.0)(@types/markdown-it@14.2.0)(@types/node@25.0.0)(@vitejs/devtools-kit@0.7.6(cac@7.1.0)(crossws@0.4.15(srvx@1.0.5))(srvx@1.0.5)(vite@8.3.3(@types/node@25.0.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(@vue/compiler-sfc@3.5.44)(cac@7.1.0)(crossws@0.4.15(srvx@1.0.5))(esbuild@0.28.2)(lightningcss@1.33.0)(magicast@0.5.5)(markdown-it@14.3.2)(oxc-parser@0.153.0)(playwright-chromium@1.62.1)(postcss@8.5.29)(react@19.3.0)(rolldown@1.2.12)(rollup@4.64.1)(srvx@1.0.5)(tsx@4.23.15)

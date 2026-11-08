@@ -12,7 +12,8 @@ const cliRequire = createRequire(slidevCli)
 // click states and presenter flow stay with `pnpm slides review`.
 export async function checkSite(entry, web, base, directory, report) {
   const { preview } = await import(cliRequire.resolve('vite'))
-  const { parse } = await import(cliRequire.resolve('@slidev/parser'))
+  // The fs loader follows `src:` imports, so editions count and check every slide.
+  const { load } = await import(cliRequire.resolve('@slidev/parser/fs'))
   report.states = []
   report.runtimeErrors = []
   report.blockedRequests = []
@@ -33,7 +34,7 @@ export async function checkSite(entry, web, base, directory, report) {
   const oversized = files.filter(file => file.bytes > 25 * 1024 * 1024)
   if (oversized.length) throw new Error(`Files too large to host: ${oversized.map(file => file.file).join(', ')}`)
 
-  const { slides } = await parse(await readFile(entry, 'utf8'))
+  const { slides } = await load(path.dirname(entry), entry)
   const text = (await Promise.all(files.filter(file => /\.(?:js|html|json)$/.test(file.file)).map(file => readFile(path.join(web, file.file), 'utf8')))).join('\n')
   const leaked = slides.map(slide => slide.note?.trim().split('\n')[0].slice(0, 60)).filter(line => line && line.length > 20 && text.includes(line))
   if (leaked.length) throw new Error(`Speaker notes found in the build: ${leaked[0]}`)

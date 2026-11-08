@@ -20,8 +20,10 @@ examples. Record gaps without inventing data. Default to existing cover,
 statement, code and section layouts. Artwork and media pipelines are separate.
 
 Stop after the outline for approval. Do not style a full deck or approve your
-own work. When the user approves, record their message, date and a SHA-256 of
-the approved outline content in review.md. Substantive argument changes reopen
+own work. The user normally approves with `pnpm slides` > "Approve the outline",
+which writes the `Outline approval:` line with date, message and SHA-256. If
+they approve in chat instead, record their message, date and a SHA-256 of the
+approved outline content in review.md. Substantive argument changes reopen
 this gate. Tool implementation approval is not approval of a new talk's argument.
 
 Handoff: brief, timed outline, evidence gaps, approval status and next action.

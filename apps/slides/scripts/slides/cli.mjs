@@ -1,8 +1,11 @@
 import path from 'node:path'
-import { parseCommand } from './contracts.ts'
+import { parseCommand, parseToolCommand } from './contracts.ts'
 import { root, newDeck, deckPath, artifactDirectory, sourceHash, saveReport } from './workspace.mjs'
 
 const help = `Faris Slides
+
+pnpm slides                  Interactive menu: pick a deck and what to do,
+                             with each step explained. Start here.
 
 pnpm slides new <talk>       Create planning files and one placeholder slide
 pnpm slides dev <talk>       Run on an available local port
@@ -13,33 +16,62 @@ pnpm slides build <talk>     Static website folder, no speaker notes, checked
 pnpm slides publish <talk>   Same checked build, written into the portfolio site
                              at apps/web/public/slides/<slug>/. Never deploys.
 
+Editions: --edition <name> on any command but new uses decks/<talk>/slides.<name>.md,
+a variant that imports slides from slides.md. Defaults become /talks/<talk>-<name>/
+and /slides/<talk>-<name>/.
+
 Build options: --base /path/ (/talks/<talk>/), the folder's URL path on your site
 Publish options: --slug <name> (<talk>), served at /slides/<name>/
 
 Export options: --format pdf|png (pdf), --clicks all|final (all)
+
+For agents and scripts (no prompts):
+pnpm slides list [--json]                      Decks, editions, published URLs
+pnpm slides status <talk> [--edition <name>] [--json]
+                                               Workflow stage, next step, slide list
+pnpm slides prompt <talk> <plan|write|edit|review> [--edition <name>]
+                                               Print the hand-off message for an agent
+pnpm slides edition <talk> --new <name> [--from <edition>] [--event "JSNation 2027"]
+pnpm slides edition <talk> --edition <name> --change <n>
+                                               Copy slide n into the edition to edit it
+pnpm slides edition <talk> --edition <name> --add-after <n> | --remove <n>
+Edition edits verify the rendered deck and roll back if another slide changed.
+Outline approval is human-only: use the interactive menu.
+
 Reviews and exports use fresh artifacts/reviews/<talk>/<run>/ directories.
 Commands never approve an outline or overwrite a deck or approved baseline.
 `
 
 try {
-  const command = parseCommand(process.argv.slice(2))
-  if (!command) console.log(help)
+  const args = process.argv.slice(2)
+  const tool = parseToolCommand(args)
+  const command = tool ? undefined : parseCommand(args)
+  if (tool) {
+    const { runTool } = await import('./tools.mjs')
+    await runTool(tool)
+  }
+  else if (!command && !args.length && process.stdin.isTTY && process.stdout.isTTY) {
+    const { interactive } = await import('./interactive.mjs')
+    await interactive()
+  }
+  else if (!command) console.log(help)
   else if (command.action === 'new') {
     console.log(`Created ${await newDeck(root, command.deck)}\nNext: fill brief.md and propose outline.md. Wait for approval before drafting.`)
   }
   else {
-    const entry = await deckPath(root, command.deck)
+    const entry = await deckPath(root, command.deck, false, command.edition)
+    const label = command.edition ? `${command.deck} (${command.edition})` : command.deck
     const { runNode, startDeck, slidevCli, typecheckCli } = await import('./slidev.mjs')
     if (command.action === 'dev') {
       const server = await startDeck(entry)
-      console.log(`\n${command.deck}: ${server.url}\nPress Ctrl+C to stop.`)
+      console.log(`\n${label}: ${server.url}\nPress Ctrl+C to stop.`)
       const stop = async () => { await server.close(); process.exit(0) }
       process.once('SIGINT', stop)
       process.once('SIGTERM', stop)
     }
     else {
-      const directory = await artifactDirectory(root, command.deck)
-      const report = { deck: command.deck, action: command.action, status: 'running', startedAt: new Date().toISOString(), node: process.version, slidev: '53.0.0', sourceSha256: await sourceHash(entry), stages: [] }
+      const directory = await artifactDirectory(root, command.deck, command.edition)
+      const report = { deck: command.deck, ...(command.edition && { edition: command.edition }), action: command.action, status: 'running', startedAt: new Date().toISOString(), node: process.version, slidev: '53.0.0', sourceSha256: await sourceHash(entry), stages: [] }
       console.log(`Artifacts: ${directory}`)
       try {
         if (command.action === 'review') {
@@ -64,17 +96,19 @@ try {
             report.stages.push('site checks passed')
             const { publishSite } = await import('./publish.mjs')
             report.published = await publishSite(root, web, command.slug)
+            const { recordPublish } = await import('./editions.mjs')
+            await recordPublish(path.dirname(entry), command.slug, command.edition)
             report.stages.push(`published to ${report.published}; commit it with the site`)
           }
         }
         else {
           report.format = command.format
           report.clickPolicy = command.clicks
-          report.output = command.format === 'pdf' ? `${command.deck}.pdf` : 'png'
+          report.output = command.format === 'pdf' ? `${command.edition ? `${command.deck}-${command.edition}` : command.deck}.pdf` : 'png'
           await runNode(root, slidevCli, ['export', entry, '--format', command.format, '--output', path.join(directory, report.output), '--with-clicks', String(command.clicks === 'all')], path.join(directory, 'export.log'))
           report.stages.push('native export completed; visual inspection pending')
         }
-        if (await sourceHash(entry) !== report.sourceSha256) throw new Error('slides.md changed during this run. Rerun against a stable draft.')
+        if (await sourceHash(entry) !== report.sourceSha256) throw new Error('Deck markdown changed during this run. Rerun against a stable draft.')
         report.status = 'passed'
       }
       catch (error) { report.status = 'failed'; report.failure = error.message; throw error }

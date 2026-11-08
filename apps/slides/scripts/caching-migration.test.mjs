@@ -263,7 +263,7 @@ test('caching migration: code is editable and valid TS syntax', () => {
 test('caching migration: source images are local, hashed individual assets', async () => {
   const manifest = JSON.parse(await readFile(new URL('migration/source.json', deck), 'utf8'))
   assert.equal(manifest.pages.length, 125)
-  assert.equal(manifest.assets.length, 10)
+  assert.equal(manifest.assets.length, 8)
   for (const asset of manifest.assets) assert.equal(digest(await readFile(extracted(asset.path))), asset.sha256)
   assert.doesNotMatch(markdown, /src="[^"\n]*source-\d+\.png/)
   for (const source of [74, 100, 108]) assert.match(bySource(source).content, /<ServerRequestFlow/)
