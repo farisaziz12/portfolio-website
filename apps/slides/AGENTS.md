@@ -70,8 +70,10 @@ Faris's rule for every PR that adds or changes a deck:
   `https://portfolio-website-git-<branch-with-slashes-as-dashes>-farisaziz12.vercel.app/slides/<url>/`.
   If Vercel shortens the branch alias, copy the URL from the Vercel bot comment.
 - Run `pnpm slides publish <talk>` in the PR so the preview path exists.
-- Host screenshots on the `pr-assets` branch under `<pr-branch>/` and link the
-  `raw.githubusercontent.com` URLs, so the images never land in `main`.
+- Host screenshots on an orphan branch named `pr-assets/<PR number>` (files at
+  its root) and link them as
+  `https://github.com/farisaziz12/portfolio-website/blob/pr-assets/<n>/<file>.png?raw=true`,
+  so the images never land in `main`.
 
 ## Agent-first authoring
 
