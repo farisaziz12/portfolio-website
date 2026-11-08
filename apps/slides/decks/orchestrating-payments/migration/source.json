@@ -1,0 +1,1131 @@
+{
+  "source": "orchestrating-payments-for-the-millions.pptx",
+  "sha256": "fc173af379804ecd788c52f480634fb2f14992565c769604bddef37ce9df2974",
+  "slides": [
+    {
+      "number": 1,
+      "part": "ppt/slides/slide1.xml",
+      "text": [
+        "Faris Aziz - faziz-dev.com",
+        "Reactive Payments at Scale",
+        "Orchestrating Payments for the Millions"
+      ],
+      "notes": "Revolut keeps balances in multiple currencies and matches opposite customer flows internally, so a USD→EUR trade can offset an EUR→USD trade without touching the market. Only the leftover imbalance is pooled and sent to wholesale liquidity providers, which keeps spreads and fees very low.",
+      "media": [
+        "ppt/media/image3.png"
+      ]
+    },
+    {
+      "number": 2,
+      "part": "ppt/slides/slide2.xml",
+      "text": [
+        "Staff Frontend Engineer @ Smallpdf",
+        "Who am I?",
+        "🌐 Previous Experience - Connected TV, Monetization/Growth, FinTech, Fitness Tech",
+        "🏋️‍♂️ Fun Fact - Former CrossFit Athlete & Trainer",
+        "💻 Raycast Ambassador",
+        "💛 Co-Founder of ZurichJS",
+        "💸 Stripe Community Builder"
+      ],
+      "notes": "",
+      "media": [
+        "ppt/media/image4.png",
+        "ppt/media/image5.png",
+        "ppt/media/image6.png",
+        "ppt/media/image7.png",
+        "ppt/media/image8.png"
+      ]
+    },
+    {
+      "number": 3,
+      "part": "ppt/slides/slide3.xml",
+      "text": [
+        "Story Time",
+        "faziz-dev.com"
+      ],
+      "notes": "Braintree Outage: We lost our integration with Braintree due to our API key being removed by mistake. This made it impossible for the majority of our users to create Subscriptions as its heavily reliant on Braintree.",
+      "media": []
+    },
+    {
+      "number": 4,
+      "part": "ppt/slides/slide4.xml",
+      "text": [],
+      "notes": "High volume = hard to discern anomalies. This required metric segregation",
+      "media": [
+        "ppt/media/image9.png"
+      ]
+    },
+    {
+      "number": 5,
+      "part": "ppt/slides/slide5.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image10.png"
+      ]
+    },
+    {
+      "number": 6,
+      "part": "ppt/slides/slide6.xml",
+      "text": [
+        "9PM - 10AM",
+        "Incident Time",
+        "faziz-dev.com"
+      ],
+      "notes": "Lost sleep",
+      "media": []
+    },
+    {
+      "number": 7,
+      "part": "ppt/slides/slide7.xml",
+      "text": [
+        "12 Hours",
+        "Downtime",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 8,
+      "part": "ppt/slides/slide8.xml",
+      "text": [
+        "~5-10K USD",
+        "Lost in Missed Subscriptions",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 9,
+      "part": "ppt/slides/slide9.xml",
+      "text": [
+        "We’re Going to Change That",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 10,
+      "part": "ppt/slides/slide10.xml",
+      "text": [
+        "What Are the Struggles With Payments?",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 11,
+      "part": "ppt/slides/slide11.xml",
+      "text": [
+        "Currency & FX Fees 💸",
+        "faziz-dev.com"
+      ],
+      "notes": "You charge €100 in Germany, but your processor settles in USD with a 2% FX margin, and your bank adds another 1%. You just lost 3% on currency conversion alone.\n\nNow imagine that pain, but for refunds",
+      "media": []
+    },
+    {
+      "number": 12,
+      "part": "ppt/slides/slide12.xml",
+      "text": [
+        "Optimizing Payment Methods Per Country 🌍",
+        "faziz-dev.com"
+      ],
+      "notes": "Athens: Saw busker accepting both PayPal and Credit card",
+      "media": []
+    },
+    {
+      "number": 13,
+      "part": "ppt/slides/slide13.xml",
+      "text": [
+        "Switzerland 🇨🇭 ➡️ TWINT",
+        "faziz-dev.com"
+      ],
+      "notes": "Bangkok/Twint Example + SEPA",
+      "media": []
+    },
+    {
+      "number": 14,
+      "part": "ppt/slides/slide14.xml",
+      "text": [
+        "Brazil 🇧🇷 ➡️ Pix Bank Transfers",
+        "faziz-dev.com"
+      ],
+      "notes": "Localized Pricing",
+      "media": []
+    },
+    {
+      "number": 15,
+      "part": "ppt/slides/slide15.xml",
+      "text": [
+        "India 🇮🇳 ➡️ UPI",
+        "faziz-dev.com"
+      ],
+      "notes": "Unified Payments Interface",
+      "media": []
+    },
+    {
+      "number": 16,
+      "part": "ppt/slides/slide16.xml",
+      "text": [
+        "Netherlands 🇳🇱 ➡️ iDeal Payments",
+        "faziz-dev.com"
+      ],
+      "notes": "Though deprecated and new one is Wero",
+      "media": []
+    },
+    {
+      "number": 17,
+      "part": "ppt/slides/slide17.xml",
+      "text": [
+        "Last Year, We Introduced",
+        "",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": [
+        "ppt/media/image11.png"
+      ]
+    },
+    {
+      "number": 18,
+      "part": "ppt/slides/slide18.xml",
+      "text": [
+        "3.5x",
+        "Increase in Annual Recurring Revenue in China",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 19,
+      "part": "ppt/slides/slide19.xml",
+      "text": [
+        "Regulation & Compliance",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 20,
+      "part": "ppt/slides/slide20.xml",
+      "text": [
+        "Sanctioned Countries & Restricted Transactions 🚫",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 21,
+      "part": "ppt/slides/slide21.xml",
+      "text": [
+        "No Local Business Entity, No Payments 🏢",
+        "faziz-dev.com"
+      ],
+      "notes": "This is where merchant of record is handy: A merchant of record is the legal entity responsible for processing customer payments, handling taxes, refunds, and chargebacks on behalf of a business.",
+      "media": []
+    },
+    {
+      "number": 22,
+      "part": "ppt/slides/slide22.xml",
+      "text": [
+        "Country Dependent Compliance 🌐",
+        "faziz-dev.com"
+      ],
+      "notes": "US has 11,000 tax jurisdictions",
+      "media": []
+    },
+    {
+      "number": 23,
+      "part": "ppt/slides/slide23.xml",
+      "text": [
+        "In the US, there are 11,000+ tax jurisdictions",
+        "faziz-dev.com"
+      ],
+      "notes": "Nexus = sufficient connection between a business and a state \nPhysical Nexus (office) OR Economic Nexus (transactions, volumes)\n\nYou need to collect Zip code, street, etc. Adding fields reduce conversion.11% conversion drop just for adding first and last name",
+      "media": []
+    },
+    {
+      "number": 24,
+      "part": "ppt/slides/slide24.xml",
+      "text": [
+        "Chargebacks & Disputes ⚖️",
+        "faziz-dev.com"
+      ],
+      "notes": "Providers can pull the plug",
+      "media": []
+    },
+    {
+      "number": 25,
+      "part": "ppt/slides/slide25.xml",
+      "text": [
+        "Reliability & Uptime",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 26,
+      "part": "ppt/slides/slide26.xml",
+      "text": [],
+      "notes": "99.999% = Yearly: 5m 16s",
+      "media": [
+        "ppt/media/image12.png"
+      ]
+    },
+    {
+      "number": 27,
+      "part": "ppt/slides/slide27.xml",
+      "text": [],
+      "notes": "Elevated PayPal Errors: 1.5 hours\n\nElevated Bancontact errors: 45min\n\nElevated API errors: 2 hours",
+      "media": [
+        "ppt/media/image13.png"
+      ]
+    },
+    {
+      "number": 28,
+      "part": "ppt/slides/slide28.xml",
+      "text": [],
+      "notes": "8 hours",
+      "media": [
+        "ppt/media/image14.png"
+      ]
+    },
+    {
+      "number": 29,
+      "part": "ppt/slides/slide29.xml",
+      "text": [
+        "💳 Payment Orchestration",
+        "Think of it like air traffic control for payments, directing transactions to the best route for cost, speed and reliability ✈️",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": [
+        "ppt/media/image1.tif"
+      ]
+    },
+    {
+      "number": 30,
+      "part": "ppt/slides/slide30.xml",
+      "text": [
+        "Payment Orchestration 💳",
+        "faziz-dev.com"
+      ],
+      "notes": "What is this payment orchestration thing?",
+      "media": []
+    },
+    {
+      "number": 31,
+      "part": "ppt/slides/slide31.xml",
+      "text": [
+        "One system to manage multiple payment providers 🏦➡️💳➡️💰",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 32,
+      "part": "ppt/slides/slide32.xml",
+      "text": [
+        "Route transactions based on cost, success rate, or region 🚀",
+        "faziz-dev.com"
+      ],
+      "notes": "Stripe automatically optimized the order of payment methods but that doesn’t mean the default is optimization is right for you! A/B testing is important!",
+      "media": []
+    },
+    {
+      "number": 33,
+      "part": "ppt/slides/slide33.xml",
+      "text": [
+        "Reduce reliance on a single provider to avoid downtime 🔄",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 34,
+      "part": "ppt/slides/slide34.xml",
+      "text": [
+        "Optimize payment methods per country for higher success rates ✅",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 35,
+      "part": "ppt/slides/slide35.xml",
+      "text": [
+        "Currency & FX Fees 💸",
+        "",
+        "Country",
+        "Stripe Fees",
+        "Revolut Pay Fees",
+        "Comparison",
+        "Overlapping",
+        "United Kingdom",
+        "1.5% + £0.2 ",
+        "1.0% + £0.2 ",
+        "Revolut ✅",
+        "",
+        "France",
+        "2.5% + €0.2",
+        "1.0% + €0.2",
+        "Revolut ✅",
+        "Only Revolut",
+        "Cyprus",
+        "N/A",
+        "1.0% + €0.2",
+        "Revolut ✅",
+        "",
+        "Estonia",
+        "N/A",
+        "1.0% + €0.2",
+        "Revolut ✅",
+        "Only Stripe",
+        "United States",
+        "2.9% + $0.3",
+        "N/A",
+        "Stripe ✅",
+        "",
+        "Canada",
+        "2.9% + CA$ 0.3",
+        "N/A",
+        "Stripe ✅"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 36,
+      "part": "ppt/slides/slide36.xml",
+      "text": [
+        "Frontend Architecture",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 37,
+      "part": "ppt/slides/slide37.xml",
+      "text": [
+        "Frontend Architecture",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "User Opens Checkout",
+        "Init Orchestration Layer",
+        "Consume Global State & Rules Config",
+        "User Country",
+        "A/B Tests",
+        "Currency List"
+      ],
+      "notes": "It defines a list of rules to decide which payment gateway should be used. The rules are checked in order, from most important to least important:\n\t1.\tPick the gateway that matches the one already in use.\n\t2.\tIf not, prefer gateways limited to a specific experiment.\n\t3.\tIf not, prefer gateways limited to certain countries (strict list).\n\t4.\tIf not, prefer gateways allowed in some countries (looser list).",
+      "media": []
+    },
+    {
+      "number": 38,
+      "part": "ppt/slides/slide38.xml",
+      "text": [
+        "Frontend Architecture",
+        "",
+        "",
+        "",
+        "User Country",
+        "A/B Tests",
+        "Currency List",
+        "",
+        "",
+        "",
+        "",
+        "Decision Tree",
+        "",
+        "Prioritize PSPs",
+        "",
+        ""
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 39,
+      "part": "ppt/slides/slide39.xml",
+      "text": [
+        "Frontend Architecture",
+        "Payment Method",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Currency",
+        "",
+        "CNY",
+        "Payment Method",
+        "💳",
+        "",
+        "",
+        "",
+        "Currency",
+        "",
+        "USD",
+        "Payment Method",
+        "💳",
+        "",
+        "",
+        "Currency",
+        "",
+        "CNY"
+      ],
+      "notes": "Alipay example",
+      "media": [
+        "ppt/media/image15.png",
+        "ppt/media/image16.png",
+        "ppt/media/image17.png",
+        "ppt/media/image18.png",
+        "ppt/media/image19.png",
+        "ppt/media/image20.png",
+        "ppt/media/image21.png"
+      ]
+    },
+    {
+      "number": 40,
+      "part": "ppt/slides/slide40.xml",
+      "text": [
+        "Frontend Architecture",
+        "Payment Method ✅",
+        "Currency ✅",
+        "Payment Method ❌",
+        "Currency ❌",
+        "Payment Method ❌",
+        "Currency ✅",
+        "1st ✅",
+        "2nd ⚠️",
+        "3rd 🚨"
+      ],
+      "notes": "",
+      "media": [
+        "ppt/media/image15.png",
+        "ppt/media/image16.png",
+        "ppt/media/image17.png",
+        "ppt/media/image22.png",
+        "ppt/media/image23.png",
+        "ppt/media/image24.png"
+      ]
+    },
+    {
+      "number": 41,
+      "part": "ppt/slides/slide41.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image25.png"
+      ]
+    },
+    {
+      "number": 42,
+      "part": "ppt/slides/slide42.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image26.png"
+      ]
+    },
+    {
+      "number": 43,
+      "part": "ppt/slides/slide43.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image27.png"
+      ]
+    },
+    {
+      "number": 44,
+      "part": "ppt/slides/slide44.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image28.png"
+      ]
+    },
+    {
+      "number": 45,
+      "part": "ppt/slides/slide45.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image29.png"
+      ]
+    },
+    {
+      "number": 46,
+      "part": "ppt/slides/slide46.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image30.png"
+      ]
+    },
+    {
+      "number": 47,
+      "part": "ppt/slides/slide47.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image31.png"
+      ]
+    },
+    {
+      "number": 48,
+      "part": "ppt/slides/slide48.xml",
+      "text": [
+        "7",
+        "Lines of Code to Add a Payment Method",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 49,
+      "part": "ppt/slides/slide49.xml",
+      "text": [
+        "Infrastructure As Code",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 50,
+      "part": "ppt/slides/slide50.xml",
+      "text": [
+        "Infrastructure As Code",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 51,
+      "part": "ppt/slides/slide51.xml",
+      "text": [
+        "Payments As Code",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 52,
+      "part": "ppt/slides/slide52.xml",
+      "text": [
+        "Benefits",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 53,
+      "part": "ppt/slides/slide53.xml",
+      "text": [
+        "Version Control Your Payments Config",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 54,
+      "part": "ppt/slides/slide54.xml",
+      "text": [
+        "Unit Test Your Payments Config",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 55,
+      "part": "ppt/slides/slide55.xml",
+      "text": [
+        "Case Study: $10M ARR SaaS",
+        "~$1,140",
+        "",
+        "Estimated Hourly Revenue",
+        "Running 24/7/365",
+        "",
+        "",
+        "99.9%",
+        "Availability",
+        "",
+        "Up to 8h 41m 38s downtime, potential loss: ~$9,925/year",
+        "",
+        "",
+        "5-15%",
+        "",
+        "Uplift - Payment Methods",
+        "",
+        "Prioritizing PIX payments in Brazil vs credit card increases conversion by 5-15%, avoids high credit card fees (~2-4%) and reduces chargeback risks"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 56,
+      "part": "ppt/slides/slide56.xml",
+      "text": [
+        "Demo",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 57,
+      "part": "ppt/slides/slide57.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image32.png",
+        "ppt/media/media1.mp4"
+      ]
+    },
+    {
+      "number": 58,
+      "part": "ppt/slides/slide58.xml",
+      "text": [
+        "~70%",
+        "Drop in Component Bundle Size",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 59,
+      "part": "ppt/slides/slide59.xml",
+      "text": [
+        "Edge Cases",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 60,
+      "part": "ppt/slides/slide60.xml",
+      "text": [
+        "Payment Method Reordering",
+        "faziz-dev.com"
+      ],
+      "notes": "Your A/B tests can help you determine what is the best order. You can configure at a country level\n\n30% users go to google search first result. ",
+      "media": []
+    },
+    {
+      "number": 61,
+      "part": "ppt/slides/slide61.xml",
+      "text": [
+        "SEPA Payments",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 62,
+      "part": "ppt/slides/slide62.xml",
+      "text": [
+        "Most Payment methods have <24h settlement periods",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 63,
+      "part": "ppt/slides/slide63.xml",
+      "text": [
+        "24H Grace Period",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 64,
+      "part": "ppt/slides/slide64.xml",
+      "text": [
+        "SEPA Payments can take up to 5-6 Days to settle",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 65,
+      "part": "ppt/slides/slide65.xml",
+      "text": [
+        "6 Day Grace Period",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 66,
+      "part": "ppt/slides/slide66.xml",
+      "text": [
+        "Tax Inclusivity/Exclusivity",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 67,
+      "part": "ppt/slides/slide67.xml",
+      "text": [
+        "EU = Tax Inclusive",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 68,
+      "part": "ppt/slides/slide68.xml",
+      "text": [
+        "US = Tax Exclusive",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 69,
+      "part": "ppt/slides/slide69.xml",
+      "text": [
+        "A/B Test Inclusivity/Exclusivity",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 70,
+      "part": "ppt/slides/slide70.xml",
+      "text": [
+        "UPI in India 🇮🇳",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 71,
+      "part": "ppt/slides/slide71.xml",
+      "text": [
+        "15K INR Threshold on Mandate Behavior",
+        "faziz-dev.com"
+      ],
+      "notes": "So if you have seat based pricing, can increase friction",
+      "media": []
+    },
+    {
+      "number": 72,
+      "part": "ppt/slides/slide72.xml",
+      "text": [
+        "Pause/Resume Functionality Required",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 73,
+      "part": "ppt/slides/slide73.xml",
+      "text": [
+        "What About when Things Go Wrong?",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 74,
+      "part": "ppt/slides/slide74.xml",
+      "text": [
+        "⚠️ Anomoly Detection",
+        "Seasonality & Anomaly based alerts for",
+        "Gateway 🌉",
+        "Currency 💸",
+        "Country 🌍"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 75,
+      "part": "ppt/slides/slide75.xml",
+      "text": [
+        "15",
+        "Minutes Away From Detecting Any Metric Deviation"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 76,
+      "part": "ppt/slides/slide76.xml",
+      "text": [
+        "🚨 We Got An Alert!",
+        "Failing payments for",
+        "Braintree 🧠",
+        "Switzerland 🇨🇭"
+      ],
+      "notes": "Let’s reroute it to Stripe!",
+      "media": []
+    },
+    {
+      "number": 77,
+      "part": "ppt/slides/slide77.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image33.png",
+        "ppt/media/media2.mp4"
+      ]
+    },
+    {
+      "number": 78,
+      "part": "ppt/slides/slide78.xml",
+      "text": [
+        "30 Seconds",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 79,
+      "part": "ppt/slides/slide79.xml",
+      "text": [
+        "10",
+        "Minutes to Operational",
+        "Your only limiting factor is the speed of your build pipeline",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 80,
+      "part": "ppt/slides/slide80.xml",
+      "text": [
+        "What if we could safely simulate this?",
+        "faziz-dev.com"
+      ],
+      "notes": "",
+      "media": []
+    },
+    {
+      "number": 81,
+      "part": "ppt/slides/slide81.xml",
+      "text": [
+        "Chaos Engineering",
+        "faziz-dev.com"
+      ],
+      "notes": "Chaos engineering is the practice of deliberately injecting failures into a system to test its resilience and uncover weaknesses before they cause real outages.",
+      "media": []
+    },
+    {
+      "number": 82,
+      "part": "ppt/slides/slide82.xml",
+      "text": [
+        "Game Days",
+        "faziz-dev.com"
+      ],
+      "notes": "Game days are scheduled, controlled exercises where teams simulate incidents or failures in production-like environments to practice response and validate system reliability.",
+      "media": []
+    },
+    {
+      "number": 83,
+      "part": "ppt/slides/slide83.xml",
+      "text": [],
+      "notes": "",
+      "media": [
+        "ppt/media/image2.tif"
+      ]
+    },
+    {
+      "number": 84,
+      "part": "ppt/slides/slide84.xml",
+      "text": [
+        "So long & thanks for all the fish 👋",
+        "Connect with me"
+      ],
+      "notes": "",
+      "media": [
+        "ppt/media/image3.png",
+        "ppt/media/image34.png",
+        "ppt/media/image4.png"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "source": "ppt/media/image4.png",
+      "output": "public/media/speaker-montage.png",
+      "sourceSha256": "54d69a8e14ecfecae4e35aa9827007204cfbb7c9ad2a0945d38a16015969c484",
+      "outputSha256": "54d69a8e14ecfecae4e35aa9827007204cfbb7c9ad2a0945d38a16015969c484",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image5.png",
+      "output": "public/media/smallpdf-logo.png",
+      "sourceSha256": "8ba0f2e92618a7e9ef75a5ee4458f146c66e72e0deaf499fa9eb4b664a323282",
+      "outputSha256": "8ba0f2e92618a7e9ef75a5ee4458f146c66e72e0deaf499fa9eb4b664a323282",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image6.png",
+      "output": "public/media/raycast-logo.png",
+      "sourceSha256": "6f335b2cb0e7a2ad979eb1e04156921431ee3c8a7e081224893b65ec9a83699f",
+      "outputSha256": "6f335b2cb0e7a2ad979eb1e04156921431ee3c8a7e081224893b65ec9a83699f",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image7.png",
+      "output": "public/media/zurichjs-logo.png",
+      "sourceSha256": "5a3185fded120dd1ff2009fdc6b29cea36916bb87a7c9cd74b1463b0e2a827da",
+      "outputSha256": "5a3185fded120dd1ff2009fdc6b29cea36916bb87a7c9cd74b1463b0e2a827da",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image8.png",
+      "output": "public/media/stripe-community-logo.png",
+      "sourceSha256": "426a1dcb48480611f28d3be2a6716c23c7ba7099b1b4e1a10c8c73011214966e",
+      "outputSha256": "426a1dcb48480611f28d3be2a6716c23c7ba7099b1b4e1a10c8c73011214966e",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image9.png",
+      "output": "public/media/braintree-errors.png",
+      "sourceSha256": "40c8f58d8d33e96bc6fbab6499c1145d0c25664043ca29c742cc791abc748da9",
+      "outputSha256": "40c8f58d8d33e96bc6fbab6499c1145d0c25664043ca29c742cc791abc748da9",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image10.png",
+      "output": "public/media/subscriptions-metric.png",
+      "sourceSha256": "1c8e9f86c120e7692fb27c7f7e8d1d53e8f07074b0e667b1001092cdaaea269f",
+      "outputSha256": "1c8e9f86c120e7692fb27c7f7e8d1d53e8f07074b0e667b1001092cdaaea269f",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image11.png",
+      "output": "public/media/alipay.png",
+      "sourceSha256": "31ce9c32c665e42ec182a78049065baa67fd0fc7fba85a747978c384981af71c",
+      "outputSha256": "31ce9c32c665e42ec182a78049065baa67fd0fc7fba85a747978c384981af71c",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image12.png",
+      "output": "public/media/uptime-calculator.png",
+      "sourceSha256": "ce2dd35c7dcefc0c21271c6cefdaffc491843c374c3776eddbe4ca30903d8065",
+      "outputSha256": "ce2dd35c7dcefc0c21271c6cefdaffc491843c374c3776eddbe4ca30903d8065",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image13.png",
+      "output": "public/media/stripe-incidents.png",
+      "sourceSha256": "8d62494d807db64e0b423318933a5faa6baa943bf00bd1087e7b74de1d99e8ac",
+      "outputSha256": "8d62494d807db64e0b423318933a5faa6baa943bf00bd1087e7b74de1d99e8ac",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image14.png",
+      "output": "public/media/paypal-incidents.png",
+      "sourceSha256": "1366a53129113d3acb8c999dd5c812c97c00f276bf15def830bfc5ea3514fe15",
+      "outputSha256": "1366a53129113d3acb8c999dd5c812c97c00f276bf15def830bfc5ea3514fe15",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image1.tif",
+      "output": "public/media/air-traffic-control.png",
+      "sourceSha256": "dfc297c82c3697e1be4dad36902f57a16924b2c76d393018ccfa63f8b618fc41",
+      "outputSha256": "058ac16311eb3f2b4df42c40c813cd1d305f32c840c0db44b099e6dec5ea6dc9",
+      "conversion": "TIFF to PNG, no resize or crop"
+    },
+    {
+      "source": "ppt/media/image15.png",
+      "output": "public/media/stripe.png",
+      "sourceSha256": "56e9e59e09f0726c784be2a140a2a802983220fcb205f0227bc4cb3d6036e88f",
+      "outputSha256": "56e9e59e09f0726c784be2a140a2a802983220fcb205f0227bc4cb3d6036e88f",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image16.png",
+      "output": "public/media/revolut.png",
+      "sourceSha256": "74e89ab98dd9f1373507f73f9eca1d5866bcbe7dc692427647233ca370089720",
+      "outputSha256": "74e89ab98dd9f1373507f73f9eca1d5866bcbe7dc692427647233ca370089720",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image17.png",
+      "output": "public/media/adyen.png",
+      "sourceSha256": "94bfec73772c8b1595d280492e88969aa1eb75573a68075fe0644a5a664b4605",
+      "outputSha256": "94bfec73772c8b1595d280492e88969aa1eb75573a68075fe0644a5a664b4605",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image32.png",
+      "output": "public/media/checkout-demo-poster.png",
+      "sourceSha256": "e45eea913f72642587cb3e6d6080ca7b85345e8b466fe3725d2a510cecbb1f0b",
+      "outputSha256": "e45eea913f72642587cb3e6d6080ca7b85345e8b466fe3725d2a510cecbb1f0b",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image33.png",
+      "output": "public/media/failover-demo-poster.png",
+      "sourceSha256": "6a4531357bc923fd8312c3c72cb84ba4a6620ee054b7276090551c82bc918805",
+      "outputSha256": "6a4531357bc923fd8312c3c72cb84ba4a6620ee054b7276090551c82bc918805",
+      "conversion": "byte-for-byte"
+    },
+    {
+      "source": "ppt/media/image2.tif",
+      "output": "public/media/chaos-demo.png",
+      "sourceSha256": "441cc4cf7b5b8b9c6cf3f42fb9982191baec5c9691db6a02a9a6c71ee3ece25e",
+      "outputSha256": "8b240cafba1f8370c9c4a9a86e01383a0b3a96b0878239b191f1d9a031809b75",
+      "conversion": "TIFF to PNG, no resize or crop"
+    },
+    {
+      "source": "ppt/media/image34.png",
+      "output": "public/media/contact-qr.png",
+      "sourceSha256": "6db1862263e727de91be3b831d3391a80f81270499037a836a491490d0c9c5d0",
+      "outputSha256": "6db1862263e727de91be3b831d3391a80f81270499037a836a491490d0c9c5d0",
+      "conversion": "byte-for-byte"
+    }
+  ]
+}

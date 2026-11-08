@@ -1,0 +1,71 @@
+{
+  "status": "prepared from user-approved likenesses; final visual checkpoint",
+  "format": "RGBA PNG static poses, not vectors or an animated atlas",
+  "approval": "2026-09-26: likenesses and deterministic cleanup/compositing approved",
+  "recipe": "scripts/prepare-sprites.mjs",
+  "cleanup": "Clear RGBA where source alpha < 16/255. Preserve all other pixels, except the approved thinking reflection and chest-logo composite. No resizing or cropping.",
+  "logo": {
+    "source": "references/zurichjs-official.png",
+    "sha256": "2a24859175e8689b078716a9c49f44fe5b0ee1e30df255e4b8e274a7c17250e6",
+    "treatment": "Original white, blue and black letterforms; yellow masked to reveal garment. Mark is never mirrored."
+  },
+  "chromium": "151.0.7922.34",
+  "sprites": [
+    {
+      "id": "faris-speaking",
+      "file": "faris-speaking.png",
+      "source": "media/sprites/review-v1/faris-speaking.png",
+      "sourceSha256": "0cd6c3dea7c1849c0ee94e013ee6654d9c822ec2ca09d49f71101368ed4df296",
+      "sha256": "d5d7b01e0667910b2b665def6b12e2eb891ba8d635910778704cfa0250c6bc17",
+      "width": 1374,
+      "height": 1145,
+      "removedLowAlphaPixels": 11187,
+      "mirrored": false,
+      "bakedLogo": {
+        "x": 769,
+        "y": 767,
+        "size": 69
+      }
+    },
+    {
+      "id": "faris-thinking",
+      "file": "faris-thinking.png",
+      "source": "media/sprites/review-v1/faris-thinking.png",
+      "sourceSha256": "d227f40e94e50d325bfdb2e0b946636e8df2a1afc119a8f88c417b86f64cbdd9",
+      "sha256": "c3c57e4c777d2010999bb1ddd1c170e0a927a82c6063e41f0b40b9293cf3dd9d",
+      "width": 1306,
+      "height": 1205,
+      "removedLowAlphaPixels": 6087,
+      "mirrored": true,
+      "bakedLogo": {
+        "x": 744,
+        "y": 831,
+        "size": 65
+      }
+    },
+    {
+      "id": "duck-curious",
+      "file": "duck-curious.png",
+      "source": "media/sprites/review-v1/duck-curious.png",
+      "sourceSha256": "9f4a866e42e2a49f2d9139103a3357b82f42113d15737aeb429b07b4bdccdcf8",
+      "sha256": "47d366a076399939330120cf176e5584fddcb4852c696b2c896d365ae0a64ffc",
+      "width": 1199,
+      "height": 1312,
+      "removedLowAlphaPixels": 6551,
+      "mirrored": false,
+      "bakedLogo": null
+    },
+    {
+      "id": "duck-celebrating",
+      "file": "duck-celebrating.png",
+      "source": "media/sprites/review-v1/duck-celebrating.png",
+      "sourceSha256": "f9b5b8316aa892afbc5bb90a20ffee103f8f6f846e4b40a78651bd7ab7c9f3e9",
+      "sha256": "d1b1236e2cfc9248b5863885ce0fd5b6555648272717abfa45d4996af01e928f",
+      "width": 1284,
+      "height": 1225,
+      "removedLowAlphaPixels": 7908,
+      "mirrored": false,
+      "bakedLogo": null
+    }
+  ]
+}

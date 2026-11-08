@@ -1,0 +1,30 @@
+{
+  "browser": "151.0.7922.34",
+  "method": "Decoded original recording, JPEG at one second for playback; visually selected print frames at 15/7/12 seconds; no artwork generation",
+  "videos": [
+    {
+      "number": 1,
+      "seconds": 1,
+      "duration": 41.033333,
+      "width": 3734,
+      "height": 2160,
+      "printSeconds": 15
+    },
+    {
+      "number": 2,
+      "seconds": 1,
+      "duration": 14,
+      "width": 3734,
+      "height": 2160,
+      "printSeconds": 7
+    },
+    {
+      "number": 3,
+      "seconds": 1,
+      "duration": 24.266667,
+      "width": 3124,
+      "height": 2160,
+      "printSeconds": 12
+    }
+  ]
+}
