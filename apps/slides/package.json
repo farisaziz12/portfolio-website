@@ -21,6 +21,7 @@
     "export:p1": "slidev export decks/showcase/slides.md --output artifacts/p1/faris-slides-p1.pdf --with-clicks"
   },
   "devDependencies": {
+    "@clack/prompts": "1.8.1",
     "@slidev/cli": "53.0.0",
     "@slidev/client": "53.0.0",
     "@slidev/types": "53.0.0",

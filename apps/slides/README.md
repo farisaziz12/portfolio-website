@@ -5,6 +5,7 @@ faziz-dev.com monorepo; run everything from the repo root:
 
 ```bash
 pnpm install
+pnpm slides                     # interactive menu: every step below, explained
 pnpm slides new <talk>          # planning files + placeholder slide
 pnpm slides dev <talk>          # live editing
 pnpm slides review <talk>       # typecheck, build, screenshot every state

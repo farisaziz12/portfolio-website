@@ -29,14 +29,15 @@ export async function deckPath(workspace, name, creating = false, edition) {
   return entry
 }
 
-export async function newDeck(workspace, name) {
+export async function newDeck(workspace, name, title = name.split('-').join(' ')) {
   const destination = await deckPath(workspace, name, true)
   // An exclusive mkdir is the no-overwrite gate, even for an empty deck.
   await mkdir(destination)
-  const title = name.split('-').join(' ')
   for (const file of await readdir(templates)) {
     const source = await readFile(path.join(templates, file), 'utf8')
-    await writeFile(path.join(destination, file), source.replaceAll('{{name}}', name).replaceAll('{{title}}', title), { flag: 'wx' })
+    // Quote the YAML value so titles with colons stay valid frontmatter.
+    const filled = source.replaceAll('title: {{title}}', `title: ${JSON.stringify(title)}`).replaceAll('{{name}}', name).replaceAll('{{title}}', title)
+    await writeFile(path.join(destination, file), filled, { flag: 'wx' })
   }
   return destination
 }

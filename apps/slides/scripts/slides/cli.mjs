@@ -4,6 +4,9 @@ import { root, newDeck, deckPath, artifactDirectory, sourceHash, saveReport } fr
 
 const help = `Faris Slides
 
+pnpm slides                  Interactive menu: pick a deck and what to do,
+                             with each step explained. Start here.
+
 pnpm slides new <talk>       Create planning files and one placeholder slide
 pnpm slides dev <talk>       Run on an available local port
 pnpm slides review <talk>    Typecheck, build, capture every slide/click state
@@ -26,8 +29,13 @@ Commands never approve an outline or overwrite a deck or approved baseline.
 `
 
 try {
-  const command = parseCommand(process.argv.slice(2))
-  if (!command) console.log(help)
+  const args = process.argv.slice(2)
+  const command = parseCommand(args)
+  if (!command && !args.length && process.stdin.isTTY && process.stdout.isTTY) {
+    const { interactive } = await import('./interactive.mjs')
+    await interactive()
+  }
+  else if (!command) console.log(help)
   else if (command.action === 'new') {
     console.log(`Created ${await newDeck(root, command.deck)}\nNext: fill brief.md and propose outline.md. Wait for approval before drafting.`)
   }
@@ -69,6 +77,8 @@ try {
             report.stages.push('site checks passed')
             const { publishSite } = await import('./publish.mjs')
             report.published = await publishSite(root, web, command.slug)
+            const { recordPublish } = await import('./editions.mjs')
+            await recordPublish(path.dirname(entry), command.slug, command.edition)
             report.stages.push(`published to ${report.published}; commit it with the site`)
           }
         }
