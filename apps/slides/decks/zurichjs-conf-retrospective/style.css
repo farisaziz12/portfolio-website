@@ -1,0 +1,56 @@
+/* Deck-local compositions for the retrospective. Brand tokens and layouts stay shared. */
+
+/* Chart and list slides: smaller heading so the visual gets the room. */
+.slidev-layout.conf-visual .faris-statement__body { max-width: 1120px; width: 100%; }
+.slidev-layout.conf-visual .faris-statement__body h1 { font-size: 56px; line-height: 1.06; margin-bottom: 36px; }
+
+/* Big-number slides. */
+.slidev-layout.conf-metric .faris-statement__body h1 { font-size: 60px; line-height: 1.06; }
+.slidev-layout .conf-numbers { display: flex; gap: 72px; margin-top: 44px; }
+.slidev-layout .conf-number strong { display: block; color: var(--faris-text-blue); font-size: 96px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+.slidev-layout .conf-number span { display: block; max-width: 340px; margin-top: 12px; font-size: 26px; color: var(--faris-muted); }
+
+/* Three questions / three lessons. */
+.slidev-layout .conf-three { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.slidev-layout .conf-three li { border-top: 4px solid var(--faris-brand-blue); padding-top: 20px; font-size: 34px; font-weight: 750; line-height: 1.15; letter-spacing: -0.02em; }
+.slidev-layout .conf-three li small { display: block; margin-top: 12px; font-size: 22px; font-weight: 500; color: var(--faris-muted); letter-spacing: 0; }
+
+/* Timeline: one row of dated stops. */
+.slidev-layout .conf-timeline ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; border-top: 4px solid var(--faris-border); }
+.slidev-layout .conf-timeline li { position: relative; padding-top: 32px; }
+.slidev-layout .conf-timeline li::before { content: ""; position: absolute; top: -14px; left: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--faris-brand-blue); }
+.slidev-layout .conf-timeline li:last-child::before { background: var(--faris-brand-yellow); box-shadow: 0 0 0 4px var(--faris-brand-blue); }
+.slidev-layout .conf-timeline time { display: block; color: var(--faris-text-blue); font-size: 22px; font-weight: 800; letter-spacing: 0.02em; }
+.slidev-layout .conf-timeline span { display: block; margin-top: 8px; font-size: 24px; line-height: 1.25; }
+
+/* Admin areas grid. */
+.slidev-layout .conf-team { font-size: 32px; margin-bottom: 32px; }
+.slidev-layout .conf-areas ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.slidev-layout .conf-areas li { border: 2px solid var(--faris-border); border-radius: 12px; padding: 16px 18px; font-size: 24px; font-weight: 650; line-height: 1.2; }
+
+
+/* Hide the handwritten underline when a slide has no annotation. */
+.slidev-layout .faris-annotation:not(:has(*))::after { display: none; }
+
+/* Repo facts under the commits chart. */
+.slidev-layout.conf-visual .conf-bar-chart { max-height: 380px; }
+.slidev-layout .conf-facts { margin-top: 20px !important; font-size: 28px !important; }
+.slidev-layout .conf-facts strong { color: var(--faris-text-blue); }
+
+/* One big number per slide: the number is the heading, the label sits under it. */
+.slidev-layout.conf-big .faris-statement__body h1 { font-size: 220px; line-height: 0.95; letter-spacing: -0.06em; color: var(--faris-text-blue); }
+.slidev-layout.conf-big .faris-statement__body > p { font-size: 44px; line-height: 1.2; max-width: 1040px; margin-top: 28px; color: var(--faris-fg); font-weight: 650; letter-spacing: -0.02em; }
+.slidev-layout.conf-big .faris-statement__body > p + p { font-size: 28px; font-weight: 500; color: var(--faris-muted); margin-top: 16px; }
+/* Big statement sentence without a number. */
+.slidev-layout.conf-say .faris-statement__body h1 { font-size: 88px; line-height: 1.04; }
+.slidev-layout.conf-say .faris-statement__body h1 strong { color: var(--faris-text-blue); }
+
+/* Chapter list on the agenda slide. */
+.slidev-layout .conf-chapters ol { list-style: none; counter-reset: ch; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 32px; }
+.slidev-layout .conf-chapters li { counter-increment: ch; border-top: 4px solid var(--faris-brand-blue); padding-top: 14px; font-size: 28px; font-weight: 750; line-height: 1.15; letter-spacing: -0.02em; }
+.slidev-layout .conf-chapters li::before { content: counter(ch, decimal-leading-zero); display: block; margin-bottom: 8px; color: var(--faris-text-blue); font-size: 18px; letter-spacing: 0.1em; }
+
+/* Screenshot slides: heading on the left, the captured page on the right. */
+.slidev-layout.conf-shot .faris-statement__body { display: grid; grid-template-columns: 1fr 1.1fr; gap: 48px; align-items: center; max-width: none; width: 100%; }
+.slidev-layout.conf-shot .faris-statement__body h1 { font-size: 64px; line-height: 1.05; }
+.slidev-layout.conf-shot img { width: 100%; max-height: 470px; object-fit: contain; border: 2px solid var(--faris-border); border-radius: 12px; background: #fff; }
