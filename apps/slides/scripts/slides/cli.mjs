@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { parseCommand } from './contracts.ts'
+import { parseCommand, parseToolCommand } from './contracts.ts'
 import { root, newDeck, deckPath, artifactDirectory, sourceHash, saveReport } from './workspace.mjs'
 
 const help = `Faris Slides
@@ -24,14 +24,33 @@ Build options: --base /path/ (/talks/<talk>/), the folder's URL path on your sit
 Publish options: --slug <name> (<talk>), served at /slides/<name>/
 
 Export options: --format pdf|png (pdf), --clicks all|final (all)
+
+For agents and scripts (no prompts):
+pnpm slides list [--json]                      Decks, editions, published URLs
+pnpm slides status <talk> [--edition <name>] [--json]
+                                               Workflow stage, next step, slide list
+pnpm slides prompt <talk> <plan|write|edit|review> [--edition <name>]
+                                               Print the hand-off message for an agent
+pnpm slides edition <talk> --new <name> [--from <edition>] [--event "JSNation 2027"]
+pnpm slides edition <talk> --edition <name> --change <n>
+                                               Copy slide n into the edition to edit it
+pnpm slides edition <talk> --edition <name> --add-after <n> | --remove <n>
+Edition edits verify the rendered deck and roll back if another slide changed.
+Outline approval is human-only: use the interactive menu.
+
 Reviews and exports use fresh artifacts/reviews/<talk>/<run>/ directories.
 Commands never approve an outline or overwrite a deck or approved baseline.
 `
 
 try {
   const args = process.argv.slice(2)
-  const command = parseCommand(args)
-  if (!command && !args.length && process.stdin.isTTY && process.stdout.isTTY) {
+  const tool = parseToolCommand(args)
+  const command = tool ? undefined : parseCommand(args)
+  if (tool) {
+    const { runTool } = await import('./tools.mjs')
+    await runTool(tool)
+  }
+  else if (!command && !args.length && process.stdin.isTTY && process.stdout.isTTY) {
     const { interactive } = await import('./interactive.mjs')
     await interactive()
   }

@@ -25,10 +25,20 @@ const counts = block => !block.frontmatter.hide && !block.frontmatter.disabled
 
 export function slideTitle(slide) {
   // Layout slots (::title::) hide the heading from Slidev's title detection.
-  const heading = /^#{1,3}\s+(.+)$/m.exec(slide.source?.content ?? slide.content ?? '')?.[1]
-  const text = String(slide.title ?? slide.frontmatter?.title ?? heading ?? '')
-    .replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim()
-  return text || `(no heading, ${slide.frontmatter?.layout ?? 'default'} layout)`
+  const content = slide.source?.content ?? slide.content ?? ''
+  const heading = /^#{1,3}\s+(.+)$/m.exec(content)?.[1]
+  const clean = value => String(value ?? '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim()
+  // Slidev reports a leading slot marker (::title::) as the title; skip those.
+  const slot = value => /^::[\w-]+::$/.test(clean(value))
+  const text = clean([slide.title, slide.frontmatter?.title, heading].find(value => value && !slot(value)))
+  if (text) return text
+  // Headingless slides: describe the image, component or first line instead.
+  const alt = /\balt="([^"]+)"/.exec(content)?.[1]
+  if (alt) return `[image] ${alt}`
+  const component = /<([A-Z][A-Za-z]+)/.exec(content)?.[1]
+  if (component) return `[${component}]`
+  const line = content.split('\n').map(clean).find(value => value && !slot(value))
+  return line ? line.slice(0, 80) : `(empty ${slide.frontmatter?.layout ?? 'default'} slide)`
 }
 
 /** Every deck folder with its editions and publish record. */

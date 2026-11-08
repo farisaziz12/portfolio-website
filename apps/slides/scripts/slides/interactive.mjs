@@ -4,11 +4,12 @@
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { access, readdir, stat } from 'node:fs/promises'
+import { access, readFile, readdir, stat } from 'node:fs/promises'
 import * as p from '@clack/prompts'
 import { validateName } from './contracts.ts'
 import { root, newDeck } from './workspace.mjs'
 import { listDecks, slideMap, customizeSlide, insertSlide, removeSlide, createEdition } from './editions.mjs'
+import { PASSES, agentPrompt, approveOutline, deckStatus, emptyBriefFields, fillBrief } from './agent.mjs'
 
 const cli = fileURLToPath(new URL('./cli.mjs', import.meta.url))
 const repo = path.resolve(root, '..', '..')
@@ -47,6 +48,86 @@ async function run(args, label) {
   finally { process.off('SIGINT', ignore) }
 }
 
+// Claude Code, if installed, can take the hand-off directly in this terminal.
+async function findClaude() {
+  for (const directory of (process.env.PATH ?? '').split(path.delimiter).filter(Boolean))
+    if (await exists(path.join(directory, 'claude'))) return path.join(directory, 'claude')
+}
+
+async function startClaude(prompt) {
+  const claude = await findClaude()
+  const ignore = () => {}
+  process.on('SIGINT', ignore)
+  try {
+    await new Promise((resolve, reject) => {
+      const child = spawn(claude, [prompt], { cwd: repo, stdio: 'inherit' })
+      child.once('error', reject)
+      child.once('close', resolve)
+    })
+  }
+  finally { process.off('SIGINT', ignore) }
+  p.log.info('Back from Claude. Check the deck status to see what changed.')
+}
+
+const BRIEF_HINTS = {
+  'Audience and prior knowledge': 'e.g. mid-level React devs, know fetching basics',
+  'Duration': 'e.g. 30 min + 5 min Q&A',
+  'One outcome for the audience': 'the one thing they should leave able to do',
+  'Required claims or demos': 'e.g. live demo of streaming SSR',
+  'Source material': 'links, old decks, blog posts, notes',
+  'Conference and offline constraints': 'e.g. no wifi on stage, 16:9 projector',
+}
+
+async function askBrief(directory) {
+  const brief = await readFile(path.join(directory, 'brief.md'), 'utf8').catch(() => '')
+  const missing = emptyBriefFields(brief)
+  if (!missing.length) { p.log.info('The brief has no empty fields left.'); return }
+  p.log.info('A few questions for brief.md. Press Enter to skip any; you or Claude can fill them later.')
+  const answers = {}
+  for (const field of missing) answers[field] = await ask(p.text({ message: field, placeholder: BRIEF_HINTS[field] ?? '', defaultValue: '' }))
+  await fillBrief(directory, answers)
+  const left = emptyBriefFields(await readFile(path.join(directory, 'brief.md'), 'utf8'))
+  p.log.success(left.length ? `Saved. Still empty: ${left.join(', ')}.` : 'Brief saved.')
+}
+
+async function handOff(version, suggested) {
+  const status = await deckStatus(version.deck.directory)
+  const order = Object.keys(PASSES)
+  const recommended = suggested ?? (order.includes(status.next) ? status.next : undefined)
+  const pass = await ask(p.select({
+    message: 'What should Claude do?',
+    initialValue: recommended,
+    options: order.map(key => ({ value: key, label: PASSES[key].label, hint: key === recommended ? `recommended now, uses skills/${PASSES[key].skill}` : `skills/${PASSES[key].skill}` })),
+  }))
+  if (pass === 'write' && status.approval !== 'approved' && status.approval !== 'unknown')
+    p.log.warn('The outline is not approved yet. Claude is told to stop and ask in that case. Approve it first from this menu.')
+  const prompt = agentPrompt(pass, { deck: version.deck.name, edition: version.edition })
+  const claude = await findClaude()
+  const how = await ask(p.select({
+    message: 'How do you want to hand it over?',
+    options: [
+      ...(claude ? [{ value: 'start', label: 'Start Claude Code here with this task', hint: 'you come back to this menu when it exits' }] : []),
+      { value: 'show', label: 'Show the message to copy', hint: 'paste it into Claude Code, the app or a cloud session' },
+      { value: BACK, label: 'Back' },
+    ],
+  }))
+  if (how === 'show') p.note(prompt, `Message for Claude (${PASSES[pass].skill})`)
+  if (how === 'start') await startClaude(prompt)
+}
+
+async function approve(version) {
+  const status = await deckStatus(version.deck.directory)
+  const outline = path.join(version.deck.directory, 'outline.md')
+  p.log.info(`Read it first: ${rel(outline)}
+Approving records today's date, your note and a fingerprint of the outline in review.md. If the outline changes later, the menu asks you to approve again.`)
+  if (status.outline === 'missing') { p.log.warn('There is no outline yet. Use "Get help from Claude" to plan one.'); return }
+  const message = await ask(p.text({ message: 'Approval note (what you are agreeing to, any conditions)', placeholder: 'Approved, cut the demo if we run long', validate: value => value?.trim() ? undefined : 'Write a short note.' }))
+  if (!await ask(p.confirm({ message: 'Approve this outline? Claude may then write the full slides from it.' }))) return
+  const line = await approveOutline(version.deck.directory, message)
+  p.log.success(`Recorded in ${rel(path.join(version.deck.directory, 'review.md'))}:
+${line}`)
+}
+
 const versionArgs = version => version.edition ? ['--edition', version.edition] : []
 const versionLabel = version => version.edition ? `${version.deck.name}, ${version.edition} edition` : `${version.deck.name} (main deck)`
 
@@ -64,10 +145,13 @@ const GUIDE = `How a talk moves through this tool
 
 1. Start a new talk. Creates decks/<talk>/ with brief.md, outline.md,
    sources.md, review.md and a placeholder slides.md.
-2. Plan. Fill brief.md, then get an outline into outline.md and approve it
-   before writing slides. Claude follows apps/slides/skills/slides-plan.
-3. Write and preview. Edit slides.md while "Preview and edit live" runs;
-   the browser updates on save.
+2. Plan. Answer the brief questions, then "Get help from Claude" plans a
+   timed outline into outline.md (skills/slides-plan). Read it and use
+   "Approve the outline"; Claude will not write slides before that.
+3. Write and preview. Claude drafts slides.md from the approved outline
+   (skills/slides-write), or you edit it with "Preview and edit live" on.
+   "Get help from Claude" also runs the fact-check/voice pass
+   (slides-edit) and the screenshot review (slides-review).
 4. Review. Typechecks, builds and screenshots every slide and click
    state into apps/slides/artifacts/reviews/. Look at the screenshots;
    a passing run is not visual approval.
@@ -92,9 +176,15 @@ pnpm slides export <talk> [--edition <name>] [--format pdf|png] [--clicks all|fi
 pnpm slides publish <talk> [--edition <name>] [--slug <url-slug>]
 pnpm slides --help
 
-Editing an edition's slides (change one for this event, add, remove)
-is only in the menu, because it rewrites the edition's imports and
-checks that no other slide changed.`
+For agents and scripts (no prompts):
+pnpm slides list [--json]
+pnpm slides status <talk> [--edition <name>] [--json]
+pnpm slides prompt <talk> <plan|write|edit|review> [--edition <name>]
+pnpm slides edition <talk> --new <name> [--from <edition>] [--event "..."]
+pnpm slides edition <talk> --edition <name> --change|--add-after|--remove <n>
+
+Outline approval is only in this menu: an agent must not approve
+its own outline.`
 
 async function overview() {
   const decks = await listDecks(root)
@@ -118,19 +208,20 @@ async function newTalk() {
   if (await exists(path.join(root, 'decks', name))) { p.log.error(`decks/${name} already exists. Open it from "Work on a deck".`); return }
   p.log.step(`Creating the planning files\npnpm slides new ${name}`)
   const directory = await newDeck(root, name, title.trim())
+  p.log.success(`Created ${rel(directory)}/`)
+  await askBrief(directory)
   p.note([
-    `Created ${rel(directory)}/`,
+    'How this talk moves forward:',
+    '1. Plan: Claude turns the brief into a timed outline (outline.md).',
+    '2. Approve: you read it and approve it from this menu.',
+    '3. Write: Claude drafts slides.md from the approved outline.',
+    '4. Edit and review: fact-check, voice pass, screenshots.',
+    '5. Publish.',
     '',
-    'Next:',
-    `1. Write the brief: ${rel(path.join(directory, 'brief.md'))}`,
-    '   (audience, length, the one thing people should leave with)',
-    `2. Outline it: ${rel(path.join(directory, 'outline.md'))}`,
-    '   Ask Claude: "plan my talk <name> with the slides-plan skill".',
-    '3. Approve the outline before writing slides.',
-    `4. Write ${rel(path.join(directory, 'slides.md'))} with the live preview on.`,
+    'Each step is under "Work on a deck" > this deck; the menu shows where you are.',
   ].join('\n'), `"${title}"`)
-  if (await ask(p.confirm({ message: 'Open the live preview now?', initialValue: false })))
-    await run(['dev', name], 'Live preview. Press Ctrl+C to stop and come back here.')
+  const version = { deck: { name, directory, editions: [], published: {} }, edition: undefined }
+  if (await ask(p.confirm({ message: 'Hand the outline to Claude now?', initialValue: true }))) await handOff(version, 'plan')
 }
 
 async function pickDeck() {
@@ -301,7 +392,12 @@ async function deckMenu(version) {
   for (;;) {
     const { deck, edition } = version
     const entry = path.join(deck.directory, edition ? `slides.${edition}.md` : 'slides.md')
+    const status = await deckStatus(deck.directory)
+    const nextHint = { brief: 'fill in the brief', plan: 'get Claude to plan the outline', approve: 'approve the outline', write: 'get Claude to write the slides', review: 'review and publish' }[status.next]
     const options = [
+      ...(status.next === 'brief' ? [{ value: 'brief', label: 'Fill in the brief', hint: 'recommended now' }] : []),
+      ...(status.next === 'approve' ? [{ value: 'approve', label: 'Approve the outline', hint: 'recommended now' }] : []),
+      { value: 'claude', label: 'Get help from Claude', hint: ['plan, write, edit or review with the slides skills', ['plan', 'write'].includes(status.next) && 'recommended now'].filter(Boolean).join('; ') },
       { value: 'dev', label: 'Preview and edit live', hint: `opens a local URL; edits to ${path.basename(entry)} show on save` },
       { value: 'map', label: 'List slides' },
       ...(edition ? [
@@ -317,11 +413,14 @@ async function deckMenu(version) {
       { value: 'files', label: 'Show the deck files' },
       { value: BACK, label: 'Back' },
     ]
-    p.log.message(`${versionLabel(version)}  ${rel(entry)}`)
+    p.log.message(`${versionLabel(version)}  ${rel(entry)}\nStage: ${status.stage}${nextHint ? `. Next: ${nextHint}.` : ''}`)
     const action = await ask(p.select({ message: 'What do you want to do?', options }))
     if (action === BACK) return
     try {
-      if (action === 'dev') await run(['dev', deck.name, ...versionArgs(version)], 'Live preview. Press Ctrl+C to stop and come back here.')
+      if (action === 'brief') await askBrief(deck.directory)
+      else if (action === 'approve') await approve(version)
+      else if (action === 'claude') await handOff(version)
+      else if (action === 'dev') await run(['dev', deck.name, ...versionArgs(version)], 'Live preview. Press Ctrl+C to stop and come back here.')
       else if (action === 'map') await showMap(version, entry)
       else if (action === 'change') await changeSlide(version, entry)
       else if (action === 'add') await addSlide(version, entry)
