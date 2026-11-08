@@ -931,22 +931,6 @@
       "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
     },
     {
-      "sourceSlide": 98,
-      "object": 453,
-      "path": "public/media/tanstack-query.png",
-      "sha256": "393c0fcd6d1deeca058d405eadc31d2464d741b731160757dc2fb63c886cd955",
-      "bytes": 1709831,
-      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
-    },
-    {
-      "sourceSlide": 99,
-      "object": 458,
-      "path": "public/media/tanstack-features.png",
-      "sha256": "f1fb661ca2b632fb7b4c2b222574e50f412ff9f7d56134d925e6d9d2f1ffe1cb",
-      "bytes": 1869065,
-      "preparation": "PDF image object decoded to PNG including alpha; no resize/crop"
-    },
-    {
       "sourceSlide": 116,
       "object": 534,
       "path": "public/media/in-flight-demo.png",

@@ -10,7 +10,6 @@ const inventory = JSON.parse(await readFile(new URL('source.json', sourceRoot)))
 const selection = [
   [2, 25, 'speaker-montage.png'], [4, 48, 'traffic.png'],
   [58, 281, 'congestion-14kb.png'], [59, 286, 'congestion-15kb.png'],
-  [98, 453, 'tanstack-query.png'], [99, 458, 'tanstack-features.png'],
   [116, 534, 'in-flight-demo.png'], [117, 539, 'flight-map.png'],
   [118, 544, 'flight-speedtest.png'], [125, 574, 'contact-qr.png'],
 ]
