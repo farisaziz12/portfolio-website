@@ -1,0 +1,14 @@
+{
+  "built-for-turbulence": {
+    "entry": "slides.react-advanced-london.md",
+    "publishedAt": "2026-11-08"
+  },
+  "caching-payloads-dark-arts": {
+    "entry": "slides.md",
+    "publishedAt": "2026-10-15"
+  },
+  "caching-payloads-heapcon": {
+    "entry": "slides.heapcon.md",
+    "publishedAt": "2026-11-08"
+  }
+}

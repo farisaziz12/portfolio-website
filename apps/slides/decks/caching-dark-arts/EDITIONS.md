@@ -9,9 +9,13 @@ are shared, so a fix in `slides.md` reaches every edition on its next publish.
 |---|---|---|---|
 | `slides.md` | Original deck | `/slides/caching-payloads-dark-arts/` | (base) |
 | `slides.react-advanced-london.md` | React Advanced London 2026, as "Built for Turbulence" | `/slides/built-for-turbulence/` | From `slides.md`: 1 title and byline, 2 Who Am I, 15 shorter question, 42 API limits, 58 last caption |
-| `slides.heapcon.md` | HeapCon 2026 | `/slides/caching-payloads-heapcon/` | From React Advanced: 1 original title, byline without a job title; 2 "Previously Worked With" |
+| `slides.heapcon.md` | HeapCon 2026 | `/slides/caching-payloads-heapcon/` | Same as React Advanced except 1 (original title, byline without a job title) and 2 ("Previously Worked With") |
 
-Publish (from the repo root):
+`published.json` records which entry each URL was last published from. The
+interactive menu (`pnpm slides`) uses it to offer "Update /slides/<url>/" and to
+warn before one version overwrites another's URL.
+
+Publish (from the repo root, or pick "Publish" in `pnpm slides`):
 
 ```bash
 pnpm slides publish caching-dark-arts --slug caching-payloads-dark-arts
@@ -21,17 +25,28 @@ pnpm slides publish caching-dark-arts --edition heapcon --slug caching-payloads-
 
 Each published folder is a snapshot. Republishing one only changes that URL.
 
-## Adding an edition
+## Adding or changing an edition
 
-1. Copy the closest edition file to `slides.<event>.md`. Its first slide carries the
-   deck headmatter, so keep the cover (or another full slide) first.
-2. Replace a range import with `src: ./slides.md#a-b` gaps around each slide you
-   change, and paste an edited copy of that slide in the gap. Keep slide numbers
-   aligned with the base unless the cut really adds or drops slides.
-3. `pnpm slides dev caching-dark-arts --edition <event>`, then `review`, then `publish`.
+Run `pnpm slides`, pick this deck, then:
 
-An edited copy no longer follows `slides.md`. Keep overrides to the slides that
-genuinely differ, and fold a change back into `slides.md` when every edition wants it.
+- Main deck > "Make an edition for another event": starts from the main deck (or a
+  copy of an existing edition, e.g. React Advanced to reuse its changes).
+- An edition > "Change a slide for this edition": copies that slide into the edition
+  file and prints `file:line` to edit. "Add" and "Remove" work the same way.
+
+Each of those edits re-resolves the deck and rolls back if any other slide changed.
+
+Rules the menu relies on:
+
+- Editions import only from `slides.md` (`src: ./slides.md#3-14`). Ranges count
+  slides in the target file, so importing from another edition breaks as soon as
+  that edition changes. Copy an edition instead of importing from it.
+- The edition's first slide carries the deck settings (theme, title), so it stays.
+- An edited copy no longer follows `slides.md`. Keep copies to the slides that
+  genuinely differ, and fold a change back into `slides.md` when every edition wants it.
+- The last import is open-ended (`#59-`), so slides appended to `slides.md` reach
+  every edition. Inserting or deleting slides in the middle of `slides.md` shifts
+  every edition's ranges: check each edition's "List slides" afterwards.
 
 ## Provenance
 

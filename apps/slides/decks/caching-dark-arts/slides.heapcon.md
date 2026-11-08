@@ -1,7 +1,6 @@
 ---
 # Edition: HeapCon 2026, published at /slides/caching-payloads-heapcon/.
-# Builds on slides.react-advanced-london.md: only slides 1 and 2 differ
-# from it. See EDITIONS.md.
+# Same as slides.react-advanced-london.md except slides 1 and 2. See EDITIONS.md.
 theme: faris
 colorSchema: dark
 title: "Caching, Payloads, and Other Dark Arts"
@@ -75,5 +74,81 @@ faris:
 </div>
 
 ---
-src: ./slides.react-advanced-london.md#3-109
+src: ./slides.md#3-14
+---
+
+---
+layout: statement
+sourceSlide: 15
+faris:
+  mode: dark
+---
+
+# Why is a **smooth UX** so hard when **data fetching** gets complicated?
+
+<!--
+Source page 15. Wording restored at Faris's request.
+-->
+
+---
+src: ./slides.md#16-41
+---
+
+---
+layout: statement
+sourceSlide: 45
+class: website-skin website-illustrated
+faris:
+  mode: dark
+---
+
+# The Data Source
+
+An API Returns A <strong>List Of Users</strong> With <strong>All Their Data</strong>, <strong>1,000 Records</strong> At A Time. Any More Breaks Our <strong>SLA</strong> Due To DB Query Speed.
+
+The Backend Can’t Prioritize A <strong>New Endpoint</strong> Or A <strong>Data Warehouse</strong> For Our Needs.
+
+<div class="website-character"><FarisIllustration name="faris-thinking" decorative /></div>
+
+<!--
+Source page 45. 
+-->
+
+---
+src: ./slides.md#43-57
+---
+
+
+---
+layout: content
+sourceSlide: 67
+class: caching-motion-slide
+clicks: 4
+faris:
+  mode: dark
+---
+
+::title::
+# What About **4G And 5G?**
+
+::default::
+<LatencyRace :stage="4" :step="$clicks" />
+
+::caption::
+<p v-if="$clicks === 0"><strong>Mobile Connections</strong></p>
+<p v-else-if="$clicks === 1"><strong>4G: 18–23 ms</strong></p>
+<p v-else-if="$clicks === 2"><strong>5G: 15–21 ms</strong></p>
+<p v-else-if="$clicks === 3">The Times <strong>Overlap</strong></p>
+<p v-else>On A Bad Day, Both: <strong>80–200 ms</strong></p>
+
+<!--
+What happens on mobile? The first two rows are examples. The mobile rows show the range of UK operators' median times, not the fastest and slowest times for every user.
+[click] For 4G, those medians were 18–23 ms in the six months to March 2025.
+[click] For 5G, they were 15–21 ms. The times overlap. 5G does not always win.
+[click] Here they are together, slowed down so every trip is visible. The motion keeps their order, not their exact timing ratios. These were not all measured in the same test.
+[click] A slow connection might take 80–200 ms in this example. That is an assumption, not a typical mobile range. Distance and busy networks can add delay.
+-->
+
+---
+src: ./slides.md#59-
 ---
