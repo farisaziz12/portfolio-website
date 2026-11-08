@@ -1,0 +1,48 @@
+{
+  "video": "-vf scale=1920:-2:flags=lanczos -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p -profile:v high -movflags +faststart -an",
+  "photo": "sips -Z 2400 jpeg quality 82",
+  "outputs": [
+    {
+      "original": "media/source-video/caching-dark-arts/demo-1.mp4",
+      "originalSha256": "8321c27a42913f3b8e267fdeec1735fdf6235de88adefa95afb36c3105f89505",
+      "path": "public/media/demo-1.mp4",
+      "sha256": "1f672fcc45c6f0a3d456cca343a2a2ddb9fc153a8011be718038f710012d7b94",
+      "bytes": 5416866
+    },
+    {
+      "original": "media/source-video/caching-dark-arts/demo-2.mp4",
+      "originalSha256": "36caab60e8c9bfee3b979e2b0b709661f4c7d2d6e6cb879107d74f549dd88286",
+      "path": "public/media/demo-2.mp4",
+      "sha256": "fb6ee5403845a801305043fa968efa6e4714b1774fa3ae49bdd597c5384dbb52",
+      "bytes": 1036119
+    },
+    {
+      "original": "media/source-video/caching-dark-arts/demo-3.mp4",
+      "originalSha256": "c79e78fc828e46dce81cabad8aa0c31ef8152029db10e3e37cb6489bf2cb6b5a",
+      "path": "public/media/demo-3.mp4",
+      "sha256": "dc090448039e26ac1e7f85c97dcce7bb5510c925fe5bbbe9c2b939637fad4ad8",
+      "bytes": 3605223
+    },
+    {
+      "original": "media/source-images/caching-dark-arts/in-flight-demo.png",
+      "originalSha256": "8cdb950946c55a99881e77babc86b2a0e8cd7cb62b2c8d3d3798062b6965539d",
+      "path": "public/media/in-flight-demo.jpg",
+      "sha256": "a931f03eeb401d4ca649a2f4c855c745ee56d0f55de572ba3f0d165c88c0e04d",
+      "bytes": 1261988
+    },
+    {
+      "original": "media/source-images/caching-dark-arts/flight-map.png",
+      "originalSha256": "0d8c67f59cc3ab4f77fc809bcc5f883925d02d2559e186e3170b2f05f534f429",
+      "path": "public/media/flight-map.jpg",
+      "sha256": "7d610f0e21e1b83e240d9069b660af433831a24942a111bc47c9209dd80876c8",
+      "bytes": 605992
+    },
+    {
+      "original": "media/source-images/caching-dark-arts/speaker-montage.png",
+      "originalSha256": "befd03ac6ae4f5aebf0ef73facc44389eccee11f453c9ff7392afa9de7764916",
+      "path": "public/media/speaker-montage.jpg",
+      "sha256": "099c01e93935fdf2a012d74472744c3a7d96bdb6cba64933cc8d22206ea266c6",
+      "bytes": 1004789
+    }
+  ]
+}

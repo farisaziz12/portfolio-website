@@ -1,6 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "ignoreExportsUsedInFile": true,
+  "ignoreWorkspaces": ["apps/slides", "apps/slides/packages/*"],
   "workspaces": {
     ".": {
       "entry": ["scripts/**/*.ts", ".cursor/hooks/*.mjs"],
@@ -9,6 +10,7 @@
     },
     "apps/web": {
       "entry": ["src/pages/**/*.{astro,ts,tsx}", "src/emails/*.tsx", "scripts/*.{mjs,ts}"],
+      "ignore": ["public/slides/**"],
       "ignoreDependencies": ["@fontsource/figtree"]
     }
   },

@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "pnpm --filter web build && cp -r apps/web/.vercel/output .vercel/output",
-  "installCommand": "pnpm install",
+  "installCommand": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install",
   "headers": [
     {
       "source": "/(.*)\\.md",

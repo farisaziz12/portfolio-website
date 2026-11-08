@@ -1,0 +1,189 @@
+/* Only this talk's exceptional compositions; brand tokens remain shared. */
+.proxy-bandwidth .caching-content__body { flex-direction: column; gap: 40px; }
+.proxy-bandwidth .bandwidth-comparison { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 32px; }
+.proxy-bandwidth .bandwidth-comparison > div { border-top: 2px solid var(--faris-border); padding-top: 24px; }
+.proxy-bandwidth .bandwidth-comparison span { display: block; font-size: 23px; margin-bottom: 14px; }
+.proxy-bandwidth .bandwidth-comparison strong { display: block; font-size: 44px; line-height: 1.2; color: var(--faris-text-blue); }
+.proxy-bandwidth .bandwidth-comparison small { display: block; font-size: 18px; color: var(--faris-muted); margin-top: 10px; }
+.proxy-bandwidth .bandwidth-comparison b { display: block; font-size: 48px; margin-top: 24px; color: var(--faris-brand-yellow); }
+.proxy-bandwidth .bandwidth-takeaway { width: 100%; font-size: 32px; line-height: 1.5; margin: 0; }
+.caching-code .shiki-magic-move-container { font-size: 23px !important; line-height: 1.45; padding: 24px 28px; border-radius: 8px; }
+.slidev-layout.caching-code.caching-code-morph { --slidev-code-line-height: 34px; }
+.slidev-layout.caching-code.caching-prefetch-code { --slidev-code-line-height: 32px; }
+/* Server lines run to 47 characters, client to 36: size columns to the code. */
+.hydration-pair { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; }
+.hydration-pair section { min-width: 0; }
+.hydration-pair h2 { font-size: 23px; margin: 0 0 12px; }
+.slidev-layout.caching-hydration-pair { --slidev-code-line-height: 26px; }
+.slidev-layout.caching-hydration-pair .caching-content__body { display: block; }
+.slidev-layout.caching-hydration-pair pre { font-size: 20px !important; line-height: 26px !important; padding: 14px !important; }
+.hydration-pair section { transition: opacity 650ms ease; }
+.hydration-pair[data-step="0"] .hydration-client,
+.hydration-pair[data-step="1"] .hydration-server { opacity: .25; }
+.hydration-pair .line { transition: opacity 650ms ease, background-color 650ms ease; }
+.hydration-pair[data-step="2"] .line { opacity: .2; }
+.hydration-pair[data-step="2"] .hydration-server .line:nth-child(6),
+.hydration-pair[data-step="2"] .hydration-client .line:nth-child(3) { opacity: 1; background: #f4c63a22; box-shadow: -3px 0 var(--faris-brand-yellow); }
+::view-transition-group(prefetch-code) { animation-duration: 1100ms; animation-timing-function: cubic-bezier(.22,.7,.18,1); }
+.disable-view-transition .prefetch-travel { view-transition-name: none !important; }
+@media (prefers-reduced-motion: reduce), print {
+  .prefetch-travel { view-transition-name: none !important; }
+  .hydration-pair section, .hydration-pair .line { transition: none !important; }
+}
+.slidev-layout.caching-prefetch-code .faris-code__sample pre { line-height: 32px !important; }
+@media (prefers-reduced-motion: reduce), print {
+  .caching-code .shiki-magic-move-container, .caching-code .shiki-magic-move-container * { transition: none !important; animation: none !important; }
+}
+.slidev-layout.caching-number-question .faris-slide__content { position: absolute; inset: 0; display: grid; place-items: center; }
+.slidev-layout.caching-number-question .faris-statement { display: block; width: 100%; height: auto; padding: 0; text-align: center; }
+.slidev-layout.caching-number-question .faris-statement__body { max-width: none; }
+.slidev-layout.caching-number-question .faris-statement__body h1 { font-size: 180px; line-height: 1; margin: 0; }
+.slidev-layout.caching-number-question .faris-kicker,
+.slidev-layout.caching-number-question .faris-annotation,
+.slidev-layout.caching-number-question .faris-slide__footer { display: none; }
+.solution-summary .solution-facts { width: 100%; display: grid; grid-template-columns: 1.25fr 1fr 1fr; grid-template-rows: 250px 180px; gap: 20px; }
+.solution-summary .solution-fact { min-width: 0; padding: 22px; border: 2px solid var(--faris-border); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; }
+.solution-summary .solution-label { display: block; color: var(--faris-muted); font-size: 17px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px; }
+.solution-summary .solution-value { font-size: 33px; font-weight: 750; line-height: 1.15; letter-spacing: -.035em; }
+.solution-summary .solution-fact--payload .solution-value { font-size: 64px; white-space: nowrap; }
+.solution-summary .solution-fact--requests b { display: block; color: var(--faris-text-blue); font-size: 82px; line-height: 1; margin-bottom: 6px; }
+.solution-summary .solution-fact--cache .solution-value { font-size: 58px; }
+.solution-summary .solution-fact p { font-size: 21px; line-height: 1.4; margin: 14px 0 0; color: var(--faris-muted); }
+.solution-summary .solution-fact--payload p { font-size: 25px; }
+.solution-summary .caching-caption { font-size: 25px; }
+/* Keep moving cards clear of the heading, caption and footer. */
+.solution-summary .solution-facts { clip-path: inset(-2px -64px); }
+/* Each card enters from its nearest outer edge; the grid itself never moves. */
+.solution-summary .solution-fact:nth-child(1) { --card-x: -460px; --card-y: 0px; --card-delay: 0ms; }
+.solution-summary .solution-fact:nth-child(2) { --card-x: 0px; --card-y: -480px; --card-delay: 45ms; }
+.solution-summary .solution-fact:nth-child(3) { --card-x: 420px; --card-y: 0px; --card-delay: 90ms; }
+.solution-summary .solution-fact:nth-child(4) { --card-x: -460px; --card-y: 0px; --card-delay: 110ms; }
+.solution-summary .solution-fact:nth-child(5) { --card-x: 0px; --card-y: 340px; --card-delay: 155ms; }
+.solution-summary .solution-fact:nth-child(6) { --card-x: 420px; --card-y: 0px; --card-delay: 200ms; }
+@media screen and (prefers-reduced-motion: no-preference) {
+  .solution-summary .summary-arrive > .solution-fact {
+    animation: summary-card-arrive 900ms cubic-bezier(.22, .61, .36, 1) var(--card-delay) both;
+  }
+}
+@keyframes summary-card-arrive {
+  from { opacity: 0; transform: translate(var(--card-x), var(--card-y)); }
+  to { opacity: 1; transform: translate(0, 0); }
+}
+/* Dark-first diagrams use bright role colors and dark focus surfaces.
+   Explicit light slides retain the original component palette. */
+.faris-slide[data-faris-mode="dark"] .architecture-flow {
+  --arch-client: #68bce3; --arch-server: #f4c63a;
+  --arch-api: #81cbb0; --arch-risk: #f4ac72;
+}
+.faris-slide[data-faris-mode="dark"] .architecture-flow .client { --wash: #172d38; }
+.faris-slide[data-faris-mode="dark"] .architecture-flow .server { --wash: #332b16; }
+.faris-slide[data-faris-mode="dark"] .architecture-flow .api { --wash: #1b3028; }
+.faris-slide[data-faris-mode="dark"] .architecture-flow .risk { --wash: #392719; }
+.faris-slide[data-faris-mode="dark"] .architecture-flow .current .node-title { fill: var(--faris-fg); }
+.faris-slide[data-faris-mode="dark"] .architecture-flow .current .node-detail { fill: var(--faris-muted); }
+.faris-slide[data-faris-mode="dark"] .outgoing.active,
+.faris-slide[data-faris-mode="dark"] .response-key { color: var(--faris-brand-yellow); }
+.faris-slide[data-faris-mode="dark"] .cache-short .cache-line { border-color: var(--faris-brand-yellow); }
+.faris-slide[data-faris-mode="dark"] .cache-short .cache-line::after { color: var(--faris-brand-yellow); }
+.faris-slide[data-faris-mode="dark"] .interrupted .thought { color: #f4ac72; }
+.faris-slide[data-faris-mode="dark"] .stressed .rtt-range { background: #f4ac72; }
+.slidev-layout.caching-cover .faris-cover__body h1 { font-size: 76px; }
+.slidev-layout.caching-cover .faris-cover__body > p { font-size: 28px; }
+.slidev-layout.caching-cover .faris-cover__meta { margin-top: 32px; max-width: 680px; }
+.slidev-layout.caching-question strong { color: var(--faris-brand-yellow); }
+.slidev-layout .faris-annotation:empty::after { display: none; }
+.slidev-layout.caching-content .caching-content__grid {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  height: 100%;
+  padding-bottom: 32px;
+}
+.slidev-layout .caching-content__title h1 { font-size: 48px; line-height: 1.08; }
+.slidev-layout .caching-content__body { min-height: 0; display: flex; align-items: center; justify-content: center; }
+.slidev-layout .caching-caption { font-size: 18px; color: var(--faris-muted); line-height: 1.3; }
+.slidev-layout .caching-caption p { font-size: inherit; }
+.slidev-layout .caching-flow { width: 100%; height: 100%; }
+.slidev-layout.caching-flow-slide .caching-caption { font-size: 24px; color: var(--faris-fg); min-height: 32px; }
+.slidev-layout.caching-flow-slide .caching-caption strong { font-weight: 750; }
+.slidev-layout.caching-motion-slide .caching-caption { font-size: 23px; min-height: 60px; }
+.slidev-layout.caching-motion-slide .caching-content__grid { gap: 20px; }
+.slidev-layout.caching-code { --slidev-code-padding: 20px; --slidev-code-line-height: 26px; }
+.slidev-layout.caching-code .faris-code__sample { width: 100%; }
+.slidev-layout.caching-code .faris-code__sample pre { font-size: 23px !important; padding: 24px 28px; line-height: 1.3; box-shadow: none; }
+/* Native none layout: the whole slide belongs to the recording, including print. */
+.slidev-layout.faris-slide.caching-video { padding: 0; background: #0f0f10; }
+.slidev-layout.caching-video video { display: block; width: 100%; height: 100%; max-width: none; max-height: none; object-fit: contain; background: #0f0f10; }
+
+/* Full-deck compositions stay local to this talk. */
+.slidev-layout.faris-slide.caching-photo { padding: 0; }
+.slidev-layout.caching-photo img { display: block; width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+.slidev-layout .caching-source-image { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.slidev-layout .caching-context { display: inline-block; margin-top: 20px; font-size: 18px; line-height: 1.35; color: var(--faris-muted); }
+.slidev-layout.caching-factor .faris-statement__body > p { font-size: 36px; }
+.slidev-layout.caching-demo-intro .faris-statement__body h1 { color: var(--faris-text-blue); }
+.slidev-layout.caching-demo-intro .faris-statement__body > p { color: var(--faris-fg); font-size: 48px; font-weight: 730; max-width: 1000px; line-height: 1.15; }
+.slidev-layout.caching-bio-slide .faris-slide__content { position: static; }
+.slidev-layout.caching-bio-slide .caching-content__grid { width: calc((1280px * 2 / 3) - 128px); grid-template-rows: auto minmax(0, 1fr); }
+.slidev-layout.caching-bio-slide .faris-slide__footer { right: calc(100% / 3 + 64px); }
+.slidev-layout .caching-bio { width: 100%; }
+.slidev-layout .caching-bio__copy > p { font-size: 28px; line-height: 1.3; margin: 0 0 28px; }
+.slidev-layout .caching-bio h2 { font-size: 18px; letter-spacing: .09em; text-transform: uppercase; color: var(--faris-muted); margin: 24px 0 14px; font-weight: 650; }
+.slidev-layout .caching-bio ul { list-style: none; margin: 0; padding: 0; }
+.slidev-layout .caching-bio li { font-size: 26px; line-height: 1.3; margin: 0; }
+.slidev-layout .caching-bio__experience { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px 28px; }
+.slidev-layout .caching-bio__experience li { padding-left: 15px; border-left: 3px solid var(--faris-text-blue); }
+.slidev-layout .caching-bio__community { display: grid; gap: 10px; }
+.slidev-layout.caching-bio-slide .caching-bio img { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+.slidev-layout .caching-prose { width: 100%; }
+.slidev-layout .caching-prose p { font-size: 32px; line-height: 1.45; }
+.slidev-layout .caching-prose p + p { margin-top: 30px; }
+.slidev-layout:has(.caching-closing) .faris-slide__content { position: static; }
+.slidev-layout:has(.caching-closing) .caching-content__grid { width: calc((1280px * 2 / 3) - 128px); }
+.slidev-layout:has(.caching-closing) .faris-slide__footer { right: calc(100% / 3 + 64px); }
+.slidev-layout .caching-closing { width: 100%; height: 100%; display: grid; grid-template-columns: 240px 1fr; gap: 48px; align-items: center; }
+.slidev-layout .caching-contact { text-align: center; }
+.slidev-layout .caching-contact p { font-size: 24px; margin-top: 20px; }
+.slidev-layout .caching-contact .caching-connect-cta { margin: 0 0 18px; color: var(--faris-brand-yellow); font-size: 26px; font-weight: 700; }
+.slidev-layout .caching-qr { width: 220px; margin: 0 auto; }
+.slidev-layout .caching-closing-badge { max-width: 320px; justify-self: center; }
+.slidev-layout .caching-closing-photo { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+
+/* Source PDF's semantic emphasis, adapted for contrast on cream and black. */
+.slidev-layout.faris-slide strong { color: var(--faris-text-blue); }
+.slidev-layout.faris-slide[data-faris-mode="dark"] strong { color: var(--faris-brand-yellow); }
+.slidev-layout.faris-slide h1 strong { font-weight: inherit; }
+
+/* Native Slidev transition: frequent motion, no extra clicks or timed gates. */
+.view-transition-enter-active, .view-transition-leave-active { transition: opacity 220ms ease; }
+.view-transition-enter-from, .view-transition-leave-to { opacity: 0; }
+.caching-flow-enter-active, .caching-flow-leave-active {
+  transition: opacity 220ms ease, translate 220ms cubic-bezier(.22,.61,.36,1);
+}
+.caching-flow-enter-from { opacity: 0; translate: 18px 0; }
+.caching-flow-leave-to { opacity: 0; translate: -12px 0; }
+.slidev-nav-go-backward .caching-flow-enter-from { translate: -18px 0; }
+.slidev-nav-go-backward .caching-flow-leave-to { translate: 12px 0; }
+.caching-flow-enter-active .faris-statement__body > p,
+.caching-flow-enter-active .caching-source-image,
+.caching-flow-enter-active pre,
+.caching-flow-enter-active .caching-demo-intro .faris-statement__body > p {
+  animation: caching-arrive 220ms cubic-bezier(.22,.61,.36,1) both;
+}
+.caching-flow-enter-active .server-flow .node {
+  animation: caching-arrive 150ms ease both;
+}
+.caching-flow-enter-active .server-flow .node:nth-of-type(2n) { animation-delay: 35ms; }
+.caching-flow-enter-active .server-flow .node:nth-of-type(3n) { animation-delay: 65ms; }
+.caching-flow-enter-active .server-flow .edge { animation: caching-arrive 180ms ease 40ms both; }
+@keyframes caching-arrive { from { opacity: 0; translate: 0 5px; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .view-transition-enter-active, .view-transition-leave-active { transition: none !important; }
+  .caching-flow-enter-active, .caching-flow-leave-active { transition: none !important; }
+  .caching-flow-enter-from, .caching-flow-leave-to { translate: none !important; }
+  [class*="caching-flow-"] *, [class*="caching-flow-"] { animation: none !important; }
+}
+@media print {
+  [class*="caching-flow-"] { opacity: 1 !important; translate: none !important; transition: none !important; }
+  [class*="caching-flow-"] * { animation: none !important; }
+}

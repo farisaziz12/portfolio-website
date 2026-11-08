@@ -1,0 +1,34 @@
+{
+  "name": "slides",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "slides": "node --experimental-strip-types scripts/slides/cli.mjs",
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs",
+    "dev": "slidev decks/showcase/slides.md",
+    "dev:variants": "slidev decks/variants/slides.md --port 4185",
+    "build:variants": "slidev build decks/variants/slides.md --out dist/variants",
+    "capture:variants": "node scripts/capture-p1.mjs variants",
+    "capture:sprites": "node scripts/capture-p1.mjs sprites-final",
+    "export:variants": "slidev export decks/variants/slides.md --output artifacts/sprites-final/faris-slides-variants.pdf",
+    "build": "slidev build decks/showcase/slides.md --out dist/showcase",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "capture:p1": "node scripts/capture-p1.mjs",
+    "export:p1": "slidev export decks/showcase/slides.md --output artifacts/p1/faris-slides-p1.pdf --with-clicks"
+  },
+  "devDependencies": {
+    "@slidev/cli": "53.0.0",
+    "@slidev/client": "53.0.0",
+    "@slidev/types": "53.0.0",
+    "markdown-it": "14.3.2",
+    "playwright-chromium": "1.62.1",
+    "slidev-theme-faris": "workspace:*",
+    "typescript": "6.0.3",
+    "vue": "3.5.43",
+    "vue-tsc": "3.3.11"
+  }
+}

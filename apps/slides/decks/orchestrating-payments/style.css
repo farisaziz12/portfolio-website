@@ -1,0 +1,74 @@
+/* Deck-specific compositions; brand tokens and existing layouts stay shared. */
+.slidev-layout.payments-content .payments-content__grid,
+.slidev-layout.payments-wide-code .payments-content__grid {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  height: 100%;
+  padding-bottom: 32px;
+}
+.slidev-layout .payments-content__title h1 { font-size: 52px; line-height: 1.08; }
+.slidev-layout .payments-content__body { min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+.slidev-layout .payments-caption { font-size: 18px; color: var(--faris-muted); line-height: 1.25; }
+.slidev-layout .payments-caption:empty { display: none; }
+.slidev-layout .payments-caption p { font-size: inherit; }
+.slidev-layout.payments-metric .faris-statement__body h1 { font-size: 116px; color: var(--faris-text-blue); letter-spacing: -0.07em; }
+.slidev-layout.payments-metric .faris-statement__body > p { font-size: 36px; max-width: 1000px; }
+.slidev-layout.payments-statement .faris-statement__body strong { color: var(--faris-text-blue); }
+.slidev-layout.payments-country .faris-statement__body h1 { font-size: 108px; }
+.slidev-layout.payments-country .faris-kicker { font-size: 24px; }
+.slidev-layout.payments-content .payments-content__body > p:has(> img) { height: 100%; min-height: 0; }
+.slidev-layout.payments-content .payments-content__body > p > img { width: 100%; height: 100%; object-fit: contain; }
+.slidev-layout .payments-split { display: grid; grid-template-columns: 1.3fr 1fr; gap: 56px; align-items: center; height: 100%; min-height: 0; }
+.slidev-layout .payments-split p { font-size: 30px; line-height: 1.4; }
+.slidev-layout .payments-split img { width: 100%; max-height: 440px; object-fit: contain; }
+.slidev-layout .payments-bio ul { margin: 28px 0 0; padding-left: 24px; }
+.slidev-layout .payments-bio li { margin-bottom: 16px; font-size: 24px; line-height: 1.35; }
+.slidev-layout .payments-bio .payments-role { font-size: 30px; color: var(--faris-text-blue); }
+.slidev-layout .payments-aircraft { grid-template-columns: 1.2fr 0.8fr; }
+.slidev-layout .payments-aircraft img { height: 440px; object-fit: contain; }
+.slidev-layout .payments-brand { display: flex; align-items: center; justify-content: flex-start; height: 100%; }
+.slidev-layout .payments-brand img { max-width: 680px; max-height: 290px; object-fit: contain; }
+.slidev-layout.payments-table table { width: 100%; border-collapse: collapse; font-size: 24px; line-height: 1.3; }
+.slidev-layout.payments-table th { color: var(--faris-text-blue); font-size: 20px; text-align: left; font-weight: 750; border-bottom: 3px solid var(--faris-brand-blue); }
+.slidev-layout.payments-table td, .slidev-layout.payments-table th { padding: 16px 12px; border-bottom: 1px solid var(--faris-border); }
+.slidev-layout.payments-table td:first-child { font-weight: 650; }
+.slidev-layout .payment-flow { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 22px; align-items: start; }
+.slidev-layout .payment-flow__step { padding-top: 24px; border-top: 4px solid var(--faris-brand-blue); }
+.slidev-layout .payment-flow__number { display: block; margin-bottom: 24px; color: var(--faris-text-blue); font-size: 22px; font-weight: 750; letter-spacing: .06em; }
+.slidev-layout .payment-flow h2 { font-size: 34px; line-height: 1.15; letter-spacing: -.035em; }
+.slidev-layout .payment-flow ul { margin: 28px 0 0; padding-left: 24px; font-size: 26px; line-height: 1.8; }
+.slidev-layout .payment-flow__arrow { font-size: 38px; color: var(--faris-text-blue); padding-top: 78px; }
+.slidev-layout .payment-providers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
+.slidev-layout .payment-provider { border-top: 4px solid var(--faris-brand-blue); padding-top: 28px; }
+.slidev-layout .payment-provider img { width: 240px; height: 70px; object-fit: contain; object-position: left; margin-bottom: 42px; }
+.slidev-layout .payment-provider h2 { font-size: 40px; margin-bottom: 16px; }
+.slidev-layout .payment-provider p { font-size: 26px; line-height: 1.4; }
+.slidev-layout .payment-provider strong { display: block; margin-top: 30px; font-size: 42px; }
+.slidev-layout.faris-slide.payments-wide-code { --slidev-code-padding: 20px; --slidev-code-line-height: 32px; }
+.slidev-layout.faris-slide.payments-wide-code.payments-code-dense { --slidev-code-padding: 16px; --slidev-code-line-height: 24px; }
+.slidev-layout.payments-wide-code .payments-content__title h1 { font-size: 40px; }
+.slidev-layout.payments-wide-code .faris-code__sample { align-self: center; width: 100%; }
+.slidev-layout.payments-wide-code .faris-code__sample pre { padding: 20px 28px; font-size: 24px !important; line-height: 1.35; border-radius: 12px; box-shadow: none; }
+.slidev-layout.payments-wide-code.payments-code-dense .faris-code__sample pre { font-size: 20px !important; line-height: 1.2; padding: 16px 24px; }
+.slidev-layout.payments-wide-code .payments-code-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.slidev-layout.payments-wide-code .payments-code-columns pre { height: 100%; }
+.slidev-layout .payment-demo { margin: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 16px; height: 100%; min-height: 0; }
+.slidev-layout .payment-demo img { width: 100%; height: 100%; object-fit: contain; }
+.slidev-layout .payment-demo figcaption { display: flex; justify-content: space-between; align-items: center; gap: 24px; border-top: 2px solid var(--faris-brand-blue); padding-top: 16px; font-size: 22px; }
+.slidev-layout .payment-demo figcaption span { color: var(--faris-muted); }
+.slidev-layout .payments-case { display: grid; gap: 28px; }
+.slidev-layout .payments-case > div { display: grid; grid-template-columns: 250px 1fr; gap: 40px; border-top: 1px solid var(--faris-border); padding-top: 24px; }
+.slidev-layout .payments-case h2 { font-size: 52px; color: var(--faris-text-blue); }
+.slidev-layout .payments-case h3 { font-size: 28px; letter-spacing: -.02em; margin-bottom: 10px; }
+.slidev-layout .payments-case p { font-size: 23px; line-height: 1.35; }
+.slidev-layout .payments-list { margin: 0; padding-left: 36px; font-size: 38px; line-height: 1.8; }
+.slidev-layout .payments-closing { display: grid; grid-template-columns: 1fr 400px; gap: 64px; align-items: center; height: 100%; }
+.slidev-layout .payments-closing h1 { font-size: 68px; line-height: 1.05; }
+.slidev-layout .payments-closing p { margin-top: 24px; }
+.slidev-layout .payments-closing img { width: 100%; max-height: 400px; object-fit: contain; }
+.slidev-layout .payments-connect { display: flex; align-items: center; gap: 32px; margin-top: 40px; }
+.slidev-layout .payments-connect img { width: 156px; height: 156px; background: white; }
+.slidev-layout .payments-connect .faris-badge { width: 130px; height: 146px; background: none; }
+.slidev-layout .payments-connect p { font-size: 24px; }
+.slidev-layout .faris-annotation:empty::after { display: none; }

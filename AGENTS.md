@@ -13,6 +13,7 @@ This file is the always-on map. Do **not** copy long guides into chat — open t
 | Design System v3 | `apps/web/src/styles/tokens.css`, `ds.css`, `components/v3/` | "Panels & Bands": Figtree, yellow accent, skewed bands. Rules: `docs/ui-rules.md`. Guardrails: `apps/web/scripts/ui-guardrails.mjs`. |
 | Resend + React Email | `apps/web/src/emails`, `apps/web/src/pages/api` | No `mailto:` on the site. Spec: `apps/web/CLAUDE.md`. |
 | PostHog (EU) | `apps/web/src/components/posthog.astro`, `apps/web/src/lib/analytics.ts` | Inventory: `docs/measurement.md`. |
+| Slidev decks | `apps/slides` (decks, CLI, tests), theme in `apps/slides/packages/slidev-theme-faris` | Vue, not React. Published builds land in `apps/web/public/slides/<slug>/`. Rules: `apps/slides/AGENTS.md`. |
 
 Ignore `/src` at the repo root — leftover Next.js, not part of the build.
 
@@ -23,6 +24,9 @@ pnpm install
 pnpm web          # site → http://localhost:4321
 SANITY_FIXTURES=1 pnpm web   # same, offline, against apps/web/fixtures/sanity-dataset.json
 pnpm studio       # Sanity Studio
+pnpm slides dev <talk>       # edit a deck (apps/slides/decks/<talk>/slides.md)
+pnpm slides review <talk>    # typecheck, build, screenshot every slide/click state
+pnpm slides publish <talk> [--slug <url-slug>]   # checked build → apps/web/public/slides/<slug>/
 pnpm lint         # ESLint + UI guardrails + file-size/convention ratchet
 pnpm --filter web lint:ui
 pnpm --filter web lint:conventions
@@ -46,7 +50,7 @@ The site must still render without Sanity/Resend/PostHog credentials (empty stat
 | Events, identify, recordings | `docs/measurement.md` |
 | Cursor rules / skills / MCPs | `.cursor/README.md` |
 
-Nested `AGENTS.md` files in `apps/web` and `apps/studio` apply when you work in those trees.
+Nested `AGENTS.md` files in `apps/web`, `apps/studio` and `apps/slides` apply when you work in those trees.
 
 ## Hard constraints
 

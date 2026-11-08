@@ -1,0 +1,49 @@
+.slidev-layout.faris-slide {
+  --faris-brand-ink: #0f0f10;
+  --faris-brand-cream: #f8f4eb;
+  --faris-brand-blue: #2e88b8;
+  --faris-brand-yellow: #f4c63a;
+  --faris-brand-orange: #ff9f00;
+
+  --faris-space-1: 8px;
+  --faris-space-2: 16px;
+  --faris-space-3: 24px;
+  --faris-space-4: 32px;
+  --faris-space-5: 40px;
+  --faris-space-6: 48px;
+  --faris-space-8: 64px;
+  --faris-space-10: 80px;
+  --faris-space-12: 96px;
+
+  --faris-font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  --faris-font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
+  --faris-font-display: 84px;
+  --faris-font-title: 56px;
+  --faris-font-body: 30px;
+  --faris-font-code: 24px;
+  --faris-font-note: 20px;
+  --faris-font-meta: 16px;
+
+  --faris-bg: #f8f4eb;
+  --faris-fg: #0f0f10;
+  --faris-muted: #57534e;
+  --faris-surface: #fffdf8;
+  --faris-border: #d2cabd;
+  --faris-text-blue: #17688f;
+  --faris-code-surface: #15171b;
+  --faris-code-border: #31343b;
+  --faris-shadow: rgb(15 15 16 / 10%);
+}
+
+.slidev-layout.faris-slide[data-faris-mode="dark"],
+.dark .slidev-layout.faris-slide[data-faris-mode="auto"] {
+  --faris-bg: #0f0f10;
+  --faris-fg: #f8f4eb;
+  --faris-muted: #c8c1b5;
+  --faris-surface: #191a1d;
+  --faris-border: #44413c;
+  --faris-text-blue: #68bce3;
+  --faris-code-surface: #191b20;
+  --faris-code-border: #3f434c;
+  --faris-shadow: rgb(0 0 0 / 38%);
+}
