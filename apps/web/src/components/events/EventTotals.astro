@@ -1,0 +1,79 @@
+---
+/**
+ * /events totals: the headline sessions count on a yellow panel, with the
+ * role breakdown beside it. Talks + workshops add up to the headline count;
+ * hosted and attended are counted apart (stats.ts, HEADLINE_BUCKETS).
+ */
+import type { RoleBucket } from 'shared';
+import type { SpeakingStats } from '../../lib/sanity/v3';
+
+interface Props {
+  stats: SpeakingStats;
+  /** Past events, every role. */
+  events: number;
+}
+const { stats, events } = Astro.props;
+
+const roles: { bucket?: RoleBucket; label: string; n: number }[] = [
+  { bucket: 'spoke', label: 'Talks', n: stats.sessionsDelivered - stats.workshopsDelivered },
+  { bucket: 'workshop', label: 'Workshops', n: stats.workshopsDelivered },
+  { bucket: 'hosted', label: 'Hosted', n: stats.hosted },
+  { bucket: 'attended', label: 'Attended', n: stats.attended },
+  { label: 'Events', n: events },
+];
+---
+
+<section class="evt" aria-label="Totals">
+  <div class="evt__panel">
+    <span class="evt__big">{stats.sessionsDelivered}</span>
+    <span class="evt__cap">
+      {stats.sessionsDelivered === 1 ? 'session' : 'sessions'} on stage in {stats.countries} {stats.countries === 1 ? 'country' : 'countries'}
+    </span>
+  </div>
+  <dl class="evt__list">
+    {roles.map((r) => (
+      <div data-bucket={r.bucket}>
+        <dt>{r.label}</dt>
+        <dd>{r.n}</dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  /* Desktop: panel left, five cells right, everything sits on the panel's bottom edge.
+     Below 1200px the panel stacks on top (five cells need the full width). */
+  .evt { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin: 0 0 56px; border: 1px solid rgb(var(--hairline)); border-radius: var(--radius-card); overflow: hidden; }
+  .evt__panel { display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 28px; background: rgb(var(--yellow)); color: rgb(var(--on-yellow)); min-width: 0; }
+  .evt__big { font-size: clamp(64px, 8vw, 96px); font-weight: 800; letter-spacing: -0.06em; line-height: 0.85; }
+  .evt__cap { font-size: 15px; font-weight: 700; max-width: 22ch; }
+  .evt__list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; min-width: 0; }
+  /* column-reverse puts the number above its label; flex-start = bottom of the cell. */
+  .evt__list > div { display: flex; flex-direction: column-reverse; justify-content: flex-start; gap: 8px; padding: 28px 20px; border-left: 1px solid rgb(var(--hairline)); min-width: 0; }
+  .evt__list dd { margin: 0; font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+  .evt__list dt { display: flex; align-items: center; gap: 7px; font-size: 13px; color: rgb(var(--text-muted)); white-space: nowrap; }
+  .evt__list [data-bucket] dt::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--role)); flex: none; }
+  .evt__list [data-bucket='attended'] dt::before { background: transparent; box-shadow: inset 0 0 0 1.5px rgb(var(--role)); }
+
+  @media (max-width: 1199px) {
+    .evt { grid-template-columns: 1fr; }
+    .evt__panel { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: flex-end; gap: 8px 18px; padding: 24px; }
+    .evt__big { font-size: clamp(56px, 12vw, 80px); }
+    .evt__cap { padding-bottom: 4px; max-width: none; }
+    .evt__list > div { padding: 20px; }
+    .evt__list > :first-child { border-left: 0; }
+  }
+
+  @media (max-width: 720px) {
+    .evt { margin-bottom: 40px; }
+    .evt__panel { padding: 22px 20px; }
+    /* 2 x 2 roles, then Events across the full width. */
+    .evt__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .evt__list > div { padding: 18px 20px; border-top: 1px solid rgb(var(--hairline)); }
+    .evt__list > :first-child { border-top: 0; }
+    .evt__list > :nth-child(2) { border-top: 0; }
+    .evt__list > :nth-child(odd) { border-left: 0; }
+    .evt__list > :last-child { grid-column: 1 / -1; }
+    .evt__list dd { font-size: 32px; }
+  }
+</style>

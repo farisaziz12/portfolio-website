@@ -7,6 +7,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import NextOnStage from '../../components/events/NextOnStage.astro';
 import ThenList from '../../components/events/ThenList.astro';
 import ArchiveTour from '../../components/events/ArchiveTour.astro';
+import EventTotals from '../../components/events/EventTotals.astro';
 import { getPastEvents, getSpeakingStats, getUpcomingEvents, speakingLine } from '../../lib/sanity/v3';
 import { isOnStage } from '../../lib/events-view';
 import { breadcrumbs, itemList } from '../../lib/seo';
@@ -47,6 +48,8 @@ const schema = [
         workshop, hosted, or just went to listen.
       </p>
     </header>
+
+    {past.length > 0 && !stats.fallback && <EventTotals stats={stats} events={past.length} />}
 
     {lead && <NextOnStage event={lead} />}
 
