@@ -467,8 +467,8 @@
     {
       "sourceSlide": 63,
       "output": "public/media/one-on-one-notes.jpg",
-      "outputSha256": "449cf89b61ce4bf7db241faadfe241091ef163720d7eeaecd1f2a34db7d53cf7",
-      "conversion": "1:1 document body pixelated and blurred"
+      "outputSha256": "3331a194c7a7c272bbd968bcecc4704b06b1dab884b1d1b2cd0305e7671e23cf",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG; only the source deck's own black boxes are redacted"
     },
     {
       "sourceSlide": 98,

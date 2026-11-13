@@ -32,7 +32,7 @@ The repo is public and published decks are served from faziz-dev.com, so anythin
 | 42 | speaking-topics-email.jpg | Email body pixelated: it is a hiring-process email |
 | 43 | (text) | Rebuilt as real text from the source screenshot. The interviewer's name is replaced by a redaction bar. |
 | 47, 53, 54 | seniority-axes*.jpg | As in source. Origin of the five-axis model is not recorded. |
-| 63 | one-on-one-notes.jpg | Document body pixelated: internal Smallpdf 1:1 notes (payments providers, experiments, people) |
+| 63 | one-on-one-notes.jpg | As in source: only the names already blacked out in the source deck are hidden. Readable internal Smallpdf 1:1 notes, kept at Faris's request (2026-11-13). |
 | 98 | community-collage.jpg, linkedin-qr.png | Collage as in source. QR regenerated as a crisp PNG from the decoded source QR, same target: https://www.linkedin.com/in/farisaziz12/ |
 
 Unredacted originals were not copied into the repo. To restore one, re-extract it from the PDF and accept that it becomes public.

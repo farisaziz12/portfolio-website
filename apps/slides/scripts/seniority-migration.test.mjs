@@ -56,7 +56,7 @@ test('seniority: every referenced image exists and matches its recorded hash', a
 })
 
 test('seniority: private screenshots stay redacted and the third-party name stays out', () => {
-  for (const name of ['bootcamp-admission-email.jpg', 'speaking-topics-email.jpg', 'one-on-one-notes.jpg']) {
+  for (const name of ['bootcamp-admission-email.jpg', 'speaking-topics-email.jpg']) {
     assert.match(source.assets.find(asset => asset.output.endsWith(name)).conversion, /black box|blurred/)
   }
   assert.doesNotMatch(markdown, /Matteo|pittman/i)

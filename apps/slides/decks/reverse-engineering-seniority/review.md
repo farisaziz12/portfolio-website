@@ -11,7 +11,7 @@ Test: scripts/seniority-migration.test.mjs (source identity, wording against the
 Claims/code review: not run. Open items in sources.md.
 Editorial/anti-slop pass: not run. The wording is Faris's own from the source deck; only typos were fixed.
 Browser review: passed 2026-11-13 (typecheck, build, 98 states, only the known FloatingVue warning).
-Run: artifacts/reviews/reverse-engineering-seniority/2026-11-13T22-25-47.602Z-r8Yp8E (local; artifacts/ is gitignored).
+Run: artifacts/reviews/reverse-engineering-seniority/2026-11-13T22-52-56.813Z-CLddKx (local; artifacts/ is gitignored). Slide 63 now shows the 1:1 doc unblurred, at Faris's request.
 Agent inspected every screenshot. Fixed in the pass: stray empty-annotation mark hidden deck-locally; slide 24 phone screenshot
 overflowed the footer; slide 98 contact lines merged into one; axes heading moved as the list grew (now top-anchored).
 Human visual review: not run.
