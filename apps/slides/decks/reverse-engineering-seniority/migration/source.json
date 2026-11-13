@@ -1,0 +1,486 @@
+{
+  "source": "Reverse_Engineering_Seniority-compressed.pdf",
+  "sha256": "da72135002dc164f413a60859db49e4692726189752d1852f98e61f0b4554bd1",
+  "pages": 98,
+  "notes": "The PDF export carries no presenter notes.",
+  "slides": [
+    {
+      "number": 1,
+      "text": "Reverse Engineering Seniority From Bootcamp Grad to Sta Engineer in Four Years ff ff Faris Aziz - Sta Software Engineer - Smallpdf"
+    },
+    {
+      "number": 2,
+      "text": "Seniority"
+    },
+    {
+      "number": 3,
+      "text": "Why Do We Care About Seniority?"
+    },
+    {
+      "number": 4,
+      "text": "More Authority?"
+    },
+    {
+      "number": 5,
+      "text": "More Purpose?"
+    },
+    {
+      "number": 6,
+      "text": "More Money?"
+    },
+    {
+      "number": 7,
+      "text": "Maybe It’s Just What We’re Supposed To Do?"
+    },
+    {
+      "number": 8,
+      "text": "What Does Seniority Even Mean?"
+    },
+    {
+      "number": 9,
+      "text": ""
+    },
+    {
+      "number": 10,
+      "text": "We Got the Answer!"
+    },
+    {
+      "number": 11,
+      "text": "It’s Time!"
+    },
+    {
+      "number": 12,
+      "text": "So Just Sit Around and It’ll Happen"
+    },
+    {
+      "number": 13,
+      "text": ""
+    },
+    {
+      "number": 14,
+      "text": ""
+    },
+    {
+      "number": 15,
+      "text": "Experience != Time"
+    },
+    {
+      "number": 16,
+      "text": "Time Just Increases the Likelihood That You Could End Up Experienced"
+    },
+    {
+      "number": 17,
+      "text": ""
+    },
+    {
+      "number": 18,
+      "text": "At 17, How Would You Go About Coaching the Health and Fitness of Those Double Your Age?"
+    },
+    {
+      "number": 19,
+      "text": "How Do You Establish Authority and Experience When You Practically Have None?"
+    },
+    {
+      "number": 20,
+      "text": "Someone Has To Trust You With Decision That Could Impact the Trajectory of Their Health"
+    },
+    {
+      "number": 21,
+      "text": "Sound Familiar?"
+    },
+    {
+      "number": 22,
+      "text": "Why Should Someone Hand You the Keys to Production?"
+    },
+    {
+      "number": 23,
+      "text": "Why Should Someone Trust You With the Trajectory of Their Business?"
+    },
+    {
+      "number": 24,
+      "text": "Coding Bootcamp"
+    },
+    {
+      "number": 25,
+      "text": "4 Months"
+    },
+    {
+      "number": 26,
+      "text": "Speed Run Through Ruby on Rails"
+    },
+    {
+      "number": 27,
+      "text": "Speed Run Through CRUD"
+    },
+    {
+      "number": 28,
+      "text": "Speed Run Through SQL"
+    },
+    {
+      "number": 29,
+      "text": "Speed Run Through React"
+    },
+    {
+      "number": 30,
+      "text": ""
+    },
+    {
+      "number": 31,
+      "text": "What’s a Webhook?"
+    },
+    {
+      "number": 32,
+      "text": "First Production Incident"
+    },
+    {
+      "number": 33,
+      "text": "You Don’t Know Everything"
+    },
+    {
+      "number": 34,
+      "text": "Knowing What You Don’t Know"
+    },
+    {
+      "number": 35,
+      "text": "Knowing What You’re Good at"
+    },
+    {
+      "number": 36,
+      "text": "Knowing What You’re Not Good at"
+    },
+    {
+      "number": 37,
+      "text": "That Signals Seniority"
+    },
+    {
+      "number": 38,
+      "text": ""
+    },
+    {
+      "number": 39,
+      "text": "“I Ask Questions Not Because I Need the Answers, but Because Others May Be Afraid To Ask.” - Adam Murray"
+    },
+    {
+      "number": 40,
+      "text": "Teams Are Loosely Set Puzzle Pieces"
+    },
+    {
+      "number": 41,
+      "text": "Knowing Where You Fit in That Puzzle Sets You Up for High Impact in Your Vertical"
+    },
+    {
+      "number": 42,
+      "text": ""
+    },
+    {
+      "number": 43,
+      "text": ""
+    },
+    {
+      "number": 44,
+      "text": "Teams Are Built on Trust"
+    },
+    {
+      "number": 45,
+      "text": "Treat Yourself Like a Pillar"
+    },
+    {
+      "number": 46,
+      "text": "How Do You Navigate This Within an Organization?"
+    },
+    {
+      "number": 47,
+      "text": ""
+    },
+    {
+      "number": 48,
+      "text": "Axes - Technology: Knowledge of the Tech Stack and Tools"
+    },
+    {
+      "number": 49,
+      "text": "Axes - Technology: Knowledge of the Tech Stack and Tools - System: Level of Ownership of the System(S)"
+    },
+    {
+      "number": 50,
+      "text": "Axes - Technology: Knowledge of the Tech Stack and Tools - System: Level of Ownership of the System(S) - People: Relationship With the Team(S)"
+    },
+    {
+      "number": 51,
+      "text": "Axes - Technology: Knowledge of the Tech Stack and Tools - System: Level of Ownership of the System(S) - People: Relationship With the Team(S) - Process: Level of Engagement With the Development Process"
+    },
+    {
+      "number": 52,
+      "text": "Axes fl fl - Technology: Knowledge of the Tech Stack and Tools - System: Level of Ownership of the System(S) - People: Relationship With the Team(S) - Process: Level of Engagement With the Development Process - In uence: Scope of In uence of the Position"
+    },
+    {
+      "number": 53,
+      "text": ""
+    },
+    {
+      "number": 54,
+      "text": ""
+    },
+    {
+      "number": 55,
+      "text": "What if Nobody Wants To Be Mentored?"
+    },
+    {
+      "number": 56,
+      "text": "What if Nobody Around Me Wants To Improve?"
+    },
+    {
+      "number": 57,
+      "text": "What if I Work Work With an Unmotivated Team?"
+    },
+    {
+      "number": 58,
+      "text": "Your Environment Should Not Dictate Your Performance"
+    },
+    {
+      "number": 59,
+      "text": "You Need To Find the Environment That Boosts Your Performance"
+    },
+    {
+      "number": 60,
+      "text": "You Own Your Growth"
+    },
+    {
+      "number": 61,
+      "text": "Promotions Are Seldom Straightforward"
+    },
+    {
+      "number": 62,
+      "text": "Managing Up"
+    },
+    {
+      "number": 63,
+      "text": ""
+    },
+    {
+      "number": 64,
+      "text": "Manager / IC Track"
+    },
+    {
+      "number": 65,
+      "text": "Organizational Need"
+    },
+    {
+      "number": 66,
+      "text": "Growth Is the Sign of Healthy Management"
+    },
+    {
+      "number": 67,
+      "text": "Peace of Mind"
+    },
+    {
+      "number": 68,
+      "text": "Network in and out of Your Organization"
+    },
+    {
+      "number": 69,
+      "text": "Build Advocates"
+    },
+    {
+      "number": 70,
+      "text": "How Many LinkedIn Connections Should You Have?"
+    },
+    {
+      "number": 71,
+      "text": "Your Network Is Only as Valuable as Intention With Which You Build It"
+    },
+    {
+      "number": 72,
+      "text": "How Do You Want To Be Represented When You’re Not in the Room?"
+    },
+    {
+      "number": 73,
+      "text": "Connect With Authenticity and Intention"
+    },
+    {
+      "number": 74,
+      "text": "What Does That Have To Do With Seniority?"
+    },
+    {
+      "number": 75,
+      "text": "Leadership Shows Up in the Ability To Navigate Diagonally Across Organizational Boundaries and Create Impact Without Relying on Formal Authority."
+    },
+    {
+      "number": 76,
+      "text": "Everyone Can Be a Leader"
+    },
+    {
+      "number": 77,
+      "text": "Tech Debt"
+    },
+    {
+      "number": 78,
+      "text": "People Debt"
+    },
+    {
+      "number": 79,
+      "text": "Culture Rot"
+    },
+    {
+      "number": 80,
+      "text": "Force Multiplier"
+    },
+    {
+      "number": 81,
+      "text": "Technical Problems Are Much Easier Than People Problems"
+    },
+    {
+      "number": 82,
+      "text": "Seniority = Vision"
+    },
+    {
+      "number": 83,
+      "text": "Timeline Tetris"
+    },
+    {
+      "number": 84,
+      "text": "RAID"
+    },
+    {
+      "number": 85,
+      "text": "Risks Assumptions Issues Dependancies"
+    },
+    {
+      "number": 86,
+      "text": "Being Senior"
+    },
+    {
+      "number": 87,
+      "text": "Being a Risk Manager"
+    },
+    {
+      "number": 88,
+      "text": "Create Your Own Learning Stimulus"
+    },
+    {
+      "number": 89,
+      "text": "At Some Point Your Organization’s Skill Need May Misalign With Your Own"
+    },
+    {
+      "number": 90,
+      "text": "Your Development Needs To Run in Two Parallel Lines"
+    },
+    {
+      "number": 91,
+      "text": "One That Caters for the Organizational Skills"
+    },
+    {
+      "number": 92,
+      "text": "One That Invests for the Skills You May Need Across the Next Organizations"
+    },
+    {
+      "number": 93,
+      "text": "Be the One That"
+    },
+    {
+      "number": 94,
+      "text": "Be the One That Takes Accountability"
+    },
+    {
+      "number": 95,
+      "text": "Be the One That Leads Your 1:1s"
+    },
+    {
+      "number": 96,
+      "text": "Be the One That Builds Lasting Relationships"
+    },
+    {
+      "number": 97,
+      "text": "Be the One That Owns Your Career End To End"
+    },
+    {
+      "number": 98,
+      "text": "Thank You!"
+    }
+  ],
+  "assets": [
+    {
+      "sourceSlide": 9,
+      "output": "public/media/google-seniority-definition.jpg",
+      "outputSha256": "351b6465a5ea8a9ce1b615709982f95117c65e5fc2fa6d4f20d678f20cffcbe7",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 13,
+      "output": "public/media/childhood-laptop.jpg",
+      "outputSha256": "b381f0944f8ebf18133664a75c515c814270a1723a5adbc868ce453f005b95dc",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 14,
+      "output": "public/media/github-joined.jpg",
+      "outputSha256": "769c206ad443c4661c5a592b0be6519aee8c02799813e77f0d9a04feacc7d6ea",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 17,
+      "output": "public/media/crossfit-coaching.jpg",
+      "outputSha256": "76889e5a06f561c1e3c92c7634aca6e8e199f78a8255cb439d3f157bf8f0a244",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 24,
+      "output": "public/media/bootcamp-admission-email.jpg",
+      "outputSha256": "cd1d8d155ddfcc0d0d8eac0bda7d1b3926980e6d13d118358d3da787453814b8",
+      "conversion": "admissions sender address covered with a black box"
+    },
+    {
+      "sourceSlide": 30,
+      "output": "public/media/bootcamp-schedule-app.jpg",
+      "outputSha256": "a669bce06c4ddfc4782d314583fd4529dfc31592f9db171ea6b995538b846381",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 38,
+      "output": "public/media/confidence-competence-curve.jpg",
+      "outputSha256": "d4e6635138b7431e92c255431bfc7b374b927366e63d17c48b7ccf78b610fcda",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 42,
+      "output": "public/media/speaking-topics-email.jpg",
+      "outputSha256": "e5e32c53e083e5b96e0eab75648c48877e12b52a9535ca63cff70b4c590177c9",
+      "conversion": "email body pixelated and blurred"
+    },
+    {
+      "sourceSlide": 47,
+      "output": "public/media/seniority-axes.jpg",
+      "outputSha256": "4511877647a011c59da71539d5d8d2dddb18c640d04f7f38ad71b348552e464d",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 53,
+      "output": "public/media/seniority-axes-profile-early.jpg",
+      "outputSha256": "ccb6c01b23e9554d86cf19bf5dee23fa74949532723ac3324193de35343f2798",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 54,
+      "output": "public/media/seniority-axes-profile-later.jpg",
+      "outputSha256": "39fe40338025d30f68ebedef2ee073026b046a627ac890168ead9f1594341918",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 63,
+      "output": "public/media/one-on-one-notes.jpg",
+      "outputSha256": "449cf89b61ce4bf7db241faadfe241091ef163720d7eeaecd1f2a34db7d53cf7",
+      "conversion": "1:1 document body pixelated and blurred"
+    },
+    {
+      "sourceSlide": 98,
+      "output": "public/media/community-collage.jpg",
+      "outputSha256": "6f176cc70ca80a80d3aa0f6517e9dda63d24990f16233f106f12f0ee62ee81fb",
+      "conversion": "extracted embedded image, resized to at most 1920px, re-encoded JPEG"
+    },
+    {
+      "sourceSlide": 98,
+      "output": "public/media/linkedin-qr.png",
+      "outputSha256": "08adb7659bfebcf773263fd13c9811bf1861ea3f57c08434c20d8bbce0d674a8",
+      "conversion": "regenerated from the decoded source QR (https://www.linkedin.com/in/farisaziz12/)"
+    }
+  ]
+}
