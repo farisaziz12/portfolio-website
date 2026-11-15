@@ -27,5 +27,5 @@ Rethinking Engineering Seniority". 103 slides / 105 states after Faris's second 
 Built from the cut/add plan agreed in chat on 2026-11-15. Outline approval for the edition: pending (Faris, via the menu).
 Open before delivery: timing at 103 slides for a 30-minute slot; slides 52-54 are suggested wording on which axis AI flattens; slide 51 ("Which Axis Does AI Flatten?")
 needs Faris's answer; slide 22 ("An Agent Can Speed Run That in an Afternoon") is opinion, not a measured claim.
-Browser review: passed, run artifacts/reviews/reverse-engineering-seniority/halfstack-vienna/2026-11-15T19-55-46.327Z-PW17rP (passed).
+Browser review: passed, run artifacts/reviews/reverse-engineering-seniority/halfstack-vienna/2026-11-15T20-01-19.941Z-hkHddc (passed).
 Agent inspected every final-click screenshot; "The Balance" list enlarged after that run.
