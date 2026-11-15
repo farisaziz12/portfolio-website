@@ -46,3 +46,9 @@
 .slidev-layout .seniority-contact p { margin: 4px 0 0; font-size: 24px; }
 .slidev-layout .seniority-contact p:first-of-type { color: var(--faris-brand-yellow); font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
 .slidev-layout.seniority-media .seniority-media__figure .seniority-closing-photo { width: 300px; max-height: 500px; object-fit: cover; border-radius: 12px; }
+
+/* Editions: a slide still waiting for content stays loud on purpose. */
+.slidev-layout.seniority-placeholder .faris-statement__body { outline: 4px dashed var(--faris-brand-yellow); outline-offset: 32px; }
+.slidev-layout.seniority-placeholder .faris-kicker { color: var(--faris-brand-yellow); }
+.slidev-layout.seniority-list.seniority-balance li { font-size: 48px; line-height: 1.35; font-weight: 750; letter-spacing: -0.02em; }
+.slidev-layout.seniority-list.seniority-balance li::before { content: "· "; color: var(--faris-brand-yellow); }

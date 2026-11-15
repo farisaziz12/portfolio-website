@@ -486,7 +486,7 @@ layout: media
 class: seniority-photo
 sourceSlide: 63
 ---
-![Faris’s running 1:1 notes document, blurred](/media/one-on-one-notes.jpg)
+![Faris’s running 1:1 notes document](/media/one-on-one-notes.jpg)
 
 ---
 layout: statement
