@@ -27,12 +27,13 @@ Faris Aziz · Staff Software Engineer · Smallpdf
 ::visual::
 <FarisBadge />
 
+
 ---
 src: ./slides.md#2-12
 ---
 
 ---
-src: ./slides.md#14-15
+src: ./slides.md#13-15
 ---
 
 ---
@@ -65,15 +66,7 @@ class: seniority-line
 # An Agent Can Speed Run That in an **Afternoon**
 
 ---
-src: ./slides.md#30-41
----
-
----
-src: ./slides.md#44-47
----
-
----
-src: ./slides.md#52-54
+src: ./slides.md#30-54
 ---
 
 ---
@@ -83,12 +76,58 @@ class: seniority-line
 
 # Which Axis Does AI **Flatten**?
 
+---
+layout: statement
+class: seniority-line
+---
+
+# **Technology** Is the Axis AI Flattens First
+
 <!--
-Your answer goes here: which of Technology, System, People, Process and Influence gets cheaper, and which do not.
+SUGGESTED (opinion). Knowing the stack and the tools is the part an agent now covers fastest.
 -->
 
 ---
-src: ./slides.md#58
+layout: statement
+class: seniority-list seniority-flattened
+---
+
+# Axes
+
+- <s><strong>Technology:</strong> Knowledge of the Tech Stack and Tools</s>
+- **System:** Level of Ownership of the System(s)
+- **People:** Relationship With the Team(s)
+- **Process:** Level of Engagement With the Development Process
+- **Influence:** Scope of Influence of the Position
+
+<!--
+SUGGESTED (draft for Faris to confirm). Same five axes as before, with Technology struck through.
+-->
+
+---
+layout: statement
+class: seniority-line
+---
+
+# The Axes Left Standing All Run on **Trust**
+
+<!--
+SUGGESTED (opinion). Ties back to "Teams Are Built on Trust": ownership, relationships, process and influence are earned, not generated.
+-->
+
+---
+layout: statement
+class: seniority-line
+---
+
+# What if There’s Nobody Left To **Mentor**?
+
+<!--
+Reworded from base 55 ("What if Nobody Wants To Be Mentored?") for the AI angle.
+-->
+
+---
+src: ./slides.md#56-58
 ---
 
 ---
@@ -125,35 +164,6 @@ class: seniority-line
 
 ---
 layout: statement
-class: seniority-list seniority-balance
----
-
-# The Balance
-
-- User Experience
-- Architecture
-- Reliability
-- Commercial Priorities
-- The Constraints of the Teams Around You
-
----
-layout: statement
-class: seniority-line seniority-placeholder
----
-
-# Placeholder: One Real Trade-Off
-
-::kicker::
-Fill before Monday
-
-<!--
-PLACEHOLDER. One technical decision and the product or commercial outcome it bought, with real numbers.
-Candidates from your own material: conditional payment SDK loading (Adyen loaded for everyone, checkout bundle cut by 50-60%),
-or pausing the orchestration service for other initiatives and bringing it back. Split into 2-4 slides once chosen.
--->
-
----
-layout: statement
 class: seniority-line
 ---
 
@@ -171,7 +181,15 @@ class: seniority-line
 # Choosing Where To Invest Engineering **Effort**
 
 ---
-src: ./slides.md#75-76
+src: ./slides.md#61
+---
+
+---
+src: ./slides.md#64-74
+---
+
+---
+src: ./slides.md#76
 ---
 
 ---
@@ -182,11 +200,7 @@ class: seniority-line
 # You Don’t Need Every Team To Share **Your Priorities**
 
 ---
-src: ./slides.md#77-87
----
-
----
-src: ./slides.md#88-93
+src: ./slides.md#77-93
 ---
 
 ---

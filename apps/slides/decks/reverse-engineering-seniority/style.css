@@ -52,3 +52,5 @@
 .slidev-layout.seniority-placeholder .faris-kicker { color: var(--faris-brand-yellow); }
 .slidev-layout.seniority-list.seniority-balance li { font-size: 48px; line-height: 1.35; font-weight: 750; letter-spacing: -0.02em; }
 .slidev-layout.seniority-list.seniority-balance li::before { content: "· "; color: var(--faris-brand-yellow); }
+.slidev-layout.seniority-flattened li s { color: var(--faris-muted); text-decoration-thickness: 3px; text-decoration-color: var(--faris-brand-yellow); }
+.slidev-layout.seniority-flattened li s strong { color: inherit; }
