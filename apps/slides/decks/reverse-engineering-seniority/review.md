@@ -23,9 +23,9 @@ then `pnpm slides publish reverse-engineering-seniority` when it should go on th
 ## Edition: halfstack-vienna (2026-11-15)
 
 `slides.halfstack-vienna.md`, HalfStack Vienna 16 November 2026, as "When Writing Code Is No Longer the Bottleneck:
-Rethinking Engineering Seniority". 79 slides / 81 states; 25 imported ranges from slides.md, 21 new slides. See EDITIONS.md.
+Rethinking Engineering Seniority". 81 slides / 83 states (after 2026-11-15 feedback: keep base 4-7, drop the two AI-hook slides). See EDITIONS.md.
 Built from the cut/add plan agreed in chat on 2026-11-15. Outline approval for the edition: pending (Faris, via the menu).
 Open before delivery: slide 50 is a placeholder for one real trade-off story; slide 42 ("Which Axis Does AI Flatten?")
 needs Faris's answer; slide 22 ("An Agent Can Speed Run That in an Afternoon") is opinion, not a measured claim.
-Browser review: passed, run artifacts/reviews/reverse-engineering-seniority/halfstack-vienna/2026-11-15T09-10-12.585Z-iHnwPQ (passed after the Balance fix).
+Browser review: passed, run artifacts/reviews/reverse-engineering-seniority/halfstack-vienna/2026-11-15T19-55-46.327Z-PW17rP (passed).
 Agent inspected every final-click screenshot; "The Balance" list enlarged after that run.

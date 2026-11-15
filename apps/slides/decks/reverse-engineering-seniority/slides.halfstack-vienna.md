@@ -28,25 +28,7 @@ Faris Aziz · Staff Software Engineer · Smallpdf
 <FarisBadge />
 
 ---
-src: ./slides.md#2-3
----
-
----
-layout: statement
-class: seniority-line
----
-
-# Implementation. Debugging. Refactoring. **Testing.**
-
----
-layout: statement
-class: seniority-line
----
-
-# More of the Work We Used To Prove Seniority Can Now Be **Delegated**
-
----
-src: ./slides.md#8-12
+src: ./slides.md#2-12
 ---
 
 ---
