@@ -9,7 +9,7 @@ fonts:
 themeConfig:
   farisMode: dark
   farisBackground: none
-transition: fade
+transition: view-transition
 drawings:
   enabled: false
 layout: cover
