@@ -189,18 +189,7 @@ src: ./slides.md#64-74
 ---
 
 ---
-src: ./slides.md#76
----
-
----
-layout: statement
-class: seniority-line
----
-
-# You Don’t Need Every Team To Share **Your Priorities**
-
----
-src: ./slides.md#77-93
+src: ./slides.md#76-93
 ---
 
 ---
