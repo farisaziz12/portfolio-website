@@ -54,3 +54,14 @@
 .slidev-layout.seniority-list.seniority-balance li::before { content: "· "; color: var(--faris-brand-yellow); }
 .slidev-layout.seniority-flattened li s { color: var(--faris-muted); text-decoration-thickness: 3px; text-decoration-color: var(--faris-brand-yellow); }
 .slidev-layout.seniority-flattened li s strong { color: inherit; }
+
+/* Word-level magic move (setup/preparser.ts). Words keep their own box so they can travel. */
+.slidev-layout .magic-words .magic-word { display: inline-block; }
+::view-transition { pointer-events: none; }
+::view-transition-group(*) { animation-duration: 700ms; animation-timing-function: cubic-bezier(.45, 0, .25, 1); }
+::view-transition-old(*), ::view-transition-new(*) { animation-duration: 350ms; animation-timing-function: ease-in-out; }
+::view-transition-group(root) { animation-duration: 350ms; }
+@media (prefers-reduced-motion: reduce), print {
+  .magic-word { view-transition-name: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0s !important; }
+}
