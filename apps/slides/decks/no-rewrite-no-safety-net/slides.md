@@ -46,18 +46,19 @@ A small change
 ::default::
 
 ```diff
-- import { formatPrice } from 'legacy/price'
-+ import { formatPrice } from '@/pricing'
+- import { parseResponse } from 'api/legacy'
++ import { request } from 'api/fetch'
 ```
 
 ::annotation::
-Illustrative diff. [gap: real, sanitized diff from the Smallpdf codebase]
+Simplified names. The plans fetch still runs on a deprecated 2017 helper.
 
 <!--
 Target 1:00.
-In a greenfield app this is a five-minute change. A shared helper moves to its new home.
-In our app the first question is not whether it compiles. It's who depends on the old behaviour: which pages, which locales, which plans, and whether any of them touch checkout.
-In a 13-year-old app, one import can reach more paths than anyone on the team can name. That question is the whole talk.
+This is a real change waiting in our checkout code, with simplified names. The plans fetch, the thing that decides which prices you see, still goes through an API helper from 2017. Its response functions are marked deprecated. Everything newer uses a typed fetch wrapper.
+In a greenfield app, swapping one for the other is a five-minute change.
+Here's the catch. The old helper turns responses into a fixed set of named errors: not found, unsubscribed, internal server error. The new wrapper has one generic network error. So the real question is not whether it compiles. It's who, somewhere in checkout, is quietly branching on "unsubscribed". [Verify before saying: does any caller actually branch on a named error?]
+That question is the whole talk.
 -->
 
 ---
@@ -121,32 +122,34 @@ layout: content
 ---
 
 ::kicker::
-What's in there
+What's in there: the code I own
 
 ::title::
 # Every era is still in production
 
 ::default::
-<div class="nr-table">
+<div class="nr-table nr-table--dense">
 
 | Layer | Oldest | Middle | Newest |
 |---|---|---|---|
-| Components | [gap] | [gap] | [gap] |
-| State | [gap] | [gap] | [gap] |
-| Data fetching | [gap] | [gap] | [gap] |
-| Tooling | [gap] | [gap] | [gap] |
+| Components | A class error boundary | HOC hydration wrappers | Hooks, ~180 files |
+| State | Hand-written reducers | redux-saga | Context + useReducer, Redux hooks, one RTK slice |
+| Data fetching | 2017 response helper, one XHR upload | Saga select / put | Typed fetch wrapper, React Query v4 |
+| Rendering | | styled-components, ~90 files | Pre-hydration scripts, ~17 files |
 
 </div>
 
 ::caption::
-Partial migrations mean one user flow can cross all three columns.
+One checkout touches a hand-written reducer, a saga, a Context store and React Query at once.
 
 <!--
 Target 1:00.
-[gap: fill the table from the Smallpdf codebase: component styles, state libraries, fetching patterns and build tooling that are all still live.]
-Every row here has at least two answers in production right now. A single user flow can start in an old component, read from the old store, fetch with the middle-era pattern, and render a newer component at the end.
-None of this is a moral failing. It's what 13 years of shipping looks like.
+This is just the part of the codebase I've worked in since 2024: about 470 files, nearly all of them in the money path. Auth and the subscription dialog, checkout and payments, account pages, the plans and pricing service, the header, and our A/B experiment service.
+Read it across. One class component left, the error boundary around payment. A dialog state machine written as a hand-rolled reducer, about 640 lines. A saga that still handles redirects after payment and login. A brand-new Context store for the payment form running next to Redux. And React Query for the newest calls.
+My area has the widest state spread in the app. None of this is a moral failing. It's what 13 years of shipping looks like.
+Counts are approximate, from a read-only scan of files I've touched (2026-11-17).
 -->
+
 
 ---
 layout: content
@@ -178,6 +181,7 @@ Every legacy talk gets this question, so let's get it out of the way.
 A rewrite means two products for a year or more, and we don't have the people for two.
 A big-bang upgrade moves every generation at once, with no tests to tell us what broke.
 Progressive migration is slower on paper, but the risk of each step is small enough to reason about. And the squads still have product goals the whole time.
+Concrete example of why the upgrade isn't a version bump: we're on React 16.14. Our pre-hydration scripts change the server-rendered HTML before React hydrates, so the header shows the right plan with no layout shift. React 16 tolerates a DOM it didn't render. React 18's hydrateRoot treats those differences as errors and re-renders on the client, so the system built to prevent layout shift would bring it back. (Follows from how 18 handles mismatches; not run under 18.) And a package-manager setting, legacy peer deps, has been quietly hiding which libraries already disagree with us.
 -->
 
 ---
@@ -211,16 +215,17 @@ Read legacy as evidence
 
 ::default::
 <div class="nr-grid2">
-<div class="nr-card"><h3>Deprecated paths</h3><p class="nr-detail">Still reached by old links, embeds or bookmarks you forgot exist.</p></div>
-<div class="nr-card"><h3>Partial migrations</h3><p class="nr-detail">Two implementations, both live, behaving slightly differently.</p></div>
-<div class="nr-card"><h3>Undocumented assumptions</h3><p class="nr-detail">Locale, plan, file size, browser. Nobody wrote them down.</p></div>
+<div class="nr-card"><h3>Deprecated paths</h3><p class="nr-detail">A helper marked deprecated in 2017, still behind the plans fetch.</p></div>
+<div class="nr-card"><h3>Partial migrations</h3><p class="nr-detail">Payment-methods service v2 has ~54 importers. v1 still has one.</p></div>
+<div class="nr-card"><h3>Undocumented assumptions</h3><p class="nr-detail">Scripts that edit server HTML, trusting React 16 to tolerate it.</p></div>
 <div class="nr-card"><h3>Edge cases</h3><p class="nr-detail">Often a customer workflow someone once fixed for a reason.</p></div>
 </div>
 
 <!--
 Target 1:10.
-The instinct with old code is to judge it. Resist that. That strange conditional might be the only thing keeping a paying workflow alive.
-[gap: one real case where "dead" code turned out to matter, and how we found out.]
+The instinct with old code is to judge it. Resist that.
+Every card here is from our checkout code. A helper marked deprecated years ago still decides how plan prices load. A v1 service with exactly one importer left: is that one caller a mistake, or the only path some customers still take? Pre-hydration scripts that quietly assume React will accept a DOM it didn't render. Nobody wrote that assumption down. We found it by asking why the upgrade was scary.
+[gap: one real story where "dead" code turned out to matter, and how we found out.]
 So we treat every odd bit as a hypothesis: something protects something. Our job is to find out what before we delete it.
 -->
 
@@ -232,32 +237,36 @@ layout: content
 Reconstruct the execution path
 
 ::title::
-# Follow one request end to end
+# Follow one checkout end to end
 
 ::default::
 <div class="nr-steps">
-<div v-click="1"><p class="nr-label">Entry</p><p class="nr-detail">Route, embed, deep link</p></div>
+<div v-click="1"><p class="nr-label">Entry</p><p class="nr-detail">Usage limit or upgrade button</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="1"><p class="nr-label">Guards</p><p class="nr-detail">Auth, plan, flags, locale</p></div>
+<div v-click="1"><p class="nr-label">Guards</p><p class="nr-detail">Login, A/B test, geo pricing, plan rules</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="2"><p class="nr-label">State</p><p class="nr-detail">Which store? Which era?</p></div>
+<div v-click="2"><p class="nr-label">State</p><p class="nr-detail">Redux, a Context store, Query cache</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="2"><p class="nr-label">Data</p><p class="nr-detail">Which fetcher? What cache?</p></div>
+<div v-click="2"><p class="nr-label">Data</p><p class="nr-detail">2017 helper, typed fetch, React Query</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="3"><p class="nr-label">Render</p><p class="nr-detail">Which component generation?</p></div>
+<div v-click="3"><p class="nr-label">Render</p><p class="nr-detail">Hooks, styled components, a class error boundary</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="3"><p class="nr-label">Effects</p><p class="nr-detail">Payments, analytics, storage</p></div>
+<div v-click="3"><p class="nr-label">Effects</p><p class="nr-detail">3 payment SDKs, 3DS, analytics, saga redirect</p></div>
 </div>
 
 ::caption::
-Write the path down. The map comes before the diff.
+About six generations in one purchase. Write the path down before the diff.
 
 <!--
 Target 1:20. Three clicks, two steps each.
-Reading one file tells you very little in a codebase like ours. What matters is the path.
-Pick one real user action and walk it: where it enters, what guards it passes, which store it reads, which fetcher it uses, which generation of component renders it, and what side effects fire at the end.
-[gap: how long this took for one real Smallpdf flow, and what it revealed.]
-That written path is the first deliverable, before any diff, and it's what we hand to the AI later.
+Reading one file tells you very little in a codebase like ours. What matters is the path. Here's one: a user hits a usage limit, opens checkout and subscribes.
+Entry: the limit or an upgrade button dispatches an "open" action into the dialog's hand-written reducer. The header already showed their plan before React even loaded, thanks to pre-hydration scripts.
+Guards: log in or sign up first, A/B experiment assignment, geo-IP picks the pricing country and currency, then plan availability and overrides.
+State: three stores at once. Redux for the dialog and plans, a separate Context store for the payment form, and React Query's cache for payment methods and the price preview.
+Data: plans through the 2017 helper, most calls through the typed wrapper, previews through React Query.
+Render: hooks and styled-components, wrapped in a class-based error boundary.
+Effects: three payment providers' SDKs, 3D Secure challenges, analytics events, and after payment a saga handles the redirect back.
+About six generations, in one purchase. That written path is the first deliverable, before any diff, and it's what we hand to the AI later.
 -->
 
 ---
@@ -365,23 +374,26 @@ In practice
 ::default::
 
 ```md
-Task:        List every caller of formatPrice() reachable from /checkout.
-Scope:       src/checkout/**, src/legacy/pricing/**, src/lib/pricing/**
-Interfaces:  PriceProps, PlanStore shape (attached)
-Assumptions: the legacy formatter rounds per locale. Verify or refute.
-Evidence:    3 checkout payloads from logs (attached, PII removed)
+Task:        List callers of the legacy helper and the errors each handles.
+Scope:       plans service, subscription dialog, checkout services
+Interfaces:  legacy named errors, typed wrapper error (attached)
+Assumptions: no caller branches on "unsubscribed". Verify or refute.
+Evidence:    error-tracking samples for the plans fetch (PII removed)
 Non-goals:   no refactors, no renames, no new dependencies
-Output:      table of call site, generation, input shape, risk
+Output:      table: caller, errors handled, behaviour on new wrapper
 ```
 
 ::caption::
-Illustrative prompt. [gap: real, sanitized prompt from Smallpdf work]
+Example prompt for the slide 2 migration. Names generalised.
 
 <!--
 Target 1:10.
-Notice what this asks for: a table, not a patch. The agent is doing discovery and comparison. It reads two generations of the same helper and tells us where their behaviour differs.
-Then we use that output to decide what to change, and we ask for characterization tests that pin the current behaviour before anything moves.
+This is the prompt for the change from the start of the talk. Notice what it asks for: a table, not a patch. The agent compares two generations of the same helper and tells us which callers would behave differently.
+The assumption is written so it can be proven wrong. If one caller does branch on "unsubscribed", that's exactly the path we map and protect first.
+Then we ask for characterization tests that pin today's behaviour before anything moves.
+[Optional: swap in the exact prompt you used, if you ran it.]
 -->
+
 
 ---
 layout: content

@@ -18,3 +18,12 @@ Rehearsal/export review: not run.
 
 Next gate: Faris fills the `[gap]` items (sources.md), ideally from the Smallpdf codebase, which this session could not reach.
 Then the claims and editorial passes, `pnpm slides dev no-rewrite-no-safety-net` for human review, and the menu approval line.
+
+## Codebase material (2026-11-17)
+
+Slides 2, 5, 8, 9 and 14 and the notes on 6 now use Faris's read-only scan of his area of smallpdf-web (see sources.md).
+These fill beats already in the approved outline; no slides added or removed. Browser review passed after the change:
+artifacts/reviews/no-rewrite-no-safety-net/ (latest run), 21 slides / 38 states. Fixed: slide 14 code box ran past the right margin;
+slide 9 broke a hyphenated library name across lines.
+Still open: slide 2 notes claim needs one check (does a caller branch on a named error?); slide 8 story; slide 12 agent example;
+slide 18 traffic figure; cover and closing details.

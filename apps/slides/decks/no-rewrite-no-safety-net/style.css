@@ -133,3 +133,6 @@
 .slidev-layout .nr-row p.nr-label { color: var(--faris-text-blue); }
 .slidev-layout .nr-card ul { list-style: disc; }
 .slidev-layout.nr-no-annotation .faris-statement > .faris-annotation { display: none; }
+.slidev-layout .nr-table--dense table { font-size: 21px; line-height: 1.25; }
+.slidev-layout .nr-table--dense td { padding: 10px 12px; }
+.slidev-layout.nr-content .nr-steps .nr-detail { font-size: 19px; }
