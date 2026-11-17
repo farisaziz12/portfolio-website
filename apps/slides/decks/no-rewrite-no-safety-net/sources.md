@@ -16,8 +16,13 @@ No claims verified yet. Opinions and illustrative examples are labelled in outli
 
 ## Illustrative material
 
-- Slide 2 diff (`legacy/utils/price` to `@/lib/pricing`): made up. Replace or label.
-- Slide 14 prompt: made up. Replace or label.
+- Slide 2 diff (`legacy/price` to `@/pricing`): made up and labelled on the slide. Replace with a real, sanitized one.
+- Slide 14 prompt: made up and labelled on the slide. Replace with a real, sanitized one.
+
+## Public-repo warning
+
+This repo is public and published decks are served from faziz-dev.com. Anything copied from the Smallpdf codebase into slides or notes
+becomes public: use library and pattern names, not internal paths, file names, flags or numbers Smallpdf has not cleared.
 
 ## Assets
 

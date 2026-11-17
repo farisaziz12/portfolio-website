@@ -1,7 +1,6 @@
 # No Rewrite, No Safety Net: outline
 
-Status: proposed 2026-11-17 by agent. 21 slides, about 19:30 of speaking.
-Approval: none. Faris records it through `pnpm slides` > "Approve the outline". An agent must not approve its own outline.
+Status: approved in chat 2026-11-17 (see review.md). 21 slides, about 19:30 of speaking. Dark mode.
 
 Layouts: theme `cover`, `statement`, `code` and `section`. Beats marked `content` need a deck-local
 `content` layout for tables, card grids and step rows (copy the pattern from `orchestrating-payments/layouts/content.vue`).
@@ -106,4 +105,4 @@ Labels: **fact** (needs a source or Faris's confirmation), **opinion** (Faris's 
 ## Open decisions for Faris
 
 - Is about a quarter of AI content enough for the React with AI track, or should agent work move earlier (characterization tests, diff checks against the map)?
-- Light or dark default for a screen-shared remote talk.
+- Mode: dark (Faris, 2026-11-17).
