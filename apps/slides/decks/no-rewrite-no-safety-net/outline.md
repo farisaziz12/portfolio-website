@@ -1,108 +1,80 @@
 # No Rewrite, No Safety Net: outline
 
-Status: approved in chat 2026-11-17 (see review.md). 21 slides, about 19:30 of speaking. Dark mode.
+Status: revision 2, 2026-11-19. Restructured from Faris's chat feedback of 2026-11-19 (quoted in review.md):
+new opening, Netlify role and bio, real constraints, three checkouts as the running example, a migrate-while-hot section,
+and about 30 seconds per slide with one idea each. 48 slides, about 20 to 22 minutes at 30 seconds a slide (dividers and one-line statements run shorter). Dark mode.
+Revision 1 (approved in chat 2026-11-17, SHA-256 e191bf5f440a0d287664f76826787e660beccb56ff42b7b351488a5f54b5440b) is superseded.
 
-Layouts: theme `cover`, `statement`, `code` and `section`. Beats marked `content` need a deck-local
-`content` layout for tables, card grids and step rows (copy the pattern from `orchestrating-payments/layouts/content.vue`).
-Labels: **fact** (needs a source or Faris's confirmation), **opinion** (Faris's view), **illustrative** (made-up example, labelled as such).
-`[gap]` marks material only Faris can supply.
+Layouts: theme `cover`, `statement`, `code`, `section`, plus the deck-local `content` layout.
+Labels: **fact** (sources.md), **opinion**, **approach** (a recommended way of working, not a claim about what the team did).
 
-## 1. Setup (about 5:10)
+## 1. Setup (slides 1 to 22, about 9:30)
 
-1. **Cover** · `cover` · 0:30
-   No Rewrite, No Safety Net. Navigating 13 years of React at scale. Faris Aziz, Staff Software Engineer, [Smallpdf / Netlify line].
-   Visual: `FarisBadge`.
+1. Cover: Faris Aziz, Senior Software Engineer @ Netlify
+2. Who am I? (bio slide from the caching deck, updated)
+3. The React we hear about: `<Activity>` (19.2) **fact**
+4. `useEffectEvent` (19.2) **fact**
+5. React Compiler 1.0 **fact**
+6. But what if you're on React 16?
+7. redux-saga, all over the place **fact** per scan
+8. Many paths into the same views **fact** per Faris
+9. 13 years of React, used by tens of millions every month (merged)
+11. About 50,000 users see a release within 30 minutes **fact** per Faris
+12. Five developers
+13. Accounts have been migrated more than once **fact** per Faris
+14. Web views inside mobile apps, sharing views with the web **fact** per Faris
+15. Every browser, including Safari's storage limits **fact** per Faris
+15a. A/B tests outlive their enrolment: closed to new users, existing segments kept **fact** per Faris (2026-11-19)
+15b. Assignment lives in localStorage, so a login on a new browser loses it **fact** per Faris
+15c. Derive the variant from the account: account flags such as the payment gateway rebuild the assignment for parity **fact** per Faris
+16. No unit, integration or end-to-end tests **fact** per Faris
+17. Datadog runs out after two weeks **fact** per Faris, wording to confirm
+18. Errors live in TrackJS, with limited filtering **fact** per Faris
+19. Analytics: our own Redshift, queried in Metabase **fact** per Faris
+20. The documentation is the code (three questions: safe to delete, blast radius, where AI fits)
+21. Every era is still in production (generations table) **fact** per scan
+22. Why we're still on React 16 (three clicks: hydration scripts, React 18 mismatches, hidden peer conflicts) **fact** per scan, React 18 effect reasoned
 
-2. **A small change: where does this land?** · `code` · 1:00 · 1 click
-   A one-line import swap of a shared price formatter, then the question. Point: in a 13-year-old app, one import reaches more paths than anyone can name.
-   Evidence: **illustrative** diff. `[gap]` a real, sanitized diff would be stronger.
+## 2. Build the mental model (23 to 28, about 3:00)
 
-3. **Smallpdf, 13 years in** · `content` (2x2 figures) · 0:50
-   13 years of React in production. Tens of millions of monthly users. Tens of millions in annual revenue. Five developers across three squads.
-   Evidence: **fact**, from the abstract. `[gap]` confirm each can be said publicly.
+23. 01 Build the mental model
+24. One checkout, three doors: mobile web view, marketing emails, UTM landing pages **fact** per Faris
+25. Follow one checkout end to end (six steps) **fact** per scan
+27. When is it safe to delete code?
+28. Five kinds of evidence **approach**
+28a. Not urgent? Mark it deprecated and add a deprecation event; watch usage fall **fact** per Faris (2026-11-19)
+28b. Fewer branches, fewer events to watch (cyclomatic complexity) **fact** per Faris
+28c. Events aren't free at millions of users **fact** per Faris
 
-4. **And the safety net?** · `statement` · 0:50 · 3 clicks
-   No dedicated QA. No automated tests. Limited observability. Several generations of React, state, data fetching and tooling live at once.
-   Evidence: **fact**, from the abstract.
+## 3. Constrain the context (29 to 33, about 2:30)
 
-5. **Every era is still in production** · `content` (table) · 1:00
-   Rows: components, state, data fetching, tooling. Columns: oldest, middle, newest. One user flow can cross all of them.
-   Evidence: `[gap]` the real generations in the codebase. The draft guesses (createClass, Flux, Redux, sagas, Gulp, webpack) must not ship unconfirmed.
+29. 02 Constrain the context
+30. Give the agent a task, not the repo **opinion**
+31. The context pack **approach**
+31a. We built an MCP server for Redshift: agents can query every event table **fact** per Faris (2026-11-19)
+31b. Every PR: a CLAUDE.md / AGENTS.md rule finds the hot-path events in the diff and checks their volume **fact** per Faris
+32. A scoped prompt: map every door into checkout **approach**
+33. Agents investigate. Humans decide what ships. **opinion**
 
-6. **Rewrite, upgrade or migrate** · `content` (table) · 1:00
-   Rewrite touches everything with high revenue risk for a long time. Big-bang upgrade moves every generation at once. Progressive migration takes one path at a time with bounded risk, and fits five developers. The roadmap does not pause.
-   Evidence: **opinion**.
+## 4. Migrate while it's hot (34 to 40, about 3:20)
 
-## 2. Build the mental model (about 3:40)
+34. 03 Migrate while it's hot
+35. Two axes: reach × reversibility **approach**
+36. Small decisions, multiplied: about 2.4 million extra requests a day from one extra request per session (arithmetic from slide 11)
+37. One front door: a facade in front of three checkouts (strangler fig) **approach**, sourced
+38. Run both, compare (branch by abstraction, parallel run) **approach**, sourced
+39. Ramp one door at a time, then delete **approach**, sourced
+40. Where AI fits at each step **approach**
 
-7. **01 Build the mental model** · `section` · 0:10
+## 5. Close (41 to 42, about 0:50)
 
-8. **Weird code is a hypothesis to test** · `content` (2x2 cards) · 1:10
-   Deprecated paths still reached by old links and embeds. Partial migrations with two live implementations. Undocumented assumptions (locale, plan, file size, browser). Edge cases that encode a customer workflow.
-   Evidence: **opinion**. `[gap]` one real story where "dead" code mattered. This is the strongest anecdote slot in the talk.
+41. Three habits
+42. Thank you
 
-9. **Follow one request end to end** · `content` (six-step row) · 1:20 · steps revealed in order
-   Entry, guards, state, data, render, side effects. Written down, this map is the first deliverable and the input for the AI part.
-   Evidence: **opinion**. `[gap]` how long mapping one real flow took and what it revealed.
+## Evidence gaps
 
-10. **Four questions per change** · `content` (numbered rows) · 1:00
-    Who reaches this path? What does it read and write? How would it fail silently? Who pays if it breaks? Silent failures are the expensive ones with limited observability.
-    Evidence: **opinion**.
-
-## 3. Constrain the context (about 4:30)
-
-11. **02 Constrain the context** · `section` · 0:10
-
-12. **Give the agent a task, not the repo** · `statement` · 0:50
-    A 13-year-old codebase holds several right answers to every question. With all of it in context, an agent picks one and sounds sure. How often a pattern appears says nothing about whether it is current.
-    Evidence: **opinion**. `[gap]` a real case of an agent picking the old era's pattern.
-
-13. **The context pack** · `content` (five rows) · 1:20
-    Modules on the mapped path. Interfaces: props, store shapes, API contracts where modules meet. Assumptions stated as claims to challenge. Production evidence: logs, traces, analytics events, real payloads with personal data removed. Non-goals: legacy URLs, tracking, behaviour that must not change.
-    Evidence: **opinion**.
-
-14. **A scoped investigation prompt** · `code` · 1:10
-    Task, scope, interfaces, assumptions, evidence, non-goals, output. The prompt asks for a table of call sites and divergence risk, not a patch.
-    Evidence: **illustrative** prompt. `[gap]` a real, sanitized prompt.
-
-15. **Agents investigate. Humans decide what ships.** · `content` (two columns) · 1:00
-    Agents: targeted discovery, comparing patterns across eras, drafting characterization tests, checking a diff against the map. Humans: release safety, rollout size and timing, what counts as a regression, the rollback call.
-    Evidence: **opinion**.
-
-## 4. Size the risk (about 3:50)
-
-16. **03 Size the risk** · `section` · 0:10
-
-17. **Two axes decide how careful to be** · `content` (2x2 grid) · 1:10
-    Reach (few or most users) against reversibility. Few and reversible: ship behind a flag. Few and hard to undo: pair review and dry runs. Most and reversible: staged rollout. Most and hard to undo: split it until each part is reversible.
-    Evidence: **opinion**. `[gap]` one change that was split this way.
-
-18. **Small decisions, multiplied** · `content` (formula plus three cards) · 1:10
-    1 extra request per view × [__M] views per month = [__M] requests every month. Same for a fetch on mount, a heavier hot route, a per-user cache key. Put the number in the PR description.
-    Evidence: `[gap]` real traffic figure, even an order of magnitude, cleared for public use.
-
-19. **One path at a time** · `content` (five-step row) · 1:20 · steps revealed in order
-    Characterize, isolate behind an adapter, flag, ramp with evidence, delete the old path and update the map. Deleting is the step teams skip.
-    Evidence: **opinion**. `[gap]` real rollout stages.
-
-## 5. Close (about 1:30)
-
-20. **Three habits** · `content` (numbered rows) · 1:00
-    Map the execution path first. Give agents a scoped task. Size each change by reach, reversibility and cost, then ship in steps.
-
-21. **Thank you** · `cover` · 0:30
-    faziz-dev.com, `[gap]` social handle, slides link or QR, Q&A channel.
-    Visual: `FarisIllustration` (speaking pose), if Faris wants a character here.
-
-## Evidence gaps, by priority
-
-1. Public clearance for the Smallpdf figures and name (slides 1, 3), given the move to Netlify.
-2. Real anecdotes: slide 8 (dead code that mattered), 12 (agent picked the old pattern), 18 (traffic number).
-3. Real codebase generations for slide 5.
-4. Sanitized real diff (2) and prompt (14).
-5. Slides 9, 17, 19 stories and rollout stages.
-
-## Open decisions for Faris
-
-- Is about a quarter of AI content enough for the React with AI track, or should agent work move earlier (characterization tests, diff checks against the map)?
-- Mode: dark (Faris, 2026-11-17).
+1. Public clearance: Smallpdf figures, React version, vendor names (Datadog, TrackJS, Redshift, Metabase), the three checkouts.
+2. Slide 17: does "Datadog runs out after two weeks" mean the retention window or the budget?
+3. React version: Faris said 16.8 in chat; the scan read 16.14. Slides say "React 16".
+4. Slides 37 to 39: did Smallpdf consolidate the three checkouts? Until confirmed they are framed as the approach, not a story.
+5. Slide 30: a real example of an agent picking the old pattern.

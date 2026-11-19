@@ -27,3 +27,16 @@ artifacts/reviews/no-rewrite-no-safety-net/ (latest run), 21 slides / 38 states.
 slide 9 broke a hyphenated library name across lines.
 Still open: slide 2 notes claim needs one check (does a caller branch on a named error?); slide 8 story; slide 12 agent example;
 slide 18 traffic figure; cover and closing details.
+
+## Revision 2 (2026-11-19)
+
+Faris's feedback in chat, 2026-11-19, summarised: cut "Where does this land?"; Senior Software Engineer @ Netlify on the cover and the intro slide
+from his other talks; open on the latest React (Activity, useEffectEvent, Compiler) versus being stuck on React 16; real constraints (50,000 users
+in 30 minutes, account migrations, mobile web views, Safari storage, no tests, Datadog, TrackJS, Redshift + Metabase); three checkouts; migrating
+hot paths and incremental AI; about 30 seconds per slide; then A/B segmentation via localStorage and account-flag parity; then the Redshift MCP
+server, CLAUDE.md PR rule, deprecation events, complexity and event cost.
+This is the author directing a restructure, recorded as approval of revision 2's direction. The formal menu line is still Faris's.
+slides.md rewritten: 49 slides (48 in the outline plus the thank-you count), 76 states. Bio slide and speaker-montage.jpg copied from caching-dark-arts.
+Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-24-53.913Z-zCNqmt. Agent inspected all final screenshots.
+Open: Datadog wording; React version; whether the checkouts were consolidated; agent example for "task, not the repo"; public clearance of vendor
+names; social handle, slides link, Q&A channel; timing in rehearsal (49 slides is at the top of a 20-minute slot).

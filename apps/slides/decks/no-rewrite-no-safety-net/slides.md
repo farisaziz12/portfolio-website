@@ -22,99 +22,386 @@ faris:
 Navigating 13 years of React at scale
 
 ::meta::
-Faris Aziz · Staff Software Engineer · [gap: Smallpdf / Netlify line]
+Faris Aziz · Senior Software Engineer @ Netlify
 
 ::visual::
 <FarisBadge />
 
 <!--
-Target 0:30.
-Hi, I'm Faris. I've worked on Smallpdf's frontend for [gap: years], a React codebase that turns 13 this year.
-This is not a migration success story with a clean before and after. It's about how a small team keeps changing a very old, very busy React app without breaking the things that pay for it.
--->
-
----
-layout: code
----
-
-::kicker::
-A small change
-
-::title::
-# Where does this land?
-
-::default::
-
-```diff
-- import { parseResponse } from 'api/legacy'
-+ import { request } from 'api/fetch'
-```
-
-::annotation::
-Simplified names. The plans fetch still runs on a deprecated 2017 helper.
-
-<!--
-Target 1:00.
-This is a real change waiting in our checkout code, with simplified names. The plans fetch, the thing that decides which prices you see, still goes through an API helper from 2017. Its response functions are marked deprecated. Everything newer uses a typed fetch wrapper.
-In a greenfield app, swapping one for the other is a five-minute change.
-Here's the catch. The old helper turns responses into a fixed set of named errors: not found, unsubscribed, internal server error. The new wrapper has one generic network error. So the real question is not whether it compiles. It's who, somewhere in checkout, is quietly branching on "unsubscribed". [Verify before saying: does any caller actually branch on a named error?]
-That question is the whole talk.
+Hi, I'm Faris. Today is about the React most of us actually work in: old, busy and full of history.
 -->
 
 ---
 layout: content
+class: nr-bio-slide
 ---
 
-::kicker::
-The system
-
 ::title::
-# Smallpdf, 13 years in
+# Who Am **I?**
 
 ::default::
-<div class="nr-grid2">
-<div class="nr-card nr-stat"><p class="nr-num">13 years</p><p class="nr-detail">of React in production</p></div>
-<div class="nr-card nr-stat"><p class="nr-num">Tens of millions</p><p class="nr-detail">of monthly users</p></div>
-<div class="nr-card nr-stat"><p class="nr-num">Tens of millions</p><p class="nr-detail">in annual revenue</p></div>
-<div class="nr-card nr-stat"><p class="nr-num">5 developers</p><p class="nr-detail">across 3 squads</p></div>
+<div class="nr-bio">
+<div class="nr-bio__copy">
+
+**Senior Software Engineer @ Netlify**<br>Co-Founder @ ZurichJS. Previously Smallpdf, Navro, Fiit, Discovery, GCN & Eurosport
+
+<h2>Experience</h2>
+<ul class="nr-bio__experience">
+<li>Connected TV</li>
+<li>Monetization & Growth</li>
+<li>FinTech</li>
+<li>Fitness Tech</li>
+<li>Web Performance</li>
+<li>Engineering Leadership</li>
+</ul>
+
+<h2>Community & Open Source</h2>
+<ul class="nr-bio__community">
+<li><strong>Raycast</strong>: Open Source</li>
+<li><strong>Stripe</strong>: Community Builder</li>
+</ul>
+
+</div>
+<img src="/media/speaker-montage.jpg" alt="Faris speaking and meeting with developer communities" />
 </div>
 
 <!--
-Target 0:50.
-Quick context. Smallpdf is a document tool many of you have probably used at least once.
-The React app is 13 years old. Tens of millions of people use it every month, and it carries tens of millions in annual revenue.
-The frontend is owned by five developers across three squads, each with their own roadmap.
-[gap: confirm every figure can be said publicly]
+I'm a Senior Software Engineer at Netlify. Before that I was at Smallpdf, and most of this talk comes from my time there, working on checkout, payments and subscriptions in a 13-year-old React app.
 -->
 
 ---
 layout: statement
-class: nr-statement
+class: nr-statement nr-no-annotation
 ---
 
 ::kicker::
-And the safety net?
+The React we hear about
 
 ::default::
-<div class="nr-stack">
+# `<Activity>`
+
+Hide part of the UI and keep its state. React 19.2.
+
+<!--
+We spend a lot of time at conferences learning the newest React. Activity, from 19.2: hide a part of the tree, keep its state, pause its effects.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+The React we hear about
+
+::default::
+# `useEffectEvent`
+
+Read the latest values without re-running the effect. Also React 19.2.
+
+<!--
+useEffectEvent: finally a clean way to read fresh props inside an effect without adding them to the dependency array.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+The React we hear about
+
+::default::
+# React Compiler 1.0
+
+Automatic memoization at build time. Stable since October 2025.
+
+<!--
+And the React Compiler, stable since October 2025. Memoization you no longer write by hand. All great. All worth learning.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+faris:
+  background: arc
+---
+
+# But what if you're on **React 16?**
+
+<!--
+But what do you do when you can't use any of it? When the codebase you ship to every day is 13 years old and still on React 16. [Scan read 16.14; you said 16.8 in chat. Say the exact one.]
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# redux-saga, **all over the place.**
+
+<!--
+Sagas still handle things like redirects after payment and login. They work. They're also a generation of React state that most new hires have never seen.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Many paths into **the same views.**
+
+<!--
+And there's rarely one way into a screen. The same component is reached from different hot paths, each with its own assumptions. Keep that in mind: it comes back.
+-->
+
+---
+layout: statement
+class: nr-metric nr-no-annotation
+---
+
+::kicker::
+Smallpdf
+
+::default::
+# 13 years
+
+of React, used by tens of millions every month.
+
+<!--
+So here's the system. Smallpdf. 13 years of React in production, used by tens of millions of people every month. [Confirm the figure is OK to say publicly.]
+-->
+
+---
+layout: statement
+class: nr-metric nr-no-annotation
+---
+
+::kicker::
+Every release
+
+::default::
+# ~50,000 users
+
+see it within 30 minutes.
+
+<!--
+When you ship, about 50,000 users see it in the next half hour. There is no quiet hour to test in production.
+-->
+
+---
+layout: statement
+class: nr-metric nr-no-annotation
+---
+
+::kicker::
+The team
+
+::default::
+# 5 developers
+
+across three squads.
+
+<!--
+And the team working on it is about five developers, spread across three squads, each with its own roadmap.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+13 years of requirements
+
+::default::
+# Accounts have been **migrated more than once.**
+
+<!--
+Thirteen years means thirteen years of changing requirements. The way accounts work has been migrated more than once, and old assumptions about accounts still live in the code.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+13 years of requirements
+
+::default::
+# Web views inside **mobile apps.**
+
+Sharing views with the web.
+
+<!--
+Some of our screens run inside web views in the mobile apps, and those views are shared with the web. A change for the browser is also a change for an app version you can't force anyone to update.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+13 years of requirements
+
+::default::
+# Every browser, including **Safari's storage limits.**
+
+<!--
+And it has to work everywhere, including Safari, which limits and can clear local storage. Which matters a lot for the next problem.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+A/B tests
+
+::default::
+# Tests outlive **their enrolment.**
+
+Closed to new users. Existing segments keep their variant.
+
+<!--
+We run A/B tests in versions. When a test closes, you stop enrolling new people, but you often have to keep the people already in it segmented. So old variants stay live long after the test "ended".
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+A/B tests
+
+::default::
+# Assignment lives in **localStorage.**
+
+Log in on a new browser and it's gone.
+
+<!--
+And segmentation lives in local storage. So what happens when someone logs in on a new browser, or Safari clears storage? They lose their assignment, and could see a different checkout or price from last time.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+A/B tests
+
+::default::
+# Derive the variant **from the account.**
+
+Account flags, like the payment gateway they use, rebuild the assignment.
+
+<!--
+The fix is a heuristic. If a user already pays through a specific gateway, that flag on their account tells you which payment experience they were in. You derive the A/B state from the account so they get the same experience on every browser. Nobody documents this kind of rule. It's just in the code.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+No safety net
+
+::default::
+# No unit, integration or **end-to-end tests.**
+
+<!--
+Now the safety net. There isn't one. No unit tests, no integration tests, no end-to-end tests.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+No safety net
+
+::default::
+# Datadog runs out **after two weeks.**
+
+<!--
+Observability is limited too. [Say exactly what this means: two weeks of retention, or the budget runs out mid-month.]
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+No safety net
+
+::default::
+# Errors live in **TrackJS.**
+
+With very limited filtering and querying.
+
+<!--
+No Sentry. Front-end errors go to TrackJS, which is useful but very limited when you want to filter or query.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+No safety net
+
+::default::
+# Analytics: our own **Redshift + Metabase.**
+
+<!--
+And no off-the-shelf analytics. Events go into our own Redshift database and we query them through Metabase. Powerful, but every question is a SQL query someone has to write.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+faris:
+  background: arc
+---
+
+# The documentation **is the code.**
+
+<!--
+And there are no docs beyond the code itself. So how do you work safely in something like this?
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Three questions
+
+::default::
+<div class="nr-qs">
 <v-clicks>
 
-No dedicated QA.
+When is it safe to delete code?
 
-No automated tests.
+What breaks if I change this?
 
-Limited observability.
+Where does AI actually help?
 
 </v-clicks>
 </div>
 
-::annotation::
-Meanwhile, several generations of React, state, data fetching and tooling are all live at once.
-
 <!--
-Target 0:50. One click per line.
-No dedicated QA. No automated test suite to lean on. And observability that tells us when something is badly broken, but not when something is quietly wrong.
-I'm not saying this to complain. Plenty of successful products look like this. It just changes what being careful has to mean.
+One click per question. These are the three questions I want to answer in the next fifteen minutes.
 -->
 
 ---
@@ -122,7 +409,7 @@ layout: content
 ---
 
 ::kicker::
-What's in there: the code I own
+In the code I owned
 
 ::title::
 # Every era is still in production
@@ -132,56 +419,36 @@ What's in there: the code I own
 
 | Layer | Oldest | Middle | Newest |
 |---|---|---|---|
-| Components | A class error boundary | HOC hydration wrappers | Hooks, ~180 files |
+| Components | A class error boundary | HOC hydration wrappers | Hooks |
 | State | Hand-written reducers | redux-saga | Context + useReducer, Redux hooks, one RTK slice |
-| Data fetching | 2017 response helper, one XHR upload | Saga select / put | Typed fetch wrapper, React Query v4 |
-| Rendering | | styled-components, ~90 files | Pre-hydration scripts, ~17 files |
+| Data fetching | A 2017 response helper | Saga select / put | Typed fetch wrapper, React Query v4 |
+| Rendering | | styled-components | Pre-hydration scripts |
 
 </div>
 
-::caption::
-One checkout touches a hand-written reducer, a saga, a Context store and React Query at once.
-
 <!--
-Target 1:00.
-This is just the part of the codebase I've worked in since 2024: about 470 files, nearly all of them in the money path. Auth and the subscription dialog, checkout and payments, account pages, the plans and pricing service, the header, and our A/B experiment service.
-Read it across. One class component left, the error boundary around payment. A dialog state machine written as a hand-rolled reducer, about 640 lines. A saga that still handles redirects after payment and login. A brand-new Context store for the payment form running next to Redux. And React Query for the newest calls.
-My area has the widest state spread in the app. None of this is a moral failing. It's what 13 years of shipping looks like.
-Counts are approximate, from a read-only scan of files I've touched (2026-11-17).
+First, what's actually in there. This is only my area: checkout, payments, subscriptions, the header. One checkout touches a hand-written reducer, a saga, a Context store and React Query at the same time.
 -->
-
 
 ---
 layout: content
 ---
 
 ::kicker::
-Why not just rewrite?
+Why not just upgrade?
 
 ::title::
-# Rewrite, upgrade or migrate
+# Why we're still on React 16
 
 ::default::
-<div class="nr-table">
-
-| Option | Touches | Revenue risk | Fits 5 devs? |
-|---|---|---|---|
-| Rewrite | Everything | High, for a long time | No |
-| Big-bang upgrade | Every generation at once | High, all at once | No |
-| Progressive migration | One path at a time | Bounded per change | Yes |
-
+<div class="nr-rows">
+<div class="nr-row" v-click="1"><p class="nr-label">Hydration</p><p>Scripts edit server HTML before React loads. React 16 tolerates it.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">React 18</p><p>Treats that mismatch as an error and re-renders on the client.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Packages</p><p>One npm setting hides which libraries already disagree.</p></div>
 </div>
 
-::caption::
-The roadmap doesn't pause while you migrate.
-
 <!--
-Target 1:00.
-Every legacy talk gets this question, so let's get it out of the way.
-A rewrite means two products for a year or more, and we don't have the people for two.
-A big-bang upgrade moves every generation at once, with no tests to tell us what broke.
-Progressive migration is slower on paper, but the risk of each step is small enough to reason about. And the squads still have product goals the whole time.
-Concrete example of why the upgrade isn't a version bump: we're on React 16.14. Our pre-hydration scripts change the server-rendered HTML before React hydrates, so the header shows the right plan with no layout shift. React 16 tolerates a DOM it didn't render. React 18's hydrateRoot treats those differences as errors and re-renders on the client, so the system built to prevent layout shift would bring it back. (Follows from how 18 handles mismatches; not run under 18.) And a package-manager setting, legacy peer deps, has been quietly hiding which libraries already disagree with us.
+Click per row. Why not just upgrade? Our anti-layout-shift system edits the server-rendered HTML before React hydrates, and React 16 accepts a DOM it didn't render. React 18 treats those differences as errors and re-renders, so the upgrade would bring the layout shift back. (Reasoned from React 18's behaviour, not tested.) And legacy-peer-deps has been quietly hiding which libraries already disagree with us. A rewrite isn't an option either: five developers can't run two products.
 -->
 
 ---
@@ -194,13 +461,13 @@ layout: section
 ::default::
 # Build the mental model
 
-Before you change anything.
+When is it safe to delete code?
 
 ::visual::
 <FarisIllustration name="faris-thinking" decorative />
 
 <!--
-Target 0:10. First part: how to understand the thing before touching it.
+Part one.
 -->
 
 ---
@@ -208,25 +475,24 @@ layout: content
 ---
 
 ::kicker::
-Read legacy as evidence
+Many paths into the same views
 
 ::title::
-# Weird code is a hypothesis to test
+# One checkout, three doors
 
 ::default::
-<div class="nr-grid2">
-<div class="nr-card"><h3>Deprecated paths</h3><p class="nr-detail">A helper marked deprecated in 2017, still behind the plans fetch.</p></div>
-<div class="nr-card"><h3>Partial migrations</h3><p class="nr-detail">Payment-methods service v2 has ~54 importers. v1 still has one.</p></div>
-<div class="nr-card"><h3>Undocumented assumptions</h3><p class="nr-detail">Scripts that edit server HTML, trusting React 16 to tolerate it.</p></div>
-<div class="nr-card"><h3>Edge cases</h3><p class="nr-detail">Often a customer workflow someone once fixed for a reason.</p></div>
+<div class="nr-doors">
+<div class="nr-doors__in">
+<div class="nr-card" v-click="1"><h3>Mobile web view</h3></div>
+<div class="nr-card" v-click="2"><h3>Marketing emails</h3></div>
+<div class="nr-card" v-click="3"><h3>UTM landing pages</h3></div>
+</div>
+<p class="nr-doors__arrow">→</p>
+<div class="nr-card nr-target"><h3>Checkout</h3><p class="nr-detail">Three implementations, each with its own assumptions.</p></div>
 </div>
 
 <!--
-Target 1:10.
-The instinct with old code is to judge it. Resist that.
-Every card here is from our checkout code. A helper marked deprecated years ago still decides how plan prices load. A v1 service with exactly one importer left: is that one caller a mistake, or the only path some customers still take? Pre-hydration scripts that quietly assume React will accept a DOM it didn't render. Nobody wrote that assumption down. We found it by asking why the upgrade was scary.
-[gap: one real story where "dead" code turned out to matter, and how we found out.]
-So we treat every odd bit as a hypothesis: something protects something. Our job is to find out what before we delete it.
+One click per door. Remember "many paths into the same views"? At Smallpdf we had three checkouts. One for the mobile web view, one reached from marketing emails, and one behind landing pages with different UTM tags. Same job, three implementations.
 -->
 
 ---
@@ -241,32 +507,33 @@ Reconstruct the execution path
 
 ::default::
 <div class="nr-steps">
-<div v-click="1"><p class="nr-label">Entry</p><p class="nr-detail">Usage limit or upgrade button</p></div>
+<div v-click="1"><p class="nr-label">Entry</p><p class="nr-detail">A usage limit</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="1"><p class="nr-label">Guards</p><p class="nr-detail">Login, A/B test, geo pricing, plan rules</p></div>
+<div v-click="1"><p class="nr-label">Guards</p><p class="nr-detail">Login, A/B, geo pricing</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="2"><p class="nr-label">State</p><p class="nr-detail">Redux, a Context store, Query cache</p></div>
+<div v-click="2"><p class="nr-label">State</p><p class="nr-detail">Three stores</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="2"><p class="nr-label">Data</p><p class="nr-detail">2017 helper, typed fetch, React Query</p></div>
+<div v-click="2"><p class="nr-label">Data</p><p class="nr-detail">Three fetchers</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="3"><p class="nr-label">Render</p><p class="nr-detail">Hooks, styled components, a class error boundary</p></div>
+<div v-click="3"><p class="nr-label">Render</p><p class="nr-detail">Hooks, one class component</p></div>
 <span class="nr-arrow">→</span>
-<div v-click="3"><p class="nr-label">Effects</p><p class="nr-detail">3 payment SDKs, 3DS, analytics, saga redirect</p></div>
+<div v-click="3"><p class="nr-label">Effects</p><p class="nr-detail">Payment SDKs, analytics</p></div>
 </div>
 
-::caption::
-About six generations in one purchase. Write the path down before the diff.
+<!--
+Three clicks. Take one door and walk it. A user hits a usage limit. Guards: log in first, A/B assignment, geo-IP picks the currency. State lives in Redux, a Context store and React Query's cache. Data comes through the 2017 helper, the typed wrapper and React Query. Hooks render it inside a class error boundary. Then payment SDKs, 3D Secure, analytics events, and a saga handles the redirect.
+About six generations of React patterns in one purchase. That's why you write the path down before you write a diff.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# When is it safe to **delete code?**
 
 <!--
-Target 1:20. Three clicks, two steps each.
-Reading one file tells you very little in a codebase like ours. What matters is the path. Here's one: a user hits a usage limit, opens checkout and subscribes.
-Entry: the limit or an upgrade button dispatches an "open" action into the dialog's hand-written reducer. The header already showed their plan before React even loaded, thanks to pre-hydration scripts.
-Guards: log in or sign up first, A/B experiment assignment, geo-IP picks the pricing country and currency, then plan availability and overrides.
-State: three stores at once. Redux for the dialog and plans, a separate Context store for the payment form, and React Query's cache for payment methods and the price preview.
-Data: plans through the 2017 helper, most calls through the typed wrapper, previews through React Query.
-Render: hooks and styled-components, wrapped in a class-based error boundary.
-Effects: three payment providers' SDKs, 3D Secure challenges, analytics events, and after payment a saga handles the redirect back.
-About six generations, in one purchase. That written path is the first deliverable, before any diff, and it's what we hand to the AI later.
+Which brings us to the first question. You suspect something is dead. With no tests and no docs, how do you know?
 -->
 
 ---
@@ -274,23 +541,71 @@ layout: content
 ---
 
 ::kicker::
-Before touching a line
+Evidence, not instinct
 
 ::title::
-# Four questions per change
+# Five things to check before deleting
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row nr-q"><p class="nr-n">1</p><div><p>Who reaches this path, and how?</p><p class="nr-sub">Traffic, entry points, embeds, old URLs</p></div></div>
-<div class="nr-row nr-q"><p class="nr-n">2</p><div><p>What does it read and write?</p><p class="nr-sub">Stores, local storage, cookies, query params</p></div></div>
-<div class="nr-row nr-q"><p class="nr-n">3</p><div><p>How would it fail silently?</p><p class="nr-sub">No error, just a wrong result</p></div></div>
-<div class="nr-row nr-q"><p class="nr-n">4</p><div><p>Who pays if it breaks?</p><p class="nr-sub">Users, revenue, support load</p></div></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Code</p><p>No importers, no routes, no dynamic lookups.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Traffic</p><p>Nothing in Redshift for longer than Datadog keeps.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Errors</p><p>Nothing reaching TrackJS from that path.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Apps</p><p>No app version or web view still calling it.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Links</p><p>No email or campaign that still points to it.</p></div>
 </div>
 
 <!--
-Target 1:00.
-These four are our minimum before any change that touches shared code.
-The third one matters most for us. With limited observability, loud failures are the easy ones. The expensive ones are quiet: a price in the wrong format, a conversion event that stops firing, a file that downloads but is subtly wrong.
+One click per row. Code: nothing imports it, but check dynamic lookups too. Traffic: look further back than two weeks of Datadog, so go to Redshift. Errors: nothing in TrackJS. Apps: an old app version can call a web view for years. Links: marketing emails live in inboxes forever. If all five are clean, delete it behind a flag first.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Not urgent?
+
+::default::
+# Mark it deprecated. **Add an event.**
+
+Then watch its usage fall over time.
+
+<!--
+If removing something isn't urgent, don't guess. Mark it deprecated in the code and fire a deprecation analytics event when that path runs. Then watch it over weeks. The trend tells you the risk of removing it far better than any code search can.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Simpler code
+
+::default::
+# Fewer branches, **fewer events to watch.**
+
+<!--
+This is where reducing cyclomatic complexity pays off directly. Every branch in a flow is another path you'd need an analytics touch point on to know whether it's used. Fewer paths, fewer events, clearer answers.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Simpler code
+
+::default::
+# Events **aren't free.**
+
+At millions of users, you can't instrument everything.
+
+<!--
+And you can't just throw events everywhere to compensate. At millions of users, every event has a real cost in volume and storage. So you choose the paths that matter, and you make the flows simpler so there are fewer of them.
 -->
 
 ---
@@ -303,33 +618,28 @@ layout: section
 ::default::
 # Constrain the context
 
-AI-assisted investigation you can actually trust.
+Where does AI actually help?
 
 ::visual::
 <FarisIllustration name="duck-curious" decorative />
 
 <!--
-Target 0:10. Second part: where AI agents fit, and where they don't.
+Part two.
 -->
 
 ---
 layout: statement
 class: nr-statement nr-no-annotation
+faris:
+  background: arc
 ---
 
-::kicker::
-The rule
-
-::default::
 # Give the agent a task, **not the repo.**
 
-A 13-year-old codebase holds several right answers to every question. With all of it in context, an agent picks one and sounds sure.
+A 13-year-old codebase has several right answers to every question.
 
 <!--
-Target 0:50.
-This was our biggest lesson. When we pointed agents at the whole codebase, they found patterns, but often the wrong era's pattern, and they presented it with total confidence.
-[gap: a real case where the agent suggested the old pattern.]
-How often a pattern appears in the repo says nothing about whether it's current. So we stopped asking open questions and started handing over scoped tasks.
+With the whole codebase in context, an agent picks one of those answers and sounds sure. How often a pattern appears says nothing about whether it's current. [Real example of an agent picking the old pattern, if you have one.]
 -->
 
 ---
@@ -340,24 +650,53 @@ layout: content
 The context pack
 
 ::title::
-# Five things every agent session gets
+# Five things every session gets
 
 ::default::
 <div class="nr-rows">
 <div class="nr-row" v-click="1"><p class="nr-label">Modules</p><p>Only the files on the path you mapped.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Interfaces</p><p>Props, store shapes, API contracts where modules meet.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Assumptions</p><p>What you believe, stated so it can be challenged.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Prod evidence</p><p>Logs, traces, analytics events, real payloads.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Non-goals</p><p>What must not change: URLs, tracking, behaviour.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Interfaces</p><p>Props, store shapes, API contracts.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Assumptions</p><p>Stated so they can be challenged.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Evidence</p><p>Event data, TrackJS errors, real payloads.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Non-goals</p><p>What must not change.</p></div>
 </div>
 
 <!--
-Target 1:20. One click per row.
-Modules: only the files on the path we mapped in part one.
-Interfaces: the contracts where modules meet, so the agent doesn't have to guess them.
-Assumptions: written as claims, so the agent can try to break them.
-Production evidence: real logs and payloads, with personal data removed, because the code alone doesn't tell you what actually happens.
-And non-goals, which matter most: what the agent must not touch, rename or "improve".
+One click per row. The path you mapped, the contracts at the edges, your assumptions written as claims to break, real production evidence with personal data removed, and non-goals: what it must not touch, rename or improve.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Evidence for agents
+
+::default::
+# We built an MCP server **for Redshift.**
+
+Agents can query every event table.
+
+<!--
+This was one of the most useful things we built. An internal MCP server that plugs into our Redshift database, so an agent can see every event table. Suddenly the evidence part of the context pack isn't a screenshot you paste in. The agent can go and ask.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Every pull request
+
+::default::
+# Which events does **this change touch?**
+
+A CLAUDE.md rule finds the hot-path events in the diff and checks their volume.
+
+<!--
+Then we put it in the agent instructions. An AGENTS.md or CLAUDE.md rule: for a pull request, find the frontend events linked to the hot paths it touches, and pull their numbers. So every change comes with a quantitative read of its impact, not just a code review.
 -->
 
 ---
@@ -369,68 +708,35 @@ class: nr-prompt
 In practice
 
 ::title::
-# A scoped investigation prompt
+# Map every door into checkout
 
 ::default::
 
 ```md
-Task:        List callers of the legacy helper and the errors each handles.
-Scope:       plans service, subscription dialog, checkout services
-Interfaces:  legacy named errors, typed wrapper error (attached)
-Assumptions: no caller branches on "unsubscribed". Verify or refute.
-Evidence:    error-tracking samples for the plans fetch (PII removed)
+Task:        Find every entry point that opens a checkout.
+Scope:       routes, email link handlers, UTM landing pages, web view bridge
+Assumptions: there are exactly three checkouts. Verify or refute.
+Evidence:    checkout-open events by source, last 90 days (Redshift MCP)
 Non-goals:   no refactors, no renames, no new dependencies
-Output:      table: caller, errors handled, behaviour on new wrapper
+Output:      table: entry point, checkout used, A/B logic, traffic share
 ```
 
 ::caption::
-Example prompt for the slide 2 migration. Names generalised.
+Example prompt. Names generalised.
 
 <!--
-Target 1:10.
-This is the prompt for the change from the start of the talk. Notice what it asks for: a table, not a patch. The agent compares two generations of the same helper and tells us which callers would behave differently.
-The assumption is written so it can be proven wrong. If one caller does branch on "unsubscribed", that's exactly the path we map and protect first.
-Then we ask for characterization tests that pin today's behaviour before anything moves.
-[Optional: swap in the exact prompt you used, if you ran it.]
+Here's the kind of prompt that works. It asks for a table, not a patch. And the assumption is written so it can be wrong: if the agent finds a fourth door, that's the most valuable output of the day.
 -->
 
-
 ---
-layout: content
+layout: statement
+class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-Who does what
-
-::title::
-# Agents investigate. Humans decide what ships.
-
-::default::
-<div class="nr-grid2">
-<div class="nr-card">
-<p class="nr-label">Agents</p>
-<ul>
-<li>Targeted code discovery</li>
-<li>Comparing patterns across eras</li>
-<li>Drafting characterization tests</li>
-<li>Checking a diff against the map</li>
-</ul>
-</div>
-<div class="nr-card" v-click>
-<p class="nr-label">Humans</p>
-<ul>
-<li>Is this safe to release?</li>
-<li>Rollout size and timing</li>
-<li>What counts as a regression</li>
-<li>The rollback call</li>
-</ul>
-</div>
-</div>
+# Agents investigate. **Humans decide what ships.**
 
 <!--
-Target 1:00. One click for the human column.
-Agents are very good at the reading-heavy work: finding callers, comparing two implementations, drafting tests that capture current behaviour.
-They are not accountable for production. Release safety stays with a person who knows the traffic, the revenue impact and the rollback plan. With no QA team, that judgment is the safety net.
+Agents are good at the reading-heavy work: finding callers, comparing implementations, drafting tests. They aren't accountable for production. With no QA team, a person's judgment on release safety is the safety net.
 -->
 
 ---
@@ -441,15 +747,15 @@ layout: section
 03
 
 ::default::
-# Size the risk
+# Migrate while it's hot
 
-Blast radius, infrastructure cost, and migrating in steps.
+What breaks if I change this?
 
 ::visual::
 <FarisIllustration name="faris-thinking" decorative />
 
 <!--
-Target 0:10. Last part: deciding how careful to be, and how to move.
+Part three.
 -->
 
 ---
@@ -468,18 +774,15 @@ Blast radius
 <p class="nr-label">Easy to roll back</p>
 <p class="nr-label">Hard to undo</p>
 <p class="nr-label">Few users</p>
-<div class="nr-card"><h3>Ship behind a flag</h3><p class="nr-detail">Merge, verify yourself, move on.</p></div>
-<div class="nr-card"><h3>Pair review</h3><p class="nr-detail">Dry-run data, storage and URL changes.</p></div>
+<div class="nr-card"><h3>Ship behind a flag</h3></div>
+<div class="nr-card"><h3>Pair review, dry run</h3></div>
 <p class="nr-label">Most users</p>
-<div class="nr-card"><h3>Staged rollout</h3><p class="nr-detail">Ramp while watching metrics named up front.</p></div>
-<div class="nr-card nr-hot"><h3>Split it</h3><p class="nr-detail">Highest risk. Break it down until each part is reversible.</p></div>
+<div class="nr-card"><h3>Staged rollout</h3></div>
+<div class="nr-card nr-hot"><h3>Split it until it's reversible</h3></div>
 </div>
 
 <!--
-Target 1:10.
-Without tests we can't make every change equally safe, so we decide how much ceremony each one deserves. Two questions: how many users does this reach, and how hard is it to undo?
-Most changes land top left and should move fast. The bottom right is where we don't ship as-is. Anything touching payments, stored user data or public URLs gets split until every piece can be rolled back.
-[gap: one change we split this way.]
+How many users does it reach, and how hard is it to undo? With 50,000 people in 30 minutes, "most users" arrives fast. Anything touching payments, account data or A/B state goes bottom right: split it until every piece can be rolled back.
 -->
 
 ---
@@ -494,26 +797,69 @@ Infrastructure cost
 
 ::default::
 <div class="nr-formula">
-<p class="nr-term">1 extra request per view</p>
+<p class="nr-term">1 extra request per session</p>
 <p class="nr-op">×</p>
-<p class="nr-term">[gap] views per month</p>
+<p class="nr-term">~50,000 sessions per 30 min</p>
 <p class="nr-op">=</p>
-<p class="nr-term">[gap] requests, every month</p>
-</div>
-<div class="nr-grid3">
-<div class="nr-card"><h3>A fetch on mount</h3><p class="nr-detail">Paid again by every session that mounts it.</p></div>
-<div class="nr-card"><h3>A heavier hot route</h3><p class="nr-detail">Paid in egress and in load time.</p></div>
-<div class="nr-card"><h3>A per-user cache key</h3><p class="nr-detail">Hit rate drops, origin load rises.</p></div>
+<p class="nr-term">~2.4M extra requests a day</p>
 </div>
 
 ::caption::
-Put the number in the PR description, before review.
+Arithmetic from the release figure, assuming steady traffic and one session per user.
 
 <!--
-Target 1:10.
-[gap: a real, shareable traffic number. An order of magnitude is enough.]
-Frontend engineers rarely see the infrastructure bill, but at our traffic a single extra request on a common page is not free. Same for a few extra kilobytes on a hot route, or a cache key that suddenly varies per user.
-We now ask for the multiplication in the PR. It takes a minute and it changes the conversation in review.
+Frontend decisions have an infrastructure bill. One extra request per session, at 50,000 sessions every half hour, is about 2.4 million extra requests a day. Same for a few kilobytes on a hot route, or a cache key that varies per user. Put the number in the PR.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Strangler fig
+
+::default::
+# One front door **for all three.**
+
+A facade every entry point calls. The old checkouts sit behind it, unchanged.
+
+<!--
+So how do you replace three live checkouts without a rewrite? First, one front door. Every entry point calls a single facade, and behind it the three old checkouts keep working exactly as before. That's Martin Fowler's strangler fig: grow the new thing around the old one.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Branch by abstraction
+
+::default::
+# Build the new path **behind the same door.**
+
+Run it hot next to the old one and compare results.
+
+<!--
+Then build the new checkout behind that same interface. That's branch by abstraction. Run it hot, for real traffic, next to the old one, and compare what each produced: conversions, errors, A/B assignment. Redshift and Metabase become your test suite.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+Ramp, then delete
+
+::default::
+# One door at a time. **Then delete.**
+
+Lowest-risk door first. The mobile web view last.
+
+<!--
+Then ramp one door at a time behind a flag. Start with the door that's easiest to roll back. The mobile web view goes last, because old app versions stay in the wild. And when a door is fully on the new path, delete the old one and update the map. Deleting is the step teams skip, and skipping it is how you get 13 years of layers. [If Smallpdf actually consolidated the checkouts, say what happened.]
 -->
 
 ---
@@ -521,32 +867,22 @@ layout: content
 ---
 
 ::kicker::
-Progressive migration
+Incremental AI
 
 ::title::
-# One path at a time
+# Where AI fits at each step
 
 ::default::
-<div class="nr-steps">
-<div v-click="1"><p class="nr-label">01</p><h3>Characterize</h3><p class="nr-detail">Pin today's behaviour with tests or recorded outputs.</p></div>
-<span class="nr-arrow">→</span>
-<div v-click="2"><p class="nr-label">02</p><h3>Isolate</h3><p class="nr-detail">Put an adapter between callers and code.</p></div>
-<span class="nr-arrow">→</span>
-<div v-click="3"><p class="nr-label">03</p><h3>Flag</h3><p class="nr-detail">Old and new side by side.</p></div>
-<span class="nr-arrow">→</span>
-<div v-click="4"><p class="nr-label">04</p><h3>Ramp</h3><p class="nr-detail">[gap: stages] with evidence at each step.</p></div>
-<span class="nr-arrow">→</span>
-<div v-click="5"><p class="nr-label">05</p><h3>Delete</h3><p class="nr-detail">Remove the old path. Update the map.</p></div>
+<div class="nr-rows">
+<div class="nr-row" v-click="1"><p class="nr-label">Map</p><p>Find every door, and the A/B logic behind each.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Characterize</p><p>Draft tests that pin today's behaviour.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Move callers</p><p>Small, reviewable PRs onto the facade.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Compare</p><p>Query old vs new through the Redshift MCP.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Delete</p><p>Watch the deprecation event reach zero.</p></div>
 </div>
 
-::caption::
-Step five is the one teams skip. Skipping it is how you get 13 years of layers.
-
 <!--
-Target 1:20. One click per step.
-Characterize: before changing anything, capture what it does today. This is where agents help most, drafting tests from the behaviour we observed.
-Isolate it behind an adapter so callers don't care which version runs. Flag it. Ramp it with real evidence, not gut feel.
-Then delete the old path and update the map. That last step is the one everybody skips, and it's exactly how a codebase ends up with every era still in production.
+One click per step. AI doesn't do the migration. It does the slow parts of each step. It maps doors. It drafts characterization tests, which is how you get tests in a codebase that has none: one migration at a time. It moves callers in small PRs. It queries Redshift through the MCP server to compare old and new. And it watches the deprecation events until it's safe to delete.
 -->
 
 ---
@@ -561,17 +897,13 @@ Take this home
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row nr-take"><p class="nr-n">1</p><p>Map the execution path before you change it.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">1</p><p>Map every door before you change the room.</p></div>
 <div class="nr-row nr-take"><p class="nr-n">2</p><p>Give agents a scoped task, not the repo.</p></div>
-<div class="nr-row nr-take"><p class="nr-n">3</p><p>Size each change by reach, reversibility and cost. Then ship in steps.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">3</p><p>Put a front door in, run new and old hot, then delete.</p></div>
 </div>
 
 <!--
-Target 1:00.
-If you remember three things. One: understand the path before you touch it, and write it down.
-Two: AI is a great investigator when you give it a narrow task and the right evidence, and a confident guesser when you don't.
-Three: decide how careful to be per change, put a number on the cost, and move one path at a time.
-None of this needs a rewrite or a QA team. It needs discipline.
+Map every path before you change anything. Give agents narrow tasks with real evidence. And migrate while it's live: one front door, both paths running, one door at a time, then delete. You can keep using the latest React in your next project. This is how you keep shipping in the one you have.
 -->
 
 ---
@@ -591,6 +923,5 @@ Slides: [gap: short link] · Questions in [gap: Q&A channel]
 <FarisIllustration name="duck-celebrating" decorative />
 
 <!--
-Target 0:30.
-Thanks for having me. Slides are at [gap: link]. I'll be in the Q&A channel after this, and I'd love to hear how other teams handle legacy React without a safety net.
+Thanks for having me. I'll be in the Q&A channel.
 -->

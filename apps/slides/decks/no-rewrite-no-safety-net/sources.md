@@ -31,6 +31,27 @@ Generic names only on slides; no internal paths, flags or vendor names on slides
 | 9 | Checkout flow and "about six generations" | From scan |
 | 9 notes | Three payment providers' SDKs are dependencies | From scan. Vendors deliberately not named |
 
+## Faris, in chat (2026-11-19)
+
+Role: Senior Software Engineer at Netlify, previously Smallpdf. React version stated as 16.8 "for example" (scan read 16.14; slides say React 16).
+About 50,000 users see a release within 30 minutes. Account system migrated more than once. Web views in mobile apps share views with the web.
+Cross-browser support including Safari storage limits. No unit, integration or end-to-end tests. "Run out of Datadog observability in 2 weeks"
+(meaning to confirm). TrackJS, not Sentry, with limited filtering and querying. Custom analytics: Redshift queried through Metabase.
+Three checkouts: mobile view, marketing emails, UTM landing pages. A/B tests run in versions; closed tests keep existing segments; assignment in
+localStorage; account flags such as the payment gateway used to derive A/B state for parity. Internal MCP server on Redshift; AGENTS.md / CLAUDE.md
+rule mapping PR hot paths to events. Deprecation analytics events. Lower cyclomatic complexity means fewer paths to instrument. Event cost at scale.
+Not yet confirmed: whether the three checkouts were actually consolidated (slides 37 to 39 are framed as the approach).
+
+## Public sources
+
+| Slide | Claim | Source |
+|---|---|---|
+| 3, 4 | `<Activity>` and `useEffectEvent` shipped in React 19.2 on 1 Oct 2025 | https://react.dev/blog/2025/10/01/react-19-2 (checked 2026-11-19) |
+| 5 | React Compiler 1.0 stable, 7 Oct 2025 | https://react.dev/blog/2025/10/07/react-compiler-1 (checked 2026-11-19) |
+| strangler fig | Martin Fowler's strangler fig application | https://martinfowler.com/bliki/StranglerFigApplication.html (not fetched; secondary sources agree) |
+| branch by abstraction | Parallel change and branch by abstraction | https://martinfowler.com/bliki/ParallelChange.html (checked 2026-11-19) |
+| cost | ~2.4M requests a day = 50,000 per 30 min × 48 | Arithmetic; assumes steady traffic and one session per user |
+
 ## Illustrative material
 
 - Slide 2 diff: real change, simplified import names, labelled on the slide.
