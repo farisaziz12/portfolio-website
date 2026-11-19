@@ -113,3 +113,10 @@ saves significantly); account-flag heuristics reworded (derive whether someone w
 857 subtitle rewritten; the three agent slides replaced by a click-highlighted prompt (with a breadcrumbs section) and a context-in /
 breadcrumbs-out diagram; "Deleting Is The Step Everyone Skips" rephrased. Code slide uses 20px code (review minimum).
 Open: the 4.7-year figure comes from Faris's local scan and has not been checked against commit dates.
+
+## Revision 3.2 (2026-11-19)
+
+Section 01 renamed "Understand What You’re Dealing With / And How To Build An Effective Mental Model". Added the mode-of-transport
+exercise from Faris's workshops (6 slides): the prompt, shoe/rocket/bicycle doodles in default blue (authored SVG), small teams drawing
+different pictures, the agent drawing one too, a narrowing funnel of questions (car, Toyota Prius, silver, which year), and three matching
+silver cars (you, your team, your agent). 69 slides. Browser review passed.

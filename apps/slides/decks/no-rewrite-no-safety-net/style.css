@@ -191,3 +191,14 @@
 .slidev-layout.faris-slide.nr-code-tight { --faris-font-code: 20px; --slidev-code-line-height: 28px; }
 .slidev-layout.faris-slide.nr-code-tight .faris-code__sample pre.shiki { line-height: 1.4; padding-top: 20px; padding-bottom: 20px; }
 .slidev-layout.nr-code-tight .faris-code__annotation { display: none; }
+
+/* Mode-of-transport exercise */
+.slidev-layout .nr-doodles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: end; }
+.slidev-layout .nr-doodles > div, .slidev-layout .nr-cars > div { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.slidev-layout .nr-doodle { width: 100%; height: 220px; }
+.slidev-layout .nr-doodles p, .slidev-layout .nr-cars p { margin: 0; font-size: 24px; color: var(--faris-muted); }
+.slidev-layout .nr-funnel { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.slidev-layout .nr-funnel p { width: var(--w); margin: 0; padding: 10px 16px; text-align: center; font-size: 24px; line-height: 1.25; border: 1px solid var(--faris-border); border-radius: 12px; background: var(--faris-surface); color: var(--faris-fg); }
+.slidev-layout .nr-funnel p:last-child { border: 2px solid var(--faris-brand-yellow); }
+.slidev-layout .nr-cars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: end; }
+.slidev-layout .nr-car { width: 100%; height: 170px; }

@@ -306,11 +306,104 @@ layout: section
 01
 
 ::default::
-# Understand What You’re Touching
+# Understand What You’re Dealing With
+
+And How To Build An Effective Mental Model
 
 ::visual::
 <FarisIllustration name="faris-thinking" decorative />
 
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Let’s Start With A Drawing: **Draw A Mode Of Transport**
+
+<!--
+Whenever I run a workshop, I start with an exercise. I ask everyone to draw a mode of transport. That's it. Almost nobody asks me what I mean. Part of that is social: you don't usually question the instructor.
+-->
+
+---
+layout: content
+---
+
+::title::
+# I Get A Shoe, A Rocket, A Bicycle, **All In The Same Default Blue**
+
+::default::
+<div class="nr-doodles">
+<div v-click="1"><svg viewBox="0 0 200 120" class="nr-doodle" aria-label="A blue doodle of a shoe"><path d="M20 98 Q18 60 48 56 L78 56 Q98 34 118 50 L150 74 Q186 78 186 94 L186 100 L20 100 Z" fill="none" stroke="#1a73e8" stroke-width="6" stroke-linejoin="round"/><path d="M84 58 L96 72 M98 52 L110 66 M112 50 L122 62" stroke="#1a73e8" stroke-width="5" stroke-linecap="round"/><path d="M20 88 L186 88" stroke="#1a73e8" stroke-width="4"/></svg><p>A Shoe</p></div>
+<div v-click="2"><svg viewBox="0 0 120 200" class="nr-doodle" aria-label="A blue doodle of a rocket"><path d="M60 10 Q96 52 90 140 L30 140 Q24 52 60 10 Z" fill="none" stroke="#1a73e8" stroke-width="6" stroke-linejoin="round"/><circle cx="60" cy="72" r="14" fill="none" stroke="#1a73e8" stroke-width="5"/><path d="M31 108 L10 160 L32 142 M89 108 L110 160 L88 142" fill="none" stroke="#1a73e8" stroke-width="6" stroke-linejoin="round"/><path d="M44 146 Q60 192 76 146" fill="none" stroke="#1a73e8" stroke-width="5" stroke-linecap="round"/></svg><p>A Rocket</p></div>
+<div v-click="3"><svg viewBox="0 0 220 140" class="nr-doodle" aria-label="A blue doodle of a bicycle"><circle cx="50" cy="100" r="34" fill="none" stroke="#1a73e8" stroke-width="6"/><circle cx="170" cy="100" r="34" fill="none" stroke="#1a73e8" stroke-width="6"/><path d="M50 100 L95 46 L150 46 L170 100 M95 46 L112 100 L50 100 M112 100 L150 46 M84 34 L106 34 M95 46 L95 34 M150 46 L146 28 L162 28" fill="none" stroke="#1a73e8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg><p>A Bicycle</p></div>
+</div>
+
+<!--
+[click] Someone draws a shoe. [click] Someone draws a rocket. [click] Someone draws a bicycle. And because everyone opens Google AutoDraw and nobody changes the colour, they're all the same default blue. Same instruction, completely different pictures.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Small Teams Can End Up **Drawing Different Pictures** Of The Same System
+
+Five Developers, Three Squads, Not Much Time To Coordinate, And Each Of Us Working In Our Own Corner
+
+<!--
+That's what working on a codebase like this can feel like. Small, nimble teams don't have much time to coordinate. You end up in a bit of a silo, and everyone has their own picture of how checkout works.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# And The Agent Working Next To You **Is Drawing One Too**
+
+<!--
+And now there's one more person drawing: the agent working alongside you. If you don't give it the same picture, it'll draw its own. Probably a rocket.
+-->
+
+---
+layout: content
+---
+
+::title::
+# So Keep Asking Questions **Until The Pictures Match**
+
+::default::
+<div class="nr-funnel">
+<p v-click="1" style="--w:100%">What do you mean by a mode of transport?</p>
+<p v-click="2" style="--w:86%">Does it have four wheels?</p>
+<p v-click="3" style="--w:72%">Is it a car?</p>
+<p v-click="4" style="--w:58%">Is it a Toyota Prius?</p>
+<p v-click="5" style="--w:44%">Is it silver?</p>
+<p v-click="6" style="--w:30%">Which year?</p>
+</div>
+
+<!--
+So you learn to ask yourself the questions, out loud, with your team and with your agent. [click] What do you actually mean? [click] Four wheels? [click] A car? [click] Which car? [click] What colour? [click] Which model year? You keep going until the picture in everyone's head is the same.
+-->
+
+---
+layout: content
+---
+
+::title::
+# Now Everyone Draws **The Same Car**
+
+::default::
+<div class="nr-cars">
+<div><svg viewBox="0 0 240 120" class="nr-car" aria-label="A silver car"><path d="M14 86 L14 66 Q18 56 44 52 L76 30 Q86 24 110 24 L150 24 Q166 26 182 46 L214 52 Q228 56 228 70 L228 86 Z" fill="#c9ccd1" stroke="#3a3d42" stroke-width="4" stroke-linejoin="round"/><path d="M84 50 L102 32 L126 32 L126 50 Z M136 50 L136 32 L156 32 L172 50 Z" fill="#8fa3b5" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="184" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="7" fill="#c9ccd1"/><circle cx="184" cy="88" r="7" fill="#c9ccd1"/></svg><p>You</p></div>
+<div v-click="1"><svg viewBox="0 0 240 120" class="nr-car" aria-label="A silver car"><path d="M14 86 L14 66 Q18 56 44 52 L76 30 Q86 24 110 24 L150 24 Q166 26 182 46 L214 52 Q228 56 228 70 L228 86 Z" fill="#c9ccd1" stroke="#3a3d42" stroke-width="4" stroke-linejoin="round"/><path d="M84 50 L102 32 L126 32 L126 50 Z M136 50 L136 32 L156 32 L172 50 Z" fill="#8fa3b5" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="184" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="7" fill="#c9ccd1"/><circle cx="184" cy="88" r="7" fill="#c9ccd1"/></svg><p>Your Team</p></div>
+<div v-click="2"><svg viewBox="0 0 240 120" class="nr-car" aria-label="A silver car"><path d="M14 86 L14 66 Q18 56 44 52 L76 30 Q86 24 110 24 L150 24 Q166 26 182 46 L214 52 Q228 56 228 70 L228 86 Z" fill="#c9ccd1" stroke="#3a3d42" stroke-width="4" stroke-linejoin="round"/><path d="M84 50 L102 32 L126 32 L126 50 Z M136 50 L136 32 L156 32 L172 50 Z" fill="#8fa3b5" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="184" cy="88" r="18" fill="#2b2d31" stroke="#3a3d42" stroke-width="3"/><circle cx="62" cy="88" r="7" fill="#c9ccd1"/><circle cx="184" cy="88" r="7" fill="#c9ccd1"/></svg><p>Your Agent</p></div>
+</div>
+
+<!--
+And then everyone draws the same car. [click] Your team. [click] And your agent. That's the mental model we're after for the codebase. So let's draw the picture of our checkout.
+-->
 ---
 layout: statement
 class: nr-statement nr-no-annotation
