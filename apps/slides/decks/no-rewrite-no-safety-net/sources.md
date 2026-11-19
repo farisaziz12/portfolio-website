@@ -42,6 +42,14 @@ localStorage; account flags such as the payment gateway used to derive A/B state
 rule mapping PR hot paths to events. Deprecation analytics events. Lower cyclomatic complexity means fewer paths to instrument. Event cost at scale.
 Confirmed 2026-11-19: the three checkouts were never merged; all three lived in the codebase. Migration slides are framed as the approach.
 
+## US sales tax story (Faris, chat, 2026-11-19)
+
+Frontend calculated subscription prices from backend plan amounts. US sales tax required server-side price previews for subscription
+changes. Enabled for the US and Australia for compliance; the rest of the world waited for funnel checks and A/B tests (conversion,
+free trials, friction). Adding a country selector and postal code reduced conversion by 11%. "$10M market, ~$1M" is Faris's illustration,
+not a reported figure. Conflict to resolve: orchestrating-payments notes say "11% conversion drop just for adding first and last name".
+Unknown: how the drop was recovered.
+
 ## Public sources
 
 | Slide | Claim | Source |

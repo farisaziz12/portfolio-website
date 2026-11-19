@@ -1,6 +1,7 @@
 # No Rewrite, No Safety Net: outline
 
-Status: revision 2, 2026-11-19. Restructured from Faris's chat feedback of 2026-11-19 (quoted in review.md):
+Status: revision 2.1, 2026-11-19 (45 slides; see the revision 2.1 note at the end).
+Revision 2, 2026-11-19. Restructured from Faris's chat feedback of 2026-11-19 (quoted in review.md):
 new opening, Netlify role and bio, real constraints, three checkouts as the running example, a migrate-while-hot section,
 and about 30 seconds per slide with one idea each. 48 slides, about 20 to 22 minutes at 30 seconds a slide (dividers and one-line statements run shorter). Dark mode.
 Revision 1 (approved in chat 2026-11-17, SHA-256 e191bf5f440a0d287664f76826787e660beccb56ff42b7b351488a5f54b5440b) is superseded.
@@ -78,3 +79,13 @@ Labels: **fact** (sources.md), **opinion**, **approach** (a recommended way of w
 3. React version: Faris said 16.8 in chat; the scan read 16.14. Slides say "React 16".
 4. Slides 37 to 39: did Smallpdf consolidate the three checkouts? Until confirmed they are framed as the approach, not a story.
 5. Slide 30: a real example of an agent picking the old pattern.
+
+## Revision 2.1 (2026-11-19)
+
+Added from Faris's chat message: the US sales tax story at the start of section 03 (Story Time; price math lived in the frontend;
+tax moved the preview to the server; US and Australia first, everyone else waited for funnel and A/B checks; -11% conversion from a
+country selector and postal code, about $1M at risk in a $10M market). **fact** per Faris.
+Cut for time (30 seconds a slide): redux-saga Everywhere, Many Paths Into The Same Views (both into notes), Three Questions,
+When Is It Safe To Delete Code? (statement), the blast-radius grid, the requests-per-day formula (the -11% slide now carries the
+multiplied-cost point). Datadog's two slides merged. The three strangler fig / branch by abstraction / ramp slides merged into
+"Same Moves, Bigger Surface". 45 slides.

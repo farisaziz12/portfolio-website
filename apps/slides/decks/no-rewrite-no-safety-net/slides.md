@@ -130,37 +130,7 @@ faris:
 # What If You’re On **React 16?**
 
 <!--
-But what if you can't use any of it? What if the codebase you ship every day is 13 years old and on React 16?
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-React 16
-
-::default::
-# **redux-saga** Everywhere
-
-<!--
-Sagas still handle redirects after payment and login. Most new hires have never written one.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-React 16
-
-::default::
-# Many Paths Into The **Same Views**
-
-<!--
-And rarely one way into a screen. Remember this one. It comes back.
+But what if you can't use any of it? What if the codebase you ship every day is 13 years old and on React 16? redux-saga all over the place, and many paths into the same views.
 -->
 
 ---
@@ -334,23 +304,10 @@ No Safety Net
 ::default::
 # Datadog: **2 Weeks** Of Data
 
-<!--
-Keeping data longer than two weeks cost too much, so retention is capped at two weeks.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-No Safety Net
-
-::default::
-# Bug Started 3 Weeks Ago? **It’s Gone.**
+Bug Started 3 Weeks Ago? It’s Gone.
 
 <!--
-So if a bug started three weeks ago and nobody caught it in time, the data that would explain it no longer exists.
+Keeping data longer than two weeks cost too much, so retention is capped at two weeks. If a bug started three weeks ago and nobody caught it in time, the data that would explain it is gone.
 -->
 
 ---
@@ -396,31 +353,6 @@ faris:
 
 <!--
 And no docs beyond the code. So how do you work safely in this?
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-Three Questions
-
-::default::
-<div class="nr-qs">
-<v-clicks>
-
-When Is It Safe To Delete Code?
-
-What Breaks If I Change This?
-
-Where Does AI Help?
-
-</v-clicks>
-</div>
-
-<!--
-[click] [click] [click] The three questions for the next fifteen minutes.
 -->
 
 ---
@@ -537,17 +469,6 @@ Reconstruct The Execution Path
 
 <!--
 [click] A user hits a usage limit. Log in first, A/B assignment, geo-IP picks the currency. [click] State in Redux, a Context store and React Query's cache. Data through the 2017 helper, the typed wrapper and React Query. [click] Hooks inside a class error boundary. Then payment SDKs, 3D Secure, analytics, and a saga handles the redirect. About six generations of React patterns in one purchase. Write the path down before you write a diff.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-# When Is It Safe To **Delete Code?**
-
-<!--
-You think something is dead. No tests, no docs. How do you know?
 -->
 
 ---
@@ -746,105 +667,106 @@ What Breaks If I Change This?
 <FarisIllustration name="faris-thinking" decorative />
 
 ---
+layout: statement
+class: nr-statement nr-no-annotation
+faris:
+  background: arc
+---
+
+::kicker::
+Story Time
+
+::default::
+# US **Sales Tax**
+
+<!--
+A real one. We needed to support US sales tax.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+US Sales Tax
+
+::default::
+# Price Math Lived **In The Frontend**
+
+<!--
+The backend sent plan amounts. The frontend did the rest: adding, multiplying, previewing what a subscription change would cost.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+US Sales Tax
+
+::default::
+# Tax Moved The Preview **To The Server**
+
+<!--
+You can't calculate sales tax like that in the browser. So the price preview for a subscription change had to come from the server. A new path for the most sensitive number in the product.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+US Sales Tax
+
+::default::
+# US And Australia **First**
+
+Everyone Else Waited
+
+<!--
+We only turned it on where compliance required it: the US and Australia. The rest of the world stayed on the old path while we checked the funnel, ran A/B tests, and looked at conversion, free trials and friction.
+-->
+
+---
+layout: statement
+class: nr-metric nr-no-annotation
+---
+
+::kicker::
+One Small Form Change
+
+::default::
+# -11%
+
+Conversion From A Country Selector And Postal Code
+
+<!--
+Here's why. Adding a country selector and a postal code field reduced conversion by 11%. If a market makes 10 million dollars, that's about a million at risk from two form fields. You have to find a way to recover that before it goes everywhere. [What did you do to recover it? Add if you can share. The orchestrating-payments notes attribute an 11% drop to adding first and last name: make the two decks agree.]
+-->
+
+---
 layout: content
 ---
 
 ::kicker::
-Blast Radius
+Applied To The Three Checkouts
 
 ::title::
-# How Careful **Should I Be?**
+# Same Moves, **Bigger Surface**
 
 ::default::
-<div class="nr-radius">
-<span></span>
-<p class="nr-label">Easy to roll back</p>
-<p class="nr-label">Hard to undo</p>
-<p class="nr-label">Few users</p>
-<div class="nr-card"><h3>Ship Behind A Flag</h3></div>
-<div class="nr-card"><h3>Pair Review, Dry Run</h3></div>
-<p class="nr-label">Most users</p>
-<div class="nr-card"><h3>Staged Rollout</h3></div>
-<div class="nr-card nr-hot"><h3>Split It Until It’s Reversible</h3></div>
+<div class="nr-rows">
+<div class="nr-row" v-click="1"><p class="nr-label">Front door</p><p>Every entry point calls one facade. Strangler fig.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Run both</p><p>New checkout behind the same interface, compared in Redshift.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">One door</p><p>Ramp per entry point. Mobile web view last.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Delete</p><p>When a door is fully moved, remove the old path.</p></div>
 </div>
 
 <!--
-Two questions. How many users does it reach? How hard is it to undo? At 50,000 people in 30 minutes, "most users" arrives fast. Payments, account data and A/B state go bottom right: split it until every piece can be rolled back.
--->
-
----
-layout: content
----
-
-::kicker::
-Infrastructure Cost
-
-::title::
-# Small Decisions, **Multiplied**
-
-::default::
-<div class="nr-formula">
-<p class="nr-term">1 extra request per session</p>
-<p class="nr-op">×</p>
-<p class="nr-term">~50,000 sessions per 30 min</p>
-<p class="nr-op">=</p>
-<p class="nr-term">~2.4M extra requests a day</p>
-</div>
-
-::caption::
-Assumes Steady Traffic And One Session Per User
-
-<!--
-One extra request per session, at 50,000 sessions every half hour, is about 2.4 million extra requests a day. Same for extra kilobytes on a hot route, or a cache key that varies per user. Put the number in the PR.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-Strangler Fig
-
-::default::
-# One Front Door **For All Three**
-
-<!--
-We never merged the three checkouts. They all still lived in the codebase when I left. If I were doing it, this is the order. First, one front door: every entry point calls one facade, and the three old checkouts sit behind it, unchanged. Martin Fowler calls it the strangler fig.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-Branch By Abstraction
-
-::default::
-# Build The New One **Behind The Same Door**
-
-Run Both. Compare.
-
-<!--
-Then build the new checkout behind the same interface. Run it for real traffic next to the old one and compare: conversions, errors, A/B assignment. With no tests, Redshift is how you compare.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-Ramp, Then Delete
-
-::default::
-# One Door At A Time. **Then Delete.**
-
-Mobile Web View Last
-
-<!--
-Ramp one door at a time behind a flag. Easiest to roll back first. The mobile web view goes last, because old app versions stay out there. When a door is fully moved, delete the old path. That's the step teams skip, and skipping it is how you end up with 13 years of layers.
+We never merged the three checkouts. They all still lived in the codebase when I left. But the tax rollout is the pattern. [click] One front door: every entry point calls a single facade. Martin Fowler calls it the strangler fig. [click] Build the new checkout behind the same interface and compare it in Redshift. [click] Ramp one entry point at a time, the mobile web view last because old app versions stay out there. [click] Then delete. That's the step teams skip, and skipping it is how you end up with 13 years of layers.
 -->
 
 ---

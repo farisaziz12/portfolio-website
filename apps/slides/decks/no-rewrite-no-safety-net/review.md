@@ -67,3 +67,9 @@ Title Case subtitle; bare number slides (e.g. "359", "14 KB", "0"); notes short,
 Kept deliberately: "Give The Agent A Task, Not The Repo" (a contrast, but it is the talk's core line); three habits (a genuine three-part close).
 React version: Faris believed 16.8 because of hooks; hooks shipped in 16.8.0 and remain in 16.14, so the scan's 16.14 is consistent. Pending his scan.
 Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-33-37.754Z-l686Wa, 49 slides / 76 states.
+
+## Revision 2.1 (2026-11-19)
+
+US sales tax story added to section 03 from Faris's chat message (5 slides). Cuts and merges for the 30-seconds-a-slide budget listed in outline.md.
+45 slides / 73 states. Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-40-51.809Z-tAp2OO. Agent inspected the new slides.
+Open: the 11% figure conflicts with orchestrating-payments notes (first and last name vs country selector and postal code); how the drop was recovered.
