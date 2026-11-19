@@ -80,7 +80,7 @@ to understand it. 35 is a native Markdown table with all six original rows.
 | 8, 18, 58, 75, 78–79 | Personal/internal revenue, bundle-size and response-time figures need their original evidence and scope. |
 | 11 | Notes' FX percentages are an example, not general pricing. Confirm provider/contract assumptions. |
 | 16–17 | iDEAL/Wero note and “last year” require an event date and current primary-source check. |
-| 20–24 | Regulatory/generalized legal statements and 11,000+ jurisdictions need jurisdiction/date-specific verification. The 11% conversion note lacks attribution. |
+| 20–24 | Regulatory/generalized legal statements and 11,000+ jurisdictions need jurisdiction/date-specific verification. The 11% conversion note: corrected 2026-11-19 by Faris to the country selector and postal code (previously attributed to first and last name); Smallpdf checkout, Faris's own measurement. |
 | 26 | Screenshot is 99.9%; notes say 99.999%. Confirm intended comparison. |
 | 27–28 | Historical incidents, not a current reliability benchmark. |
 | 35 | Fees, availability and “only” categories are source claims, not verified current provider terms. |

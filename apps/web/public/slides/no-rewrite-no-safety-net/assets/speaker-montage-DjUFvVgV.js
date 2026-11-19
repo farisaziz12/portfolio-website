@@ -1,0 +1,1 @@
+var e=`/slides/no-rewrite-no-safety-net/media/speaker-montage.jpg`;export{e as t};

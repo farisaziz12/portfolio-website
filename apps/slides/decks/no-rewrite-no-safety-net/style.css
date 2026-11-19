@@ -1,0 +1,216 @@
+/* Deck-local compositions for "No Rewrite, No Safety Net". Brand tokens and theme layouts stay shared. */
+
+.slidev-layout.nr-content .nr-content__grid {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  height: 100%;
+  padding-bottom: 40px;
+}
+.slidev-layout .nr-content__title .faris-kicker:empty { display: none; }
+.slidev-layout .nr-content__title h1 { margin-top: 12px; font-size: 48px; line-height: 1.06; }
+.slidev-layout .nr-content__body { min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+.slidev-layout .nr-caption { font-size: 22px; line-height: 1.3; color: var(--faris-muted); }
+.slidev-layout .nr-caption:empty { display: none; }
+.slidev-layout .nr-caption p { font-size: inherit; margin: 0; }
+
+/* Shared text roles */
+.slidev-layout .nr-accent { color: var(--faris-text-blue); }
+.slidev-layout .nr-label {
+  font-family: var(--faris-font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faris-text-blue);
+}
+.slidev-layout .nr-detail { margin: 0; font-size: 22px; line-height: 1.35; color: var(--faris-muted); }
+
+/* Cards */
+.slidev-layout .nr-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.slidev-layout .nr-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.slidev-layout .nr-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 26px;
+  border: 1px solid var(--faris-border);
+  border-radius: 14px;
+  background: var(--faris-surface);
+}
+.slidev-layout .nr-card h3 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; }
+.slidev-layout .nr-card.nr-hot { border: 2px solid var(--faris-brand-yellow); }
+.slidev-layout .nr-stat .nr-num { margin: 0; font-size: 56px; line-height: 1.05; font-weight: 800; color: var(--faris-text-blue); letter-spacing: -0.03em; }
+
+/* Tables */
+.slidev-layout .nr-table table { width: 100%; border-collapse: collapse; font-size: 24px; line-height: 1.3; }
+.slidev-layout .nr-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--faris-font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faris-text-blue);
+  border-bottom: 2px solid var(--faris-border);
+}
+.slidev-layout .nr-table td { padding: 12px 14px; border-bottom: 1px solid var(--faris-border); vertical-align: top; }
+.slidev-layout .nr-table td:first-child { font-weight: 700; }
+.slidev-layout .nr-table tr.nr-pick td { color: var(--faris-brand-yellow); }
+
+/* Step rows */
+.slidev-layout .nr-steps { display: flex; align-items: stretch; gap: 10px; }
+.slidev-layout .nr-steps > div:not(.nr-arrow) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 16px;
+  border: 1px solid var(--faris-border);
+  border-radius: 14px;
+  background: var(--faris-surface);
+}
+.slidev-layout .nr-steps h3 { margin: 0; font-size: 24px; line-height: 1.15; font-weight: 700; }
+.slidev-layout .nr-steps .nr-detail { font-size: 20px; }
+.slidev-layout .nr-arrow { align-self: center; font-size: 26px; color: var(--faris-text-blue); }
+
+/* Numbered rows */
+.slidev-layout .nr-rows { display: flex; flex-direction: column; }
+.slidev-layout .nr-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-top: 1px solid var(--faris-border);
+}
+.slidev-layout .nr-row:last-child { border-bottom: 1px solid var(--faris-border); }
+.slidev-layout .nr-row p { margin: 0; font-size: 26px; line-height: 1.3; }
+.slidev-layout .nr-row.nr-q { grid-template-columns: 56px 1fr; }
+.slidev-layout .nr-row .nr-n { font-size: 36px; font-weight: 800; color: var(--faris-text-blue); }
+.slidev-layout .nr-row .nr-sub { margin-top: 4px; font-size: 20px; color: var(--faris-muted); }
+.slidev-layout .nr-row.nr-take { grid-template-columns: 72px 1fr; padding: 20px 0; }
+.slidev-layout .nr-row.nr-take .nr-n { font-size: 52px; line-height: 1; }
+.slidev-layout .nr-row.nr-take p:not(.nr-n) { font-size: 32px; font-weight: 600; }
+
+/* Blast radius grid */
+.slidev-layout .nr-radius { display: grid; grid-template-columns: 150px 1fr 1fr; gap: 16px; align-items: stretch; }
+.slidev-layout .nr-radius .nr-label { align-self: center; }
+.slidev-layout .nr-radius .nr-card { padding: 18px 22px; }
+.slidev-layout .nr-radius .nr-card h3 { font-size: 26px; }
+
+/* Cost formula */
+.slidev-layout .nr-formula { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.slidev-layout .nr-term {
+  flex: 1;
+  margin: 0;
+  padding: 18px 22px;
+  border: 2px solid var(--faris-text-blue);
+  border-radius: 14px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.slidev-layout .nr-op { margin: 0; font-size: 44px; font-weight: 800; color: var(--faris-text-blue); }
+
+/* Bulleted columns */
+.slidev-layout .nr-card ul { margin: 4px 0 0; padding-left: 24px; }
+.slidev-layout .nr-card li { margin: 6px 0; font-size: 24px; line-height: 1.3; }
+
+/* Statement list with clicks */
+.slidev-layout .nr-stack p { margin: 0 0 8px; font-size: 60px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+.slidev-layout.nr-statement .faris-statement__body strong { color: var(--faris-text-blue); }
+
+/* Prompt block on the content layout */
+.slidev-layout .nr-prompt pre { font-size: 20px !important; line-height: 1.55 !important; }
+
+/* Fixes from the first browser review */
+.slidev-layout .nr-stack p,
+.slidev-layout .nr-row p { color: var(--faris-fg); }
+.slidev-layout .nr-row p.nr-sub { color: var(--faris-muted); }
+.slidev-layout .nr-row p.nr-n,
+.slidev-layout .nr-row p.nr-label { color: var(--faris-text-blue); }
+.slidev-layout .nr-card ul { list-style: disc; }
+.slidev-layout.nr-no-annotation .faris-statement > .faris-annotation { display: none; }
+.slidev-layout .nr-table--dense table { font-size: 21px; line-height: 1.25; }
+.slidev-layout .nr-table--dense td { padding: 10px 12px; }
+.slidev-layout.nr-content .nr-steps .nr-detail { font-size: 19px; }
+
+/* Revision 2: bio, one-idea statements, doors diagram */
+.slidev-layout.nr-bio-slide .faris-slide__content { position: static; }
+.slidev-layout.nr-bio-slide .nr-content__grid { width: calc((1280px * 2 / 3) - 128px); grid-template-rows: auto minmax(0, 1fr); }
+.slidev-layout.nr-bio-slide .faris-slide__footer { right: calc(100% / 3 + 64px); }
+.slidev-layout .nr-bio { width: 100%; }
+.slidev-layout .nr-bio__copy > p { font-size: 28px; line-height: 1.3; margin: 0 0 24px; }
+.slidev-layout .nr-bio h2 { font-size: 18px; letter-spacing: .09em; text-transform: uppercase; color: var(--faris-muted); margin: 20px 0 12px; font-weight: 650; }
+.slidev-layout .nr-bio ul { list-style: none; margin: 0; padding: 0; }
+.slidev-layout .nr-bio li { font-size: 26px; line-height: 1.3; margin: 0; }
+.slidev-layout .nr-bio__experience { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px 28px; }
+.slidev-layout .nr-bio__experience li { padding-left: 15px; border-left: 3px solid var(--faris-text-blue); }
+.slidev-layout .nr-bio__community { display: grid; gap: 10px; }
+.slidev-layout.nr-bio-slide .nr-bio img { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+
+.slidev-layout.nr-metric .faris-statement__body h1 { font-size: 112px; color: var(--faris-text-blue); letter-spacing: -0.05em; }
+.slidev-layout.nr-metric .faris-statement__body > p { font-size: 36px; color: var(--faris-fg); }
+.slidev-layout.nr-statement .faris-statement__body > p { color: var(--faris-fg); }
+.slidev-layout .faris-statement__body code { font-size: 0.9em; color: var(--faris-text-blue); background: none; }
+
+.slidev-layout .nr-doors { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 0 24px; align-items: center; }
+.slidev-layout .nr-doors__in { display: flex; flex-direction: column; gap: 16px; }
+.slidev-layout .nr-doors__arrow { font-size: 56px; color: var(--faris-text-blue); text-align: center; }
+.slidev-layout .nr-doors .nr-card h3 { font-size: 30px; }
+.slidev-layout .nr-doors .nr-target { border: 2px solid var(--faris-brand-yellow); padding: 40px 32px; }
+.slidev-layout .nr-doors .nr-target h3 { font-size: 40px; }
+
+.slidev-layout .nr-qs p { margin: 0 0 18px; font-size: 40px; line-height: 1.15; font-weight: 750; color: var(--faris-fg); }
+.slidev-layout .nr-content__title h1 strong { color: var(--faris-text-blue); }
+
+/* Closing slide, after caching-dark-arts */
+.slidev-layout.nr-closing-slide .faris-slide__content { position: static; }
+.slidev-layout.nr-closing-slide .nr-content__grid { width: calc((1280px * 2 / 3) - 128px); }
+.slidev-layout.nr-closing-slide .faris-slide__footer { right: calc(100% / 3 + 64px); }
+.slidev-layout .nr-closing { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.slidev-layout .nr-contact { text-align: center; }
+.slidev-layout .nr-contact p { font-size: 24px; margin-top: 16px; }
+.slidev-layout .nr-contact .nr-connect-cta { margin: 0 0 16px; color: var(--faris-brand-yellow); font-size: 26px; font-weight: 700; }
+.slidev-layout .nr-qr { width: 220px; margin: 0 auto; }
+.slidev-layout .nr-closing-photo { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+.slidev-layout .nr-closing { grid-template-columns: 240px 1fr; }
+.slidev-layout .nr-closing-badge { max-width: 320px; justify-self: center; }
+
+/* Agent context diagram */
+.slidev-layout .nr-agent { display: grid; grid-template-columns: 1fr 56px 230px 56px 1fr; gap: 0 12px; align-items: center; }
+.slidev-layout .nr-agent__col { display: flex; flex-direction: column; gap: 10px; }
+.slidev-layout .nr-agent__col .nr-label { margin: 0 0 4px; }
+.slidev-layout .nr-chip { padding: 10px 14px; border: 1px solid var(--faris-border); border-radius: 10px; background: var(--faris-surface); font-size: 20px; line-height: 1.25; }
+.slidev-layout .nr-agent__core { text-align: center; }
+.slidev-layout .nr-agent__core h3 { font-size: 30px; }
+
+.slidev-layout.nr-code-tight pre { font-size: 20px !important; line-height: 1.45 !important; }
+.slidev-layout.faris-slide.nr-code-tight { --faris-font-code: 20px; --slidev-code-line-height: 28px; }
+.slidev-layout.faris-slide.nr-code-tight .faris-code__sample pre.shiki { line-height: 1.4; padding-top: 20px; padding-bottom: 20px; }
+.slidev-layout.nr-code-tight .faris-code__annotation { display: none; }
+
+/* Mode-of-transport exercise */
+.slidev-layout .nr-doodles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: end; }
+.slidev-layout .nr-doodles > div, .slidev-layout .nr-cars > div { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.slidev-layout .nr-doodle { width: 100%; height: 220px; }
+.slidev-layout .nr-doodles p, .slidev-layout .nr-cars p { margin: 0; font-size: 24px; color: var(--faris-muted); }
+.slidev-layout .nr-funnel { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.slidev-layout .nr-funnel p { width: var(--w); margin: 0; padding: 10px 16px; text-align: center; font-size: 24px; line-height: 1.25; border: 1px solid var(--faris-border); border-radius: 12px; background: var(--faris-surface); color: var(--faris-fg); }
+.slidev-layout .nr-funnel p:last-child { border: 2px solid var(--faris-brand-yellow); }
+.slidev-layout .nr-cars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: end; }
+.slidev-layout .nr-car { width: 100%; height: 170px; }
+
+/* Quote slides */
+.slidev-layout.nr-quote .faris-statement__body h1 { font-size: 48px; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em; max-width: 1040px; }
+.slidev-layout.nr-quote .faris-statement__body > p { font-size: 22px; color: var(--faris-text-blue); }
+
+/* Bulkhead ship */
+.slidev-layout .nr-shipwrap { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; }
+.slidev-layout .nr-ship { display: block; width: 100%; height: auto; }
+.slidev-layout .nr-ship__water { position: absolute; inset: 0; }
+.slidev-layout .nr-ship__labels { position: absolute; left: 0; right: 0; top: 34%; display: grid; grid-template-columns: 18% 18% 18% 18% 18%; padding-left: 5%; }
+.slidev-layout .nr-ship__labels span { text-align: center; font-size: 20px; font-weight: 600; color: var(--faris-fg); }
+.slidev-layout .nr-ship__caption { margin: 12px 0 0; text-align: center; font-size: 26px; font-weight: 700; color: var(--faris-text-blue); }

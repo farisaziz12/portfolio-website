@@ -12,6 +12,11 @@ const deck = new URL('../decks/orchestrating-payments/', import.meta.url)
 const markdown = await readFile(new URL('slides.md', deck), 'utf8')
 const { slides } = await parse(markdown)
 const source = JSON.parse(await readFile(new URL('migration/source.json', deck), 'utf8'))
+// Speaker-note corrections made on purpose after migration (see the deck's sources.md). Everything else must match the source.
+const NOTE_EDITS = new Map([
+  [23, [['You need to collect Zip code, street, etc. Adding fields reduce conversion.11% conversion drop just for adding first and last name', 'You need to collect a country and postal code. Adding fields reduces conversion: adding a country selector and postal code reduced conversion by 11%.']]],
+])
+const expectedNotes = number => (NOTE_EDITS.get(number) ?? []).reduce((value, [from, to]) => value.replaceAll(from, to), source.slides[number - 1].notes.trim())
 const codeAt = number => [...slides[number - 1].content.matchAll(/```tsx?[^\n]*\n([\s\S]*?)\n```/g)].map(match => match[1]).join('\n')
 
 test('payments: all 84 original slides retain one-to-one source identity and all 26 notes', () => {
@@ -19,7 +24,7 @@ test('payments: all 84 original slides retain one-to-one source identity and all
   assert.equal(source.slides.filter(slide => slide.notes.trim()).length, 26)
   slides.forEach((slide, index) => {
     assert.equal(slide.frontmatter.sourceSlide, index + 1)
-    assert.equal((slide.note || '').trim(), source.slides[index].notes.trim(), `notes on slide ${index + 1}`)
+    assert.equal((slide.note || '').trim(), expectedNotes(index + 1), `notes on slide ${index + 1}`)
   })
 })
 
