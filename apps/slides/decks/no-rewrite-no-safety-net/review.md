@@ -73,3 +73,9 @@ Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-
 US sales tax story added to section 03 from Faris's chat message (5 slides). Cuts and merges for the 30-seconds-a-slide budget listed in outline.md.
 45 slides / 73 states. Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-40-51.809Z-tAp2OO. Agent inspected the new slides.
 Open: the 11% figure conflicts with orchestrating-payments notes (first and last name vs country selector and postal code); how the drop was recovered.
+
+## Revision 2.2 (2026-11-19)
+
+Applied Faris's second codebase scan (sources.md). Corrected the three checkouts, A/B mechanics, web-view handoff, payment SDK count and
+the CLAUDE.md rule; added Every Ramp Is A Deploy, Safari Users Never Enter A Test, 857, ~75% and 4.7 Years; dropped the Safari requirement
+slide; "Mark It Deprecated" and "Fewer Branches" became number slides. 47 slides.

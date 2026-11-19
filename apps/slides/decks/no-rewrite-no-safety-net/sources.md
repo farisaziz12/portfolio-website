@@ -42,6 +42,24 @@ localStorage; account flags such as the payment gateway used to derive A/B state
 rule mapping PR hot paths to events. Deprecation analytics events. Lower cyclomatic complexity means fewer paths to instrument. Event cost at scale.
 Confirmed 2026-11-19: the three checkouts were never merged; all three lived in the codebase. Migration slides are framed as the approach.
 
+## Codebase scan 2 (Faris, local Claude Code, read-only, pasted 2026-11-19)
+
+react / react-dom 16.14.0, @types/react 16.9.32. Three purchase flows: in-app upgrade dialog (~60 call sites, ~80 trigger types),
+native-app checkout page (handoff from desktop, iOS, Android), renewal/resubscribe (current, legacy enterprise, static variants).
+Marketing email and UTM links land in the dialog via a coupon in the URL hash read by a saga (no separate checkout). Shared payment
+core ~150 files; flows 1 and 2 share 80 to 90% of payment logic; legacy renewal variants bypass it. Orchestrator over five payment SDKs.
+Two subscription-creation API versions live. A/B: localStorage keyed by experiment and version, random browser assignment, no account,
+cookie or server storage, no remote flags (every ramp or kill is a deploy); ~20 experiments, ~9 with new-user segmentation off,
+~2 shipped to 100% and still referenced; Safari and no-storage users always get the default (reason undocumented); 4 to 5 experiments
+use account data for eligibility; gateway selection is country rule OR variant. Safari 7-day storage purge noted in a code comment.
+~857 @deprecated tags in ~227 files; one generic deprecation event with ~27 typed reasons, ~21 call sites, since 2021.
+~70 product events in checkout code; ~316 branches in ~55 checkout files, ~75% with no analytics or log call (heuristic).
+One payment-platform migration removed its last fallbacks ~4.7 years after 100% rollout. ~39 files branch on enterprise or store billing.
+CLAUDE.md analytics rules: ask the human whether tracking is needed; never delete permanent events (deprecate with PR link); never
+repurpose fields; data-team sign-off for structure changes; a business-impact review agent flags undescribed event changes, without estimating impact.
+Corrections this caused: the three checkouts are not mobile web view / email / UTM; web views are not detected by user agent (handoff via
+URL with platform and token), so slide 13 keeps Faris's description ("Web Views Inside Mobile Apps") pending his confirmation.
+
 ## US sales tax story (Faris, chat, 2026-11-19)
 
 Frontend calculated subscription prices from backend plan amounts. US sales tax required server-side price previews for subscription

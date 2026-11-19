@@ -130,7 +130,7 @@ faris:
 # What If You’re On **React 16?**
 
 <!--
-But what if you can't use any of it? What if the codebase you ship every day is 13 years old and on React 16? redux-saga all over the place, and many paths into the same views.
+But what if you can't use any of it? What if the codebase you ship every day is 13 years old and on React 16? React 16.14, to be exact. redux-saga all over the place, and many paths into the same views.
 -->
 
 ---
@@ -196,7 +196,7 @@ class: nr-statement nr-no-annotation
 # Accounts Migrated **More Than Once**
 
 <!--
-The way accounts work has changed more than once. The old assumptions are still in the code.
+The way accounts and plans work has changed more than once, and every change left a compatibility branch. Legacy plan IDs checked by prefix. A separate renewal screen for old enterprise plans. About 39 files branch on enterprise or app-store billing.
 -->
 
 ---
@@ -222,21 +222,6 @@ class: nr-statement nr-no-annotation
 ---
 
 ::kicker::
-13 Years Of Requirements
-
-::default::
-# Every Browser. **Safari’s Storage Limits.**
-
-<!--
-It has to work everywhere, including Safari, which limits local storage and can clear it. That matters for the next part.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
 A/B Tests
 
 ::default::
@@ -245,7 +230,7 @@ A/B Tests
 New Users Stop. Existing Segments Stay.
 
 <!--
-We ran A/B tests in versions. When you close a test, new users stop entering it, but the people already in it often have to keep their variant. Old variants stay live long after the test is "done".
+We ran A/B tests in versions. When you close a test, new users stop entering it, but the people already in it often have to keep their variant. Old variants stay live long after the test is "done". About 20 experiments are defined in the code. Around 9 no longer take new users, and a couple shipped to 100% years ago and are still referenced.
 -->
 
 ---
@@ -259,8 +244,44 @@ A/B Tests
 ::default::
 # Assignment Lives In **localStorage**
 
+Random, In The Browser
+
 <!--
-And the assignment lives in local storage. So what happens when someone logs in on a new browser, or Safari clears their storage? The assignment is gone. They could see a different checkout, or a different price.
+Assignment happens in the browser, at random, and lives in local storage, keyed by experiment and version. Nothing on the account, nothing on the server. Log in on a new browser and your assignment is gone.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+A/B Tests
+
+::default::
+# Every Ramp **Is A Deploy**
+
+No Remote Flags
+
+<!--
+There's no remote flag service either. Ramping a test up, or killing it, means shipping a deploy. And a deploy reaches about 50,000 people in half an hour.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+A/B Tests
+
+::default::
+# Safari Users **Never Enter A Test**
+
+Seven-Day Storage Purge
+
+<!--
+Safari purges writable storage after seven days without a visit. So Safari users, and anyone without local storage, always get the default and never enter an experiment. The code doesn't say why. You find these rules by reading it.
 -->
 
 ---
@@ -275,7 +296,7 @@ A/B Tests
 # Derive It **From The Account**
 
 <!--
-The fix is a heuristic. If a user already pays through a specific payment gateway, that flag on their account tells you which experience they were in. Rebuild the assignment from the account, and they see the same thing on every browser. None of this is documented. It's in the code.
+So for anything that has to stay consistent, you lean on the account. Payment gateway selection is a country rule or an experiment variant. If a user already pays through a gateway, that tells you which experience they were in, so they get the same one on every browser. Four or five experiments decide eligibility from account data like paid status, country or signup date. None of this is documented. It's in the code.
 -->
 
 ---
@@ -430,16 +451,16 @@ Many Paths Into The Same Views
 ::default::
 <div class="nr-doors">
 <div class="nr-doors__in">
-<div class="nr-card" v-click="1"><h3>Mobile Web View</h3></div>
-<div class="nr-card" v-click="2"><h3>Marketing Emails</h3></div>
-<div class="nr-card" v-click="3"><h3>UTM Landing Pages</h3></div>
+<div class="nr-card" v-click="1"><h3>Upgrade Dialog</h3><p class="nr-detail">~80 trigger types</p></div>
+<div class="nr-card" v-click="2"><h3>Native-App Checkout</h3><p class="nr-detail">Handoff from desktop, iOS, Android</p></div>
+<div class="nr-card" v-click="3"><h3>Renewal</h3><p class="nr-detail">Three variants of its own</p></div>
 </div>
 <p class="nr-doors__arrow">→</p>
-<div class="nr-card nr-target"><h3>Subscribe</h3><p class="nr-detail">Three implementations in one codebase.</p></div>
+<div class="nr-card nr-target"><h3>Shared Payment Core</h3><p class="nr-detail">~150 files. Not every flow uses all of it.</p></div>
 </div>
 
 <!--
-[click] One checkout for the mobile web view. [click] One reached from marketing emails. [click] One behind landing pages with different UTM tags. Same job, three implementations, all live in the same codebase.
+[click] The upgrade dialog: about 60 call sites open it, through about 80 trigger types. Marketing emails and UTM landing pages don't get their own checkout: the link carries a coupon, a saga reads it, and you land in the dialog. [click] A separate checkout page for handoffs from the desktop and mobile apps. [click] And renewal, with three variants: current, legacy enterprise plans, and a static one when payment changes aren't allowed. All three lean on a shared payment core of about 150 files, which is itself the first attempt at unifying them. The legacy renewal variants still bypass it.
 -->
 
 ---
@@ -468,7 +489,7 @@ Reconstruct The Execution Path
 </div>
 
 <!--
-[click] A user hits a usage limit. Log in first, A/B assignment, geo-IP picks the currency. [click] State in Redux, a Context store and React Query's cache. Data through the 2017 helper, the typed wrapper and React Query. [click] Hooks inside a class error boundary. Then payment SDKs, 3D Secure, analytics, and a saga handles the redirect. About six generations of React patterns in one purchase. Write the path down before you write a diff.
+[click] A user hits a usage limit. Log in first, A/B assignment, geo-IP picks the currency. [click] State in Redux, a Context store and React Query's cache. Data through the 2017 helper, the typed wrapper and React Query. [click] Hooks inside a class error boundary. Then an orchestrator picks one of five payment SDKs, 3D Secure, analytics, and a saga handles the redirect. About six generations of React patterns in one purchase. Write the path down before you write a diff.
 -->
 
 ---
@@ -496,34 +517,36 @@ Before Deleting
 
 ---
 layout: statement
-class: nr-statement nr-no-annotation
+class: nr-metric nr-no-annotation
 ---
 
 ::kicker::
-Not Urgent?
+Not Urgent? Deprecate It
 
 ::default::
-# Mark It Deprecated. **Add An Event.**
+# 857
+
+@deprecated Tags. One Event Tracks Their Use.
 
 <!--
-If it's not urgent, don't guess. Mark it deprecated in the code and fire a deprecation event when that path runs. Watch it for a few weeks. The trend tells you the risk of removing it.
+If it's not urgent, don't guess. There are about 857 @deprecated tags in this codebase. Since 2021 there's one generic "deprecated functionality used" event with a typed reason, about 27 of them, fired from about 21 places. Retired features stay measurable until usage reaches zero. Then you delete.
 -->
 
 ---
 layout: statement
-class: nr-statement nr-no-annotation
+class: nr-metric nr-no-annotation
 ---
 
 ::kicker::
 Simpler Code
 
 ::default::
-# Fewer Branches, **Fewer Events**
+# ~75%
 
-Events Aren’t Free At Millions Of Users
+Of Checkout Branches Leave No Trace
 
 <!--
-Lower cyclomatic complexity pays off here. Every branch is another path you'd need an event on to know whether it's used. And you can't put events everywhere: at millions of users, every event costs real money.
+A rough scan of about 55 checkout files found around 316 conditional branches, and about three quarters have no analytics or log call. Many are just rendering, but some are errors and early returns. You can't fix that by adding events everywhere: at millions of users, every event costs real money. Fewer branches means fewer paths you need to measure. Lower cyclomatic complexity pays off here.
 -->
 
 ---
@@ -605,10 +628,10 @@ Every Pull Request
 ::default::
 # Which Events Does **This Touch?**
 
-A CLAUDE.md Rule Checks The Numbers
+A Review Agent Flags Every Event Change
 
 <!--
-Then a rule in AGENTS.md or CLAUDE.md: for a pull request, find the frontend events on the hot paths it touches, and pull their numbers. Every change comes with its real usage attached.
+The CLAUDE.md rules are strict about analytics. Ask the human whether tracking is needed. Never delete a permanent event: deprecate it, with a link to the PR that removed the feature. Never repurpose a field. And a business-impact review agent flags any event change the PR description doesn't mention. It flags, it doesn't estimate. The numbers come from the Redshift MCP. [Confirm: is the numbers step part of the PR flow, or something you ran yourself?]
 -->
 
 ---
@@ -626,8 +649,8 @@ In Practice
 
 ```md
 Task:        Find every entry point that opens a checkout.
-Scope:       routes, email link handlers, UTM landing pages, web view bridge
-Assumptions: there are exactly three checkouts. Verify or refute.
+Scope:       upgrade triggers, app handoff handler, renewal, marketing link params
+Assumptions: every marketing link lands in the upgrade dialog. Verify or refute.
 Evidence:    checkout-open events by source, last 90 days (Redshift MCP)
 Non-goals:   no refactors, no renames, no new dependencies
 Output:      table: entry point, checkout used, A/B logic, traffic share
@@ -759,14 +782,31 @@ Applied To The Three Checkouts
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Front door</p><p>Every entry point calls one facade. Strangler fig.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Run both</p><p>New checkout behind the same interface, compared in Redshift.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">One door</p><p>Ramp per entry point. Mobile web view last.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Delete</p><p>When a door is fully moved, remove the old path.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Front door</p><p>The shared payment core is the start of one.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Run both</p><p>Two subscription APIs already live side by side.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">One door</p><p>Legacy renewal variants still bypass the core.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Delete</p><p>The step everyone skips.</p></div>
 </div>
 
 <!--
-We never merged the three checkouts. They all still lived in the codebase when I left. But the tax rollout is the pattern. [click] One front door: every entry point calls a single facade. Martin Fowler calls it the strangler fig. [click] Build the new checkout behind the same interface and compare it in Redshift. [click] Ramp one entry point at a time, the mobile web view last because old app versions stay out there. [click] Then delete. That's the step teams skip, and skipping it is how you end up with 13 years of layers.
+We never finished merging the checkouts. But the tax rollout is the pattern. [click] One front door: the shared payment core is the start of one. Martin Fowler calls the pattern the strangler fig. [click] Run both: two versions of the subscription-creation API already run side by side, which is branch by abstraction. [click] Move one door at a time: the legacy renewal variants are the ones still outside. [click] And delete. Which brings me to the most honest number in this talk.
+-->
+
+---
+layout: statement
+class: nr-metric nr-no-annotation
+---
+
+::kicker::
+Delete
+
+::default::
+# 4.7 Years
+
+From 100% Rollout To Deleting The Fallback
+
+<!--
+One payment-platform migration reached 100% of users, and the last fallbacks to the old platform were removed about four point seven years later. Nobody planned that. Deleting is the step teams skip, and skipping it is how you end up with 13 years of layers.
 -->
 
 ---
@@ -785,7 +825,7 @@ Incremental AI
 <div class="nr-row" v-click="2"><p class="nr-label">Characterize</p><p>Draft tests that pin today's behaviour.</p></div>
 <div class="nr-row" v-click="3"><p class="nr-label">Move callers</p><p>Small, reviewable PRs onto the facade.</p></div>
 <div class="nr-row" v-click="4"><p class="nr-label">Compare</p><p>Query old vs new through the Redshift MCP.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Delete</p><p>Watch the deprecation event reach zero.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Delete</p><p>Watch the deprecation event reach zero, then delete.</p></div>
 </div>
 
 <!--

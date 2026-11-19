@@ -325,7 +325,7 @@ Tax jurisdictions in the US
 Nexus = sufficient connection between a business and a state 
 Physical Nexus (office) OR Economic Nexus (transactions, volumes)
 
-You need to collect Zip code, street, etc. Adding fields reduce conversion.11% conversion drop just for adding first and last name
+You need to collect a country and postal code. Adding fields reduces conversion: adding a country selector and postal code reduced conversion by 11%.
 -->
 
 ---
