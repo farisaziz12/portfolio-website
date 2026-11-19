@@ -40,3 +40,30 @@ slides.md rewritten: 49 slides (48 in the outline plus the thank-you count), 76 
 Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-24-53.913Z-zCNqmt. Agent inspected all final screenshots.
 Open: Datadog wording; React version; whether the checkouts were consolidated; agent example for "task, not the repo"; public clearance of vendor
 names; social handle, slides link, Q&A channel; timing in rehearsal (49 slides is at the top of a 20-minute slot).
+
+## Editorial and voice pass (2026-11-19)
+
+Requested by Faris: anti-slop pass plus matching the voice and framework of his previous decks.
+Reference decks read: caching-dark-arts, reverse-engineering-seniority, orchestrating-payments, zurichjs-conf-retrospective.
+Pattern found: Title Case headings with one or two **bold** emphasis words; small kicker labels (conf retrospective); at most a short
+Title Case subtitle; bare number slides (e.g. "359", "14 KB", "0"); notes short, factual, first person, with [click] markers.
+
+| Slide | Before | After | Why |
+|---|---|---|---|
+| All headings | Sentence case | Title Case with bold emphasis | Matches previous decks |
+| 3 to 5 | Explanatory sentence under each feature | Version only ("React 19.2", "Stable Since October 2025") | Detail moved to notes |
+| 7 | "redux-saga, all over the place." | "**redux-saga** Everywhere" | Shorter, his heading style |
+| 9 to 11 | "13 years / of React in production." etc. | "13 Years", "~50,000", "5" as bare numbers | Matches number-slide pattern |
+| 16 | "Tests outlive their enrolment." | "Closing A Test **Doesn’t End It**" | Plainer |
+| 18 | "Derive the variant from the account." + sentence | "Derive It **From The Account**" | Detail in notes |
+| 20 | "Datadog runs out after two weeks." | "Datadog: **2 Weeks** Of Data" + new slide "Bug Started 3 Weeks Ago? **It’s Gone.**" | Faris clarified: retention capped at two weeks for cost |
+| 28 | "One checkout, three doors" | "Three Checkouts, **One Job**" | Faris: three checkouts lived in the codebase |
+| 32 kicker | "Evidence, not instinct" | "Before Deleting" | Removed "X, not Y" formula |
+| 33, 34 | Two slides (deprecation; events aren't free) plus complexity | Deprecation slide; complexity and event cost merged | One idea each, fewer slides |
+| 38 | "Agents investigate. Humans decide what ships." | "Agents Investigate. **Humans Ship.**" | Shorter |
+| 43 to 45 notes | Framed as the approach | Open with "We never merged the three checkouts" | Faris confirmed they were never merged |
+| Notes, throughout | Longer explanations, some slogans ("It needs discipline", "This is how you keep shipping in the one you have") | Short factual sentences | Anti-slop |
+
+Kept deliberately: "Give The Agent A Task, Not The Repo" (a contrast, but it is the talk's core line); three habits (a genuine three-part close).
+React version: Faris believed 16.8 because of hooks; hooks shipped in 16.8.0 and remain in 16.14, so the scan's 16.14 is consistent. Pending his scan.
+Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-33-37.754Z-l686Wa, 49 slides / 76 states.

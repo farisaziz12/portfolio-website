@@ -35,12 +35,12 @@ Generic names only on slides; no internal paths, flags or vendor names on slides
 
 Role: Senior Software Engineer at Netlify, previously Smallpdf. React version stated as 16.8 "for example" (scan read 16.14; slides say React 16).
 About 50,000 users see a release within 30 minutes. Account system migrated more than once. Web views in mobile apps share views with the web.
-Cross-browser support including Safari storage limits. No unit, integration or end-to-end tests. "Run out of Datadog observability in 2 weeks"
-(meaning to confirm). TrackJS, not Sentry, with limited filtering and querying. Custom analytics: Redshift queried through Metabase.
+Cross-browser support including Safari storage limits. No unit, integration or end-to-end tests. "Run out of Datadog observability in 2 weeks":
+clarified 2026-11-19, retention capped at two weeks because longer retention cost too much. TrackJS, not Sentry, with limited filtering and querying. Custom analytics: Redshift queried through Metabase.
 Three checkouts: mobile view, marketing emails, UTM landing pages. A/B tests run in versions; closed tests keep existing segments; assignment in
 localStorage; account flags such as the payment gateway used to derive A/B state for parity. Internal MCP server on Redshift; AGENTS.md / CLAUDE.md
 rule mapping PR hot paths to events. Deprecation analytics events. Lower cyclomatic complexity means fewer paths to instrument. Event cost at scale.
-Not yet confirmed: whether the three checkouts were actually consolidated (slides 37 to 39 are framed as the approach).
+Confirmed 2026-11-19: the three checkouts were never merged; all three lived in the codebase. Migration slides are framed as the approach.
 
 ## Public sources
 

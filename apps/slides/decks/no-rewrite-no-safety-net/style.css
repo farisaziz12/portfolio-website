@@ -164,3 +164,4 @@
 .slidev-layout .nr-doors .nr-target h3 { font-size: 40px; }
 
 .slidev-layout .nr-qs p { margin: 0 0 18px; font-size: 40px; line-height: 1.15; font-weight: 750; color: var(--faris-fg); }
+.slidev-layout .nr-content__title h1 strong { color: var(--faris-text-blue); }
