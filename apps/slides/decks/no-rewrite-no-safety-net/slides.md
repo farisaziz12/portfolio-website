@@ -87,7 +87,7 @@ class: nr-statement nr-no-annotation
 
 # `<Activity>`
 
-Hide Part Of The UI And Keep Its State, With Its Effects Paused Until It Comes Back. New In React 19.2.
+Hide Part Of The UI Without Losing Its State. New In React 19.2.
 
 <!--
 Activity lets you hide part of the tree and keep its state, with its effects paused.
@@ -100,7 +100,7 @@ class: nr-statement nr-no-annotation
 
 # `useEffectEvent`
 
-Read The Latest Props And State Inside An Effect Without Adding Them To The Dependency Array. Also React 19.2.
+Read The Latest Props Inside An Effect Without Adding Them As Dependencies. Also React 19.2.
 
 <!--
 useEffectEvent finally gives us a clean way to read fresh props inside an effect without adding them to the dependency array.
@@ -113,7 +113,7 @@ class: nr-statement nr-no-annotation
 
 # React **Compiler**
 
-Automatic Memoization At Build Time, So You Stop Sprinkling useMemo And useCallback Everywhere. Stable Since October 2025.
+Memoises Components At Build Time, So You Write Less useMemo And useCallback. Stable Since October 2025.
 
 <!--
 And the React Compiler is stable. No more useMemo and useCallback everywhere.
@@ -150,7 +150,7 @@ class: nr-statement nr-no-annotation
 
 # That Was My Day Job At **Smallpdf**
 
-13 Years Of React In Production, Used By Tens Of Millions Of People Every Single Month
+13 Years Of React In Production, Used By Tens Of Millions Of People A Month
 
 <!--
 That was my day job at Smallpdf. 13 years of React in production, used by tens of millions of people every month.
@@ -174,7 +174,7 @@ class: nr-statement nr-no-annotation
 
 # And There Were **Five Of Us**
 
-Five Developers Spread Across Three Squads, Each With Their Own Roadmap And Priorities
+Five Developers Across Three Squads, Each With Its Own Roadmap
 
 <!--
 And the frontend was five developers, spread across three squads, each with its own roadmap.
@@ -305,7 +305,7 @@ class: nr-statement nr-no-annotation
 
 # If You Replace Every Plank Of A Ship, One At A Time, **Is It Still The Same Ship?**
 
-The Ship Of Theseus, And The Goal For The Rest Of This Talk
+The Ship Of Theseus
 
 <!--
 There's an old thought experiment, the Ship of Theseus. If you replace every plank of a ship, one at a time, is it still the same ship? That's the goal. You should be able to rebuild your ship as many times as you want, and the people on board are none the wiser. They get the same availability the whole time. You never get to take it out of the water.
@@ -316,7 +316,7 @@ layout: content
 ---
 
 ::title::
-# Ships Gave Us Another Idea: **Bulkheads**
+# Ships Also Have **Bulkheads**
 
 ::default::
 <div class="nr-shipwrap">
@@ -324,7 +324,7 @@ layout: content
 <div v-click="1"><svg viewBox="0 0 1000 300" class="nr-ship nr-ship__water" aria-label="Water fills only the localisation compartment"><rect x="583" y="150" width="174" height="109" fill="#68bce3" opacity="0.75"/><path d="M583 150 Q605 140 627 150 T670 150 T713 150 T757 150" fill="none" stroke="#f8f4eb" stroke-width="3"/></svg></div>
 <div class="nr-ship__labels"><span>Checkout</span><span>Accounts</span><span>Pricing</span><span>Localisation</span><span>A/B Tests</span></div>
 </div>
-<p class="nr-ship__caption" v-click="2">One Compartment Floods. The Rest Of The Ship Stays Up.</p>
+<p class="nr-ship__caption" v-click="2">If One Compartment Floods, The Others Stay Dry</p>
 
 ::caption::
 The Bulkhead Pattern, From Release It! By Michael T. Nygard
@@ -352,7 +352,7 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# Let’s Start With A Drawing: **Draw A Mode Of Transport**
+# Everyone, **Draw A Mode Of Transport**
 
 <!--
 Whenever I run a workshop, I start with an exercise. I ask everyone to draw a mode of transport. That's it. Almost nobody asks me what I mean. Part of that is social: you don't usually question the instructor.
@@ -363,7 +363,7 @@ layout: content
 ---
 
 ::title::
-# I Get A Shoe, A Rocket, A Bicycle, **All In The Same Default Blue**
+# I Usually Get A Shoe, A Rocket And A Bicycle, **All In The Same Default Blue**
 
 ::default::
 <div class="nr-doodles">
@@ -383,7 +383,7 @@ class: nr-statement nr-no-annotation
 
 # Small Teams Can End Up **Drawing Different Pictures** Of The Same System
 
-Five Developers, Three Squads, Not Much Time To Coordinate, And Each Of Us Working In Our Own Corner
+Five Developers And Three Squads, With Little Time To Agree On How Things Work
 
 <!--
 That's what working on a codebase like this can feel like. Small, nimble teams don't have much time to coordinate. You end up in a bit of a silo, and everyone has their own picture of how checkout works.
@@ -445,7 +445,7 @@ class: nr-statement nr-no-annotation
 
 # Some Data Comes Through **redux-saga**, Some Through **TanStack Query**
 
-Older Features Fetch Through Sagas Into Redux, Newer Ones Use TanStack Query, And Plenty Sit Somewhere In Between
+Older Features Fetch Through Sagas Into Redux, Newer Ones Use TanStack Query, And Some Use Both
 
 <!--
 First, you have patterns fighting each other. Older features fetch through sagas into Redux. Newer ones use TanStack Query. And a lot of features sit somewhere in between.
@@ -456,9 +456,9 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# So You Maintain **Two Stores** While You Migrate
+# So You End Up Maintaining **More Than One Store** While You Migrate
 
-Redux For The Upgrade Dialog, A Context Store For The Payment Form, And TanStack Query For Everything Newer
+Redux For The Upgrade Dialog, A Context Store For The Payment Form, And The TanStack Query Cache For Newer Data
 
 <!--
 So while you migrate, you maintain both. In checkout, the dialog state lives in Redux, the payment form has its own Context store, and payment methods and price previews live in TanStack Query's cache. One feature, three places where the truth might be.
@@ -471,10 +471,10 @@ class: nr-statement nr-no-annotation
 
 # Custom Pre-Hydration Tooling Was **Baked Into How We Rendered**
 
-Our Server HTML Came From An Express-Based Setup, So Moving To React 18 Was Never Going To Be A Simple Version Bump
+Server HTML Came From An Express-Based Setup, So Moving To React 18 Meant Reworking How Every Page Hydrates
 
 <!--
-And why not just upgrade React? A lot of custom pre-hydration tooling was baked into the solution, with server HTML generated by an Express-based setup. Scripts adjust that HTML before React hydrates, to avoid layout shift, and React 16 tolerates a DOM it didn't render. React 18 treats those mismatches as errors and re-renders on the client. So React 18 was a non-trivial migration, not a version bump. On top of that, legacy-peer-deps hides which libraries already disagree with us.
+And why not just upgrade React? A lot of custom pre-hydration tooling was baked into the solution, with server HTML generated by an Express-based setup. Scripts adjust that HTML before React hydrates, to avoid layout shift, and React 16 tolerates a DOM it didn't render. React 18 treats those mismatches as errors and re-renders on the client. Take that with a grain of salt, though: it's based on how React 18 handles mismatches, and we never actually ran it. So React 18 was a non-trivial migration. On top of that, legacy-peer-deps hides which libraries already disagree with us.
 -->
 
 ---
@@ -542,12 +542,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# Then Let An Agent **Instrument That Path**
+# An Agent Can Add Analytics Events **Along That Path**
 
-Place Analytics Events Along Each Step, Then Compare Them Against Redshift Through Our MCP Server
+Then Compare What They Record Against Redshift Through Our MCP Server
 
 <!--
-Reconstructing the path is only half of it. You can also have an agent place analytics events along that path, then use our MCP server to compare what those events show against the data in Redshift. Now you know which steps people actually take, not just which ones exist in the code.
+Reconstructing the path is only half of it. You can also have an agent place analytics events along that path, then use our MCP server to compare what those events show against the data in Redshift. Now you know which steps people actually take.
 -->
 ---
 layout: statement
@@ -556,7 +556,7 @@ class: nr-statement nr-no-annotation
 
 # And Then There Are **The A/B Tests**
 
-Around 20 Experiments Defined In The Code, Many Of Them Sitting Right Inside The Checkout
+Around 20 Experiments Defined In The Code, Many Of Them In Checkout
 
 <!--
 And on top of all that, A/B tests. Around 20 experiments were defined in the code, and many of them were in checkout.
@@ -601,7 +601,7 @@ class: nr-statement nr-no-annotation
 
 # Why On Earth Would You Do That **In Local Storage?**
 
-Most Of Our Users Don’t Pay, And Every API Call We Make For Them Adds Cost. Local Storage Has Drawbacks, But The Savings Were Significant.
+Most Of Our Users Don’t Pay, And Every API Call We Make For Them Costs Money. Local Storage Has Drawbacks, But It Saved A Lot.
 
 <!--
 You might be asking why on earth we'd keep this in local storage. Because most of our users don't pay, and every API call we make on their behalf costs money. At tens of millions of users, storing and fetching an assignment on the server for every visitor adds up. Local storage has real drawbacks, as you're about to see, but the cost savings were significant.
@@ -674,7 +674,7 @@ layout: content
 </div>
 
 <!--
-[click] Nothing imports it, including lookups by name. [click] No traffic in Redshift, and not just in the last two weeks, because that's all Datadog has. [click] No errors from that path. [click] Old versions of the apps stay installed for years. [click] And marketing emails sit in inboxes forever.
+[click] Nothing imports it, including lookups by name. [click] No traffic in Redshift, going back further than the two weeks Datadog keeps. [click] No errors from that path. [click] Old versions of the apps stay installed for years. [click] And marketing emails sit in inboxes forever.
 -->
 
 ---
@@ -685,7 +685,7 @@ class: nr-statement nr-no-annotation
 # When You’re Not Sure, **Mark It Deprecated And Watch**
 
 <!--
-If it's not urgent, don't guess. Mark it deprecated, and fire an event whenever that path still runs. Then watch it go down over time.
+If it's not urgent, mark it deprecated, and fire an event whenever that path still runs. Then watch it go down over time.
 -->
 
 ---
@@ -708,7 +708,7 @@ class: nr-metric nr-no-annotation
 
 # ~75%
 
-Of The Branches In Our Checkout Code Fire No Analytics Event And Log Nothing At All
+Of Checkout Branches Have No Analytics Event Or Log
 
 <!--
 A rough scan of the checkout code found about 316 conditional branches, and around three quarters had no analytics or log call. Many are just rendering. Some are errors and early returns that leave no trace at all.
@@ -719,10 +719,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# But At Millions Of Users, **Tracking Everything Isn’t Free**
+# And At Millions Of Users, **Every Event Costs Money**
 
 <!--
-And you can't fix that by putting events everywhere. At millions of users, every event costs real money. The better fix is fewer branches. Lower complexity means fewer paths you need to measure at all.
+Putting events everywhere would get expensive fast. At millions of users, every event costs real money. The better fix is fewer branches. Lower complexity means fewer paths you need to measure at all.
 -->
 
 ---
@@ -744,7 +744,7 @@ class: nr-code-tight
 ---
 
 ::title::
-# Give The Agent A Task, **Not The Repo**
+# How We Scope **An Agent’s Prompt**
 
 ::default::
 
@@ -767,7 +767,7 @@ Find every path that shows a price preview.
 ```
 
 <!--
-A 13-year-old codebase has several right answers to every question. Give an agent the whole repo and it picks one pattern and sounds sure. So the prompt does the scoping. [click] One task. [click] The only context it can use: the parts of the checkout on the path, the stores involved, and real event data through the MCP server. [click] Assumptions it has to check, not trust. [click] What it must not touch. [click] And breadcrumbs: write down what it read, what it found and what it couldn't answer, so the next session, or the next person, starts from there.
+A 13-year-old codebase has several right answers to every question. Give an agent the whole repo and it picks one pattern and sounds sure. So the prompt does the scoping. [click] One task. [click] The only context it can use: the parts of the checkout on the path, the stores involved, and real event data through the MCP server. [click] Assumptions it has to check. [click] What it must not touch. [click] And breadcrumbs: write down what it read, what it found and what it couldn't answer, so the next session, or the next person, starts from there.
 -->
 
 ---
@@ -775,7 +775,7 @@ layout: content
 ---
 
 ::title::
-# What The Agent Picks Up, And **What It Leaves Behind**
+# What Goes Into A Session, **And What Comes Out**
 
 ::default::
 <div class="nr-agent">
@@ -801,7 +801,7 @@ layout: content
 </div>
 
 <!--
-[click] What goes in is small on purpose: the files on the path, the contracts, real event data, the assumptions and the no-go list. [click] The session reads, follows the path and checks the numbers. [click] And what comes out isn't just an answer. It's a trail: which files it read, which paths it found, which assumptions turned out wrong, which events to add, and the questions only a person can answer. That trail is what made handing work between sessions, and later between teams, actually work.
+[click] What goes in is small on purpose: the files on the path, the contracts, real event data, the assumptions and the no-go list. [click] The session reads, follows the path and checks the numbers. [click] And what comes out is a trail: which files it read, which paths it found, which assumptions turned out wrong, which events to add, and the questions only a person can answer. That trail is what made handing work between sessions, and later between teams, actually work.
 -->
 ---
 layout: statement
@@ -846,7 +846,7 @@ Output:      table: entry point, checkout used, A/B logic, traffic share
 
 
 <!--
-This is the shape of prompt that works for us. It asks for a table, not a patch. And the assumption is there to be proven wrong. If the agent finds a way in we didn't know about, that's the best result of the day.
+This is the shape of prompt that works for us. It asks for a table of findings. And the assumption is there to be proven wrong. If the agent finds a way in we didn't know about, that's the best result of the day.
 -->
 
 ---
@@ -854,10 +854,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# Agents Do The Reading. **People Decide What Ships.**
+# A Person Still **Decides What Ships**
+
+Agents Find Callers, Compare Implementations And Draft Tests. Release Decisions Stay With Someone Who Knows The Traffic.
 
 <!--
-Agents are good at the reading: finding callers, comparing implementations, drafting tests. They aren't on call. With no QA team, the person who decides a change is safe to release is the safety net.
+Agents are good at the reading: finding callers, comparing implementations, drafting tests. With no QA team, the person who decides a change is safe to release is the safety net.
 -->
 
 ---
@@ -880,7 +882,7 @@ faris:
   background: arc
 ---
 
-# Time For Another Story: **US Sales Tax**
+# Another Story: **Adding US Sales Tax**
 
 <!--
 One more story. We needed to support US sales tax.
@@ -939,10 +941,10 @@ class: nr-metric nr-no-annotation
 
 # -11%
 
-That’s What Adding A Country Selector And A Postal Code Field Did To Conversion
+Drop In Conversion After Adding A Country Selector And A Postal Code Field
 
 <!--
-Here's why we waited. Adding a country selector and a postal code field reduced conversion by 11%.
+We waited because adding a country selector and a postal code field reduced conversion by 11%.
 -->
 
 ---
@@ -961,7 +963,7 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# So Plan How You’ll **Win It Back** Before It Goes Everywhere
+# Plan How To **Recover That Revenue** Before Rolling Out Further
 
 <!--
 We did win it back, through other initiatives that are a story of their own. The point is the order. Know what a change costs before it ships everywhere, and plan the work that keeps revenue stable.
@@ -972,7 +974,7 @@ layout: content
 ---
 
 ::title::
-# The Work Moved Between Two Teams, And **AI Kept The Context**
+# The Work Moved Between Two Teams, And **AI Helped With The Handover**
 
 ::default::
 <div class="nr-rows">
@@ -1010,23 +1012,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# And Then Comes The Part Nobody Plans For: **Deleting The Old Code**
+# Deleting The Old Code Rarely **Makes It Onto The Roadmap**
 
 <!--
-And then the part nobody plans for. Deleting the old code once nothing uses it.
--->
-
----
-layout: statement
-class: nr-metric nr-no-annotation
----
-
-# 4.7 Years
-
-Between Moving 100% Of Users To A New Payment Platform And Deleting The Old Platform’s Fallbacks
-
-<!--
-One payment-platform migration reached 100% of users. The last fallbacks to the old platform were removed about 4.7 years later. That's how you end up with 13 years of layers.
+Deleting the old code once nothing uses it rarely makes it onto anyone's roadmap. And skipping it is how you end up with 13 years of layers.
 -->
 
 ---
@@ -1046,7 +1035,7 @@ layout: content
 </div>
 
 <!--
-AI doesn't do the migration for you. It does the slow parts of each step. [click] Finding every way in. [click] Drafting tests that pin down today's behaviour, which is how a codebase with no tests starts to get some: one migration at a time. [click] Moving callers in small PRs. [click] Comparing old and new with real event data. [click] And watching the deprecation events until it's safe to delete.
+AI helps with the slow parts of each step. [click] Finding every way in. [click] Drafting tests that pin down today's behaviour, which is how a codebase with no tests starts to get some: one migration at a time. [click] Moving callers in small PRs. [click] Comparing old and new with real event data. [click] And watching the deprecation events until it's safe to delete.
 -->
 
 ---
@@ -1059,8 +1048,8 @@ layout: content
 ::default::
 <div class="nr-rows">
 <div class="nr-row nr-take"><p class="nr-n">1</p><p>Follow the path before you change anything.</p></div>
-<div class="nr-row nr-take"><p class="nr-n">2</p><p>Give agents a narrow task and real data, not the whole repo.</p></div>
-<div class="nr-row nr-take"><p class="nr-n">3</p><p>Ship where you must, measure, then move the rest. And delete.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">2</p><p>Give agents a narrow task and real production data.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">3</p><p>Roll out where you have to, measure the impact, then migrate the rest and delete the old code.</p></div>
 </div>
 
 <!--

@@ -128,3 +128,16 @@ Should Never Do, Part I, collected in Joel on Software, 2004) after the React 16
 Ship of Theseus moved after "So How Do You Change Anything Safely" as the goal (rebuild without passengers noticing), presented as a
 thought experiment without citation. New bulkhead slide (Release It!, Michael T. Nygard) with an SVG ship; the localisation compartment
 floods on click, tied to the YAML incident in the notes. 73 slides / 122 states. Browser review passed.
+
+## Revision 3.4 (2026-11-19)
+
+Anti-slop and technical pass on every heading, subtitle and list row, using Faris's blog post "The way I think about CFPs" as the tone
+reference (conversational, first person, honest caveats, British spelling, plain descriptive headings). Removed "X, not Y" contrasts,
+two-beat slogans and colon reveals ("Give The Agent A Task, Not The Repo", "Agents Do The Reading. People Decide What Ships.",
+"One Compartment Floods. The Rest Of The Ship Stays Up.", "And Then Comes The Part Nobody Plans For:"), filler ("Every Single Month",
+"Sprinkling", "Somewhere In Between"), and tightened technical claims (Activity keeps state while hidden; "more than one store" instead of
+"two stores", since checkout uses Redux, a Context store and the TanStack Query cache). 26 headings changed; before-copy kept outside the repo.
+Removed the 4.7 Years slide at Faris's request (unverified figure). 72 slides.
+Faris's rule (2026-11-19): no statement followed by a negation that narrows it ("…, not the whole repo", "a table, not a patch",
+"isn't just an answer", "doesn't do X. It does Y"). Swept slides and notes; 10 instances rewritten. Questions such as "why not just
+upgrade?" and plain factual negatives ("We didn't use Sentry") are not this pattern.
