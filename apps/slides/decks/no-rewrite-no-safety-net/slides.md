@@ -147,7 +147,7 @@ Smallpdf
 Tens Of Millions Of Users A Month
 
 <!--
-Smallpdf. 13 years of React in production, tens of millions of users a month. [Confirm the figure is OK to say publicly.]
+Smallpdf. 13 years of React in production, tens of millions of users a month.
 -->
 
 ---
@@ -574,7 +574,7 @@ faris:
 # Give The Agent A Task, **Not The Repo**
 
 <!--
-A 13-year-old codebase has several right answers to every question. Give an agent all of it and it picks one and sounds sure. How often a pattern appears says nothing about whether it's current. [Real example of an agent picking the old pattern, if you have one.]
+A 13-year-old codebase has several right answers to every question. Give an agent all of it and it picks one and sounds sure. How often a pattern appears says nothing about whether it's current.
 -->
 
 ---
@@ -631,7 +631,7 @@ Every Pull Request
 A Review Agent Flags Every Event Change
 
 <!--
-The CLAUDE.md rules are strict about analytics. Ask the human whether tracking is needed. Never delete a permanent event: deprecate it, with a link to the PR that removed the feature. Never repurpose a field. And a business-impact review agent flags any event change the PR description doesn't mention. It flags, it doesn't estimate. The numbers come from the Redshift MCP. [Confirm: is the numbers step part of the PR flow, or something you ran yourself?]
+The CLAUDE.md rules are strict about analytics. Ask the human whether tracking is needed. Never delete a permanent event: deprecate it, with a link to the PR that removed the feature. Never repurpose a field. And a business-impact review agent flags any event change the PR description doesn't mention. It flags, it doesn't estimate. The numbers come from the Redshift MCP.
 -->
 
 ---
@@ -649,8 +649,8 @@ In Practice
 
 ```md
 Task:        Find every entry point that opens a checkout.
-Scope:       upgrade triggers, app handoff handler, renewal, marketing link params
-Assumptions: every marketing link lands in the upgrade dialog. Verify or refute.
+Scope:       upgrade triggers, app handoff, renewal, link params
+Assumptions: every marketing link opens the upgrade dialog. Verify.
 Evidence:    checkout-open events by source, last 90 days (Redshift MCP)
 Non-goals:   no refactors, no renames, no new dependencies
 Output:      table: entry point, checkout used, A/B logic, traffic share
@@ -767,7 +767,44 @@ One Small Form Change
 Conversion From A Country Selector And Postal Code
 
 <!--
-Here's why. Adding a country selector and a postal code field reduced conversion by 11%. If a market makes 10 million dollars, that's about a million at risk from two form fields. You have to find a way to recover that before it goes everywhere. [What did you do to recover it? Add if you can share. The orchestrating-payments notes attribute an 11% drop to adding first and last name: make the two decks agree.]
+Here's why. Adding a country selector and a postal code field reduced conversion by 11%. If a market makes 10 million dollars, that's about a million at risk from two form fields. You have to plan how you'll win that back before it goes everywhere.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+::kicker::
+US Sales Tax
+
+::default::
+# Plan The Recovery **Before The Rollout**
+
+<!--
+We did recover it, through other initiatives that are a story of their own. The point is the order. Know what a change costs before it goes global, and plan the work that keeps revenue stable.
+-->
+
+---
+layout: content
+---
+
+::kicker::
+US Sales Tax: Where AI Helped
+
+::title::
+# Two Teams, **One Context**
+
+::default::
+<div class="nr-rows">
+<div class="nr-row" v-click="1"><p class="nr-label">Handoffs</p><p>Context dumps of progress between the two teams.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Paths</p><p>Flag every path the change touched.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Patterns</p><p>Reconcile how each team solved the same problem.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Migration</p><p>Move data fetching over to TanStack Query.</p></div>
+</div>
+
+<!--
+The work moved across two teams, and that's where AI earned its place. [click] Context dumps of where things stood, so the next team didn't start from zero. [click] Flagging every path the change had touched. [click] Reconciling patterns where the two teams had solved the same thing differently. [click] And migrating the data fetching we touched over to TanStack Query.
 -->
 
 ---
@@ -854,21 +891,28 @@ Map the paths first. Give agents narrow tasks and real event data. Migrate while
 -->
 
 ---
-layout: cover
-faris:
-  coverVariant: speaker
+layout: content
+class: nr-closing-slide
 ---
 
-# Thank **You**
+::title::
+# **Thank You!**
 
-faziz-dev.com · [gap: social handle]
-
-::meta::
-Slides: [gap: short link] · Questions in [gap: Q&A channel]
-
-::visual::
-<FarisIllustration name="duck-celebrating" decorative />
+::default::
+<div class="nr-closing">
+<div class="nr-contact">
+<p class="nr-connect-cta">Connect With Me</p>
+<a href="https://faziz-dev.com/connect" target="_blank" rel="noopener noreferrer"><img class="nr-qr" src="/media/connect-qr.png" alt="Scan to visit faziz-dev.com/connect" /></a>
+<p>@farisaziz12</p>
+</div>
+<div class="nr-contact">
+<p class="nr-connect-cta">Slides</p>
+<a href="https://faziz-dev.com/slides/no-rewrite-no-safety-net/" target="_blank" rel="noopener noreferrer"><img class="nr-qr" src="/media/slides-qr.png" alt="Scan to open the slides at faziz-dev.com/slides/no-rewrite-no-safety-net" /></a>
+<p>faziz-dev.com/slides</p>
+</div>
+</div>
+<img class="nr-closing-photo" src="/media/speaker-montage.jpg" alt="Faris with the developer community" />
 
 <!--
-Thanks for having me. See you in the Q&A channel.
+Thanks for having me.
 -->

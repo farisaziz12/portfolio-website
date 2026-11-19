@@ -165,3 +165,14 @@
 
 .slidev-layout .nr-qs p { margin: 0 0 18px; font-size: 40px; line-height: 1.15; font-weight: 750; color: var(--faris-fg); }
 .slidev-layout .nr-content__title h1 strong { color: var(--faris-text-blue); }
+
+/* Closing slide, after caching-dark-arts */
+.slidev-layout.nr-closing-slide .faris-slide__content { position: static; }
+.slidev-layout.nr-closing-slide .nr-content__grid { width: calc((1280px * 2 / 3) - 128px); }
+.slidev-layout.nr-closing-slide .faris-slide__footer { right: calc(100% / 3 + 64px); }
+.slidev-layout .nr-closing { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.slidev-layout .nr-contact { text-align: center; }
+.slidev-layout .nr-contact p { font-size: 24px; margin-top: 16px; }
+.slidev-layout .nr-contact .nr-connect-cta { margin: 0 0 16px; color: var(--faris-brand-yellow); font-size: 26px; font-weight: 700; }
+.slidev-layout .nr-qr { width: 220px; margin: 0 auto; }
+.slidev-layout .nr-closing-photo { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }

@@ -79,3 +79,16 @@ Open: the 11% figure conflicts with orchestrating-payments notes (first and last
 Applied Faris's second codebase scan (sources.md). Corrected the three checkouts, A/B mechanics, web-view handoff, payment SDK count and
 the CLAUDE.md rule; added Every Ramp Is A Deploy, Safari Users Never Enter A Test, 857, ~75% and 4.7 Years; dropped the Safari requirement
 slide; "Mark It Deprecated" and "Fewer Branches" became number slides. 47 slides.
+
+## Revision 2.3 (2026-11-19)
+
+Faris: public clearance given for the figures and vendor names; the 11% drop was recovered through other initiatives (not part of the
+story); AI helped when the tax work moved across two teams (context dumps, flagging touched paths, reconciling patterns, migrating to
+TanStack Query); no Q&A channel; closing slide as in previous decks with a generated slides link; no timing constraint.
+Added "Plan The Recovery Before The Rollout" and "Two Teams, One Context". Closing slide follows caching-dark-arts: connect QR
+(copied connect-qr.png, decodes to https://faziz-dev.com/connect), @farisaziz12, and a new slides-qr.png generated with python qrcode
+(medium error correction, four-module quiet zone) that decodes to https://faziz-dev.com/slides/no-rewrite-no-safety-net/ (OpenCV check).
+That URL only resolves after `pnpm slides publish no-rewrite-no-safety-net --slug no-rewrite-no-safety-net` and a deploy. Not published.
+Removed all bracketed confirm/gap notes. 49 slides / 81 states.
+Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-58-04.957Z-SIhw2l. Fixed in this pass: "Find Every Door"
+code block overflowed the slide (present in commit c3e059d and the PDF sent before it).
