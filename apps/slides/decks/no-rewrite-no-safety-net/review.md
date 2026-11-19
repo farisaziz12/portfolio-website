@@ -104,3 +104,12 @@ along the path and comparing via the Redshift MCP; no "Example Prompt" caption; 
 Rewritten as a story: newest React, the codebase you actually have, the safety net, the YAML story, then layers, checkouts, A/B tests,
 deleting, AI, the tax story, and deleting again. 64 slides / 97 states. Browser review passed:
 artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T15-08-34.704Z-dUjRI9; arc removed from slide 3 after inspection.
+
+## Revision 3.1 (2026-11-19)
+
+Faris's feedback applied: A/B tests framed as ~20 tests each in a different state (running, closed, versioned, hardening), not one test in
+several states; new "Why On Earth Would You Do That In Local Storage?" slide (most users don't pay; every API call costs; local storage
+saves significantly); account-flag heuristics reworded (derive whether someone was segmented at some point); Safari slide removed;
+857 subtitle rewritten; the three agent slides replaced by a click-highlighted prompt (with a breadcrumbs section) and a context-in /
+breadcrumbs-out diagram; "Deleting Is The Step Everyone Skips" rephrased. Code slide uses 20px code (review minimum).
+Open: the 4.7-year figure comes from Faris's local scan and has not been checked against commit dates.

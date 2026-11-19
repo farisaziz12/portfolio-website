@@ -178,3 +178,16 @@
 .slidev-layout .nr-closing-photo { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
 .slidev-layout .nr-closing { grid-template-columns: 240px 1fr; }
 .slidev-layout .nr-closing-badge { max-width: 320px; justify-self: center; }
+
+/* Agent context diagram */
+.slidev-layout .nr-agent { display: grid; grid-template-columns: 1fr 56px 230px 56px 1fr; gap: 0 12px; align-items: center; }
+.slidev-layout .nr-agent__col { display: flex; flex-direction: column; gap: 10px; }
+.slidev-layout .nr-agent__col .nr-label { margin: 0 0 4px; }
+.slidev-layout .nr-chip { padding: 10px 14px; border: 1px solid var(--faris-border); border-radius: 10px; background: var(--faris-surface); font-size: 20px; line-height: 1.25; }
+.slidev-layout .nr-agent__core { text-align: center; }
+.slidev-layout .nr-agent__core h3 { font-size: 30px; }
+
+.slidev-layout.nr-code-tight pre { font-size: 20px !important; line-height: 1.45 !important; }
+.slidev-layout.faris-slide.nr-code-tight { --faris-font-code: 20px; --slidev-code-line-height: 28px; }
+.slidev-layout.faris-slide.nr-code-tight .faris-code__sample pre.shiki { line-height: 1.4; padding-top: 20px; padding-bottom: 20px; }
+.slidev-layout.nr-code-tight .faris-code__annotation { display: none; }

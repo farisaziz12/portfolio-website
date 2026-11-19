@@ -428,18 +428,18 @@ layout: content
 ---
 
 ::title::
-# One A/B Test Can Be In **Several States At Once**
+# And Each Of Those Tests Was **In A Different State**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Running</p><p>New users get a variant at random.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Closed</p><p>No new users join, but existing users keep their variant.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Versioned</p><p>A new version can’t reshuffle people from the old one.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Shipped</p><p>The winner becomes the default. The code stays.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Running</p><p>New users still get a variant at random.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Closed</p><p>No new users join, but the people already in it keep their variant.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Versioned</p><p>A new version can’t reshuffle the people from an earlier one.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Hardening</p><p>Code paths harden as we confirm whether the variant or the original rolls out fully.</p></div>
 </div>
 
 <!--
-Ending a test isn't one switch. [click] While it runs, new users get a variant at random. [click] When you close it, new users stop joining, but the people already in it often have to keep what they saw. [click] Tests had versions, and a new version had to remember everyone from the earlier ones. [click] And when a variant won, it became the default, but the code was often still there. A couple of tests had shipped to 100% and were still referenced.
+With around 20 tests in the code, each one was somewhere different in its life. [click] Some were still running, putting new users into a variant at random. [click] Some were closed: no new users joined, but the people already in them had to keep what they saw. [click] Some had versions, and a new version had to remember everyone from the earlier ones. [click] And some were being hardened: as we confirmed whether the variant or the original should roll out fully, that code path became the permanent one. A couple had shipped to 100% and were still referenced.
 -->
 
 ---
@@ -460,12 +460,24 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# So We Rebuilt The Variant **From The Account**
+# Why On Earth Would You Do That **In Local Storage?**
 
-Account Flags, Like Which Payment Gateway Someone Already Uses, Told Us Which Experience They Had Seen
+Most Of Our Users Don’t Pay, And Every API Call We Make For Them Adds Cost. Local Storage Has Drawbacks, But The Savings Were Significant.
 
 <!--
-So for anything that had to stay consistent, we leaned on the account. If a user already paid through a particular payment gateway, that told us which experience they'd been in, and we could give them the same one on every browser. None of this was documented. It was in the code.
+You might be asking why on earth we'd keep this in local storage. Because most of our users don't pay, and every API call we make on their behalf costs money. At tens of millions of users, storing and fetching an assignment on the server for every visitor adds up. Local storage has real drawbacks, as you're about to see, but the cost savings were significant.
+-->
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# So We Used Account Flags To Work Out **Who Had Been In A Test**
+
+Heuristics, Like Which Payment Gateway Someone Already Pays Through, Tell You Whether They Were Segmented At Some Point
+
+<!--
+So for anything that had to stay consistent, we used heuristics and flags on the account to work out whether someone had been segmented at some point. If a user already paid through a particular payment gateway, they had been in that payment experience, so we could keep showing it to them on any browser. None of this was documented. It was in the code.
 -->
 
 ---
@@ -479,19 +491,6 @@ There Was No Remote Switch, So Every Rollout Or Rollback Reached 50,000 People W
 
 <!--
 There was no remote flag service. To roll a test out to more people, or switch it off, you changed the code and deployed. And a deploy reached 50,000 people in half an hour.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-# And Safari Users **Never Saw A Test** At All
-
-Safari Clears Storage After Seven Days, So Those Users Always Got The Default Experience
-
-<!--
-Safari clears writable storage after seven days without a visit. So Safari users, and anyone without local storage, always got the default and never entered an experiment. The code didn't say why. You find rules like this by reading it.
 -->
 
 ---
@@ -545,7 +544,7 @@ class: nr-metric nr-no-annotation
 
 # 857
 
-Deprecated Tags In The Codebase, With One Event Telling Us Whether Those Paths Still Run
+Things Marked Deprecated, And One Event That Fires Whenever Any Of Them Is Still Used
 
 <!--
 There were about 857 deprecated tags. Since 2021, one generic "deprecated functionality used" event, with a typed reason, tracked whether those paths still ran. When usage reaches zero, you delete.
@@ -589,27 +588,35 @@ layout: section
 <FarisIllustration name="duck-curious" decorative />
 
 ---
-layout: statement
-class: nr-statement nr-no-annotation
+layout: code
+class: nr-code-tight
 ---
 
-# Give An Agent The Whole Repo And It Picks **One Pattern** And Sounds Sure
+::title::
+# Give The Agent A Task, **Not The Repo**
+
+::default::
+
+```md {1-2|4-6|8-9|11-12|14-15|all}
+## Task
+Find every path that shows a price preview.
+
+## Context you can use
+- checkout dialog, payment core, both stores
+- Redshift MCP: price preview events, 90 days
+
+## Assumptions to check
+- previews only come from TanStack Query
+
+## Do not
+- refactor, rename or touch the 2017 helper
+
+## Leave breadcrumbs
+- NOTES.md: files read, paths found, questions
+```
 
 <!--
-A 13-year-old codebase has several right answers to every question. Saga or TanStack Query? Old helper or new wrapper? Give an agent all of it, and it picks one and sounds certain. How often a pattern appears says nothing about whether it's current.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
-faris:
-  background: arc
----
-
-# So Give It **A Task**, Not The Repo
-
-<!--
-So we stopped asking open questions and started handing over narrow tasks.
+A 13-year-old codebase has several right answers to every question. Give an agent the whole repo and it picks one pattern and sounds sure. So the prompt does the scoping. [click] One task. [click] The only context it can use: the parts of the checkout on the path, the stores involved, and real event data through the MCP server. [click] Assumptions it has to check, not trust. [click] What it must not touch. [click] And breadcrumbs: write down what it read, what it found and what it couldn't answer, so the next session, or the next person, starts from there.
 -->
 
 ---
@@ -617,21 +624,34 @@ layout: content
 ---
 
 ::title::
-# What Every Agent Session **Gets From Us**
+# What The Agent Picks Up, And **What It Leaves Behind**
 
 ::default::
-<div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Modules</p><p>Only the files on the path we mapped.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Interfaces</p><p>Props, store shapes and API contracts.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Assumptions</p><p>Written down, so they can be proven wrong.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Evidence</p><p>Event data, TrackJS errors, real payloads.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Non-goals</p><p>What it must not change.</p></div>
+<div class="nr-agent">
+<div class="nr-agent__col">
+<p class="nr-label">Context in</p>
+<div class="nr-chip" v-click="1">Files on the mapped path</div>
+<div class="nr-chip" v-click="1">Store shapes and API contracts</div>
+<div class="nr-chip" v-click="1">Event data from the Redshift MCP</div>
+<div class="nr-chip" v-click="1">Assumptions to check</div>
+<div class="nr-chip" v-click="1">What it must not touch</div>
+</div>
+<p class="nr-doors__arrow" v-click="2">→</p>
+<div class="nr-card nr-target nr-agent__core" v-click="2"><h3>Agent Session</h3><p class="nr-detail">Reads, follows the path, checks the numbers</p></div>
+<p class="nr-doors__arrow" v-click="3">→</p>
+<div class="nr-agent__col">
+<p class="nr-label">Breadcrumbs out</p>
+<div class="nr-chip" v-click="3">Files it read</div>
+<div class="nr-chip" v-click="3">Paths it found</div>
+<div class="nr-chip" v-click="3">Assumptions it proved wrong</div>
+<div class="nr-chip" v-click="3">Events to add or check</div>
+<div class="nr-chip" v-click="3">Open questions for a human</div>
+</div>
 </div>
 
 <!--
-[click] The files on the path. [click] The contracts at the edges. [click] Our assumptions, written as claims it can break. [click] Real production evidence, with personal data removed. [click] And what it must not touch, rename or tidy up.
+[click] What goes in is small on purpose: the files on the path, the contracts, real event data, the assumptions and the no-go list. [click] The session reads, follows the path and checks the numbers. [click] And what comes out isn't just an answer. It's a trail: which files it read, which paths it found, which assumptions turned out wrong, which events to add, and the questions only a person can answer. That trail is what made handing work between sessions, and later between teams, actually work.
 -->
-
 ---
 layout: statement
 class: nr-statement nr-no-annotation
@@ -839,10 +859,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# Deleting Is The Step **Everyone Skips**
+# And Then Comes The Part Nobody Plans For: **Deleting The Old Code**
 
 <!--
-And deleting is the step everyone skips.
+And then the part nobody plans for. Deleting the old code once nothing uses it.
 -->
 
 ---
