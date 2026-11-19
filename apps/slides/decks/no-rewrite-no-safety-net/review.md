@@ -141,3 +141,5 @@ Removed the 4.7 Years slide at Faris's request (unverified figure). 72 slides.
 Faris's rule (2026-11-19): no statement followed by a negation that narrows it ("…, not the whole repo", "a table, not a patch",
 "isn't just an answer", "doesn't do X. It does Y"). Swept slides and notes; 10 instances rewritten. Questions such as "why not just
 upgrade?" and plain factual negatives ("We didn't use Sentry") are not this pattern.
+
+Published 2026-11-19: `pnpm slides publish no-rewrite-no-safety-net --slug no-rewrite-no-safety-net` (72 slides) to apps/web/public/slides/no-rewrite-no-safety-net/.
