@@ -1,6 +1,7 @@
 # No Rewrite, No Safety Net: outline
 
-Status: revision 2.1, 2026-11-19 (45 slides; see the revision 2.1 note at the end).
+Status: revision 3, 2026-11-19. slides.md is now the source of truth for the slide list; see review.md, Revision 3. The lists below describe revision 2.
+Previous status: revision 2.1, 2026-11-19 (45 slides; see the revision 2.1 note at the end).
 Revision 2, 2026-11-19. Restructured from Faris's chat feedback of 2026-11-19 (quoted in review.md):
 new opening, Netlify role and bio, real constraints, three checkouts as the running example, a migrate-while-hot section,
 and about 30 seconds per slide with one idea each. 48 slides, about 20 to 22 minutes at 30 seconds a slide (dividers and one-line statements run shorter). Dark mode.

@@ -176,3 +176,5 @@
 .slidev-layout .nr-contact .nr-connect-cta { margin: 0 0 16px; color: var(--faris-brand-yellow); font-size: 26px; font-weight: 700; }
 .slidev-layout .nr-qr { width: 220px; margin: 0 auto; }
 .slidev-layout .nr-closing-photo { position: absolute; top: 0; right: 0; width: calc(100% / 3); height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: center; }
+.slidev-layout .nr-closing { grid-template-columns: 240px 1fr; }
+.slidev-layout .nr-closing-badge { max-width: 320px; justify-self: center; }

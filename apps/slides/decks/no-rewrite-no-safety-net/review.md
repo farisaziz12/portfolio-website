@@ -92,3 +92,15 @@ That URL only resolves after `pnpm slides publish no-rewrite-no-safety-net --slu
 Removed all bracketed confirm/gap notes. 49 slides / 81 states.
 Browser review passed: artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T14-58-04.957Z-SIhw2l. Fixed in this pass: "Find Every Door"
 code block overflowed the slide (present in commit c3e059d and the PDF sent before it).
+
+## Revision 3 (2026-11-19)
+
+Faris's feedback: the deck read as AI slop; too much A/B too early; headings too clipped; needs a story arc that builds the problem, the
+issues and the blast radius first; sentences and phrases like his previous talks; longer subtitles; no small labels; the YAML incident
+(one wrong indent in an unvalidated YAML file took down the Japanese and South Korean sites for 45 minutes); conflicting patterns
+(redux-saga and TanStack Query, two stores during migration) instead of the generations table; React 16 framed as custom pre-hydration
+tooling with Express-based server HTML making React 18 non-trivial; "three parts building the same experience"; agents placing analytics
+along the path and comparing via the Redshift MCP; no "Example Prompt" caption; no slides QR (faziz-dev.com/slides does not exist).
+Rewritten as a story: newest React, the codebase you actually have, the safety net, the YAML story, then layers, checkouts, A/B tests,
+deleting, AI, the tax story, and deleting again. 64 slides / 97 states. Browser review passed:
+artifacts/reviews/no-rewrite-no-safety-net/2026-11-19T15-08-34.704Z-dUjRI9; arc removed from slide 3 after inspection.

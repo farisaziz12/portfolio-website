@@ -66,7 +66,7 @@ class: nr-bio-slide
 </div>
 
 <!--
-Senior Software Engineer at Netlify. Before that, Smallpdf, where I worked on checkout, payments and subscriptions. Everything in this talk comes from that codebase.
+I'm a Senior Software Engineer at Netlify. Before that I was at Smallpdf, working on checkout, payments and subscriptions. Everything in this talk comes from that codebase.
 -->
 
 ---
@@ -74,16 +74,23 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-The React We Hear About
+# We Come To Conferences To Learn **The Newest React**
 
-::default::
+<!--
+We come to events like this one to learn what's new in React. And there's a lot of it.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
 # `<Activity>`
 
-React 19.2
+Hide Part Of The UI And Keep Its State, With Its Effects Paused Until It Comes Back. New In React 19.2.
 
 <!--
-Activity, from React 19.2. Hide part of the tree, keep its state, pause its effects.
+Activity lets you hide part of the tree and keep its state, with its effects paused.
 -->
 
 ---
@@ -91,16 +98,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-The React We Hear About
-
-::default::
 # `useEffectEvent`
 
-React 19.2
+Read The Latest Props And State Inside An Effect Without Adding Them To The Dependency Array. Also React 19.2.
 
 <!--
-useEffectEvent. Read the latest props inside an effect without adding them to the dependency array.
+useEffectEvent finally gives us a clean way to read fresh props inside an effect without adding them to the dependency array.
 -->
 
 ---
@@ -108,16 +111,23 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-The React We Hear About
-
-::default::
 # React **Compiler**
 
-Stable Since October 2025
+Automatic Memoization At Build Time, So You Stop Sprinkling useMemo And useCallback Everywhere. Stable Since October 2025.
 
 <!--
-And the React Compiler. Automatic memoization at build time. Worth learning, all of it.
+And the React Compiler is stable. No more useMemo and useCallback everywhere.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Then On Monday, We Go Back To **The Codebase We Actually Have**
+
+<!--
+Then the conference ends, and on Monday most of us go back to a codebase where we can't use any of it.
 -->
 
 ---
@@ -127,61 +137,10 @@ faris:
   background: arc
 ---
 
-# What If You’re On **React 16?**
+# What If That Codebase Is 13 Years Old And Still On **React 16?**
 
 <!--
-But what if you can't use any of it? What if the codebase you ship every day is 13 years old and on React 16? React 16.14, to be exact. redux-saga all over the place, and many paths into the same views.
--->
-
----
-layout: statement
-class: nr-metric nr-no-annotation
----
-
-::kicker::
-Smallpdf
-
-::default::
-# 13 Years
-
-Tens Of Millions Of Users A Month
-
-<!--
-Smallpdf. 13 years of React in production, tens of millions of users a month.
--->
-
----
-layout: statement
-class: nr-metric nr-no-annotation
----
-
-::kicker::
-Every Release
-
-::default::
-# ~50,000
-
-Users Within 30 Minutes
-
-<!--
-Ship something, and about 50,000 people see it in the next half hour.
--->
-
----
-layout: statement
-class: nr-metric nr-no-annotation
----
-
-::kicker::
-The Team
-
-::default::
-# 5
-
-Developers Across Three Squads
-
-<!--
-Five developers. Three squads. Three roadmaps.
+What do you do when the app you ship every day is 13 years old and still on React 16? React 16.14, to be exact.
 -->
 
 ---
@@ -189,14 +148,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-13 Years Of Requirements
+# That Was My Day Job At **Smallpdf**
 
-::default::
-# Accounts Migrated **More Than Once**
+13 Years Of React In Production, Used By Tens Of Millions Of People Every Single Month
 
 <!--
-The way accounts and plans work has changed more than once, and every change left a compatibility branch. Legacy plan IDs checked by prefix. A separate renewal screen for old enterprise plans. About 39 files branch on enterprise or app-store billing.
+That was my day job at Smallpdf. 13 years of React in production, used by tens of millions of people every month.
 -->
 
 ---
@@ -204,16 +161,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-13 Years Of Requirements
-
-::default::
-# Web Views Inside **Mobile Apps**
-
-Shared With The Web
+# Whenever We Shipped, Around **50,000 People** Saw It Within Half An Hour
 
 <!--
-Some screens run inside the mobile apps as web views, and they're the same views as the web. Change one for the browser and you've changed it for app versions nobody has to update.
+So any change, good or bad, reached about 50,000 people in the first 30 minutes.
 -->
 
 ---
@@ -221,16 +172,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-A/B Tests
+# And There Were **Five Of Us**
 
-::default::
-# Closing A Test **Doesn’t End It**
-
-New Users Stop. Existing Segments Stay.
+Five Developers Spread Across Three Squads, Each With Their Own Roadmap And Priorities
 
 <!--
-We ran A/B tests in versions. When you close a test, new users stop entering it, but the people already in it often have to keep their variant. Old variants stay live long after the test is "done". About 20 experiments are defined in the code. Around 9 no longer take new users, and a couple shipped to 100% years ago and are still referenced.
+And the frontend was five developers, spread across three squads, each with its own roadmap.
 -->
 
 ---
@@ -238,16 +185,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-A/B Tests
-
-::default::
-# Assignment Lives In **localStorage**
-
-Random, In The Browser
+# We Had No Unit Tests, No Integration Tests And **No End-To-End Tests**
 
 <!--
-Assignment happens in the browser, at random, and lives in local storage, keyed by experiment and version. Nothing on the account, nothing on the server. Log in on a new browser and your assignment is gone.
+Now the safety net. There wasn't one. No unit tests, no integration tests, no end-to-end tests.
 -->
 
 ---
@@ -255,16 +196,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-A/B Tests
+# Our Logs **Disappeared After Two Weeks**
 
-::default::
-# Every Ramp **Is A Deploy**
-
-No Remote Flags
+Keeping Them Longer In Datadog Cost Too Much, So A Bug That Started Three Weeks Ago Left No Evidence Behind
 
 <!--
-There's no remote flag service either. Ramping a test up, or killing it, means shipping a deploy. And a deploy reaches about 50,000 people in half an hour.
+Datadog retention was capped at two weeks, because keeping data longer cost too much. So if a bug started three weeks ago and nobody caught it in time, the evidence was already gone.
 -->
 
 ---
@@ -272,16 +209,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-A/B Tests
-
-::default::
-# Safari Users **Never Enter A Test**
-
-Seven-Day Storage Purge
+# Errors Went To **TrackJS**, Which Is Hard To Filter Or Query
 
 <!--
-Safari purges writable storage after seven days without a visit. So Safari users, and anyone without local storage, always get the default and never enter an experiment. The code doesn't say why. You find these rules by reading it.
+We didn't use Sentry. Frontend errors went to TrackJS, which is useful, but very limited when you want to filter or ask questions.
 -->
 
 ---
@@ -289,78 +220,12 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-A/B Tests
+# And Analytics Lived In **Our Own Redshift Database**
 
-::default::
-# Derive It **From The Account**
+Every Question About How People Used The Product Meant Someone Writing SQL In Metabase
 
 <!--
-So for anything that has to stay consistent, you lean on the account. Payment gateway selection is a country rule or an experiment variant. If a user already pays through a gateway, that tells you which experience they were in, so they get the same one on every browser. Four or five experiments decide eligibility from account data like paid status, country or signup date. None of this is documented. It's in the code.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-No Safety Net
-
-::default::
-# No Unit, Integration Or **End-To-End Tests**
-
-<!--
-Now the safety net. No unit tests. No integration tests. No end-to-end tests.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-No Safety Net
-
-::default::
-# Datadog: **2 Weeks** Of Data
-
-Bug Started 3 Weeks Ago? It’s Gone.
-
-<!--
-Keeping data longer than two weeks cost too much, so retention is capped at two weeks. If a bug started three weeks ago and nobody caught it in time, the data that would explain it is gone.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-No Safety Net
-
-::default::
-# Errors In **TrackJS**
-
-Limited Filtering. Limited Querying.
-
-<!--
-No Sentry. Frontend errors go to TrackJS, which is hard to filter or query.
--->
-
----
-layout: statement
-class: nr-statement nr-no-annotation
----
-
-::kicker::
-No Safety Net
-
-::default::
-# Analytics: **Redshift + Metabase**
-
-<!--
-No off-the-shelf analytics either. Events go into our own Redshift database and we query them in Metabase. Every question is a SQL query someone has to write.
+No off-the-shelf analytics either. Events went into our own Redshift database and we queried them through Metabase. Every question meant someone writing SQL.
 -->
 
 ---
@@ -370,57 +235,67 @@ faris:
   background: arc
 ---
 
-# The Documentation **Is The Code**
+# The Only Documentation Was **The Code Itself**
 
 <!--
-And no docs beyond the code. So how do you work safely in this?
+And beyond the code, there were no docs. Let me show you what that means in practice.
 -->
 
 ---
-layout: content
+layout: statement
+class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-My Area Of The Codebase
-
-::title::
-# Every Era Is **Still In Production**
-
-::default::
-<div class="nr-table nr-table--dense">
-
-| Layer | Oldest | Middle | Newest |
-|---|---|---|---|
-| Components | A class error boundary | HOC hydration wrappers | Hooks |
-| State | Hand-written reducers | redux-saga | Context + useReducer, Redux hooks, one RTK slice |
-| Data fetching | A 2017 response helper | Saga select / put | Typed fetch wrapper, React Query v4 |
-| Rendering | | styled-components | Pre-hydration scripts |
-
-</div>
+# Let Me Tell You About **A YAML File**
 
 <!--
-Only my area: checkout, payments, subscriptions, the header. One checkout touches a hand-written reducer, a saga, a Context store and React Query at the same time.
+Story time.
 -->
 
 ---
-layout: content
+layout: statement
+class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-Why Not Just Upgrade?
-
-::title::
-# Why We’re Still On **React 16**
-
-::default::
-<div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Hydration</p><p>Scripts edit server HTML before React loads. React 16 tolerates it.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">React 18</p><p>Treats that mismatch as an error and re-renders on the client.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Packages</p><p>One npm setting hides which libraries already disagree.</p></div>
-</div>
+# I Got **One Indent** Wrong
 
 <!--
-[click] Our anti-layout-shift system edits the server-rendered HTML before React hydrates. React 16 accepts a DOM it didn't render. [click] React 18 treats those differences as errors and re-renders, so the layout shift comes back. Reasoned from React 18's behaviour, not tested. [click] And legacy-peer-deps hides which libraries already disagree with us. A rewrite isn't an option either. Five developers can't run two products.
+I was editing a YAML config file and got the indentation wrong. One level.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Nothing Was **Validating** That File
+
+<!--
+Nothing validated that file. No schema, no test, no check in the pipeline. So it shipped.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Our Japanese And South Korean Sites Were **Down For 45 Minutes**
+
+<!--
+And our Japanese and South Korean websites were broken for 45 minutes. From one indent.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+faris:
+  background: arc
+---
+
+# So How Do You Change Anything **Safely** In A Codebase Like This?
+
+<!--
+That's the question for the rest of this talk. No rewrite, no safety net. How do you keep changing it without breaking the things that pay for it?
 -->
 
 ---
@@ -431,27 +306,61 @@ layout: section
 01
 
 ::default::
-# Build The Mental Model
-
-When Is It Safe To Delete Code?
+# Understand What You’re Touching
 
 ::visual::
 <FarisIllustration name="faris-thinking" decorative />
 
 ---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Some Data Comes Through **redux-saga**, Some Through **TanStack Query**
+
+Older Features Fetch Through Sagas Into Redux, Newer Ones Use TanStack Query, And Plenty Sit Somewhere In Between
+
+<!--
+First, you have patterns fighting each other. Older features fetch through sagas into Redux. Newer ones use TanStack Query. And a lot of features sit somewhere in between.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# So You Maintain **Two Stores** While You Migrate
+
+Redux For The Upgrade Dialog, A Context Store For The Payment Form, And TanStack Query For Everything Newer
+
+<!--
+So while you migrate, you maintain both. In checkout, the dialog state lives in Redux, the payment form has its own Context store, and payment methods and price previews live in TanStack Query's cache. One feature, three places where the truth might be.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Custom Pre-Hydration Tooling Was **Baked Into How We Rendered**
+
+Our Server HTML Came From An Express-Based Setup, So Moving To React 18 Was Never Going To Be A Simple Version Bump
+
+<!--
+And why not just upgrade React? A lot of custom pre-hydration tooling was baked into the solution, with server HTML generated by an Express-based setup. Scripts adjust that HTML before React hydrates, to avoid layout shift, and React 16 tolerates a DOM it didn't render. React 18 treats those mismatches as errors and re-renders on the client. So React 18 was a non-trivial migration, not a version bump. On top of that, legacy-peer-deps hides which libraries already disagree with us.
+-->
+
+---
 layout: content
 ---
 
-::kicker::
-Many Paths Into The Same Views
-
 ::title::
-# Three Checkouts, **One Job**
+# You May End Up With **Three Parts** Building The Same Experience
 
 ::default::
 <div class="nr-doors">
 <div class="nr-doors__in">
-<div class="nr-card" v-click="1"><h3>Upgrade Dialog</h3><p class="nr-detail">~80 trigger types</p></div>
+<div class="nr-card" v-click="1"><h3>Upgrade Dialog</h3><p class="nr-detail">~80 ways to open it</p></div>
 <div class="nr-card" v-click="2"><h3>Native-App Checkout</h3><p class="nr-detail">Handoff from desktop, iOS, Android</p></div>
 <div class="nr-card" v-click="3"><h3>Renewal</h3><p class="nr-detail">Three variants of its own</p></div>
 </div>
@@ -460,18 +369,15 @@ Many Paths Into The Same Views
 </div>
 
 <!--
-[click] The upgrade dialog: about 60 call sites open it, through about 80 trigger types. Marketing emails and UTM landing pages don't get their own checkout: the link carries a coupon, a saga reads it, and you land in the dialog. [click] A separate checkout page for handoffs from the desktop and mobile apps. [click] And renewal, with three variants: current, legacy enterprise plans, and a static one when payment changes aren't allowed. All three lean on a shared payment core of about 150 files, which is itself the first attempt at unifying them. The legacy renewal variants still bypass it.
+[click] The upgrade dialog: about 60 places open it, through about 80 different triggers. Marketing emails and landing pages land here too, with a coupon in the link. [click] A separate checkout page for when the desktop or mobile apps hand off to the web. [click] And renewal, with three variants of its own. They all lean on a shared payment core, and the oldest renewal variants still go around it.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-Reconstruct The Execution Path
-
 ::title::
-# Follow **One Checkout**
+# Follow One Checkout **From Start To Finish**
 
 ::default::
 <div class="nr-steps">
@@ -489,30 +395,147 @@ Reconstruct The Execution Path
 </div>
 
 <!--
-[click] A user hits a usage limit. Log in first, A/B assignment, geo-IP picks the currency. [click] State in Redux, a Context store and React Query's cache. Data through the 2017 helper, the typed wrapper and React Query. [click] Hooks inside a class error boundary. Then an orchestrator picks one of five payment SDKs, 3D Secure, analytics, and a saga handles the redirect. About six generations of React patterns in one purchase. Write the path down before you write a diff.
+Reading one file tells you nothing here. You have to follow the path. [click] A user hits a usage limit. They log in, get an A/B assignment, and geo-IP picks their currency. [click] State lives in Redux, a Context store and TanStack Query. Data comes through an old 2017 helper, a typed fetch wrapper and TanStack Query. [click] Hooks render it, inside a class error boundary. Then one of five payment SDKs, 3D Secure, analytics, and a saga handles the redirect. Write that path down before you write a diff.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Then Let An Agent **Instrument That Path**
+
+Place Analytics Events Along Each Step, Then Compare Them Against Redshift Through Our MCP Server
+
+<!--
+Reconstructing the path is only half of it. You can also have an agent place analytics events along that path, then use our MCP server to compare what those events show against the data in Redshift. Now you know which steps people actually take, not just which ones exist in the code.
+-->
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# And Then There Are **The A/B Tests**
+
+Around 20 Experiments Defined In The Code, Many Of Them Sitting Right Inside The Checkout
+
+<!--
+And on top of all that, A/B tests. Around 20 experiments were defined in the code, and many of them were in checkout.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-Before Deleting
-
 ::title::
-# Check **Five Things**
+# One A/B Test Can Be In **Several States At Once**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Code</p><p>No importers, no routes, no dynamic lookups.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Traffic</p><p>Nothing in Redshift. Not just the last two weeks.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Errors</p><p>Nothing reaching TrackJS from that path.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Apps</p><p>No app version or web view still calling it.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Links</p><p>No email or campaign still pointing to it.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Running</p><p>New users get a variant at random.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Closed</p><p>No new users join, but existing users keep their variant.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Versioned</p><p>A new version can’t reshuffle people from the old one.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Shipped</p><p>The winner becomes the default. The code stays.</p></div>
 </div>
 
 <!--
-[click] Nothing imports it, including dynamic lookups. [click] Datadog only has two weeks, so check Redshift. [click] Nothing in TrackJS. [click] Old app versions can call a web view for years. [click] Marketing emails stay in inboxes forever. All five clean? Delete it behind a flag first.
+Ending a test isn't one switch. [click] While it runs, new users get a variant at random. [click] When you close it, new users stop joining, but the people already in it often have to keep what they saw. [click] Tests had versions, and a new version had to remember everyone from the earlier ones. [click] And when a variant won, it became the default, but the code was often still there. A couple of tests had shipped to 100% and were still referenced.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Assignments Were Stored **In The Browser**
+
+So Logging In On A New Browser Could Show You A Different Checkout, Or Even A Different Price
+
+<!--
+Assignment happened in the browser, at random, and lived in local storage. Nothing on the account, nothing on the server. So a user who logged in on a new browser could see a different checkout, or a different price, from last time.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# So We Rebuilt The Variant **From The Account**
+
+Account Flags, Like Which Payment Gateway Someone Already Uses, Told Us Which Experience They Had Seen
+
+<!--
+So for anything that had to stay consistent, we leaned on the account. If a user already paid through a particular payment gateway, that told us which experience they'd been in, and we could give them the same one on every browser. None of this was documented. It was in the code.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Changing Who Sees A Test **Meant Shipping Code**
+
+There Was No Remote Switch, So Every Rollout Or Rollback Reached 50,000 People Within Half An Hour
+
+<!--
+There was no remote flag service. To roll a test out to more people, or switch it off, you changed the code and deployed. And a deploy reached 50,000 people in half an hour.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# And Safari Users **Never Saw A Test** At All
+
+Safari Clears Storage After Seven Days, So Those Users Always Got The Default Experience
+
+<!--
+Safari clears writable storage after seven days without a visit. So Safari users, and anyone without local storage, always got the default and never entered an experiment. The code didn't say why. You find rules like this by reading it.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+faris:
+  background: arc
+---
+
+# Is This Code Dead, Or Is Someone **Still Using It?**
+
+<!--
+With all of that in place, the most common question was the simplest one. Can I delete this?
+-->
+
+---
+layout: content
+---
+
+::title::
+# Five Things I Check **Before Deleting Anything**
+
+::default::
+<div class="nr-rows">
+<div class="nr-row" v-click="1"><p class="nr-label">Code</p><p>Nothing imports it, routes to it or looks it up by name.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Traffic</p><p>Nothing in Redshift, going back further than two weeks.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Errors</p><p>Nothing from that path is reaching TrackJS.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Apps</p><p>No version of the native apps still sends people there.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Links</p><p>No email or campaign still points to it.</p></div>
+</div>
+
+<!--
+[click] Nothing imports it, including lookups by name. [click] No traffic in Redshift, and not just in the last two weeks, because that's all Datadog has. [click] No errors from that path. [click] Old versions of the apps stay installed for years. [click] And marketing emails sit in inboxes forever.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# When You’re Not Sure, **Mark It Deprecated And Watch**
+
+<!--
+If it's not urgent, don't guess. Mark it deprecated, and fire an event whenever that path still runs. Then watch it go down over time.
 -->
 
 ---
@@ -520,16 +543,12 @@ layout: statement
 class: nr-metric nr-no-annotation
 ---
 
-::kicker::
-Not Urgent? Deprecate It
-
-::default::
 # 857
 
-@deprecated Tags. One Event Tracks Their Use.
+Deprecated Tags In The Codebase, With One Event Telling Us Whether Those Paths Still Run
 
 <!--
-If it's not urgent, don't guess. There are about 857 @deprecated tags in this codebase. Since 2021 there's one generic "deprecated functionality used" event with a typed reason, about 27 of them, fired from about 21 places. Retired features stay measurable until usage reaches zero. Then you delete.
+There were about 857 deprecated tags. Since 2021, one generic "deprecated functionality used" event, with a typed reason, tracked whether those paths still ran. When usage reaches zero, you delete.
 -->
 
 ---
@@ -537,16 +556,23 @@ layout: statement
 class: nr-metric nr-no-annotation
 ---
 
-::kicker::
-Simpler Code
-
-::default::
 # ~75%
 
-Of Checkout Branches Leave No Trace
+Of The Branches In Our Checkout Code Fire No Analytics Event And Log Nothing At All
 
 <!--
-A rough scan of about 55 checkout files found around 316 conditional branches, and about three quarters have no analytics or log call. Many are just rendering, but some are errors and early returns. You can't fix that by adding events everywhere: at millions of users, every event costs real money. Fewer branches means fewer paths you need to measure. Lower cyclomatic complexity pays off here.
+A rough scan of the checkout code found about 316 conditional branches, and around three quarters had no analytics or log call. Many are just rendering. Some are errors and early returns that leave no trace at all.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# But At Millions Of Users, **Tracking Everything Isn’t Free**
+
+<!--
+And you can't fix that by putting events everywhere. At millions of users, every event costs real money. The better fix is fewer branches. Lower complexity means fewer paths you need to measure at all.
 -->
 
 ---
@@ -557,12 +583,21 @@ layout: section
 02
 
 ::default::
-# Constrain The Context
-
-Where Does AI Help?
+# Where Does **AI** Fit In?
 
 ::visual::
 <FarisIllustration name="duck-curious" decorative />
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Give An Agent The Whole Repo And It Picks **One Pattern** And Sounds Sure
+
+<!--
+A 13-year-old codebase has several right answers to every question. Saga or TanStack Query? Old helper or new wrapper? Give an agent all of it, and it picks one and sounds certain. How often a pattern appears says nothing about whether it's current.
+-->
 
 ---
 layout: statement
@@ -571,33 +606,30 @@ faris:
   background: arc
 ---
 
-# Give The Agent A Task, **Not The Repo**
+# So Give It **A Task**, Not The Repo
 
 <!--
-A 13-year-old codebase has several right answers to every question. Give an agent all of it and it picks one and sounds sure. How often a pattern appears says nothing about whether it's current.
+So we stopped asking open questions and started handing over narrow tasks.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-The Context Pack
-
 ::title::
-# Every Session Gets **Five Things**
+# What Every Agent Session **Gets From Us**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Modules</p><p>Only the files on the path you mapped.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Interfaces</p><p>Props, store shapes, API contracts.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Modules</p><p>Only the files on the path we mapped.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Interfaces</p><p>Props, store shapes and API contracts.</p></div>
 <div class="nr-row" v-click="3"><p class="nr-label">Assumptions</p><p>Written down, so they can be proven wrong.</p></div>
 <div class="nr-row" v-click="4"><p class="nr-label">Evidence</p><p>Event data, TrackJS errors, real payloads.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Non-goals</p><p>What must not change.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Non-goals</p><p>What it must not change.</p></div>
 </div>
 
 <!--
-[click] The files on the path you mapped. [click] The contracts at the edges. [click] Your assumptions, written as claims to break. [click] Real production evidence, personal data removed. [click] And what it must not touch, rename or tidy up.
+[click] The files on the path. [click] The contracts at the edges. [click] Our assumptions, written as claims it can break. [click] Real production evidence, with personal data removed. [click] And what it must not touch, rename or tidy up.
 -->
 
 ---
@@ -605,16 +637,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-Evidence For Agents
-
-::default::
-# An MCP Server **For Redshift**
-
-Every Event Table, Queryable By Agents
+# We Built An MCP Server So Agents Could **Query Our Analytics**
 
 <!--
-One of the most useful things we built. An internal MCP server on our Redshift database, so an agent can query every event table. Evidence stops being a screenshot you paste in.
+One of the most useful things we built. An internal MCP server on our Redshift database, so an agent could look at every event table itself. Evidence stopped being a screenshot someone pasted in.
 -->
 
 ---
@@ -622,25 +648,16 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-Every Pull Request
-
-::default::
-# Which Events Does **This Touch?**
-
-A Review Agent Flags Every Event Change
+# Every Pull Request Gets Checked For **Analytics Changes**
 
 <!--
-The CLAUDE.md rules are strict about analytics. Ask the human whether tracking is needed. Never delete a permanent event: deprecate it, with a link to the PR that removed the feature. Never repurpose a field. And a business-impact review agent flags any event change the PR description doesn't mention. It flags, it doesn't estimate. The numbers come from the Redshift MCP.
+Our CLAUDE.md files are strict about analytics. Ask the human whether tracking is needed. Never delete a permanent event; deprecate it, with a link to the PR that removed the feature. Never repurpose a field. And a review agent flags any event change that the PR description doesn't mention. With the MCP server, you can then look at how much traffic those events actually carry.
 -->
 
 ---
 layout: content
 class: nr-prompt
 ---
-
-::kicker::
-In Practice
 
 ::title::
 # Find **Every Door**
@@ -656,11 +673,9 @@ Non-goals:   no refactors, no renames, no new dependencies
 Output:      table: entry point, checkout used, A/B logic, traffic share
 ```
 
-::caption::
-Example Prompt. Names Generalised.
 
 <!--
-It asks for a table, not a patch. And the assumption can be wrong: if the agent finds a fourth door, that's the best result of the day.
+This is the shape of prompt that works for us. It asks for a table, not a patch. And the assumption is there to be proven wrong. If the agent finds a way in we didn't know about, that's the best result of the day.
 -->
 
 ---
@@ -668,10 +683,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-# Agents Investigate. **Humans Ship.**
+# Agents Do The Reading. **People Decide What Ships.**
 
 <!--
-Agents do the reading: callers, comparisons, draft tests. They aren't on call. With no QA team, the person who decides it's safe to release is the safety net.
+Agents are good at the reading: finding callers, comparing implementations, drafting tests. They aren't on call. With no QA team, the person who decides a change is safe to release is the safety net.
 -->
 
 ---
@@ -682,9 +697,7 @@ layout: section
 03
 
 ::default::
-# Migrate While It’s Hot
-
-What Breaks If I Change This?
+# Changing It While **It’s Live**
 
 ::visual::
 <FarisIllustration name="faris-thinking" decorative />
@@ -696,14 +709,10 @@ faris:
   background: arc
 ---
 
-::kicker::
-Story Time
-
-::default::
-# US **Sales Tax**
+# Time For Another Story: **US Sales Tax**
 
 <!--
-A real one. We needed to support US sales tax.
+One more story. We needed to support US sales tax.
 -->
 
 ---
@@ -711,14 +720,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-US Sales Tax
-
-::default::
-# Price Math Lived **In The Frontend**
+# Our Prices Were Calculated **In The Browser**
 
 <!--
-The backend sent plan amounts. The frontend did the rest: adding, multiplying, previewing what a subscription change would cost.
+The backend sent the plan amounts. The frontend did the rest: adding, multiplying, and previewing what a subscription change would cost.
 -->
 
 ---
@@ -726,14 +731,10 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-US Sales Tax
-
-::default::
-# Tax Moved The Preview **To The Server**
+# Sales Tax Had To Be Calculated **On The Server**
 
 <!--
-You can't calculate sales tax like that in the browser. So the price preview for a subscription change had to come from the server. A new path for the most sensitive number in the product.
+You can't do sales tax like that in the browser. So the price preview had to come from the server. A new path for the most sensitive number in the product.
 -->
 
 ---
@@ -741,16 +742,23 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-US Sales Tax
+# So We Only Turned It On Where **The Law Required It**
 
-::default::
-# US And Australia **First**
-
-Everyone Else Waited
+The US And Australia Went First, While The Rest Of The World Stayed On The Old Path
 
 <!--
-We only turned it on where compliance required it: the US and Australia. The rest of the world stayed on the old path while we checked the funnel, ran A/B tests, and looked at conversion, free trials and friction.
+We turned it on only where compliance required it: the US and Australia.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Everyone Else Waited While We **Watched The Funnel**
+
+<!--
+The rest of the world stayed on the old path while we ran A/B tests and watched conversion, free trials and friction.
 -->
 
 ---
@@ -758,16 +766,12 @@ layout: statement
 class: nr-metric nr-no-annotation
 ---
 
-::kicker::
-One Small Form Change
-
-::default::
 # -11%
 
-Conversion From A Country Selector And Postal Code
+That’s What Adding A Country Selector And A Postal Code Field Did To Conversion
 
 <!--
-Here's why. Adding a country selector and a postal code field reduced conversion by 11%. If a market makes 10 million dollars, that's about a million at risk from two form fields. You have to plan how you'll win that back before it goes everywhere.
+Here's why we waited. Adding a country selector and a postal code field reduced conversion by 11%.
 -->
 
 ---
@@ -775,58 +779,70 @@ layout: statement
 class: nr-statement nr-no-annotation
 ---
 
-::kicker::
-US Sales Tax
-
-::default::
-# Plan The Recovery **Before The Rollout**
+# In A $10M Market, That’s **A Million Dollars**
 
 <!--
-We did recover it, through other initiatives that are a story of their own. The point is the order. Know what a change costs before it goes global, and plan the work that keeps revenue stable.
+If a market makes 10 million dollars a year, that's about a million dollars from two form fields.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# So Plan How You’ll **Win It Back** Before It Goes Everywhere
+
+<!--
+We did win it back, through other initiatives that are a story of their own. The point is the order. Know what a change costs before it ships everywhere, and plan the work that keeps revenue stable.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-US Sales Tax: Where AI Helped
-
 ::title::
-# Two Teams, **One Context**
+# The Work Moved Between Two Teams, And **AI Kept The Context**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Handoffs</p><p>Context dumps of progress between the two teams.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Paths</p><p>Flag every path the change touched.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Patterns</p><p>Reconcile how each team solved the same problem.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Migration</p><p>Move data fetching over to TanStack Query.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Handoffs</p><p>Context dumps of where things stood.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Paths</p><p>Flagging every path the change had touched.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Patterns</p><p>Reconciling how each team solved the same thing.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Migration</p><p>Moving data fetching over to TanStack Query.</p></div>
 </div>
 
 <!--
-The work moved across two teams, and that's where AI earned its place. [click] Context dumps of where things stood, so the next team didn't start from zero. [click] Flagging every path the change had touched. [click] Reconciling patterns where the two teams had solved the same thing differently. [click] And migrating the data fetching we touched over to TanStack Query.
+This is where AI earned its place. The work moved between two teams. [click] Context dumps of where things stood, so the next team didn't start from zero. [click] Flagging every path the change had touched. [click] Reconciling patterns where the two teams had solved the same thing differently. [click] And migrating the data fetching we touched over to TanStack Query.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-Applied To The Three Checkouts
-
 ::title::
-# Same Moves, **Bigger Surface**
+# The Same Approach Works For **The Three Checkouts**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Front door</p><p>The shared payment core is the start of one.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Run both</p><p>Two subscription APIs already live side by side.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">One door</p><p>Legacy renewal variants still bypass the core.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Delete</p><p>The step everyone skips.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">One way in</p><p>The shared payment core is the start of one.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Run both</p><p>Two subscription APIs already run side by side.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Move one</p><p>The oldest renewal variants are still outside it.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Delete</p><p>Remove the old path once nobody uses it.</p></div>
 </div>
 
 <!--
-We never finished merging the checkouts. But the tax rollout is the pattern. [click] One front door: the shared payment core is the start of one. Martin Fowler calls the pattern the strangler fig. [click] Run both: two versions of the subscription-creation API already run side by side, which is branch by abstraction. [click] Move one door at a time: the legacy renewal variants are the ones still outside. [click] And delete. Which brings me to the most honest number in this talk.
+We never finished merging the three checkouts. But the same approach applies. [click] Put one way in, in front of all of them. Martin Fowler calls this the strangler fig. [click] Run the old and new paths side by side and compare. [click] Move one entry point at a time. [click] And then delete.
+-->
+
+---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# Deleting Is The Step **Everyone Skips**
+
+<!--
+And deleting is the step everyone skips.
 -->
 
 ---
@@ -834,60 +850,50 @@ layout: statement
 class: nr-metric nr-no-annotation
 ---
 
-::kicker::
-Delete
-
-::default::
 # 4.7 Years
 
-From 100% Rollout To Deleting The Fallback
+Between Moving 100% Of Users To A New Payment Platform And Deleting The Old Platform’s Fallbacks
 
 <!--
-One payment-platform migration reached 100% of users, and the last fallbacks to the old platform were removed about four point seven years later. Nobody planned that. Deleting is the step teams skip, and skipping it is how you end up with 13 years of layers.
+One payment-platform migration reached 100% of users. The last fallbacks to the old platform were removed about 4.7 years later. That's how you end up with 13 years of layers.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-Incremental AI
-
 ::title::
-# Where AI Fits **At Each Step**
+# Where AI Helps **At Each Step**
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row" v-click="1"><p class="nr-label">Map</p><p>Find every door, and the A/B logic behind each.</p></div>
-<div class="nr-row" v-click="2"><p class="nr-label">Characterize</p><p>Draft tests that pin today's behaviour.</p></div>
-<div class="nr-row" v-click="3"><p class="nr-label">Move callers</p><p>Small, reviewable PRs onto the facade.</p></div>
-<div class="nr-row" v-click="4"><p class="nr-label">Compare</p><p>Query old vs new through the Redshift MCP.</p></div>
-<div class="nr-row" v-click="5"><p class="nr-label">Delete</p><p>Watch the deprecation event reach zero, then delete.</p></div>
+<div class="nr-row" v-click="1"><p class="nr-label">Map</p><p>Find every way in, and the A/B logic behind each.</p></div>
+<div class="nr-row" v-click="2"><p class="nr-label">Pin down</p><p>Draft tests that capture what the code does today.</p></div>
+<div class="nr-row" v-click="3"><p class="nr-label">Move</p><p>Small, reviewable PRs, one caller at a time.</p></div>
+<div class="nr-row" v-click="4"><p class="nr-label">Compare</p><p>Query old against new through the MCP server.</p></div>
+<div class="nr-row" v-click="5"><p class="nr-label">Delete</p><p>Watch the deprecation event reach zero.</p></div>
 </div>
 
 <!--
-[click] Map every door. [click] Draft characterization tests. That's how a codebase with no tests gets some: one migration at a time. [click] Move callers in small PRs. [click] Compare old and new through the Redshift MCP. [click] Watch the deprecation events until it's safe to delete.
+AI doesn't do the migration for you. It does the slow parts of each step. [click] Finding every way in. [click] Drafting tests that pin down today's behaviour, which is how a codebase with no tests starts to get some: one migration at a time. [click] Moving callers in small PRs. [click] Comparing old and new with real event data. [click] And watching the deprecation events until it's safe to delete.
 -->
 
 ---
 layout: content
 ---
 
-::kicker::
-Take This Home
-
 ::title::
-# Three **Habits**
+# If You Take **Three Things** Home
 
 ::default::
 <div class="nr-rows">
-<div class="nr-row nr-take"><p class="nr-n">1</p><p>Map every path before you change anything.</p></div>
-<div class="nr-row nr-take"><p class="nr-n">2</p><p>Give agents a task and real data, not the repo.</p></div>
-<div class="nr-row nr-take"><p class="nr-n">3</p><p>One front door, both paths live, then delete.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">1</p><p>Follow the path before you change anything.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">2</p><p>Give agents a narrow task and real data, not the whole repo.</p></div>
+<div class="nr-row nr-take"><p class="nr-n">3</p><p>Ship where you must, measure, then move the rest. And delete.</p></div>
 </div>
 
 <!--
-Map the paths first. Give agents narrow tasks and real event data. Migrate while it's live, one door at a time, and actually delete the old code.
+Follow the path before you touch it. Give agents a narrow task and real data. And change things while they're live: ship where you have to, measure what it costs, move the rest, and actually delete the old code.
 -->
 
 ---
@@ -905,11 +911,7 @@ class: nr-closing-slide
 <a href="https://faziz-dev.com/connect" target="_blank" rel="noopener noreferrer"><img class="nr-qr" src="/media/connect-qr.png" alt="Scan to visit faziz-dev.com/connect" /></a>
 <p>@farisaziz12</p>
 </div>
-<div class="nr-contact">
-<p class="nr-connect-cta">Slides</p>
-<a href="https://faziz-dev.com/slides/no-rewrite-no-safety-net/" target="_blank" rel="noopener noreferrer"><img class="nr-qr" src="/media/slides-qr.png" alt="Scan to open the slides at faziz-dev.com/slides/no-rewrite-no-safety-net" /></a>
-<p>faziz-dev.com/slides</p>
-</div>
+<div class="nr-closing-badge"><FarisIllustration name="duck-celebrating" /></div>
 </div>
 <img class="nr-closing-photo" src="/media/speaker-montage.jpg" alt="Faris with the developer community" />
 
