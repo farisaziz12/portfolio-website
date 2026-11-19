@@ -120,3 +120,11 @@ Section 01 renamed "Understand What You’re Dealing With / And How To Build An 
 exercise from Faris's workshops (6 slides): the prompt, shoe/rocket/bicycle doodles in default blue (authored SVG), small teams drawing
 different pictures, the agent drawing one too, a narrowing funnel of questions (car, Toyota Prius, silver, which year), and three matching
 silver cars (you, your team, your agent). 69 slides. Browser review passed.
+
+## Revision 3.3 (2026-11-19)
+
+Quotes chosen by Faris: Hyrum's Law (cited to Software Engineering at Google, 2020) before "Is This Code Dead"; Joel Spolsky (Things You
+Should Never Do, Part I, collected in Joel on Software, 2004) after the React 16 slide. Feathers, Chesterton and Conway rejected.
+Ship of Theseus moved after "So How Do You Change Anything Safely" as the goal (rebuild without passengers noticing), presented as a
+thought experiment without citation. New bulkhead slide (Release It!, Michael T. Nygard) with an SVG ship; the localisation compartment
+floods on click, tied to the YAML incident in the notes. 73 slides / 122 states. Browser review passed.

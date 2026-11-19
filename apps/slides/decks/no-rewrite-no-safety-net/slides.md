@@ -299,6 +299,40 @@ That's the question for the rest of this talk. No rewrite, no safety net. How do
 -->
 
 ---
+layout: statement
+class: nr-statement nr-no-annotation
+---
+
+# If You Replace Every Plank Of A Ship, One At A Time, **Is It Still The Same Ship?**
+
+The Ship Of Theseus, And The Goal For The Rest Of This Talk
+
+<!--
+There's an old thought experiment, the Ship of Theseus. If you replace every plank of a ship, one at a time, is it still the same ship? That's the goal. You should be able to rebuild your ship as many times as you want, and the people on board are none the wiser. They get the same availability the whole time. You never get to take it out of the water.
+-->
+
+---
+layout: content
+---
+
+::title::
+# Ships Gave Us Another Idea: **Bulkheads**
+
+::default::
+<div class="nr-shipwrap">
+<svg viewBox="0 0 1000 300" class="nr-ship" aria-label="A ship hull divided into five compartments"><path d="M0 232 Q25 222 50 232 T100 232 T150 232 T200 232 T250 232 T300 232 T350 232 T400 232 T450 232 T500 232 T550 232 T600 232 T650 232 T700 232 T750 232 T800 232 T850 232 T900 232 T950 232 T1000 232" fill="none" stroke="#68bce3" stroke-width="3" opacity="0.6"/><path d="M380 80 L380 40 L620 40 L620 80 M560 40 L560 12 L600 12 L600 40" fill="none" stroke="#f8f4eb" stroke-width="5" stroke-linejoin="round"/><path d="M40 80 L960 80 L900 262 L100 262 Z" fill="#191a1d" stroke="#f8f4eb" stroke-width="6" stroke-linejoin="round"/><path d="M220 80 L220 262 M400 80 L400 262 M580 80 L580 262 M760 80 L760 262" stroke="#f8f4eb" stroke-width="5"/></svg>
+<div v-click="1"><svg viewBox="0 0 1000 300" class="nr-ship nr-ship__water" aria-label="Water fills only the localisation compartment"><rect x="583" y="150" width="174" height="109" fill="#68bce3" opacity="0.75"/><path d="M583 150 Q605 140 627 150 T670 150 T713 150 T757 150" fill="none" stroke="#f8f4eb" stroke-width="3"/></svg></div>
+<div class="nr-ship__labels"><span>Checkout</span><span>Accounts</span><span>Pricing</span><span>Localisation</span><span>A/B Tests</span></div>
+</div>
+<p class="nr-ship__caption" v-click="2">One Compartment Floods. The Rest Of The Ship Stays Up.</p>
+
+::caption::
+The Bulkhead Pattern, From Release It! By Michael T. Nygard
+
+<!--
+Ships gave software another idea. A ship's hull is split into compartments by bulkheads, so one leak doesn't sink the whole ship. In software, the bulkhead pattern isolates parts of a system so a failure in one stays in one. [click] Remember the YAML file? One wrong indent, and localisation flooded for two markets. [click] The goal is that when one compartment floods, the rest of the ship stays up. Checkout keeps taking payments while you fix the leak.
+-->
+---
 layout: section
 ---
 
@@ -444,6 +478,18 @@ And why not just upgrade React? A lot of custom pre-hydration tooling was baked 
 -->
 
 ---
+layout: statement
+class: nr-quote nr-no-annotation
+---
+
+# “The single worst strategic mistake that any software company can make: They decided to rewrite the code from scratch.”
+
+Joel Spolsky, Things You Should Never Do, Part I. Collected In Joel On Software (2004)
+
+<!--
+So why not just rewrite it? Joel Spolsky wrote about Netscape doing exactly that, and called it the single worst strategic mistake a software company can make. That's his opinion, and it's a strong one. But with five developers and a product that has to keep earning, a rewrite was never on the table for us.
+-->
+---
 layout: content
 ---
 
@@ -586,6 +632,18 @@ There Was No Remote Switch, So Every Rollout Or Rollback Reached 50,000 People W
 There was no remote flag service. To roll a test out to more people, or switch it off, you changed the code and deployed. And a deploy reached 50,000 people in half an hour.
 -->
 
+---
+layout: statement
+class: nr-quote nr-no-annotation
+---
+
+# “With a sufficient number of users of an API, it does not matter what you promise in the contract: all observable behaviors of your system will be depended on by somebody.”
+
+Hyrum’s Law. From Software Engineering At Google (2020)
+
+<!--
+Hyrum's Law. With enough users, every observable behaviour of your system is something somebody depends on, whatever you promised. At tens of millions of users, that includes the old marketing link, the app version nobody updated, and the A/B variant someone got two years ago.
+-->
 ---
 layout: statement
 class: nr-statement nr-no-annotation
