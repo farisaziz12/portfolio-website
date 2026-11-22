@@ -26,7 +26,7 @@ export const DEFAULT_SITE: SiteSettings = {
 
 export const DEFAULT_HOME: HomePage = {
   heroVariant: 'band',
-  headline: 'I sit at the intersection of [product engineering], [monetization] and [technical leadership].',
+  headline: 'I build [products] and [checkouts], and lead engineering teams.',
   intro:
     'Staff engineer, conference speaker, co-founder of ZurichJS. I build the product and the checkout behind it, lead the teams that ship them, and talk about what that actually looks like.',
   primaryCta: { label: 'Invite me to speak', href: '/invite' },

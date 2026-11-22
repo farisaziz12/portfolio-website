@@ -42,7 +42,7 @@ function fullUrl(image: Parameters<typeof urlFor>[0]): string | undefined {
       <Kicker parts={['About', 'Gallery']} mutedFirst />
       <h1 class="ds-h1">Stages, hallways and the bits in between.</h1>
       <p class="ds-lede">
-        One strip per event, newest first. Every photo carries its photographer’s credit; for photos you can use in a programme, see the <a href="/press-kit" class="ds-textlink">press kit</a>.
+        One strip per event, newest first. Every photo carries its photographer’s credit. For photos you can use in a programme, see the <a href="/press-kit" class="ds-textlink">press kit</a>.
       </p>
       {total > 0 && <p class="ds-meta">{[`${total} ${total === 1 ? 'photo' : 'photos'}`, eventCount > 0 && `${eventCount} ${eventCount === 1 ? 'event' : 'events'}`].filter(Boolean).join(' · ')}</p>}
     </header>

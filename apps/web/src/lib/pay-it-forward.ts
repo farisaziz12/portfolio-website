@@ -34,7 +34,7 @@ export const STARTERS: Starter[] = [
   {
     title: 'Getting more visible',
     line: 'Your portfolio, your profile, how people find your work.',
-    bring: "what you've already tried, so I can give you the right signal rather than what you've already heard",
+    bring: "what you've already tried, so I can tell you something you haven't already heard",
   },
   { title: 'Where to look', line: "No cold introductions, but I'll help you work out how to make them and where to look.", bring: 'the kind of place you want to end up' },
   { title: 'Public speaking', line: 'Getting on stage, writing a CFP, your first talk.', bring: 'the idea you keep putting off' },

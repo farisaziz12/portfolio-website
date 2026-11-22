@@ -31,7 +31,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# My talks`,
     ``,
-    `> Every talk is designed as what I call an accordion talk: it expands in time, breadth and depth based on what your audience needs. Let me know how to fit it best, and treat each one as dynamic. Conference talks by Faris Aziz: ${speakingLine(stats)} (${stats.cities} cities) as of ${asOfLabel(stats)}. Book: ${SITE}/invite`,
+    `> Every talk is what I call an accordion talk. It grows or shrinks in time, breadth and depth to fit your audience. Tell me what you need and I'll fit the talk to it. Conference talks by Faris Aziz: ${speakingLine(stats)} (${stats.cities} cities) as of ${asOfLabel(stats)}. Book: ${SITE}/invite`,
     ``,
     ...entries.flatMap((e) => [e, '']),
     `Need something built for your theme? Tell me what you'd like your audience to leave with and I'll propose a talk within ${profile.replyTime}: ${SITE}/invite`,

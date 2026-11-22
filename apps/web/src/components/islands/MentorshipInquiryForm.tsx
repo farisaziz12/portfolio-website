@@ -122,11 +122,11 @@ export default function MentorshipInquiryForm({ fallbackHref, replyTime = 'two w
         if (res.status === 400 && body.fields?.length) {
           const flagged = body.fields.filter((f): f is ErrKey => f in ERR_TEXT);
           setErrors(Object.fromEntries(flagged.map((f) => [f, true])));
-          fail('Something in the form needs another look; the fields are marked. Some answers may be too long.');
+          fail('Some fields need another look, and they’re marked. Some answers may be too long.');
         } else if (res.status === 503 || body.error === 'not-configured') {
-          fail('This didn’t send: the mail service isn’t available right now. Your answers are still here, so try again later.');
+          fail('This didn’t send. The mail service isn’t available right now. Your answers are still here, so try again later.');
         } else {
-          fail('This didn’t send: delivery failed on my side. Your answers are still here, so try again in a moment.');
+          fail('This didn’t send. Delivery failed on my side. Your answers are still here, so try again in a moment.');
         }
         return;
       }
@@ -141,7 +141,7 @@ export default function MentorshipInquiryForm({ fallbackHref, replyTime = 'two w
       requestAnimationFrame(() => doneRef.current?.focus());
     } catch (_err) {
       track('form_submit_failed', { form: 'mentorship', reason: 'network' });
-      fail('This didn’t send: I couldn’t reach the server. Your answers are still here, so check your connection and try again.');
+      fail('This didn’t send. I couldn’t reach the server. Your answers are still here, so check your connection and try again.');
     } finally {
       setSubmitting(false);
     }

@@ -24,17 +24,17 @@ export function MentorshipConfirmationEmail({ name, replyTime = 'two working day
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
             <Text style={s.paragraph}>
-              Your mentorship inquiry just landed in my inbox. I'll read through it carefully and reply within
+              Your mentorship inquiry just landed in my inbox. I'll read it and reply within
               <strong style={{ color: s.inkStrong }}> {replyTime}</strong>.
             </Text>
 
             <Text style={s.paragraph}>
-              If we're a fit, I'll come back with a proposed shape (cadence, focus, first session) and a short
-              discovery call to confirm chemistry before either of us commits.
+              If we're a fit, I'll come back with a plan for how often we meet, what we focus on and the first session.
+              I'll also suggest a short discovery call to check we get on before either of us commits.
             </Text>
 
             <Text style={s.paragraph}>
-              In the meantime, feel free to send anything else that'd help me understand where you are:
+              Until then, send anything else that'd help me understand where you are:
               code samples, a recent project, the specific situation that prompted this.
             </Text>
 
