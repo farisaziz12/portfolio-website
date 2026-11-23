@@ -25,7 +25,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
             <Text style={s.paragraph}>
-              I hope you enjoyed the {workshopTitle} session. Your feedback helps me improve future workshops.
+              Thanks for coming to the {workshopTitle} session. Your feedback helps me make the next workshop better.
             </Text>
 
             {feedbackUrl && (
@@ -38,7 +38,7 @@ export function WorkshopFollowUpEmail({ name, workshopTitle, event, feedbackUrl 
               <strong style={{ color: s.inkStrong }}>What's next?</strong>
             </Text>
             <Text style={s.paragraph}>
-              Check out my other workshops and upcoming conference appearances.
+              My other workshops and upcoming conference talks are on the site.
             </Text>
 
             <Section style={s.buttonSection}>

@@ -136,7 +136,7 @@ export default function InviteForm({ replyTime, art, pressKitHref = '/press-kit'
           <h2 className="inq-accepted__title">Got it, {first}. I'll get back to you within {replyTime}.</h2>
           <p className="inq-accepted__body">
             {result.confirmationSent
-              ? `A copy went to ${fields.email.trim()}. If it isn't there in ten minutes, check spam; the inquiry is stored either way.`
+              ? `A copy went to ${fields.email.trim()}. If it isn't there in ten minutes, check spam. The inquiry is stored either way.`
               : `The confirmation email to ${fields.email.trim()} didn't go out, but the inquiry is stored and I'll reply from my own inbox.`}
           </p>
           <div className="inq-accepted__actions">

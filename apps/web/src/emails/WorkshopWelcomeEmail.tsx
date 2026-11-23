@@ -26,7 +26,7 @@ export function WorkshopWelcomeEmail({ name, event, workshopTitle, repoUrl, atte
             {name && <Text style={s.paragraph}>Hey {name},</Text>}
 
             <Text style={s.paragraph}>
-              Thanks for joining. Here are the materials and resources for the workshop.
+              Thanks for joining. Here are the materials for the workshop.
             </Text>
 
             {repoUrl && (

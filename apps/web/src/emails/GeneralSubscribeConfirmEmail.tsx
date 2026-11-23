@@ -29,7 +29,7 @@ export function GeneralSubscribeConfirmEmail({ name }: Props) {
               <strong style={{ color: s.inkStrong }}>What to expect:</strong>
             </Text>
             <Text style={s.paragraph}>
-              Occasional updates about upcoming workshops, conference talks, and new content. No spam, ever.
+              An email now and then about upcoming workshops, conference talks and new content.
             </Text>
 
             <Section style={s.buttonSection}>

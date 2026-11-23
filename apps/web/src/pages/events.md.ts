@@ -41,7 +41,7 @@ export const GET: APIRoute = async () => {
   const body = [
     `# Schedule: upcoming and past events · Faris Aziz`,
     ``,
-    `> Upcoming events first (with my role at each: speaking, workshop, hosting or attending), then the archive with my role at each event (spoke, ran a workshop, hosted, attended). Invite me: ${SITE}/invite`,
+    `> Upcoming events first, then the archive. Each event lists my role there: speaking, running a workshop, hosting or attending. Invite me: ${SITE}/invite`,
     ``,
     `So far: ${speakingLine(stats)} and ${stats.cities} cities (${stats.conferenceTalks} conference talks, ${stats.workshopsDelivered} workshops, ${stats.panels} panel${stats.panels === 1 ? '' : 's'}, ${stats.guestSpots} podcast or livestream guest spot${stats.guestSpots === 1 ? '' : 's'}). Not counted: ${stats.hosted} hosted, ${stats.attended} attended. ${stats.upcoming} upcoming and ${past.length} past events. As of ${asOfLabel(stats)}.`,
     stats.countryList.length ? `\nCountries: ${stats.countryList.join(', ')}.` : '',
